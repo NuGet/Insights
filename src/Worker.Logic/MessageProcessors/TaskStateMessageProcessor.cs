@@ -34,7 +34,7 @@ namespace NuGet.Insights.Worker
                 message.AttemptCount++;
                 if (message.AttemptCount <= 10)
                 {
-                    _logger.LogWarning(
+                    _logger.LogTransientWarning(
                         "Attempt {AttemptCount}: no task state for {StorageSuffix}, {PartitionKey}, {RowKey} was found. Trying again.",
                         message.AttemptCount,
                         message.TaskStateKey.StorageSuffix,

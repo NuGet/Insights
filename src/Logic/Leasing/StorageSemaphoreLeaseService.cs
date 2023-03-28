@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -36,7 +36,7 @@ namespace NuGet.Insights
                 if (result != null)
                 {
                     var sleepDuration = TimeSpan.FromSeconds(Math.Max(attempt, 10));
-                    _logger.LogWarning("Storage semaphore {Name} of count {Count} is not available. Trying again in {SleepDurationMs}ms.", name, count, sleepDuration.TotalMilliseconds);
+                    _logger.LogTransientWarning("Storage semaphore {Name} of count {Count} is not available. Trying again in {SleepDurationMs}ms.", name, count, sleepDuration.TotalMilliseconds);
                     await Task.Delay(sleepDuration);
                 }
 

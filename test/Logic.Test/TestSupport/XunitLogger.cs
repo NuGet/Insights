@@ -20,6 +20,7 @@ namespace NuGet.Insights
         private readonly LogLevel _minLogLevel;
         private readonly ITestOutputHelper _output;
         private readonly ConcurrentDictionary<LogLevel, int> _logLevelToCount;
+        private readonly Func<LogLevel, string, LogLevel> _transformLogLevel;
         private readonly LogLevel _throwOn;
         private readonly ConcurrentQueue<string> _logMessages;
 
@@ -27,12 +28,14 @@ namespace NuGet.Insights
             ITestOutputHelper output,
             LogLevel minLogLevel,
             ConcurrentDictionary<LogLevel, int> logLevelToCount,
+            Func<LogLevel, string, LogLevel> transformLogLevel,
             LogLevel throwOn,
             ConcurrentQueue<string> logMessages)
         {
             _minLogLevel = minLogLevel;
             _output = output;
             _logLevelToCount = logLevelToCount;
+            _transformLogLevel = transformLogLevel;
             _throwOn = throwOn;
             _logMessages = logMessages;
         }
@@ -40,9 +43,17 @@ namespace NuGet.Insights
         public void Log<TState>(
             LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
+            var message = formatter(state, exception);
+            var mappedLevel = logLevel;
+
+            if (_transformLogLevel != null)
+            {
+                mappedLevel = _transformLogLevel(logLevel, message);
+            }
+
             if (_logLevelToCount != null)
             {
-                _logLevelToCount.AddOrUpdate(logLevel, 1, (_, v) => v + 1);
+                _logLevelToCount.AddOrUpdate(mappedLevel, 1, (_, v) => v + 1);
             }
 
             if (!IsEnabled(logLevel))
@@ -50,12 +61,16 @@ namespace NuGet.Insights
                 return;
             }
 
-            var message = formatter(state, exception);
             _logMessages?.Enqueue(message);
 
             try
             {
-                _output.WriteLine($"[{SinceStart.Elapsed.TotalSeconds:F3}] [{logLevel.ToString().Substring(0, 3).ToUpperInvariant()}] {message}");
+                var abbreviateLogLevel = Abbreviate(logLevel);
+                if (logLevel != mappedLevel)
+                {
+                    abbreviateLogLevel += ">" + Abbreviate(mappedLevel);
+                }
+                _output.WriteLine($"[{SinceStart.Elapsed.TotalSeconds:F3}] [{abbreviateLogLevel}] {message}");
                 if (exception != null)
                 {
                     _output.WriteLine(exception.ToString());
@@ -66,10 +81,15 @@ namespace NuGet.Insights
                 // Ignore this failure. I've seen cases where an HttpClientFactory timer logs at a strange time.
             }
 
-            if (logLevel >= _throwOn)
+            if (mappedLevel >= _throwOn)
             {
-                throw new InvalidOperationException($"Failing early due to an {logLevel} log.");
+                throw new InvalidOperationException($"Failing early due to an {mappedLevel} log.");
             }
+        }
+
+        private static string Abbreviate(LogLevel logLevel)
+        {
+            return logLevel.ToString().Substring(0, 3).ToUpperInvariant();
         }
 
         public bool IsEnabled(LogLevel logLevel)

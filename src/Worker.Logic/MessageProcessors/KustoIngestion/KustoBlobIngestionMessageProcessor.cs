@@ -52,7 +52,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             var blob = await _storageService.GetBlobAsync(message.StorageSuffix, message.ContainerName, message.BlobName);
             if (blob == null)
             {
-                _logger.LogWarning("No matching Kusto blob ingestion was found.");
+                _logger.LogTransientWarning("No matching Kusto blob ingestion was found.");
                 return;
             }
 
@@ -82,7 +82,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 await using var lease = await _leaseService.TryAcquireAsync($"KustoBlobIngestion-{blob.GetContainerName()}-{blob.GetBlobName()}");
                 if (!lease.Acquired)
                 {
-                    _logger.LogWarning(
+                    _logger.LogTransientWarning(
                         "Kusto blob ingestion lease for blob {ContainerName}/{BlobName} is not available.",
                         blob.GetContainerName(),
                         blob.GetBlobName());

@@ -41,6 +41,24 @@ namespace NuGet.Insights.Worker
             }
 
             [Fact]
+            public async Task TestMapsMissingWarningToInformationLog()
+            {
+                // Arrange
+                var scans = new[]
+                {
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType },
+                };
+                var messages = MakeMessages(scans);
+
+                // Act
+                var result = await Target.ProcessAsync(messages, dequeueCount: 0);
+
+                // Assert
+                Assert.Contains(LogMessages, m => m.StartsWith("[transient] "));
+                Assert.Equal(LogMessages.Count, LogLevelToCount[LogLevel.Information]);
+            }
+
+            [Fact]
             public async Task SingleTryAgainLater()
             {
                 // Arrange

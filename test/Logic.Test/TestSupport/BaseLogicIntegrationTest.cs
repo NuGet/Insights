@@ -85,7 +85,12 @@ namespace NuGet.Insights
                     serviceCollection.AddLogging(o =>
                     {
                         o.SetMinimumLevel(LogLevel.Trace);
-                        o.AddProvider(new XunitLoggerProvider(output, LogLevel.Trace, LogLevelToCount, FailFastLogLevel, LogMessages));
+                        o.AddProvider(new XunitLoggerProvider(
+                            output,
+                            LogLevel.Trace,
+                            LogLevelToCount,
+                            TransformLogLevel,
+                            FailFastLogLevel, LogMessages));
                     });
 
                     serviceCollection.Configure((Action<NuGetInsightsSettings>)ConfigureDefaultsAndSettings);
@@ -98,6 +103,15 @@ namespace NuGet.Insights
 
         protected LogLevel FailFastLogLevel { get; set; } = LogLevel.Error;
         protected LogLevel AssertLogLevel { get; set; } = LogLevel.Warning;
+        public Func<LogLevel, string, LogLevel> TransformLogLevel { get; set; } = (LogLevel logLevel, string message) =>
+        {
+            if (message.StartsWith(LoggerExtensions.TransientPrefix) && logLevel == LogLevel.Warning)
+            {
+                return LogLevel.Information;
+            }
+
+            return logLevel;
+        };
 
         protected virtual void ConfigureHostBuilder(IHostBuilder hostBuilder)
         {
@@ -259,7 +273,7 @@ namespace NuGet.Insights
             try
             {
                 // Global assertions
-                AssertOnlyInfoLogsOrLess();
+                AssertLogLevelOrLess();
             }
             finally
             {
@@ -287,18 +301,18 @@ namespace NuGet.Insights
             }
         }
 
-        private void AssertOnlyInfoLogsOrLess()
+        private void AssertLogLevelOrLess()
         {
-            var warningOrGreater = LogLevelToCount
+            var logMessages = LogLevelToCount
                 .Where(x => x.Key >= AssertLogLevel)
                 .Where(x => x.Value > 0)
                 .OrderByDescending(x => x.Key)
                 .ToList();
-            foreach ((var logLevel, var count) in warningOrGreater)
+            foreach ((var logLevel, var count) in logMessages)
             {
                 Logger.LogInformation("There were {Count} {LogLevel} log messages.", count, logLevel);
             }
-            Assert.Empty(warningOrGreater);
+            Assert.Empty(logMessages);
         }
 
         public static string SerializeTestJson(object obj)

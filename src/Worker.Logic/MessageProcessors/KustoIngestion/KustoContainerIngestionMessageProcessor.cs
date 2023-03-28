@@ -47,7 +47,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             var container = await _storageService.GetContainerAsync(message.StorageSuffix, message.ContainerName);
             if (container == null)
             {
-                _logger.LogWarning("No matching Kusto container ingestion was found.");
+                _logger.LogTransientWarning("No matching Kusto container ingestion was found.");
                 return;
             }
 
@@ -185,7 +185,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             var lease = await _leaseService.TryAcquireAsync($"KustoContainerIngestion-{finalTableName}");
             if (!lease.Acquired)
             {
-                _logger.LogWarning("Container {ContainerName} lease is not available.", container.GetContainerName());
+                _logger.LogTransientWarning("Container {ContainerName} lease is not available.", container.GetContainerName());
                 message.AttemptCount++;
                 await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
                 return null;

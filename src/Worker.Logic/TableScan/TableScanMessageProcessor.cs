@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
+using Microsoft.Extensions.Logging;
 using NuGet.Insights.TablePrefixScan;
 
 namespace NuGet.Insights.Worker
@@ -21,6 +22,7 @@ namespace NuGet.Insights.Worker
         private readonly TablePrefixScanner _prefixScanner;
         private readonly TableScanDriverFactory<T> _driverFactory;
         private readonly ITelemetryClient _telemetryClient;
+        private readonly ILogger<TableScanMessageProcessor<T>> _logger;
 
         public TableScanMessageProcessor(
             TaskStateStorageService taskStateStorageService,
@@ -29,7 +31,8 @@ namespace NuGet.Insights.Worker
             SchemaSerializer serializer,
             TablePrefixScanner prefixScanner,
             TableScanDriverFactory<T> driverFactory,
-            ITelemetryClient telemetryClient)
+            ITelemetryClient telemetryClient,
+            ILogger<TableScanMessageProcessor<T>> logger)
         {
             _taskStateStorageService = taskStateStorageService;
             _serviceClientFactory = serviceClientFactory;
@@ -38,6 +41,7 @@ namespace NuGet.Insights.Worker
             _prefixScanner = prefixScanner;
             _driverFactory = driverFactory;
             _telemetryClient = telemetryClient;
+            _logger = logger;
         }
 
         public async Task ProcessAsync(TableScanMessage<T> message, long dequeueCount)
@@ -45,6 +49,7 @@ namespace NuGet.Insights.Worker
             var taskState = await _taskStateStorageService.GetAsync(message.TaskStateKey);
             if (taskState == null)
             {
+                _logger.LogTransientWarning("No matching task state was found for a table scan step.");
                 return;
             }
 

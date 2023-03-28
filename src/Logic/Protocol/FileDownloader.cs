@@ -161,12 +161,12 @@ namespace NuGet.Insights
                     }
                     catch (MiniZipHttpException defaultEx) when (mode == ZipDownloadMode.DefaultMiniZip)
                     {
-                        _logger.LogInformation(defaultEx, "Fetching {FileType} {Url} for {Id} {Version} failed using MiniZip. Trying again with cache busting.", fileType, url, id, version);
+                        _logger.LogTransientWarning(defaultEx, "Fetching {FileType} {Url} for {Id} {Version} failed using MiniZip. Trying again with cache busting.", fileType, url, id, version);
                         return await GetZipDirectoryReaderAsync(id, version, fileType, url, ZipDownloadMode.CacheBustMiniZip);
                     }
                     catch (MiniZipHttpException cacheBustEx) when (mode == ZipDownloadMode.CacheBustMiniZip)
                     {
-                        _logger.LogInformation(cacheBustEx, "Fetching {FileType} {Url} for {Id} {Version} failed using MiniZip. Trying again with a full download.", fileType, url, id, version);
+                        _logger.LogTransientWarning(cacheBustEx, "Fetching {FileType} {Url} for {Id} {Version} failed using MiniZip. Trying again with a full download.", fileType, url, id, version);
                         return await GetZipDirectoryReaderAsync(id, version, fileType, url, ZipDownloadMode.FullDownload);
                     }
                 }

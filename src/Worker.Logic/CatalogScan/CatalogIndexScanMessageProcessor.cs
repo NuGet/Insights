@@ -51,7 +51,7 @@ namespace NuGet.Insights.Worker
             {
                 if (message.AttemptCount < 10)
                 {
-                    _logger.LogWarning("After {AttemptCount} attempts, the catalog index scan '{ScanId}' with cursor '{CursorName}' should have already been created. Retrying.",
+                    _logger.LogTransientWarning("After {AttemptCount} attempts, the catalog index scan '{ScanId}' with cursor '{CursorName}' should have already been created. Trying again.",
                         message.AttemptCount,
                         message.ScanId,
                         message.CursorName);

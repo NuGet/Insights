@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -46,7 +46,7 @@ namespace NuGet.Insights.Worker
                     switch (result.Type)
                     {
                         case DriverResultType.TryAgainLater:
-                            _logger.LogWarning("A catalog leaf scan will need to be tried again later.");
+                            _logger.LogTransientWarning("A catalog leaf scan will need to be tried again later.");
                             tryAgainLater.Add((leafScan, TimeSpan.FromMinutes(1)));
                             break;
                         case DriverResultType.Success:

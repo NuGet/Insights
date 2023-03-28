@@ -37,7 +37,7 @@ namespace NuGet.Insights.Worker
             var scan = await _storageService.GetPageScanAsync(message.StorageSuffix, message.ScanId, message.PageId);
             if (scan == null)
             {
-                _logger.LogWarning("No matching page scan was found.");
+                _logger.LogTransientWarning("No matching page scan was found.");
                 return;
             }
 

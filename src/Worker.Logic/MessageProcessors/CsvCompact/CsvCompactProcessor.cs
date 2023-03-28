@@ -39,7 +39,7 @@ namespace NuGet.Insights.Worker
 
             if (!message.Force && taskState == null)
             {
-                _logger.LogWarning("No matching task state was found.");
+                _logger.LogTransientWarning("No matching task state was found.");
                 return;
             }
 

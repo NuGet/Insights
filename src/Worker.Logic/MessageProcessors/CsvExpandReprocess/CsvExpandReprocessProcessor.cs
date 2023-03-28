@@ -36,14 +36,14 @@ namespace NuGet.Insights.Worker
             var taskState = await _taskStateStorageService.GetAsync(message.TaskStateKey);
             if (taskState == null)
             {
-                _logger.LogWarning("No matching task state was found.");
+                _logger.LogTransientWarning("No matching task state was found.");
                 return;
             }
 
             var indexScan = await _catalogScanStorageService.GetIndexScanAsync(message.CursorName, message.ScanId);
             if (indexScan == null)
             {
-                _logger.LogWarning("No matching index scan was found.");
+                _logger.LogTransientWarning("No matching index scan was found.");
                 return;
             }
 

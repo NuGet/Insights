@@ -67,7 +67,7 @@ namespace NuGet.Insights.Worker
 
             if (noMatchingScan.Any())
             {
-                _logger.LogWarning("There were {NoMatchingScanCount} messages of {Count} with no matching leaf scans.", noMatchingScan.Count, messages.Count);
+                _logger.LogTransientWarning("There were {NoMatchingScanCount} messages of {Count} with no matching leaf scans.", noMatchingScan.Count, messages.Count);
             }
 
             if (failed.Any())
@@ -77,7 +77,7 @@ namespace NuGet.Insights.Worker
 
             if (tryAgainLater.Any())
             {
-                _logger.LogWarning(
+                _logger.LogTransientWarning(
                     "{TryAgainLaterCount} catalog leaf scans of {Count} will be tried again later, in {Min} to {Max}.",
                     tryAgainLater.Count,
                     messages.Count,

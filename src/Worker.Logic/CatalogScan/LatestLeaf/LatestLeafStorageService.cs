@@ -50,7 +50,7 @@ namespace NuGet.Insights.Worker
                         && (ex.Status == (int)HttpStatusCode.Conflict
                             || ex.Status == (int)HttpStatusCode.PreconditionFailed))
                     {
-                        _logger.LogWarning(
+                        _logger.LogTransientWarning(
                             ex,
                             "Attempt {Attempt}: adding entities for partition key {PartitionKey} failed due to an HTTP {StatusCode}. Trying again.",
                             attempt,
