@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
@@ -35,7 +36,7 @@ namespace NuGet.Insights
             CancellationToken token = default)
         {
             var nuGetLogger = logger.ToNuGetLogger();
-            return await httpSource.ProcessResponseAsync(
+            return await httpSource.ProcessResponseWithRetryAsync(
                 new HttpSourceRequest(() => HttpRequestMessageFactory.Create(HttpMethod.Head, url, nuGetLogger))
                 {
                     IgnoreNotFounds = true,
@@ -54,7 +55,7 @@ namespace NuGet.Insights
                     throw new HttpRequestException(
                         $"The request to {url} return HTTP {(int)response.StatusCode} {response.ReasonPhrase}.");
                 },
-                nuGetLogger,
+                logger,
                 token);
         }
 
@@ -130,7 +131,7 @@ namespace NuGet.Insights
             CancellationToken token = default) where T : notnull
         {
             var nuGetLogger = logger.ToNuGetLogger();
-            return await httpSource.ProcessStreamAsync(
+            return await httpSource.ProcessStreamWithRetryAsync(
                 new HttpSourceRequest(url, nuGetLogger)
                 {
                     IgnoreNotFounds = ignoreNotFounds,
@@ -163,8 +164,84 @@ namespace NuGet.Insights
 
                     return result;
                 },
-                nuGetLogger,
+                logger,
                 token);
+        }
+
+        public static async Task<T> ProcessStreamWithRetryAsync<T>(
+            this HttpSource httpSource,
+            HttpSourceRequest request,
+            Func<Stream, Task<T>> processAsync,
+            ILogger logger,
+            CancellationToken token)
+        {
+            var nuGetLogger = logger.ToNuGetLogger();
+            var attempt = 0;
+            while (true)
+            {
+                var fetchedHeaders = false;
+                attempt++;
+                try
+                {
+                    return await httpSource.ProcessStreamAsync(
+                        request,
+                        async stream =>
+                        {
+                            fetchedHeaders = true;
+                            return await processAsync(stream);
+                        },
+                        nuGetLogger,
+                        token);
+                }
+                catch (Exception ex) when (ShouldRetryStreamException(attempt, fetchedHeaders, token, ex))
+                {
+                    logger.LogTransientWarning(ex, "On attempt {Attempt}, processing the stream response body failed. Trying again.", attempt);
+                }
+            }
+        }
+
+        public static async Task<T> ProcessResponseWithRetryAsync<T>(
+            this HttpSource httpSource,
+            HttpSourceRequest request,
+            Func<HttpResponseMessage, Task<T>> processAsync,
+            ILogger logger,
+            CancellationToken token)
+        {
+            var nuGetLogger = logger.ToNuGetLogger();
+            var attempt = 0;
+            while (true)
+            {
+                var fetchedHeaders = false;
+                string? url = null;
+                attempt++;
+                try
+                {
+                    return await httpSource.ProcessResponseAsync(
+                        request,
+                        async (response) =>
+                        {
+                            url = response.RequestMessage?.RequestUri?.AbsoluteUri;
+                            fetchedHeaders = true;
+                            return await processAsync(response);
+                        },
+                        nuGetLogger,
+                        token);
+                }
+                catch (Exception ex) when (ShouldRetryStreamException(attempt, fetchedHeaders, token, ex))
+                {
+                    logger.LogTransientWarning(ex, "On attempt {Attempt}, processing the response body for {Url} failed. Trying again.", attempt, url);
+                }
+            }
+        }
+
+        private static bool ShouldRetryStreamException(int attempt, bool fetchedHeaders, CancellationToken token, Exception ex)
+        {
+            return attempt < 3
+                && fetchedHeaders
+                && !token.IsCancellationRequested
+                && (ex is IOException
+                    || ex is OperationCanceledException
+                    || (ex is HttpRequestException && ex.InnerException is IOException));
         }
 
         public static async Task<BlobMetadata> GetBlobMetadataAsync(
@@ -176,7 +253,7 @@ namespace NuGet.Insights
             var nuGetLogger = logger.ToNuGetLogger();
 
             // Try to get all of the information using a HEAD request.
-            var blobMetadata = await httpSource.ProcessResponseAsync(
+            var blobMetadata = await httpSource.ProcessResponseWithRetryAsync(
                 new HttpSourceRequest(() => HttpRequestMessageFactory.Create(HttpMethod.Head, url, nuGetLogger)),
                 response =>
                 {
@@ -202,7 +279,7 @@ namespace NuGet.Insights
 
                     return Task.FromResult<BlobMetadata?>(null);
                 },
-                nuGetLogger,
+                logger,
                 token);
 
             if (blobMetadata != null)
@@ -212,7 +289,7 @@ namespace NuGet.Insights
 
             // If no Content-MD5 header was found in the response, calculate the package hash by downloading the
             // package.
-            return await httpSource.ProcessStreamAsync(
+            return await httpSource.ProcessStreamWithRetryAsync(
                 new HttpSourceRequest(url, nuGetLogger),
                 async stream =>
                 {
@@ -236,7 +313,7 @@ namespace NuGet.Insights
                             contentMD5: contentMD5);
                     }
                 },
-                nuGetLogger,
+                logger,
                 token);
         }
     }

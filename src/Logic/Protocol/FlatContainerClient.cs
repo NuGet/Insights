@@ -106,13 +106,13 @@ namespace NuGet.Insights
             var url = GetPackageManifestUrl(baseUrl, id, version);
 
             var nuGetLogger = _logger.ToNuGetLogger();
-            return await _httpSource.ProcessStreamAsync(
+            return await _httpSource.ProcessStreamWithRetryAsync(
                 new HttpSourceRequest(url, nuGetLogger)
                 {
                     IgnoreNotFounds = true,
                 },
                 networkStream => Task.FromResult(NuspecContext.FromStream(id, version, networkStream, _logger)),
-                nuGetLogger,
+                _logger,
                 token);
         }
 

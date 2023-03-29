@@ -56,7 +56,7 @@ namespace NuGet.Insights
             {
                 do
                 {
-                    result = await _httpSource.ProcessResponseAsync(
+                    result = await _httpSource.ProcessResponseWithRetryAsync(
                         new HttpSourceRequest(url, nuGetLogger),
                         async response =>
                         {
@@ -84,7 +84,7 @@ namespace NuGet.Insights
                                 response.Content.Headers.ContentLength.Value,
                                 IncrementalHash.CreateAll());
                         },
-                        nuGetLogger,
+                        _logger,
                         token);
 
                     if (result == null)

@@ -108,7 +108,7 @@ namespace NuGet.Insights
 
             try
             {
-                return await _httpSource.ProcessResponseAsync(
+                return await _httpSource.ProcessResponseWithRetryAsync(
                     new HttpSourceRequest(() => HttpRequestMessageFactory.Create(HttpMethod.Get, url, nuGetLog))
                     {
                         IgnoreNotFounds = true
@@ -140,7 +140,7 @@ namespace NuGet.Insights
                             ManifestBytes = new Memory<byte>(destStream.GetBuffer(), 0, (int)destStream.Length),
                         };
                     },
-                    nuGetLog,
+                    _logger,
                     token: CancellationToken.None);
             }
             finally

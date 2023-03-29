@@ -35,7 +35,7 @@ namespace NuGet.Insights
             var url = $"{baseUrl.TrimEnd('/')}/packages/{id}/{normalizedVersion}";
 
             var nuGetLogger = _logger.ToNuGetLogger();
-            return await _httpSource.ProcessStreamAsync(
+            return await _httpSource.ProcessStreamWithRetryAsync(
                 new HttpSourceRequest(url, nuGetLogger)
                 {
                     IgnoreNotFounds = true,
@@ -84,7 +84,7 @@ namespace NuGet.Insights
 
                     throw new InvalidDataException($"The package state could not be determined at {url}.");
                 },
-                nuGetLogger,
+                _logger,
                 CancellationToken.None);
         }
 

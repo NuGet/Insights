@@ -269,7 +269,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                 leaf.PackageVersion,
                 attemptCount);
 
-            return await _httpSource.ProcessResponseAsync(
+            return await _httpSource.ProcessResponseWithRetryAsync(
                 new HttpSourceRequest(contentUrl, nuGetLogger) { IgnoreNotFounds = true },
                 async response =>
                 {
@@ -303,7 +303,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
 
                     return true;
                 },
-                nuGetLogger,
+                _logger,
                 CancellationToken.None);
         }
 

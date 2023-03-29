@@ -84,7 +84,7 @@ namespace NuGet.Insights
             var url = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.Catalog);
             var length = 512;
             var nuGetLogger = _logger.ToNuGetLogger();
-            var commitTimestamp = await _httpSource.ProcessResponseAsync(
+            var commitTimestamp = await _httpSource.ProcessResponseWithRetryAsync(
                 new HttpSourceRequest(() =>
                 {
                     var request = HttpRequestMessageFactory.Create(HttpMethod.Get, url, nuGetLogger);
@@ -108,7 +108,7 @@ namespace NuGet.Insights
 
                     throw new InvalidOperationException($"Could not find the commit timestamp in the first {length} bytes of the catalog index.");
                 },
-                nuGetLogger,
+                _logger,
                 CancellationToken.None);
 
             return DateTimeOffset.Parse(commitTimestamp);

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -48,7 +48,7 @@ namespace NuGet.Insights
         private async Task<IReadOnlyList<V2Package>> ParseV2PageAsync(string url)
         {
             var nuGetLogger = _logger.ToNuGetLogger();
-            return await _httpSource.ProcessStreamAsync(
+            return await _httpSource.ProcessStreamWithRetryAsync(
                 new HttpSourceRequest(url, nuGetLogger)
                 {
                     IgnoreNotFounds = true,
@@ -64,7 +64,7 @@ namespace NuGet.Insights
                     var page = _parser.ParsePage(document);
                     return Task.FromResult(page);
                 },
-                nuGetLogger,
+                _logger,
                 CancellationToken.None);
         }
     }

@@ -128,7 +128,7 @@ namespace NuGet.Insights
             {
                 foreach ((var readmeType, var url) in urls)
                 {
-                    var result = await _httpSource.ProcessResponseAsync(
+                    var result = await _httpSource.ProcessResponseWithRetryAsync(
                         new HttpSourceRequest(() => HttpRequestMessageFactory.Create(HttpMethod.Get, url, nuGetLog))
                         {
                             IgnoreNotFounds = true
@@ -160,7 +160,7 @@ namespace NuGet.Insights
                                 ReadmeBytes = new Memory<byte>(destStream.GetBuffer(), 0, (int)destStream.Length),
                             };
                         },
-                        nuGetLog,
+                        _logger,
                         token: CancellationToken.None);
 
                     if (result is not null)
