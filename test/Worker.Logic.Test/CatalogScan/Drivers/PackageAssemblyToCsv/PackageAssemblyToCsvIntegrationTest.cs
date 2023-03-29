@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -229,10 +229,10 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             await AssertOutputAsync(PackageAssemblyToCsv_WithDuplicatesDir, Step1, 0);
 
             var duplicatePackageRequests = HttpMessageHandlerFactory
-                .Requests
-                .Where(x => x.RequestUri.AbsolutePath.EndsWith("/gosms.ge-sms-api.1.0.1.nupkg"))
+                .Responses
+                .Where(x => x.RequestMessage.RequestUri.GetLeftPart(UriPartial.Path).EndsWith("/gosms.ge-sms-api.1.0.1.nupkg"))
                 .ToList();
-            Assert.Equal(LatestLeavesTypes.Contains(DriverType) ? 1 : 2, duplicatePackageRequests.Count);
+            Assert.Equal(LatestLeavesTypes.Contains(DriverType) ? 1 : 2, duplicatePackageRequests.Count(x => x.IsSuccessStatusCode));
         }
 
         protected override IEnumerable<string> GetExpectedTableNames()

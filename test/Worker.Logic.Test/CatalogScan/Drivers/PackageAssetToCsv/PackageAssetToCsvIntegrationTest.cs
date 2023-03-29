@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
@@ -168,6 +169,55 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             }
         }
 
+        public class PackageAssetToCsv_WithDuplicates_OnlyLatestLeaves_FailedRangeRequests : PackageAssetToCsvIntegrationTest
+        {
+            public PackageAssetToCsv_WithDuplicates_OnlyLatestLeaves_FailedRangeRequests(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public Task Execute()
+            {
+                FailRangeRequests();
+                return PackageAssetToCsv_WithDuplicates(batchProcessing: false);
+            }
+        }
+
+        public class PackageAssetToCsv_WithDuplicates_AllLeaves_FailedRangeRequests : PackageAssetToCsvIntegrationTest
+        {
+            public PackageAssetToCsv_WithDuplicates_AllLeaves_FailedRangeRequests(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => Enumerable.Empty<CatalogScanDriverType>();
+
+            [Fact]
+            public async Task Execute()
+            {
+                FailRangeRequests();
+                await PackageAssetToCsv_WithDuplicates(batchProcessing: false);
+            }
+        }
+
+        public class PackageAssetToCsv_WithDuplicates_BatchProcessing_FailedRangeRequests : PackageAssetToCsvIntegrationTest
+        {
+            public PackageAssetToCsv_WithDuplicates_BatchProcessing_FailedRangeRequests(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => Enumerable.Empty<CatalogScanDriverType>();
+
+            [Fact]
+            public Task Execute()
+            {
+                FailRangeRequests();
+                return PackageAssetToCsv_WithDuplicates(batchProcessing: true);
+            }
+        }
+
         public PackageAssetToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)
         {
@@ -202,11 +252,26 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             var duplicatePackageRequests = HttpMessageHandlerFactory
                 .Responses
-                .Where(x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith("/gosms.ge-sms-api.1.0.1.nupkg"))
+                .Where(x => x.RequestMessage.RequestUri.GetLeftPart(UriPartial.Path).EndsWith("/gosms.ge-sms-api.1.0.1.nupkg"))
                 .ToList();
             var onlyLatestLeaves = LatestLeavesTypes.Contains(DriverType);
-            Assert.Equal(onlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Where(x => x.RequestMessage.Method == HttpMethod.Head && x.IsSuccessStatusCode).Count());
-            Assert.Equal(onlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Where(x => x.RequestMessage.Method == HttpMethod.Get && x.IsSuccessStatusCode).Count());
+            Assert.Equal(onlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Count(x => x.RequestMessage.Method == HttpMethod.Get && x.IsSuccessStatusCode));
+        }
+
+        private void FailRangeRequests()
+        {
+            HttpMessageHandlerFactory.OnSendAsync = (req, b, t) =>
+            {
+                if (req.Method == HttpMethod.Get && req.Headers.Range is not null)
+                {
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                    {
+                        RequestMessage = req,
+                    });
+                }
+
+                return Task.FromResult<HttpResponseMessage>(null);
+            };
         }
 
         protected override IEnumerable<string> GetExpectedCursorNames()
