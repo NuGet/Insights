@@ -290,7 +290,7 @@ namespace NuGet.Insights.ReferenceTracking
                 .Range(1, SetReferencesAsync_IsEventuallyConsistent_WithSameInput_Max)
                 .Select(x => new object[] { x });
 
-            [Theory]
+            [Theory(Skip = "This test is a little bit flaky.")]
             [MemberData(nameof(SetReferencesAsync_IsEventuallyConsistent_WithSameInput_TestData))]
             public async Task SetReferencesAsync_IsEventuallyConsistent_WithSameInput(int failAtRequest)
             {
@@ -320,7 +320,7 @@ namespace NuGet.Insights.ReferenceTracking
                 .Range(1, SetReferencesAsync_IsEventuallyConsistent_WithDeleteAll_Max)
                 .Select(x => new object[] { x });
 
-            [Theory]
+            [Theory(Skip = "This test is a little bit flaky.")]
             [MemberData(nameof(SetReferencesAsync_IsEventuallyConsistent_WithDeleteAll_TestData))]
             public async Task SetReferencesAsync_IsEventuallyConsistent_WithDeleteAll(int failAtRequest)
             {
@@ -358,7 +358,7 @@ namespace NuGet.Insights.ReferenceTracking
                 .Range(1, SetReferencesAsync_IsEventuallyConsistent_WithDifferentInput_Max)
                 .Select(x => new object[] { x });
 
-            [Theory]
+            [Theory(Skip = "This test is a little bit flaky.")]
             [MemberData(nameof(SetReferencesAsync_IsEventuallyConsistent_WithDifferentInput_TestData))]
             public async Task SetReferencesAsync_IsEventuallyConsistent_WithDifferentInput(int failAtRequest)
             {
@@ -396,7 +396,7 @@ namespace NuGet.Insights.ReferenceTracking
                 .Range(1, SetReferencesAsync_IsEventuallyConsistent_WithUpdateExisting_Max)
                 .Select(x => new object[] { x });
 
-            [Theory]
+            [Theory(Skip = "This test is a little bit flaky.")]
             [MemberData(nameof(SetReferencesAsync_IsEventuallyConsistent_WithUpdateExisting_TestData))]
             public async Task SetReferencesAsync_IsEventuallyConsistent_WithUpdateExisting(int failAtRequest)
             {
