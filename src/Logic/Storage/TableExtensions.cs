@@ -53,6 +53,14 @@ namespace NuGet.Insights
             await table.DeleteEntityAsync(entity.PartitionKey, entity.RowKey, ifMatch);
         }
 
+        public static async Task<int> GetEntityCountLowerBoundAsync(this TableClient table, QueryLoopMetrics metrics)
+        {
+            return await GetEntityCountLowerBoundAsync<TableEntity>(
+                table,
+                filter: x => true,
+                metrics);
+        }
+
         public static async Task<int> GetEntityCountLowerBoundAsync(this TableClient table, string partitionKey, QueryLoopMetrics metrics)
         {
             return await GetEntityCountLowerBoundAsync<TableEntity>(

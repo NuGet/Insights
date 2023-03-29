@@ -8,6 +8,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
 using Azure.Storage.Queues;
@@ -178,7 +179,7 @@ namespace NuGet.Insights.Worker
         protected async Task<WorkflowRun> UpdateAsync(WorkflowRun run)
         {
             Assert.NotNull(run);
-            await ProcessQueueAsync(() => { }, async () =>
+            await ProcessQueueAsync(async () =>
             {
                 run = await WorkflowStorageService.GetRunAsync(run.GetRunId());
 
@@ -197,7 +198,7 @@ namespace NuGet.Insights.Worker
         protected async Task<KustoIngestionEntity> UpdateAsync(KustoIngestionEntity ingestion)
         {
             Assert.NotNull(ingestion);
-            await ProcessQueueAsync(() => { }, async () =>
+            await ProcessQueueAsync(async () =>
             {
                 ingestion = await KustoIngestionStorageService.GetIngestionAsync(ingestion.GetIngestionId());
 
@@ -216,7 +217,7 @@ namespace NuGet.Insights.Worker
         protected async Task<CatalogIndexScan> UpdateAsync(CatalogIndexScan indexScan)
         {
             Assert.NotNull(indexScan);
-            await ProcessQueueAsync(() => { }, async () =>
+            await ProcessQueueAsync(async () =>
             {
                 indexScan = await CatalogScanStorageService.GetIndexScanAsync(indexScan.GetCursorName(), indexScan.GetScanId());
 
@@ -236,7 +237,7 @@ namespace NuGet.Insights.Worker
 
         protected async Task UpdateAsync(TaskStateKey taskStateKey)
         {
-            await ProcessQueueAsync(() => { }, async () =>
+            await ProcessQueueAsync(async () =>
             {
                 var countLowerBound = await TaskStateStorageService.GetCountLowerBoundAsync(taskStateKey.StorageSuffix, taskStateKey.PartitionKey);
                 if (countLowerBound > 0)
@@ -247,6 +248,11 @@ namespace NuGet.Insights.Worker
 
                 return true;
             });
+        }
+
+        protected async Task ProcessQueueAsync(Func<Task<bool>> isCompleteAsync, int workerCount = 1)
+        {
+            await ProcessQueueAsync(() => { }, isCompleteAsync, workerCount);
         }
 
         protected async Task ProcessQueueAsync(Action foundMessage, Func<Task<bool>> isCompleteAsync, int workerCount = 1)
@@ -475,6 +481,35 @@ namespace NuGet.Insights.Worker
             }
 
             Assert.Equal(expected, actual);
+        }
+
+        protected async Task AssertSymbolPackageArchiveOutputAsync(string testName, string stepName)
+        {
+            await AssertWideEntityOutputAsync(
+                Options.Value.SymbolPackageArchiveTableName,
+                Path.Combine(testName, stepName),
+                stream =>
+                {
+                    var entity = MessagePackSerializer.Deserialize<SymbolPackageFileService.SymbolPackageFileInfoVersions>(stream, NuGetInsightsMessagePack.Options);
+
+                    string mzipHash = null;
+                    SortedDictionary<string, List<string>> httpHeaders = null;
+
+                    if (entity.V1.Available)
+                    {
+                        using var algorithm = SHA256.Create();
+                        mzipHash = algorithm.ComputeHash(entity.V1.MZipBytes.ToArray()).ToLowerHex();
+                        httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders, ignore: Enumerable.Empty<string>());
+                    }
+
+                    return new
+                    {
+                        entity.V1.Available,
+                        entity.V1.CommitTimestamp,
+                        HttpHeaders = httpHeaders,
+                        MZipHash = mzipHash,
+                    };
+                });
         }
 
         protected void MakeDeletedPackageAvailable(string id = "BehaviorSample", string version = "1.0.0")

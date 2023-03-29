@@ -3,11 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
-using MessagePack;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -40,13 +37,13 @@ namespace NuGet.Insights.Worker.LoadSymbolPackageArchive
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(LoadSymbolPackageArchiveDir, Step1);
+                await AssertSymbolPackageArchiveOutputAsync(LoadSymbolPackageArchiveDir, Step1);
 
                 // Act
                 await UpdateAsync(max2);
 
                 // Assert
-                await AssertOutputAsync(LoadSymbolPackageArchiveDir, Step2);
+                await AssertSymbolPackageArchiveOutputAsync(LoadSymbolPackageArchiveDir, Step2);
             }
         }
 
@@ -73,13 +70,13 @@ namespace NuGet.Insights.Worker.LoadSymbolPackageArchive
                 await UpdateAsync(max1);
 
                 // Assert
-                await AssertOutputAsync(LoadSymbolPackageArchive_WithDeleteDir, Step1);
+                await AssertSymbolPackageArchiveOutputAsync(LoadSymbolPackageArchive_WithDeleteDir, Step1);
 
                 // Act
                 await UpdateAsync(max2);
 
                 // Assert
-                await AssertOutputAsync(LoadSymbolPackageArchive_WithDeleteDir, Step2);
+                await AssertSymbolPackageArchiveOutputAsync(LoadSymbolPackageArchive_WithDeleteDir, Step2);
             }
         }
 
@@ -94,35 +91,6 @@ namespace NuGet.Insights.Worker.LoadSymbolPackageArchive
         protected override IEnumerable<string> GetExpectedTableNames()
         {
             return base.GetExpectedTableNames().Concat(new[] { Options.Value.SymbolPackageArchiveTableName });
-        }
-
-        private async Task AssertOutputAsync(string testName, string stepName)
-        {
-            await AssertWideEntityOutputAsync(
-                Options.Value.SymbolPackageArchiveTableName,
-                Path.Combine(testName, stepName),
-                stream =>
-                {
-                    var entity = MessagePackSerializer.Deserialize<SymbolPackageFileService.SymbolPackageFileInfoVersions>(stream, NuGetInsightsMessagePack.Options);
-
-                    string mzipHash = null;
-                    SortedDictionary<string, List<string>> httpHeaders = null;
-
-                    if (entity.V1.Available)
-                    {
-                        using var algorithm = SHA256.Create();
-                        mzipHash = algorithm.ComputeHash(entity.V1.MZipBytes.ToArray()).ToLowerHex();
-                        httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders, ignore: Enumerable.Empty<string>());
-                    }
-
-                    return new
-                    {
-                        entity.V1.Available,
-                        entity.V1.CommitTimestamp,
-                        HttpHeaders = httpHeaders,
-                        MZipHash = mzipHash,
-                    };
-                });
         }
     }
 }

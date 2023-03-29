@@ -164,7 +164,8 @@ namespace NuGet.Insights
 
         private async Task<bool> ExecuteAsync(ITimer timer, TimerEntity entity, Func<Task> persistAsync, DateTimeOffset now)
         {
-            bool executed;
+            var executed = false;
+            var error = false;
             try
             {
                 _telemetryClient.TrackMetric(
@@ -185,10 +186,10 @@ namespace NuGet.Insights
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Timer {Name} failed with an exception.", timer.Name);
-                executed = true; // If a timer fails, still update the timestamp to avoid repeated errors.
+                error = true; // If a timer fails, still update the timestamp to avoid repeated errors.
             }
 
-            if (executed)
+            if (executed || error)
             {
                 entity.LastExecuted = now;
 

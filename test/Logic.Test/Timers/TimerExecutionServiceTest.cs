@@ -107,6 +107,21 @@ namespace NuGet.Insights
                 Timer.Verify(x => x.ExecuteAsync(), Times.Once);
                 Assert.InRange(entity.LastExecuted.Value, before, after);
             }
+
+            [Fact]
+            public async Task ReturnsFalseIfTimerFails()
+            {
+                Timer.Setup(x => x.ExecuteAsync()).ThrowsAsync(new InvalidOperationException());
+
+                var before = DateTimeOffset.UtcNow;
+                var executed = await Target.ExecuteNowAsync(TimerName);
+                var after = DateTimeOffset.UtcNow;
+
+                Assert.False(executed);
+                var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
+                Timer.Verify(x => x.ExecuteAsync(), Times.Once);
+                Assert.InRange(entity.LastExecuted.Value, before, after);
+            }
         }
 
         public class TheExecuteAsyncMethod : TimerExecutionServiceTest
