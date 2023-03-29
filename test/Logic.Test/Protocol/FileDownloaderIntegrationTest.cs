@@ -1,12 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Xunit.Abstractions;
+using Knapcode.MiniZip;
 
 namespace NuGet.Insights
 {
@@ -14,6 +17,47 @@ namespace NuGet.Insights
     {
         public class TheGetZipDirectoryReaderAsyncMethod : FileDownloaderIntegrationTest
         {
+            [Fact]
+            public async Task ReturnsPropertiesForFullDownload()
+            {
+                // Arrange
+                var url = $"http://localhost/{TestData}/deltax.1.0.0.nupkg";
+                HttpMessageHandlerFactory.OnSendAsync = async (req, b, t) =>
+                {
+                    if (req.RequestUri.GetLeftPart(UriPartial.Path) == url)
+                    {
+                        if (req.Method != HttpMethod.Get || req.Headers.Range is not null)
+                        {
+                            return new HttpResponseMessage(HttpStatusCode.InternalServerError);
+                        }
+
+                        var newReq = Clone(req);
+                        newReq.RequestUri = new Uri(url + ".testdata");
+                        var response = await TestDataHttpClient.SendAsync(newReq);
+                        response.EnsureSuccessStatusCode();
+                        return response;
+                    }
+
+                    return new HttpResponseMessage(HttpStatusCode.NotFound);
+                };
+
+                // Act
+                var reader = await Target.GetZipDirectoryReaderAsync("DeltaX", "1.0.0", ArtifactFileType.Nupkg, url);
+
+                // Assert
+                var directory = await reader.ReadAsync();
+                Assert.Contains("DeltaX.nuspec", directory.Entries.Select(x => x.GetName()));
+                Assert.Equal(4, reader.Properties.Count);
+                Assert.Contains("Content-Length", reader.Properties.Select(x => x.Key));
+                Assert.Equal("12830", reader.Properties["Content-Length"].Single());
+
+                Assert.Contains(LogMessages, x => x.Contains("Trying again with a full download."));
+                Assert.Equal(7, HttpMessageHandlerFactory.Requests.Count);
+                Assert.Equal(3, HttpMessageHandlerFactory.Requests.Count(x => x.Method == HttpMethod.Head && x.RequestUri.AbsoluteUri == url));
+                Assert.Equal(3, HttpMessageHandlerFactory.Requests.Count(x => x.Method == HttpMethod.Head && x.RequestUri.GetLeftPart(UriPartial.Path) == url && x.RequestUri.Query.Contains("cache-bust=")));
+                Assert.Equal(1, HttpMessageHandlerFactory.Requests.Count(x => x.Method == HttpMethod.Get && x.RequestUri.GetLeftPart(UriPartial.Path) == url && x.RequestUri.Query.Contains("cache-bust=")));
+            }
+
             [Fact]
             public async Task CompletesAllDirectoyHttpRequestsBeforeReturning()
             {

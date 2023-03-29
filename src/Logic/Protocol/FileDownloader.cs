@@ -180,7 +180,7 @@ namespace NuGet.Insights
                         return null;
                     }
 
-                    return new ZipDirectoryReader(result.Value.Body.Stream);
+                    return new ZipDirectoryReader(result.Value.Body.Stream, leaveOpen: false, result.Value.Headers);
                 }
                 else
                 {
