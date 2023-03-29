@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using Xunit;
 
@@ -83,14 +84,16 @@ namespace NuGet.Insights
             }
         }
 
-        public static readonly Regex StoragePrefixPattern = new Regex(@"t(?<Date>\d{6})[a-z234567]{10}");
+        private const string StoragePrefixPatternString = @"t(?<Date>\d{6})[a-z234567]{16}";
+        public static readonly Regex StoragePrefixPattern = new Regex(StoragePrefixPatternString);
 
         public static string NewStoragePrefix()
         {
-            var randomBytes = new byte[6];
-            ThreadLocalRandom.NextBytes(randomBytes);
+            var randomBytes = new byte[10];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomBytes);
             var storagePrefix = "t" + DateTimeOffset.UtcNow.ToString("yyMMdd") + randomBytes.ToTrimmedBase32();
-            Assert.Matches(StoragePrefixPattern, storagePrefix);
+            Assert.Matches("^" + StoragePrefixPattern + "$", storagePrefix);
             return storagePrefix;
         }
 
