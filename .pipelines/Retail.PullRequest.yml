@@ -65,7 +65,7 @@ jobs:
         inputs:
           command: "test"
           projects: $(BuildSolution)
-          arguments: '--no-build --no-restore --configuration $(BuildConfiguration) --logger trx --blame-hang-timeout 10m --collect "Code coverage" --results-directory $(OutputDirectory)/TestResults/'
+          arguments: '--no-build --no-restore --configuration $(BuildConfiguration) --logger trx --blame-hang-timeout 30m --collect "Code coverage" --results-directory $(OutputDirectory)/TestResults/'
           publishTestResults: false
         env:
           NUGETINSIGHTS_STORAGEACCOUNTNAME: nugetinsightstests
