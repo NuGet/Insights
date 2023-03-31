@@ -39,7 +39,7 @@ namespace NuGet.Insights
             return await _storageClient.DownloadAsync(_options.Value.DownloadsV1Url, DeserializeAsync);
         }
 
-        private static async IAsyncEnumerable<PackageDownloads> DeserializeAsync(Stream stream)
+        public static async IAsyncEnumerable<PackageDownloads> DeserializeAsync(Stream stream)
         {
             var items = JsonSerializer.DeserializeAsyncEnumerable<PackageIdDownloads>(stream, JsonSerializerOptions);
             await foreach (var item in items)

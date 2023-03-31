@@ -1,0 +1,13 @@
+{
+  "V1": {
+    "CommitTimestamp": "2018-11-16T04:13:15.2076282+00:00",
+    "IdToVersionToDeleted": {
+      "Byzan.Sdk.All": {
+        "1.0.0-preview0041": false
+      },
+      "UtfprLibrary.EntityFramework": {
+        "1.0.142-alpha": false
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "V1": {
+    "CommitTimestamp": "2018-11-16T04:17:16.6086735+00:00",
+    "IdToVersionToDeleted": {
+      "Byzan.Sdk": {
+        "1.0.0-preview0041": false
+      },
+      "Byzan.Sdk.All": {
+        "1.0.0-preview0041": false
+      },
+      "MoxiWorks.Platform": {
+        "1.2.11": false
+      },
+      "UTFPRLibrary.EntityFramework": {
+        "1.0.0.97": false,
+        "1.0.142-alpha": false
+      }
+    }
+  }
+}

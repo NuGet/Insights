@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,7 +20,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
         [Fact]
         public void TheGetUncheckedIdsMethod_IsAffectedByDidIdEverExist()
         {
-            Target.DidIdEverExist("knapcode.torsharp");
+            Target.TryGetId("knapcode.torsharp", out _);
 
             Assert.Equal(
                 new[] { "DeletedA", "Newtonsoft.Json", "NoVersions" },
@@ -30,7 +30,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
         [Fact]
         public void TheGetUncheckedIdsMethod_IsNotAffectedByDidVersionEverExist()
         {
-            Target.DidVersionEverExist("knapcode.torsharp", "1.0.0-beta");
+            Target.TryGetVersion("knapcode.torsharp", "1.0.0-beta", out _);
 
             Assert.Equal(
                 new[] { "DeletedA", "Knapcode.TorSharp", "Newtonsoft.Json", "NoVersions" },
@@ -48,7 +48,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
         [Fact]
         public void TheGetUncheckedVersionsMethod_IsAffectedByDidVersionEverExist()
         {
-            Target.DidVersionEverExist("newtonsoft.json", "10.0.1-BETA");
+            Target.TryGetVersion("newtonsoft.json", "10.0.1-BETA", out _);
 
             Assert.Equal(
                 new[] { "11.0.1", "9.0.1" },
@@ -58,7 +58,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
         [Fact]
         public void TheGetUncheckedVersionsMethod_IsNotAffectedByDidIdEverExist()
         {
-            Target.DidIdEverExist("newtonsoft.json");
+            Target.TryGetId("newtonsoft.json", out _);
 
             Assert.Equal(
                 new[] { "10.0.1-beta", "11.0.1", "9.0.1" },
@@ -76,7 +76,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
         [InlineData("NeverExisted", "1.0.0", false)] // Non-existent ID
         public void TheDidVersionEverExistMethod(string id, string version, bool expected)
         {
-            Assert.Equal(expected, Target.DidVersionEverExist(id, version));
+            Assert.Equal(expected, Target.TryGetVersion(id, version, out _));
         }
 
         [Theory]
@@ -87,43 +87,53 @@ namespace NuGet.Insights.Worker.BuildVersionSet
         [InlineData("DeletedB", false)] // Non-existent
         public void TheDidIdEverExistMethod(string id, bool expected)
         {
-            Assert.Equal(expected, Target.DidIdEverExist(id));
+            Assert.Equal(expected, Target.TryGetId(id, out _));
         }
 
         public VersionSetTest()
         {
             Target = new VersionSet(
                 new DateTimeOffset(2021, 5, 1, 12, 30, 0, 0, TimeSpan.Zero),
-                new CaseInsensitiveDictionary<CaseInsensitiveDictionary<bool>>
+                ToReadableKey(new CaseInsensitiveDictionary<CaseInsensitiveDictionary<ReadableKey<bool>>>
                 {
                     {
                         "Newtonsoft.Json",
-                        new CaseInsensitiveDictionary<bool>
+                        ToReadableKey(new CaseInsensitiveDictionary<bool>
                         {
                             { "9.0.1", false },
                             { "10.0.1-beta", true },
                             { "11.0.1", false },
-                        }
+                        })
                     },
                     {
                         "Knapcode.TorSharp",
-                        new CaseInsensitiveDictionary<bool>
+                        ToReadableKey(new CaseInsensitiveDictionary<bool>
                         {
                             { "1.0.0-beta", false },
-                        }
+                        })
                     },
                     {
                         "DeletedA",
-                        new CaseInsensitiveDictionary<bool>
+                        ToReadableKey(new CaseInsensitiveDictionary<bool>
                         {
                             { "2.0.0", true },
-                        }
+                        })
                     },
                     {
                         "NoVersions",
-                        new CaseInsensitiveDictionary<bool>()
+                        ToReadableKey(new CaseInsensitiveDictionary<bool>())
                     },
-                });
+                }));
+        }
+
+        private CaseInsensitiveDictionary<ReadableKey<T>> ToReadableKey<T>(CaseInsensitiveDictionary<T> input)
+        {
+            var output = new CaseInsensitiveDictionary<ReadableKey<T>>();
+            foreach ((var key, var value) in input)
+            {
+                output.Add(key, ReadableKey.Create(key, value));
+            }
+            return output;
         }
 
         public VersionSet Target { get; }

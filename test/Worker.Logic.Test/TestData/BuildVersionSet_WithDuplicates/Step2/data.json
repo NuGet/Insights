@@ -2,775 +2,775 @@
   "V1": {
     "CommitTimestamp": "2019-01-25T01:00:01.521047+00:00",
     "IdToVersionToDeleted": {
-      "10minutemail.com": {
+      "10MinuteMail.com": {
         "1.1.0": false
       },
-      "10minutemail.net-api": {
+      "10MinuteMail.net-API": {
         "1.1.0": false
       },
-      "2captchaapi": {
+      "2CaptchaAPI": {
         "1.1.1": false
       },
-      "3scribe.utilities.audioid": {
+      "3Scribe.Utilities.AudioID": {
         "0.1.1": false
       },
-      "abm.authorization.apimodels": {
+      "ABM.Authorization.ApiModels": {
         "1.0.0.40": false
       },
-      "acklann.traneleon": {
+      "Acklann.Traneleon": {
         "1.2.0": false,
         "1.2.1": false,
         "1.2.2": false
       },
-      "agero.core.validator": {
+      "Agero.Core.Validator": {
         "1.0.13": false
       },
-      "amazon.aspnetcore.identity.cognito": {
+      "Amazon.AspNetCore.Identity.Cognito": {
         "0.9.0.4": false
       },
-      "apalla.bubu.android": {
+      "Apalla.Bubu.Android": {
         "3.0.0.63": false
       },
-      "apalla.bubu.mobile": {
+      "Apalla.Bubu.Mobile": {
         "3.0.0.63": false
       },
-      "apalla.bubu.shared": {
+      "Apalla.Bubu.Shared": {
         "3.0.0.63": false
       },
-      "apalla.bubu.uwp": {
+      "Apalla.Bubu.UWP": {
         "3.0.0.63": false
       },
-      "apalla.bubu.xf": {
+      "Apalla.Bubu.XF": {
         "3.0.0.63": false
       },
-      "api.net": {
+      "Api.Net": {
         "2.1.4": false
       },
-      "api.net.core": {
+      "Api.Net.Core": {
         "2.1.0": false
       },
-      "arcus.eventgrid": {
+      "Arcus.EventGrid": {
         "2.3.0": false
       },
-      "arcus.eventgrid.all": {
+      "Arcus.EventGrid.All": {
         "2.3.0": false
       },
-      "arcus.eventgrid.azure": {
+      "Arcus.EventGrid.Azure": {
         "2.3.0": false
       },
-      "arcus.eventgrid.eventhubs": {
+      "Arcus.EventGrid.EventHubs": {
         "2.3.0": false
       },
-      "arcus.eventgrid.iothub": {
+      "Arcus.EventGrid.IoTHub": {
         "2.3.0": false
       },
-      "arcus.eventgrid.publishing": {
+      "Arcus.EventGrid.Publishing": {
         "2.3.0": false
       },
-      "arcus.eventgrid.security": {
+      "Arcus.EventGrid.Security": {
         "2.3.0": false
       },
-      "arcus.eventgrid.storage": {
+      "Arcus.EventGrid.Storage": {
         "2.3.0": false
       },
-      "arcus.eventgrid.testing": {
+      "Arcus.EventGrid.Testing": {
         "2.3.0": false
       },
-      "arcus.security.all": {
+      "Arcus.Security.All": {
         "0.0.0-ci-preview": false
       },
-      "arcus.security.core": {
+      "Arcus.Security.Core": {
         "0.1.0-alpha": false
       },
-      "arcus.security.providers.azurekeyvault": {
+      "Arcus.Security.Providers.AzureKeyVault": {
         "0.1.0-alpha": false
       },
-      "arcus.security.secrets.azurekeyvault": {
+      "Arcus.Security.Secrets.AzureKeyVault": {
         "0.1.0-alpha": false
       },
-      "arcus.security.secrets.core": {
+      "Arcus.Security.Secrets.Core": {
         "0.1.0-alpha": false
       },
-      "ardalis.guardclauses": {
+      "Ardalis.GuardClauses": {
         "1.2.6": false
       },
-      "aspnetcore.healthchecks.consul": {
+      "AspNetCore.HealthChecks.Consul": {
         "2.2.0": false
       },
-      "aspnetcore.healthchecks.hangfire": {
+      "AspNetCore.HealthChecks.Hangfire": {
         "2.2.0": false
       },
-      "aspnetcore.identity.mongo": {
+      "AspNetCore.Identity.Mongo": {
         "5.0.0.12": false
       },
-      "aspnetcore.vue.typescript.template": {
+      "AspNetCore.Vue.TypeScript.Template": {
         "0.3.0": false
       },
-      "atb": {
+      "ATB": {
         "0.0.1": false,
         "0.0.2": false,
         "0.0.3": false
       },
-      "atlas.s3.filestream": {
+      "Atlas.S3.FileStream": {
         "1.0.3": false
       },
-      "authman": {
+      "AuthMan": {
         "0.2.1.2": false,
         "0.2.1.3": false
       },
-      "autodesk.forge.core": {
+      "Autodesk.Forge.Core": {
         "1.0.0-beta2": false
       },
-      "autodesk.forge.designautomation": {
+      "Autodesk.Forge.DesignAutomation": {
         "3.0.0-beta2": false
       },
-      "autodesk.forge.designautomation.revit": {
+      "Autodesk.Forge.DesignAutomation.Revit": {
         "2018.0.0-beta2": false,
         "2019.0.0-beta2": false
       },
-      "awssdk.acmpca": {
+      "AWSSDK.ACMPCA": {
         "3.3.3.1": false
       },
-      "awssdk.alexaforbusiness": {
+      "AWSSDK.AlexaForBusiness": {
         "3.3.8.10": false
       },
-      "awssdk.amplify": {
+      "AWSSDK.Amplify": {
         "3.3.0.14": false
       },
-      "awssdk.apigateway": {
+      "AWSSDK.APIGateway": {
         "3.3.23.21": false
       },
-      "awssdk.apigatewaymanagementapi": {
+      "AWSSDK.ApiGatewayManagementApi": {
         "3.3.1.1": false
       },
-      "awssdk.apigatewayv2": {
+      "AWSSDK.ApiGatewayV2": {
         "3.3.0.10": false
       },
-      "awssdk.applicationautoscaling": {
+      "AWSSDK.ApplicationAutoScaling": {
         "3.3.10.42": false
       },
-      "awssdk.applicationdiscoveryservice": {
+      "AWSSDK.ApplicationDiscoveryService": {
         "3.3.6.2": false
       },
-      "awssdk.appmesh": {
+      "AWSSDK.AppMesh": {
         "3.3.0.14": false
       },
-      "awssdk.appstream": {
+      "AWSSDK.AppStream": {
         "3.3.20.2": false
       },
-      "awssdk.appsync": {
+      "AWSSDK.AppSync": {
         "3.3.4.14": false
       },
-      "awssdk.athena": {
+      "AWSSDK.Athena": {
         "3.3.1.30": false
       },
-      "awssdk.autoscaling": {
+      "AWSSDK.AutoScaling": {
         "3.3.8.16": false
       },
-      "awssdk.autoscalingplans": {
+      "AWSSDK.AutoScalingPlans": {
         "3.3.2.14": false
       },
-      "awssdk.awshealth": {
+      "AWSSDK.AWSHealth": {
         "3.3.2.13": false
       },
-      "awssdk.awsmarketplacecommerceanalytics": {
+      "AWSSDK.AWSMarketplaceCommerceAnalytics": {
         "3.3.3.65": false
       },
-      "awssdk.awsmarketplacemetering": {
+      "AWSSDK.AWSMarketplaceMetering": {
         "3.3.2.14": false
       },
-      "awssdk.awssupport": {
+      "AWSSDK.AWSSupport": {
         "3.3.0.73": false
       },
-      "awssdk.backup": {
+      "AWSSDK.Backup": {
         "3.3.0.3": false
       },
-      "awssdk.batch": {
+      "AWSSDK.Batch": {
         "3.3.7.14": false
       },
-      "awssdk.budgets": {
+      "AWSSDK.Budgets": {
         "3.3.10.18": false
       },
-      "awssdk.certificatemanager": {
+      "AWSSDK.CertificateManager": {
         "3.3.5.48": false
       },
-      "awssdk.chime": {
+      "AWSSDK.Chime": {
         "3.3.1.17": false
       },
-      "awssdk.cloud9": {
+      "AWSSDK.Cloud9": {
         "3.3.0.51": false
       },
-      "awssdk.clouddirectory": {
+      "AWSSDK.CloudDirectory": {
         "3.3.10.23": false
       },
-      "awssdk.cloudformation": {
+      "AWSSDK.CloudFormation": {
         "3.3.13.14": false
       },
-      "awssdk.cloudfront": {
+      "AWSSDK.CloudFront": {
         "3.3.11.14": false
       },
-      "awssdk.cloudhsm": {
+      "AWSSDK.CloudHSM": {
         "3.3.0.75": false
       },
-      "awssdk.cloudhsmv2": {
+      "AWSSDK.CloudHSMV2": {
         "3.3.3.33": false
       },
-      "awssdk.cloudsearch": {
+      "AWSSDK.CloudSearch": {
         "3.3.0.73": false
       },
-      "awssdk.cloudsearchdomain": {
+      "AWSSDK.CloudSearchDomain": {
         "3.3.0.73": false
       },
-      "awssdk.cloudtrail": {
+      "AWSSDK.CloudTrail": {
         "3.3.4.14": false
       },
-      "awssdk.cloudwatch": {
+      "AWSSDK.CloudWatch": {
         "3.3.10.14": false
       },
-      "awssdk.cloudwatchevents": {
+      "AWSSDK.CloudWatchEvents": {
         "3.3.8.14": false
       },
-      "awssdk.cloudwatchlogs": {
+      "AWSSDK.CloudWatchLogs": {
         "3.3.7.14": false
       },
-      "awssdk.codebuild": {
+      "AWSSDK.CodeBuild": {
         "3.3.20": false
       },
-      "awssdk.codecommit": {
+      "AWSSDK.CodeCommit": {
         "3.3.6.32": false
       },
-      "awssdk.codedeploy": {
+      "AWSSDK.CodeDeploy": {
         "3.3.12.14": false
       },
-      "awssdk.codepipeline": {
+      "AWSSDK.CodePipeline": {
         "3.3.6.18": false
       },
-      "awssdk.codestar": {
+      "AWSSDK.CodeStar": {
         "3.3.3.27": false
       },
-      "awssdk.cognitoidentity": {
+      "AWSSDK.CognitoIdentity": {
         "3.3.2.67": false
       },
-      "awssdk.cognitoidentityprovider": {
+      "AWSSDK.CognitoIdentityProvider": {
         "3.3.12.10": false
       },
-      "awssdk.cognitosync": {
+      "AWSSDK.CognitoSync": {
         "3.3.1.76": false
       },
-      "awssdk.comprehend": {
+      "AWSSDK.Comprehend": {
         "3.3.6.10": false
       },
-      "awssdk.comprehendmedical": {
+      "AWSSDK.ComprehendMedical": {
         "3.3.0.14": false
       },
-      "awssdk.configservice": {
+      "AWSSDK.ConfigService": {
         "3.3.22.14": false
       },
-      "awssdk.connect": {
+      "AWSSDK.Connect": {
         "3.3.4.12": false
       },
-      "awssdk.core": {
+      "AWSSDK.Core": {
         "3.3.31.5": false
       },
-      "awssdk.costandusagereport": {
+      "AWSSDK.CostAndUsageReport": {
         "3.3.0.67": false
       },
-      "awssdk.costexplorer": {
+      "AWSSDK.CostExplorer": {
         "3.3.9.14": false
       },
-      "awssdk.databasemigrationservice": {
+      "AWSSDK.DatabaseMigrationService": {
         "3.3.13.2": false
       },
-      "awssdk.datapipeline": {
+      "AWSSDK.DataPipeline": {
         "3.3.0.73": false
       },
-      "awssdk.datasync": {
+      "AWSSDK.DataSync": {
         "3.3.0.14": false
       },
-      "awssdk.dax": {
+      "AWSSDK.DAX": {
         "3.3.1.38": false
       },
-      "awssdk.devicefarm": {
+      "AWSSDK.DeviceFarm": {
         "3.3.12.7": false
       },
-      "awssdk.directconnect": {
+      "AWSSDK.DirectConnect": {
         "3.3.9.15": false
       },
-      "awssdk.directoryservice": {
+      "AWSSDK.DirectoryService": {
         "3.3.8.31": false
       },
-      "awssdk.dlm": {
+      "AWSSDK.DLM": {
         "3.3.1.19": false
       },
-      "awssdk.docdb": {
+      "AWSSDK.DocDB": {
         "3.3.0.4": false
       },
-      "awssdk.dynamodbv2": {
+      "AWSSDK.DynamoDBv2": {
         "3.3.17.3": false
       },
-      "awssdk.ec2": {
+      "AWSSDK.EC2": {
         "3.3.80.2": false
       },
-      "awssdk.ecr": {
+      "AWSSDK.ECR": {
         "3.3.5": false
       },
-      "awssdk.ecs": {
+      "AWSSDK.ECS": {
         "3.3.21.15": false
       },
-      "awssdk.eks": {
+      "AWSSDK.EKS": {
         "3.3.3.12": false
       },
-      "awssdk.elasticache": {
+      "AWSSDK.ElastiCache": {
         "3.3.7.28": false
       },
-      "awssdk.elasticbeanstalk": {
+      "AWSSDK.ElasticBeanstalk": {
         "3.3.12.10": false
       },
-      "awssdk.elasticfilesystem": {
+      "AWSSDK.ElasticFileSystem": {
         "3.3.2.41": false
       },
-      "awssdk.elasticloadbalancing": {
+      "AWSSDK.ElasticLoadBalancing": {
         "3.3.3.35": false
       },
-      "awssdk.elasticloadbalancingv2": {
+      "AWSSDK.ElasticLoadBalancingV2": {
         "3.3.13": false
       },
-      "awssdk.elasticmapreduce": {
+      "AWSSDK.ElasticMapReduce": {
         "3.3.6.36": false
       },
-      "awssdk.elasticsearch": {
+      "AWSSDK.Elasticsearch": {
         "3.3.10.30": false
       },
-      "awssdk.elastictranscoder": {
+      "AWSSDK.ElasticTranscoder": {
         "3.3.3.33": false
       },
-      "awssdk.fms": {
+      "AWSSDK.FMS": {
         "3.3.2.2": false
       },
-      "awssdk.fsx": {
+      "AWSSDK.FSx": {
         "3.3.0.14": false
       },
-      "awssdk.gamelift": {
+      "AWSSDK.GameLift": {
         "3.3.12.45": false
       },
-      "awssdk.glacier": {
+      "AWSSDK.Glacier": {
         "3.3.2.53": false
       },
-      "awssdk.globalaccelerator": {
+      "AWSSDK.GlobalAccelerator": {
         "3.3.0.15": false
       },
-      "awssdk.glue": {
+      "AWSSDK.Glue": {
         "3.3.17.2": false
       },
-      "awssdk.greengrass": {
+      "AWSSDK.Greengrass": {
         "3.3.5.14": false
       },
-      "awssdk.guardduty": {
+      "AWSSDK.GuardDuty": {
         "3.3.5.32": false
       },
-      "awssdk.identitymanagement": {
+      "AWSSDK.IdentityManagement": {
         "3.3.9.13": false
       },
-      "awssdk.importexport": {
+      "AWSSDK.ImportExport": {
         "3.3.0.74": false
       },
-      "awssdk.inspector": {
+      "AWSSDK.Inspector": {
         "3.3.8.27": false
       },
-      "awssdk.iot": {
+      "AWSSDK.IoT": {
         "3.3.23.3": false
       },
-      "awssdk.iot1clickdevicesservice": {
+      "AWSSDK.IoT1ClickDevicesService": {
         "3.3.1.28": false
       },
-      "awssdk.iot1clickprojects": {
+      "AWSSDK.IoT1ClickProjects": {
         "3.3.0.45": false
       },
-      "awssdk.iotanalytics": {
+      "AWSSDK.IoTAnalytics": {
         "3.3.7.7": false
       },
-      "awssdk.iotdata": {
+      "AWSSDK.IotData": {
         "3.3.0.74": false
       },
-      "awssdk.iotjobsdataplane": {
+      "AWSSDK.IoTJobsDataPlane": {
         "3.3.1.30": false
       },
-      "awssdk.kafka": {
+      "AWSSDK.Kafka": {
         "3.3.0.14": false
       },
-      "awssdk.keymanagementservice": {
+      "AWSSDK.KeyManagementService": {
         "3.3.7.14": false
       },
-      "awssdk.kinesis": {
+      "AWSSDK.Kinesis": {
         "3.3.6.39": false
       },
-      "awssdk.kinesisanalytics": {
+      "AWSSDK.KinesisAnalytics": {
         "3.3.5.14": false
       },
-      "awssdk.kinesisfirehose": {
+      "AWSSDK.KinesisFirehose": {
         "3.3.8.10": false
       },
-      "awssdk.kinesisvideo": {
+      "AWSSDK.KinesisVideo": {
         "3.3.1.41": false
       },
-      "awssdk.kinesisvideoarchivedmedia": {
+      "AWSSDK.KinesisVideoArchivedMedia": {
         "3.3.1.41": false
       },
-      "awssdk.kinesisvideomedia": {
+      "AWSSDK.KinesisVideoMedia": {
         "3.3.0.50": false
       },
-      "awssdk.lex": {
+      "AWSSDK.Lex": {
         "3.3.3.50": false
       },
-      "awssdk.lexmodelbuildingservice": {
+      "AWSSDK.LexModelBuildingService": {
         "3.3.7.36": false
       },
-      "awssdk.licensemanager": {
+      "AWSSDK.LicenseManager": {
         "3.3.0.14": false
       },
-      "awssdk.lightsail": {
+      "AWSSDK.Lightsail": {
         "3.3.9.2": false
       },
-      "awssdk.machinelearning": {
+      "AWSSDK.MachineLearning": {
         "3.3.0.73": false
       },
-      "awssdk.macie": {
+      "AWSSDK.Macie": {
         "3.3.0.43": false
       },
-      "awssdk.mediaconvert": {
+      "AWSSDK.MediaConvert": {
         "3.3.11.3": false
       },
-      "awssdk.medialive": {
+      "AWSSDK.MediaLive": {
         "3.3.14.10": false
       },
-      "awssdk.mediastoredata": {
+      "AWSSDK.MediaStoreData": {
         "3.3.1.23": false
       },
-      "awssdk.mediatailor": {
+      "AWSSDK.MediaTailor": {
         "3.3.3.13": false
       },
-      "awssdk.migrationhub": {
+      "AWSSDK.MigrationHub": {
         "3.3.1.50": false
       },
-      "awssdk.mobile": {
+      "AWSSDK.Mobile": {
         "3.3.0.53": false
       },
-      "awssdk.mobileanalytics": {
+      "AWSSDK.MobileAnalytics": {
         "3.3.2.28": false
       },
-      "awssdk.organizations": {
+      "AWSSDK.Organizations": {
         "3.3.9.33": false
       },
-      "awssdk.pinpointsmsvoice": {
+      "AWSSDK.PinpointSMSVoice": {
         "3.3.2": false
       },
-      "awssdk.pricing": {
+      "AWSSDK.Pricing": {
         "3.3.0.51": false
       },
-      "awssdk.ram": {
+      "AWSSDK.RAM": {
         "3.3.0.15": false
       },
-      "awssdk.rdsdataservice": {
+      "AWSSDK.RDSDataService": {
         "3.3.1.3": false
       },
-      "awssdk.resourcegroups": {
+      "AWSSDK.ResourceGroups": {
         "3.3.3.16": false
       },
-      "aztechsolutions.infrastructure.domain.abstraction": {
+      "AztechSolutions.Infrastructure.Domain.Abstraction": {
         "1.0.0": false
       },
-      "aztechsolutions.infrastructure.messaging.abstraction": {
+      "AztechSolutions.Infrastructure.Messaging.Abstraction": {
         "1.0.0": false
       },
-      "azuresignalr.authhelpers": {
-        "0.1.0-ci-20190124-235409": false
+      "AzureSignalR.AuthHelpers": {
+        "0.1.0-CI-20190124-235409": false
       },
-      "base2art.bob.commandline": {
+      "Base2art.Bob.CommandLine": {
         "0.0.0.5": false
       },
-      "basestandard.framework": {
+      "BaseStandard.Framework": {
         "1.0.2": false
       },
-      "bddlite": {
-        "1.0.0-ci-20190124-234124": false
+      "BddLite": {
+        "1.0.0-CI-20190124-234124": false
       },
-      "bell.common": {
+      "Bell.Common": {
         "0.7.0": false
       },
-      "bell.common.dapper": {
+      "Bell.Common.Dapper": {
         "0.7.0": false
       },
-      "bell.common.models": {
+      "Bell.Common.Models": {
         "0.7.0": false
       },
-      "bell.common.services": {
+      "Bell.Common.Services": {
         "0.7.0": false
       },
-      "bell.common.tests": {
+      "Bell.Common.Tests": {
         "0.7.0": false
       },
-      "bell.common.webapi": {
+      "Bell.Common.WebApi": {
         "0.7.0": false
       },
-      "bell.common.webrepositories": {
+      "Bell.Common.WebRepositories": {
         "0.7.0": false
       },
-      "biometricqueue": {
+      "BiometricQueue": {
         "1.0.6": false,
         "1.0.7": false
       },
-      "biotypes": {
+      "BioTypes": {
         "1.0.15": false
       },
-      "bit.csharpclient.controls": {
+      "Bit.CSharpClient.Controls": {
         "1.7.0": false
       },
-      "bluehands.diagnostics.logextensions": {
+      "Bluehands.Diagnostics.LogExtensions": {
         "2.2.2.205": false
       },
-      "bluehands.diagnostics.logextensions.web": {
+      "Bluehands.Diagnostics.LogExtensions.Web": {
         "2.2.2.205": false
       },
-      "caiu.common": {
+      "CAIU.Common": {
         "1.0.3": false,
         "1.0.4": false,
         "1.0.5": false
       },
-      "cake.unity": {
+      "Cake.Unity": {
         "0.5.1": false
       },
-      "camunda.worker": {
+      "Camunda.Worker": {
         "0.1.0": false
       },
-      "carbon.media": {
+      "Carbon.Media": {
         "2.17.7": false
       },
-      "carbon.media.processing": {
+      "Carbon.Media.Processing": {
         "0.17.7": false
       },
-      "catalyst.dataprocessing.engine.plugins": {
+      "Catalyst.DataProcessing.Engine.Plugins": {
         "4.5.1901.2401": false
       },
-      "catalyst.dataprocessing.engine.sqlserver": {
+      "Catalyst.DataProcessing.Engine.SqlServer": {
         "4.5.1901.2401": false
       },
-      "cathtmlutils": {
+      "CatHtmlUtils": {
         "1.2.6": false,
         "1.2.7": false
       },
-      "cg.commons": {
+      "CG.Commons": {
         "1.0.4": false,
         "1.0.5": false
       },
-      "ch.post.pl.api.cenmcrc": {
+      "Ch.Post.PL.Api.CenMcRc": {
         "1.0.0-rc.22": false
       },
-      "ch.post.pl.api.censortplan": {
+      "Ch.Post.PL.Api.CenSortplan": {
         "1.0.0-rc.17": false
       },
-      "ch.post.pl.api.vsiprocesscontrol": {
+      "Ch.Post.PL.Api.VsiProcessControl": {
         "1.0.0-rc.12": false
       },
-      "choetl": {
+      "ChoETL": {
         "1.0.9.2": false,
         "1.0.9.3": false
       },
-      "choetl.json": {
+      "ChoETL.JSON": {
         "1.0.9.2": false,
         "1.0.9.3": false
       },
-      "choetl.json.netstandard": {
+      "ChoETL.JSON.NETStandard": {
         "1.0.9.2": false,
         "1.0.9.3": false
       },
-      "choetl.netstandard": {
+      "ChoETL.NETStandard": {
         "1.0.9.2": false,
         "1.0.9.3": false
       },
-      "cloudflaresolver": {
+      "CloudflareSolver": {
         "1.1.1": false
       },
-      "cntk.cpuonly": {
+      "CNTK.CPUOnly": {
         "2.7.0-rc0.dev20190124": false
       },
-      "cntk.deps.cuda": {
+      "CNTK.Deps.Cuda": {
         "2.7.0-rc0.dev20190124": false
       },
-      "cntk.deps.cudnn": {
+      "CNTK.Deps.cuDNN": {
         "2.7.0-rc0.dev20190124": false
       },
-      "cntk.deps.mkl": {
+      "CNTK.Deps.MKL": {
         "2.7.0-rc0.dev20190124": false
       },
-      "cntk.deps.opencv.zip": {
+      "CNTK.Deps.OpenCV.Zip": {
         "2.7.0-rc0.dev20190124": false
       },
-      "cntk.gpu": {
+      "CNTK.GPU": {
         "2.7.0-rc0.dev20190124": false
       },
-      "cntk.uwp.cpuonly": {
+      "CNTK.UWP.CPUOnly": {
         "2.7.0-rc0.dev20190124": false
       },
-      "codebyday.filetagger": {
+      "CodeByDay.FileTagger": {
         "1.0.0": false
       },
-      "coherentsolutions.extensions.hosting.servicefabric": {
+      "CoherentSolutions.Extensions.Hosting.ServiceFabric": {
         "1.4.0": false
       },
-      "components.common.dto": {
-        "1.1.35.1-rc": false,
-        "1.1.35.2-rc": false,
-        "1.1.35.3-rc": false
+      "Components.Common.DTO": {
+        "1.1.35.1-RC": false,
+        "1.1.35.2-RC": false,
+        "1.1.35.3-RC": false
       },
-      "confluent.kafka": {
+      "Confluent.Kafka": {
         "1.0.0-beta2-ci-732": false
       },
-      "csharp.largelist": {
+      "CSharp.LargeList": {
         "1.0.0.325": false
       },
-      "dapperextensions.netcore": {
+      "DapperExtensions.NetCore": {
         "2.0.6": false
       },
-      "demon": {
+      "Demon": {
         "0.1.0": false
       },
-      "demon.fody": {
+      "Demon.Fody": {
         "0.1.0": false
       },
-      "development.sdk.module": {
+      "Development.SDK.Module": {
         "5.2.32-alpha": false
       },
-      "diffplex": {
+      "DiffPlex": {
         "1.4.3": false
       },
-      "dolittle.aspnetcore": {
+      "Dolittle.AspNetCore": {
         "2.1.1": false
       },
-      "dolittle.aspnetcore.assets": {
+      "Dolittle.AspNetCore.Assets": {
         "2.1.1": false
       },
-      "dolittle.aspnetcore.bootstrap": {
+      "Dolittle.AspNetCore.Bootstrap": {
         "2.1.1": false
       },
-      "dolittle.aspnetcore.commands": {
+      "Dolittle.AspNetCore.Commands": {
         "2.1.1": false
       },
-      "dolittle.aspnetcore.execution": {
+      "Dolittle.AspNetCore.Execution": {
         "2.1.1": false
       },
-      "dolittle.aspnetcore.queries": {
+      "Dolittle.AspNetCore.Queries": {
         "2.1.1": false
       },
-      "dolittle.aspnetcore.tenancy": {
+      "Dolittle.AspNetCore.Tenancy": {
         "2.1.1": false
       },
-      "dotnet.core.requesthelper": {
+      "DotNet.Core.RequestHelper": {
         "1.0.0": false
       },
-      "dotnetcore.aspnetcore": {
+      "DotNetCore.AspNetCore": {
         "6.9.0": false,
         "6.9.5": false
       },
-      "dotnetcore.mongodb": {
+      "DotNetCore.MongoDB": {
         "6.3.1": false,
         "6.3.5": false
       },
-      "dotnetcore.security": {
+      "DotNetCore.Security": {
         "6.1.0": false,
         "6.2.0": false
       },
-      "dotnetdbf": {
+      "DotNetDBF": {
         "6.0.0.2": false
       },
       "dotnetdbf.enumerable": {
         "6.0.0.2": false
       },
-      "dtf.common": {
+      "DTF.Common": {
         "1.0.1.5": false
       },
-      "dtf.services": {
+      "DTF.Services": {
         "1.0.2": false
       },
-      "e2e.fullvalidation.190124.182526.3937539": {
+      "E2E.FullValidation.190124.182526.3937539": {
         "1.0.0": false
       },
-      "e2e.licenseexpression.190124.182526.4718378": {
+      "E2E.LicenseExpression.190124.182526.4718378": {
         "1.0.0": false
       },
-      "e2e.licensefile.190124.182526.4718378": {
+      "E2E.LicenseFile.190124.182526.4718378": {
         "1.0.0": false
       },
-      "e2e.semver1stable.190124.182526.0186935": {
+      "E2E.SemVer1Stable.190124.182526.0186935": {
         "1.0.0": false
       },
-      "e2e.semver1stableunlisted.190124.182526.3312053": {
+      "E2E.SemVer1StableUnlisted.190124.182526.3312053": {
         "1.0.0": false
       },
-      "e2e.semver2duetosemver2dep.190124.182526.3312053": {
+      "E2E.SemVer2DueToSemVer2Dep.190124.182526.3312053": {
         "1.0.0-beta": false
       },
-      "e2e.semver2prerel.190124.182526.3312053": {
+      "E2E.SemVer2Prerel.190124.182526.3312053": {
         "1.0.0-alpha.1": false
       },
-      "e2e.semver2prerelrelisted.190124.182526.3624566": {
+      "E2E.SemVer2PrerelRelisted.190124.182526.3624566": {
         "1.0.0-alpha.1": false
       },
-      "e2e.semver2prerelunlisted.190124.182526.3624566": {
+      "E2E.SemVer2PrerelUnlisted.190124.182526.3624566": {
         "1.0.0-alpha.1": false
       },
-      "e2e.semver2stablemetadata.190124.182526.3624566": {
+      "E2E.SemVer2StableMetadata.190124.182526.3624566": {
         "1.0.0": false
       },
-      "e2e.semver2stablemetadataunlisted.190124.182526.3780830": {
+      "E2E.SemVer2StableMetadataUnlisted.190124.182526.3780830": {
         "1.0.0": false
       },
-      "e2e.signedpackage": {
+      "E2E.SignedPackage": {
         "2019.1.24-v182258": false
       },
-      "e2e.symbolspackage.190124.182526.4406232": {
+      "E2E.SymbolsPackage.190124.182526.4406232": {
         "1.0.0": false
       },
-      "embedio": {
+      "EmbedIO": {
         "2.2.3": false
       },
-      "emotion": {
+      "Emotion": {
         "259.0.0": false
       },
-      "employeemanagement": {
+      "EmployeeManagement": {
         "1.0.0": false
       },
-      "energycap.sdk": {
+      "EnergyCap.Sdk": {
         "7.3.1.92-develop-4705-88ddf4a": false
       },
-      "engenious.contenttool": {
+      "engenious.ContentTool": {
         "0.3.0.1-alpha": false,
         "0.3.0.2-alpha": false
       },
       "extent": {
         "0.0.1": false
       },
-      "firebaseadmin": {
+      "FirebaseAdmin": {
         "1.1.0": false
       },
-      "foci.orbital.adapters.database": {
+      "Foci.Orbital.Adapters.Database": {
         "4.0.267-beta": false
       },
-      "focisolutions.fixedwidthserializer": {
+      "FociSolutions.FixedWidthSerializer": {
         "2.1.1": false
       },
-      "formulate": {
+      "Formulate": {
         "2.3.1": false
       },
-      "formulate.binaries": {
+      "Formulate.Binaries": {
         "2.3.1": false
       },
-      "formulate.deploy": {
+      "Formulate.Deploy": {
         "2.3.1": false
       },
-      "frameworkdata": {
+      "FrameworkData": {
         "1.3.5": false
       },
-      "freebytech.common": {
+      "freebyTech.Common": {
         "1.0.1.124": false,
         "1.1.2.124": false
       },
@@ -781,288 +781,288 @@
         "0.0.1": false,
         "0.0.2": false
       },
-      "fullcircletms.apigateway.models": {
+      "FullCircleTMS.ApiGateway.Models": {
         "1.0.9": false
       },
-      "funcsharp": {
+      "FuncSharp": {
         "1.5.3": false
       },
-      "functional.cqs": {
+      "Functional.CQS": {
         "1.0.0": false
       },
-      "furiza.aspnetcore.authentication.jwtbearer": {
+      "Furiza.AspNetCore.Authentication.JwtBearer": {
         "1.4.2": false
       },
-      "furiza.aspnetcore.authentication.jwtbearer.cookies": {
+      "Furiza.AspNetCore.Authentication.JwtBearer.Cookies": {
         "1.4.2": false
       },
-      "furiza.aspnetcore.exceptionhandling": {
+      "Furiza.AspNetCore.ExceptionHandling": {
         "1.4.2": false
       },
-      "furiza.aspnetcore.identity.entityframeworkcore": {
+      "Furiza.AspNetCore.Identity.EntityFrameworkCore": {
         "1.4.2": false
       },
-      "furiza.aspnetcore.scopedroleassignmentprovider": {
+      "Furiza.AspNetCore.ScopedRoleAssignmentProvider": {
         "1.4.2": false
       },
-      "furiza.aspnetcore.webapiconfiguration": {
+      "Furiza.AspNetCore.WebApiConfiguration": {
         "1.4.2": false
       },
-      "furiza.aspnetcore.webapiconfiguration.securityprovider": {
+      "Furiza.AspNetCore.WebApiConfiguration.SecurityProvider": {
         "1.4.2": false
       },
-      "furiza.aspnetcore.webapplicationconfiguration": {
+      "Furiza.AspNetCore.WebApplicationConfiguration": {
         "1.4.2": false
       },
-      "furkan.test.nyon": {
+      "Furkan.Test.Nyon": {
         "1.0.0": false,
         "1.0.1": false
       },
-      "geonbit.ui": {
+      "GeonBit.UI": {
         "3.4.0": false
       },
-      "ginger.plugin.core": {
+      "Ginger.Plugin.Core": {
         "3.2.1": false
       },
-      "gitextensions.bundlebackuper": {
+      "GitExtensions.BundleBackuper": {
         "2.2.0": false
       },
-      "god.infrastructure.netcore": {
+      "GoD.Infrastructure.NetCore": {
         "1.0.71": false,
         "1.0.72": false,
         "1.0.73": false
       },
-      "goodrest": {
+      "GoodREST": {
         "1.0.120": false,
         "1.0.122": false,
         "1.0.124": false
       },
-      "goodrest.extensions.swaggerextension": {
+      "GoodREST.Extensions.SwaggerExtension": {
         "1.0.120": false,
         "1.0.122": false,
         "1.0.124": false
       },
-      "goodrest.middleware": {
+      "GoodREST.Middleware": {
         "1.0.120": false,
         "1.0.122": false,
         "1.0.124": false
       },
-      "govuk.education.managecourses.apiclient": {
+      "GovUk.Education.ManageCourses.ApiClient": {
         "3.0.1-deployment-user.3": false,
         "3.0.1-provider-enrichment-timestamp.3": false
       },
-      "govuk.education.searchandcompare.apiclient": {
+      "GovUk.Education.SearchAndCompare.ApiClient": {
         "0.11.1-deployment-user-update.6": false
       },
-      "graphqlclientgenerator": {
+      "GraphQlClientGenerator": {
         "0.1.4": false
       },
-      "grasshopper": {
+      "Grasshopper": {
         "6.12.19023.17101-rc": false,
         "7.0.19024.3445-wip": false
       },
-      "griddly": {
+      "Griddly": {
         "3.1.1": false,
         "3.1.2": false,
         "3.1.3": false
       },
-      "griddly.core": {
+      "Griddly.Core": {
         "3.1.1": false,
         "3.1.2": false,
         "3.1.3": false
       },
-      "griffinplus.lib.common": {
+      "GriffinPlus.Lib.Common": {
         "0.2.1": false
       },
-      "griffinplus.lib.fastactivator": {
+      "GriffinPlus.Lib.FastActivator": {
         "1.0.9": false
       },
-      "griffinplus.lib.logging": {
+      "GriffinPlus.Lib.Logging": {
         "1.1.7": false
       },
-      "hangfire.dashboard.basic.authentication": {
+      "Hangfire.Dashboard.Basic.Authentication": {
         "1.0.5": false
       },
-      "harmony.core": {
+      "Harmony.Core": {
         "1.0.25": false
       },
-      "harmony.core.aspnetcore": {
+      "Harmony.Core.AspNetCore": {
         "1.0.25": false
       },
-      "harmony.core.ef": {
+      "Harmony.Core.EF": {
         "1.0.25": false
       },
-      "harmony.core.odata": {
+      "Harmony.Core.OData": {
         "1.0.25": false
       },
-      "here": {
+      "Here": {
         "0.8.0": false
       },
-      "hfea.register.eprssdk": {
+      "HFEA.Register.EprsSDK": {
         "1.0.0.4287": false,
         "1.0.0.4288": false
       },
-      "hikari": {
+      "Hikari": {
         "2.2.0": false
       },
-      "hotchocolate": {
+      "HotChocolate": {
         "0.7.0-preview.35": false
       },
-      "hotchocolate.abstractions": {
+      "HotChocolate.Abstractions": {
         "0.7.0-preview.35": false
       },
-      "hotchocolate.aspnetclassic": {
+      "HotChocolate.AspNetClassic": {
         "0.7.0-preview.35": false
       },
-      "hotchocolate.aspnetclassic.authorization": {
+      "HotChocolate.AspNetClassic.Authorization": {
         "0.7.0-preview.35": false
       },
-      "hotchocolate.aspnetclassic.graphiql": {
+      "HotChocolate.AspNetClassic.GraphiQL": {
         "0.7.0-preview.35": false
       },
-      "hotchocolate.aspnetclassic.playground": {
+      "HotChocolate.AspNetClassic.Playground": {
         "0.7.0-preview.35": false
       },
-      "hotchocolate.aspnetcore": {
+      "HotChocolate.AspNetCore": {
         "0.7.0-preview.35": false
       },
-      "hotchocolate.aspnetcore.authorization": {
+      "HotChocolate.AspNetCore.Authorization": {
         "0.7.0-preview.35": false
       },
-      "hotchocolate.aspnetcore.graphiql": {
+      "HotChocolate.AspNetCore.GraphiQL": {
         "0.7.0-preview.35": false
       },
-      "hotchocolate.aspnetcore.playground": {
+      "HotChocolate.AspNetCore.Playground": {
         "0.7.0-preview.35": false
       },
-      "hotchocolate.language": {
+      "HotChocolate.Language": {
         "0.7.0-preview.35": false
       },
-      "hotchocolate.runtime": {
+      "HotChocolate.Runtime": {
         "0.7.0-preview.35": false
       },
-      "hotchocolate.stitching": {
+      "HotChocolate.Stitching": {
         "0.7.0-preview.35": false
       },
-      "hotchocolate.subscriptions": {
+      "HotChocolate.Subscriptions": {
         "0.7.0-preview.35": false
       },
-      "hotchocolate.subscriptions.inmemory": {
+      "HotChocolate.Subscriptions.InMemory": {
         "0.7.0-preview.35": false
       },
-      "hotchocolate.types": {
+      "HotChocolate.Types": {
         "0.7.0-preview.35": false
       },
-      "hotchocolate.utilities": {
+      "HotChocolate.Utilities": {
         "0.7.0-preview.35": false
       },
-      "hummingbird.testframework": {
+      "Hummingbird.TestFramework": {
         "1.2.125.2": false
       },
       "imguinet-xna-renderer": {
         "0.0.1": false,
         "0.0.2": false
       },
-      "immediac.simplecms": {
+      "ImmediaC.SimpleCms": {
         "3.3.2": false
       },
-      "indice.common": {
+      "Indice.Common": {
         "1.2.19": false
       },
-      "indice.services": {
+      "Indice.Services": {
         "1.0.15": false
       },
-      "ingeniux_dss_rtapi": {
+      "Ingeniux_DSS_RTAPI": {
         "10.2.59-prerelease": false
       },
-      "ingeniux_insite_search_2": {
+      "Ingeniux_InSite_Search_2": {
         "2.12.15-prerelease": false
       },
-      "ingeniux_insite_search_2_dex_dss10": {
+      "Ingeniux_InSite_Search_2_Dex_Dss10": {
         "2.12.15-prerelease": false
       },
-      "ingeniux_insite_search_2_dex_dss10_1": {
+      "Ingeniux_InSite_Search_2_Dex_Dss10_1": {
         "2.12.15-prerelease": false
       },
-      "ingeniux_insite_search_2_dex_dss10_2": {
+      "Ingeniux_InSite_Search_2_Dex_Dss10_2": {
         "2.12.15-prerelease": false
       },
-      "ingeniux_insite_search_2_dex_dss9": {
+      "Ingeniux_InSite_Search_2_Dex_Dss9": {
         "2.12.15-prerelease": false
       },
-      "innercore.api.deconz": {
+      "InnerCore.Api.DeConz": {
         "1.2.0": false
       },
-      "instagramapisharp": {
+      "InstagramApiSharp": {
         "1.3.2.2": false
       },
-      "integro.common.cache": {
+      "Integro.Common.Cache": {
         "1.0.13": false
       },
-      "iotedge.logmodule.core": {
+      "IoTEdge.LogModule.Core": {
         "1.0.0": false
       },
-      "ipuresharp": {
+      "IPuresharp": {
         "5.0.4": false,
         "5.0.5": false
       },
-      "itinero.optimization": {
+      "Itinero.Optimization": {
         "1.0.0-pre003": false
       },
-      "ivaanui.controls": {
+      "IvaanUI.Controls": {
         "1.0.1": false
       },
-      "jameeframework": {
+      "JameeFramework": {
         "0.1.2": false
       },
-      "javascriptengineswitcher.chakracore": {
+      "JavaScriptEngineSwitcher.ChakraCore": {
         "3.0.2": false
       },
-      "javascriptengineswitcher.msie": {
+      "JavaScriptEngineSwitcher.Msie": {
         "3.0.2": false
       },
-      "jbdesign-framework-common": {
+      "jbDesign-Framework-Common": {
         "1.0.14": false
       },
-      "jbdesign-framework-ddd": {
+      "jbDesign-Framework-Ddd": {
         "1.0.13": false
       },
-      "jbdesign-framework-ddd-ef": {
+      "jbDesign-Framework-Ddd-Ef": {
         "1.0.13": false
       },
-      "jbdesign-framework-registrable-autofac": {
+      "jbDesign-Framework-Registrable-Autofac": {
         "1.0.10": false
       },
-      "jet.jsonnet.converters": {
+      "Jet.JsonNet.Converters": {
         "0.2.2-rc2.1": false
       },
-      "jsonnetlib": {
+      "JSONNetLib": {
         "1.0.0": false
       },
-      "kasay.simpledependency": {
+      "Kasay.SimpleDependency": {
         "1.0.0": false,
         "1.0.1": false
       },
-      "kodeaid.aspnetcore": {
+      "KodeAid.AspNetCore": {
         "1.1.4": false
       },
-      "kodeaid.azurestoragecache": {
+      "KodeAid.AzureStorageCache": {
         "1.0.3": false
       },
-      "kodeaid.common": {
+      "KodeAid.Common": {
         "1.0.5": false
       },
-      "kodeaid.json": {
+      "KodeAid.Json": {
         "1.1.0": false
       },
-      "kodeaid.protocolbuffers": {
+      "KodeAid.ProtocolBuffers": {
         "1.2.0": false
       },
-      "kubernetesclient": {
+      "KubernetesClient": {
         "1.4.3-g29b066286f": false,
         "1.4.4-g972699bc71": false
       },
-      "lambda3.aspnetcore.mvc.testing": {
+      "Lambda3.AspNetCore.Mvc.Testing": {
         "0.0.1-ci-11621": false,
         "0.0.1-ci-11622": false,
         "0.0.1-ci-11623": false,
@@ -1071,27 +1071,27 @@
         "0.0.1-ci-11626": false,
         "0.0.1-ci-11627": false
       },
-      "landorphan.common": {
+      "Landorphan.Common": {
         "0.9.461": false,
         "0.9.463": false,
         "0.9.467": false
       },
-      "lazlo.configuration": {
+      "Lazlo.Configuration": {
         "1.14.1058": false
       },
-      "lazlo.licensing": {
+      "Lazlo.Licensing": {
         "1.21.1047-preview": false
       },
-      "lazlo.powershell.operations": {
+      "Lazlo.Powershell.Operations": {
         "1.2.1043": false
       },
-      "lazlo.shopping.shoppingclient": {
+      "Lazlo.Shopping.ShoppingClient": {
         "1.0.1064": false
       },
-      "lexical.utils.collections": {
+      "Lexical.Utils.Collections": {
         "0.9.0": false
       },
-      "libconfigsettings": {
+      "LibConfigSettings": {
         "1.0.3": false
       },
       "license-expression-lucene-1": {
@@ -1103,1566 +1103,1566 @@
       "license-url-lucene-1": {
         "0.0.1": false
       },
-      "linq2shadow": {
+      "Linq2Shadow": {
         "1.0.139": false
       },
-      "lusid.sdk": {
+      "Lusid.Sdk": {
         "0.9.98": false
       },
-      "lykke.margintrading.backendsnow.contracts": {
+      "Lykke.MarginTrading.BackendSnow.Contracts": {
         "1.10.1": false
       },
-      "magicmanam.office.interop.outlook": {
+      "magicmanam.Office.Interop.Outlook": {
         "1.0.0.1": false
       },
-      "maindatabase.02a416785d274faf99c906a687010fbf": {
+      "MainDatabase.02A416785D274FAF99C906A687010FBF": {
         "1.0.0": false
       },
-      "mapsui": {
+      "Mapsui": {
         "2.0.0-beta.16": false
       },
-      "mapsui.forms": {
+      "Mapsui.Forms": {
         "2.0.0-beta.16": false
       },
-      "margintrading.tradinghistory.client": {
+      "MarginTrading.TradingHistory.Client": {
         "3.1.2": false
       },
       "marta-csharp": {
         "2.0.0": false
       },
-      "mediatr.extensions.caching": {
+      "MediatR.Extensions.Caching": {
         "1.0.0": false,
         "1.0.1": false
       },
-      "meistercore": {
+      "MeisterCore": {
         "2.2.0.50": false
       },
-      "microshopapibase": {
+      "MicroShopApiBase": {
         "0.2.14": false,
         "0.2.15": false
       },
-      "microsoft.azure.eventhubs.servicefabricprocessor": {
+      "Microsoft.Azure.EventHubs.ServiceFabricProcessor": {
         "0.5.2": false
       },
-      "microsoft.azure.graph.rbac": {
+      "Microsoft.Azure.Graph.RBAC": {
         "3.5.1-preview": false
       },
-      "microsoft.azure.kusto.cloud.platform.azure.netstandard": {
+      "Microsoft.Azure.Kusto.Cloud.Platform.Azure.NETStandard": {
         "6.1.1-preview": false
       },
-      "microsoft.azure.kusto.cloud.platform.netstandard": {
+      "Microsoft.Azure.Kusto.Cloud.Platform.NETStandard": {
         "6.1.1-preview": false
       },
-      "microsoft.azure.kusto.data": {
+      "Microsoft.Azure.Kusto.Data": {
         "6.1.1-preview": false
       },
-      "microsoft.azure.kusto.data.netstandard": {
+      "Microsoft.Azure.Kusto.Data.NETStandard": {
         "6.1.1-preview": false
       },
-      "microsoft.azure.kusto.ingest": {
+      "Microsoft.Azure.Kusto.Ingest": {
         "6.1.1-preview": false
       },
-      "microsoft.azure.kusto.ingest.netstandard": {
+      "Microsoft.Azure.Kusto.Ingest.NETStandard": {
         "6.1.1-preview": false
       },
-      "microsoft.azure.kusto.language.netstandard": {
+      "Microsoft.Azure.Kusto.Language.NETStandard": {
         "6.1.1-preview": false
       },
-      "microsoft.azure.kusto.tools": {
+      "Microsoft.Azure.Kusto.Tools": {
         "2.1.1-preview": false
       },
-      "microsoft.azure.template": {
+      "Microsoft.Azure.Template": {
         "1.0.0": false
       },
-      "microsoft.codeanalysis": {
+      "Microsoft.CodeAnalysis": {
         "3.0.0-beta2-final": false
       },
-      "microsoft.codeanalysis.common": {
+      "Microsoft.CodeAnalysis.Common": {
         "3.0.0-beta2-final": false
       },
-      "microsoft.codeanalysis.compilers": {
+      "Microsoft.CodeAnalysis.Compilers": {
         "3.0.0-beta2-final": false
       },
-      "microsoft.codeanalysis.csharp": {
+      "Microsoft.CodeAnalysis.CSharp": {
         "3.0.0-beta2-final": false
       },
-      "microsoft.codeanalysis.csharp.features": {
+      "Microsoft.CodeAnalysis.CSharp.Features": {
         "3.0.0-beta2-final": false
       },
-      "microsoft.codeanalysis.csharp.scripting": {
+      "Microsoft.CodeAnalysis.CSharp.Scripting": {
         "3.0.0-beta2-final": false
       },
-      "microsoft.codeanalysis.csharp.workspaces": {
+      "Microsoft.CodeAnalysis.CSharp.Workspaces": {
         "3.0.0-beta2-final": false
       },
-      "microsoft.codeanalysis.features": {
+      "Microsoft.CodeAnalysis.Features": {
         "3.0.0-beta2-final": false
       },
-      "microsoft.codeanalysis.scripting": {
+      "Microsoft.CodeAnalysis.Scripting": {
         "3.0.0-beta2-final": false
       },
-      "microsoft.codeanalysis.scripting.common": {
+      "Microsoft.CodeAnalysis.Scripting.Common": {
         "3.0.0-beta2-final": false
       },
-      "microsoft.codeanalysis.visualbasic": {
+      "Microsoft.CodeAnalysis.VisualBasic": {
         "3.0.0-beta2-final": false
       },
-      "microsoft.codeanalysis.visualbasic.features": {
+      "Microsoft.CodeAnalysis.VisualBasic.Features": {
         "3.0.0-beta2-final": false
       },
-      "microsoft.codeanalysis.visualbasic.workspaces": {
+      "Microsoft.CodeAnalysis.VisualBasic.Workspaces": {
         "3.0.0-beta2-final": false
       },
-      "microsoft.codeanalysis.workspaces.common": {
+      "Microsoft.CodeAnalysis.Workspaces.Common": {
         "3.0.0-beta2-final": false
       },
-      "microsoft.codeanalysis.workspaces.msbuild": {
+      "Microsoft.CodeAnalysis.Workspaces.MSBuild": {
         "3.0.0-beta2-final": false
       },
-      "microsoft.data.connectionui": {
+      "Microsoft.Data.ConnectionUI": {
         "16.0.28516-pre": false,
         "16.0.28517-pre": false
       },
-      "microsoft.net.compilers": {
+      "Microsoft.Net.Compilers": {
         "3.0.0-beta2-final": false
       },
-      "microsoft.netcore.compilers": {
+      "Microsoft.NETCore.Compilers": {
         "3.0.0-beta2-final": false
       },
-      "microsoft.owin": {
+      "Microsoft.Owin": {
         "4.0.1": false
       },
-      "microsoft.owin.cors": {
+      "Microsoft.Owin.Cors": {
         "4.0.1": false
       },
-      "microsoft.owin.cs": {
+      "Microsoft.Owin.cs": {
         "4.0.1": false
       },
-      "microsoft.owin.de": {
+      "Microsoft.Owin.de": {
         "4.0.1": false
       },
-      "microsoft.owin.diagnostics": {
+      "Microsoft.Owin.Diagnostics": {
         "4.0.1": false
       },
-      "microsoft.owin.diagnostics.cs": {
+      "Microsoft.Owin.Diagnostics.cs": {
         "4.0.1": false
       },
-      "microsoft.owin.diagnostics.de": {
+      "Microsoft.Owin.Diagnostics.de": {
         "4.0.1": false
       },
-      "microsoft.owin.diagnostics.es": {
+      "Microsoft.Owin.Diagnostics.es": {
         "4.0.1": false
       },
-      "microsoft.owin.diagnostics.fr": {
+      "Microsoft.Owin.Diagnostics.fr": {
         "4.0.1": false
       },
-      "microsoft.owin.diagnostics.it": {
+      "Microsoft.Owin.Diagnostics.it": {
         "4.0.1": false
       },
-      "microsoft.owin.diagnostics.ja": {
+      "Microsoft.Owin.Diagnostics.ja": {
         "4.0.1": false
       },
-      "microsoft.owin.diagnostics.ko": {
+      "Microsoft.Owin.Diagnostics.ko": {
         "4.0.1": false
       },
-      "microsoft.owin.diagnostics.pl": {
+      "Microsoft.Owin.Diagnostics.pl": {
         "4.0.1": false
       },
-      "microsoft.owin.diagnostics.pt-br": {
+      "Microsoft.Owin.Diagnostics.pt-br": {
         "4.0.1": false
       },
-      "microsoft.owin.diagnostics.ru": {
+      "Microsoft.Owin.Diagnostics.ru": {
         "4.0.1": false
       },
-      "microsoft.owin.diagnostics.tr": {
+      "Microsoft.Owin.Diagnostics.tr": {
         "4.0.1": false
       },
-      "microsoft.owin.diagnostics.zh-hans": {
+      "Microsoft.Owin.Diagnostics.zh-Hans": {
         "4.0.1": false
       },
-      "microsoft.owin.diagnostics.zh-hant": {
+      "Microsoft.Owin.Diagnostics.zh-Hant": {
         "4.0.1": false
       },
-      "microsoft.owin.es": {
+      "Microsoft.Owin.es": {
         "4.0.1": false
       },
-      "microsoft.owin.filesystems": {
+      "Microsoft.Owin.FileSystems": {
         "4.0.1": false
       },
-      "microsoft.owin.fr": {
+      "Microsoft.Owin.fr": {
         "4.0.1": false
       },
-      "microsoft.owin.host.httplistener": {
+      "Microsoft.Owin.Host.HttpListener": {
         "4.0.1": false
       },
-      "microsoft.owin.host.httplistener.cs": {
+      "Microsoft.Owin.Host.HttpListener.cs": {
         "4.0.1": false
       },
-      "microsoft.owin.host.httplistener.de": {
+      "Microsoft.Owin.Host.HttpListener.de": {
         "4.0.1": false
       },
-      "microsoft.owin.host.httplistener.es": {
+      "Microsoft.Owin.Host.HttpListener.es": {
         "4.0.1": false
       },
-      "microsoft.owin.host.httplistener.fr": {
+      "Microsoft.Owin.Host.HttpListener.fr": {
         "4.0.1": false
       },
-      "microsoft.owin.host.httplistener.it": {
+      "Microsoft.Owin.Host.HttpListener.it": {
         "4.0.1": false
       },
-      "microsoft.owin.host.httplistener.ja": {
+      "Microsoft.Owin.Host.HttpListener.ja": {
         "4.0.1": false
       },
-      "microsoft.owin.host.httplistener.ko": {
+      "Microsoft.Owin.Host.HttpListener.ko": {
         "4.0.1": false
       },
-      "microsoft.owin.host.httplistener.pl": {
+      "Microsoft.Owin.Host.HttpListener.pl": {
         "4.0.1": false
       },
-      "microsoft.owin.host.httplistener.pt-br": {
+      "Microsoft.Owin.Host.HttpListener.pt-br": {
         "4.0.1": false
       },
-      "microsoft.owin.host.httplistener.ru": {
+      "Microsoft.Owin.Host.HttpListener.ru": {
         "4.0.1": false
       },
-      "microsoft.owin.host.httplistener.tr": {
+      "Microsoft.Owin.Host.HttpListener.tr": {
         "4.0.1": false
       },
-      "microsoft.owin.host.httplistener.zh-hans": {
+      "Microsoft.Owin.Host.HttpListener.zh-Hans": {
         "4.0.1": false
       },
-      "microsoft.owin.host.httplistener.zh-hant": {
+      "Microsoft.Owin.Host.HttpListener.zh-Hant": {
         "4.0.1": false
       },
-      "microsoft.owin.host.systemweb": {
+      "Microsoft.Owin.Host.SystemWeb": {
         "4.0.1": false
       },
-      "microsoft.owin.host.systemweb.cs": {
+      "Microsoft.Owin.Host.SystemWeb.cs": {
         "4.0.1": false
       },
-      "microsoft.owin.host.systemweb.de": {
+      "Microsoft.Owin.Host.SystemWeb.de": {
         "4.0.1": false
       },
-      "microsoft.owin.host.systemweb.es": {
+      "Microsoft.Owin.Host.SystemWeb.es": {
         "4.0.1": false
       },
-      "microsoft.owin.host.systemweb.fr": {
+      "Microsoft.Owin.Host.SystemWeb.fr": {
         "4.0.1": false
       },
-      "microsoft.owin.host.systemweb.it": {
+      "Microsoft.Owin.Host.SystemWeb.it": {
         "4.0.1": false
       },
-      "microsoft.owin.host.systemweb.ja": {
+      "Microsoft.Owin.Host.SystemWeb.ja": {
         "4.0.1": false
       },
-      "microsoft.owin.host.systemweb.ko": {
+      "Microsoft.Owin.Host.SystemWeb.ko": {
         "4.0.1": false
       },
-      "microsoft.owin.host.systemweb.pl": {
+      "Microsoft.Owin.Host.SystemWeb.pl": {
         "4.0.1": false
       },
-      "microsoft.owin.host.systemweb.pt-br": {
+      "Microsoft.Owin.Host.SystemWeb.pt-br": {
         "4.0.1": false
       },
-      "microsoft.owin.host.systemweb.ru": {
+      "Microsoft.Owin.Host.SystemWeb.ru": {
         "4.0.1": false
       },
-      "microsoft.owin.host.systemweb.tr": {
+      "Microsoft.Owin.Host.SystemWeb.tr": {
         "4.0.1": false
       },
-      "microsoft.owin.host.systemweb.zh-hans": {
+      "Microsoft.Owin.Host.SystemWeb.zh-Hans": {
         "4.0.1": false
       },
-      "microsoft.owin.host.systemweb.zh-hant": {
+      "Microsoft.Owin.Host.SystemWeb.zh-Hant": {
         "4.0.1": false
       },
-      "microsoft.owin.hosting": {
+      "Microsoft.Owin.Hosting": {
         "4.0.1": false
       },
-      "microsoft.owin.hosting.cs": {
+      "Microsoft.Owin.Hosting.cs": {
         "4.0.1": false
       },
-      "microsoft.owin.hosting.de": {
+      "Microsoft.Owin.Hosting.de": {
         "4.0.1": false
       },
-      "microsoft.owin.hosting.es": {
+      "Microsoft.Owin.Hosting.es": {
         "4.0.1": false
       },
-      "microsoft.owin.hosting.fr": {
+      "Microsoft.Owin.Hosting.fr": {
         "4.0.1": false
       },
-      "microsoft.owin.hosting.it": {
+      "Microsoft.Owin.Hosting.it": {
         "4.0.1": false
       },
-      "microsoft.owin.hosting.ja": {
+      "Microsoft.Owin.Hosting.ja": {
         "4.0.1": false
       },
-      "microsoft.owin.hosting.ko": {
+      "Microsoft.Owin.Hosting.ko": {
         "4.0.1": false
       },
-      "microsoft.owin.hosting.pl": {
+      "Microsoft.Owin.Hosting.pl": {
         "4.0.1": false
       },
-      "microsoft.owin.hosting.pt-br": {
+      "Microsoft.Owin.Hosting.pt-br": {
         "4.0.1": false
       },
-      "microsoft.owin.hosting.ru": {
+      "Microsoft.Owin.Hosting.ru": {
         "4.0.1": false
       },
-      "microsoft.owin.hosting.tr": {
+      "Microsoft.Owin.Hosting.tr": {
         "4.0.1": false
       },
-      "microsoft.owin.hosting.zh-hans": {
+      "Microsoft.Owin.Hosting.zh-Hans": {
         "4.0.1": false
       },
-      "microsoft.owin.hosting.zh-hant": {
+      "Microsoft.Owin.Hosting.zh-Hant": {
         "4.0.1": false
       },
-      "microsoft.owin.it": {
+      "Microsoft.Owin.it": {
         "4.0.1": false
       },
-      "microsoft.owin.ja": {
+      "Microsoft.Owin.ja": {
         "4.0.1": false
       },
-      "microsoft.owin.ko": {
+      "Microsoft.Owin.ko": {
         "4.0.1": false
       },
-      "microsoft.owin.pl": {
+      "Microsoft.Owin.pl": {
         "4.0.1": false
       },
-      "microsoft.owin.pt-br": {
+      "Microsoft.Owin.pt-br": {
         "4.0.1": false
       },
-      "microsoft.owin.ru": {
+      "Microsoft.Owin.ru": {
         "4.0.1": false
       },
-      "microsoft.owin.security": {
+      "Microsoft.Owin.Security": {
         "4.0.1": false
       },
-      "microsoft.owin.security.activedirectory": {
+      "Microsoft.Owin.Security.ActiveDirectory": {
         "4.0.1": false
       },
-      "microsoft.owin.security.activedirectory.cs": {
+      "Microsoft.Owin.Security.ActiveDirectory.cs": {
         "4.0.1": false
       },
-      "microsoft.owin.security.activedirectory.de": {
+      "Microsoft.Owin.Security.ActiveDirectory.de": {
         "4.0.1": false
       },
-      "microsoft.owin.security.activedirectory.es": {
+      "Microsoft.Owin.Security.ActiveDirectory.es": {
         "4.0.1": false
       },
-      "microsoft.owin.security.activedirectory.fr": {
+      "Microsoft.Owin.Security.ActiveDirectory.fr": {
         "4.0.1": false
       },
-      "microsoft.owin.security.activedirectory.it": {
+      "Microsoft.Owin.Security.ActiveDirectory.it": {
         "4.0.1": false
       },
-      "microsoft.owin.security.activedirectory.ja": {
+      "Microsoft.Owin.Security.ActiveDirectory.ja": {
         "4.0.1": false
       },
-      "microsoft.owin.security.activedirectory.ko": {
+      "Microsoft.Owin.Security.ActiveDirectory.ko": {
         "4.0.1": false
       },
-      "microsoft.owin.security.activedirectory.pl": {
+      "Microsoft.Owin.Security.ActiveDirectory.pl": {
         "4.0.1": false
       },
-      "microsoft.owin.security.activedirectory.pt-br": {
+      "Microsoft.Owin.Security.ActiveDirectory.pt-br": {
         "4.0.1": false
       },
-      "microsoft.owin.security.activedirectory.ru": {
+      "Microsoft.Owin.Security.ActiveDirectory.ru": {
         "4.0.1": false
       },
-      "microsoft.owin.security.activedirectory.tr": {
+      "Microsoft.Owin.Security.ActiveDirectory.tr": {
         "4.0.1": false
       },
-      "microsoft.owin.security.activedirectory.zh-hans": {
+      "Microsoft.Owin.Security.ActiveDirectory.zh-Hans": {
         "4.0.1": false
       },
-      "microsoft.owin.security.activedirectory.zh-hant": {
+      "Microsoft.Owin.Security.ActiveDirectory.zh-Hant": {
         "4.0.1": false
       },
-      "microsoft.owin.security.cookies": {
+      "Microsoft.Owin.Security.Cookies": {
         "4.0.1": false
       },
-      "microsoft.owin.security.cs": {
+      "Microsoft.Owin.Security.cs": {
         "4.0.1": false
       },
-      "microsoft.owin.security.de": {
+      "Microsoft.Owin.Security.de": {
         "4.0.1": false
       },
-      "microsoft.owin.security.es": {
+      "Microsoft.Owin.Security.es": {
         "4.0.1": false
       },
-      "microsoft.owin.security.facebook": {
+      "Microsoft.Owin.Security.Facebook": {
         "4.0.1": false
       },
-      "microsoft.owin.security.facebook.cs": {
+      "Microsoft.Owin.Security.Facebook.cs": {
         "4.0.1": false
       },
-      "microsoft.owin.security.facebook.de": {
+      "Microsoft.Owin.Security.Facebook.de": {
         "4.0.1": false
       },
-      "microsoft.owin.security.facebook.es": {
+      "Microsoft.Owin.Security.Facebook.es": {
         "4.0.1": false
       },
-      "microsoft.owin.security.facebook.fr": {
+      "Microsoft.Owin.Security.Facebook.fr": {
         "4.0.1": false
       },
-      "microsoft.owin.security.facebook.it": {
+      "Microsoft.Owin.Security.Facebook.it": {
         "4.0.1": false
       },
-      "microsoft.owin.security.facebook.ja": {
+      "Microsoft.Owin.Security.Facebook.ja": {
         "4.0.1": false
       },
-      "microsoft.owin.security.facebook.ko": {
+      "Microsoft.Owin.Security.Facebook.ko": {
         "4.0.1": false
       },
-      "microsoft.owin.security.facebook.pl": {
+      "Microsoft.Owin.Security.Facebook.pl": {
         "4.0.1": false
       },
-      "microsoft.owin.security.facebook.pt-br": {
+      "Microsoft.Owin.Security.Facebook.pt-br": {
         "4.0.1": false
       },
-      "microsoft.owin.security.facebook.ru": {
+      "Microsoft.Owin.Security.Facebook.ru": {
         "4.0.1": false
       },
-      "microsoft.owin.security.facebook.tr": {
+      "Microsoft.Owin.Security.Facebook.tr": {
         "4.0.1": false
       },
-      "microsoft.owin.security.facebook.zh-hans": {
+      "Microsoft.Owin.Security.Facebook.zh-Hans": {
         "4.0.1": false
       },
-      "microsoft.owin.security.facebook.zh-hant": {
+      "Microsoft.Owin.Security.Facebook.zh-Hant": {
         "4.0.1": false
       },
-      "microsoft.owin.security.fr": {
+      "Microsoft.Owin.Security.fr": {
         "4.0.1": false
       },
-      "microsoft.owin.security.google": {
+      "Microsoft.Owin.Security.Google": {
         "4.0.1": false
       },
-      "microsoft.owin.security.google.cs": {
+      "Microsoft.Owin.Security.Google.cs": {
         "4.0.1": false
       },
-      "microsoft.owin.security.google.de": {
+      "Microsoft.Owin.Security.Google.de": {
         "4.0.1": false
       },
-      "microsoft.owin.security.google.es": {
+      "Microsoft.Owin.Security.Google.es": {
         "4.0.1": false
       },
-      "microsoft.owin.security.google.fr": {
+      "Microsoft.Owin.Security.Google.fr": {
         "4.0.1": false
       },
-      "microsoft.owin.security.google.it": {
+      "Microsoft.Owin.Security.Google.it": {
         "4.0.1": false
       },
-      "microsoft.owin.security.google.ja": {
+      "Microsoft.Owin.Security.Google.ja": {
         "4.0.1": false
       },
-      "microsoft.owin.security.google.ko": {
+      "Microsoft.Owin.Security.Google.ko": {
         "4.0.1": false
       },
-      "microsoft.owin.security.google.pl": {
+      "Microsoft.Owin.Security.Google.pl": {
         "4.0.1": false
       },
-      "microsoft.owin.security.google.pt-br": {
+      "Microsoft.Owin.Security.Google.pt-br": {
         "4.0.1": false
       },
-      "microsoft.owin.security.google.ru": {
+      "Microsoft.Owin.Security.Google.ru": {
         "4.0.1": false
       },
-      "microsoft.owin.security.google.tr": {
+      "Microsoft.Owin.Security.Google.tr": {
         "4.0.1": false
       },
-      "microsoft.owin.security.google.zh-hans": {
+      "Microsoft.Owin.Security.Google.zh-Hans": {
         "4.0.1": false
       },
-      "microsoft.owin.security.google.zh-hant": {
+      "Microsoft.Owin.Security.Google.zh-Hant": {
         "4.0.1": false
       },
-      "microsoft.owin.security.it": {
+      "Microsoft.Owin.Security.it": {
         "4.0.1": false
       },
-      "microsoft.owin.security.ja": {
+      "Microsoft.Owin.Security.ja": {
         "4.0.1": false
       },
-      "microsoft.owin.security.jwt": {
+      "Microsoft.Owin.Security.Jwt": {
         "4.0.1": false
       },
-      "microsoft.owin.security.jwt.cs": {
+      "Microsoft.Owin.Security.Jwt.cs": {
         "4.0.1": false
       },
-      "microsoft.owin.security.jwt.de": {
+      "Microsoft.Owin.Security.Jwt.de": {
         "4.0.1": false
       },
-      "microsoft.owin.security.jwt.es": {
+      "Microsoft.Owin.Security.Jwt.es": {
         "4.0.1": false
       },
-      "microsoft.owin.security.jwt.fr": {
+      "Microsoft.Owin.Security.Jwt.fr": {
         "4.0.1": false
       },
-      "microsoft.owin.security.jwt.it": {
+      "Microsoft.Owin.Security.Jwt.it": {
         "4.0.1": false
       },
-      "microsoft.owin.security.jwt.ja": {
+      "Microsoft.Owin.Security.Jwt.ja": {
         "4.0.1": false
       },
-      "microsoft.owin.security.jwt.ko": {
+      "Microsoft.Owin.Security.Jwt.ko": {
         "4.0.1": false
       },
-      "microsoft.owin.security.jwt.pl": {
+      "Microsoft.Owin.Security.Jwt.pl": {
         "4.0.1": false
       },
-      "microsoft.owin.security.jwt.pt-br": {
+      "Microsoft.Owin.Security.Jwt.pt-br": {
         "4.0.1": false
       },
-      "microsoft.owin.security.jwt.ru": {
+      "Microsoft.Owin.Security.Jwt.ru": {
         "4.0.1": false
       },
-      "microsoft.owin.security.jwt.tr": {
+      "Microsoft.Owin.Security.Jwt.tr": {
         "4.0.1": false
       },
-      "microsoft.owin.security.jwt.zh-hans": {
+      "Microsoft.Owin.Security.Jwt.zh-Hans": {
         "4.0.1": false
       },
-      "microsoft.owin.security.jwt.zh-hant": {
+      "Microsoft.Owin.Security.Jwt.zh-Hant": {
         "4.0.1": false
       },
-      "microsoft.owin.security.ko": {
+      "Microsoft.Owin.Security.ko": {
         "4.0.1": false
       },
-      "microsoft.owin.security.microsoftaccount": {
+      "Microsoft.Owin.Security.MicrosoftAccount": {
         "4.0.1": false
       },
-      "microsoft.owin.security.microsoftaccount.cs": {
+      "Microsoft.Owin.Security.MicrosoftAccount.cs": {
         "4.0.1": false
       },
-      "microsoft.owin.security.microsoftaccount.de": {
+      "Microsoft.Owin.Security.MicrosoftAccount.de": {
         "4.0.1": false
       },
-      "microsoft.owin.security.microsoftaccount.es": {
+      "Microsoft.Owin.Security.MicrosoftAccount.es": {
         "4.0.1": false
       },
-      "microsoft.owin.security.microsoftaccount.fr": {
+      "Microsoft.Owin.Security.MicrosoftAccount.fr": {
         "4.0.1": false
       },
-      "microsoft.owin.security.microsoftaccount.it": {
+      "Microsoft.Owin.Security.MicrosoftAccount.it": {
         "4.0.1": false
       },
-      "microsoft.owin.security.microsoftaccount.ja": {
+      "Microsoft.Owin.Security.MicrosoftAccount.ja": {
         "4.0.1": false
       },
-      "microsoft.owin.security.microsoftaccount.ko": {
+      "Microsoft.Owin.Security.MicrosoftAccount.ko": {
         "4.0.1": false
       },
-      "microsoft.owin.security.microsoftaccount.pl": {
+      "Microsoft.Owin.Security.MicrosoftAccount.pl": {
         "4.0.1": false
       },
-      "microsoft.owin.security.microsoftaccount.pt-br": {
+      "Microsoft.Owin.Security.MicrosoftAccount.pt-br": {
         "4.0.1": false
       },
-      "microsoft.owin.security.microsoftaccount.ru": {
+      "Microsoft.Owin.Security.MicrosoftAccount.ru": {
         "4.0.1": false
       },
-      "microsoft.owin.security.microsoftaccount.tr": {
+      "Microsoft.Owin.Security.MicrosoftAccount.tr": {
         "4.0.1": false
       },
-      "microsoft.owin.security.microsoftaccount.zh-hans": {
+      "Microsoft.Owin.Security.MicrosoftAccount.zh-Hans": {
         "4.0.1": false
       },
-      "microsoft.owin.security.microsoftaccount.zh-hant": {
+      "Microsoft.Owin.Security.MicrosoftAccount.zh-Hant": {
         "4.0.1": false
       },
-      "microsoft.owin.security.oauth": {
+      "Microsoft.Owin.Security.OAuth": {
         "4.0.1": false
       },
-      "microsoft.owin.security.openidconnect": {
+      "Microsoft.Owin.Security.OpenIdConnect": {
         "4.0.1": false
       },
-      "microsoft.owin.security.pl": {
+      "Microsoft.Owin.Security.pl": {
         "4.0.1": false
       },
-      "microsoft.owin.security.pt-br": {
+      "Microsoft.Owin.Security.pt-br": {
         "4.0.1": false
       },
-      "microsoft.owin.security.ru": {
+      "Microsoft.Owin.Security.ru": {
         "4.0.1": false
       },
-      "microsoft.owin.security.tr": {
+      "Microsoft.Owin.Security.tr": {
         "4.0.1": false
       },
-      "microsoft.owin.security.twitter": {
+      "Microsoft.Owin.Security.Twitter": {
         "4.0.1": false
       },
-      "microsoft.owin.security.twitter.cs": {
+      "Microsoft.Owin.Security.Twitter.cs": {
         "4.0.1": false
       },
-      "microsoft.owin.security.twitter.de": {
+      "Microsoft.Owin.Security.Twitter.de": {
         "4.0.1": false
       },
-      "microsoft.owin.security.twitter.es": {
+      "Microsoft.Owin.Security.Twitter.es": {
         "4.0.1": false
       },
-      "microsoft.owin.security.twitter.fr": {
+      "Microsoft.Owin.Security.Twitter.fr": {
         "4.0.1": false
       },
-      "microsoft.owin.security.twitter.it": {
+      "Microsoft.Owin.Security.Twitter.it": {
         "4.0.1": false
       },
-      "microsoft.owin.security.twitter.ja": {
+      "Microsoft.Owin.Security.Twitter.ja": {
         "4.0.1": false
       },
-      "microsoft.owin.security.twitter.ko": {
+      "Microsoft.Owin.Security.Twitter.ko": {
         "4.0.1": false
       },
-      "microsoft.owin.security.twitter.pl": {
+      "Microsoft.Owin.Security.Twitter.pl": {
         "4.0.1": false
       },
-      "microsoft.owin.security.twitter.pt-br": {
+      "Microsoft.Owin.Security.Twitter.pt-br": {
         "4.0.1": false
       },
-      "microsoft.owin.security.twitter.ru": {
+      "Microsoft.Owin.Security.Twitter.ru": {
         "4.0.1": false
       },
-      "microsoft.owin.security.twitter.tr": {
+      "Microsoft.Owin.Security.Twitter.tr": {
         "4.0.1": false
       },
-      "microsoft.owin.security.twitter.zh-hans": {
+      "Microsoft.Owin.Security.Twitter.zh-Hans": {
         "4.0.1": false
       },
-      "microsoft.owin.security.twitter.zh-hant": {
+      "Microsoft.Owin.Security.Twitter.zh-Hant": {
         "4.0.1": false
       },
-      "microsoft.owin.security.wsfederation": {
+      "Microsoft.Owin.Security.WsFederation": {
         "4.0.1": false
       },
-      "microsoft.owin.security.zh-hans": {
+      "Microsoft.Owin.Security.zh-Hans": {
         "4.0.1": false
       },
-      "microsoft.owin.security.zh-hant": {
+      "Microsoft.Owin.Security.zh-Hant": {
         "4.0.1": false
       },
-      "microsoft.owin.selfhost": {
+      "Microsoft.Owin.SelfHost": {
         "4.0.1": false
       },
-      "microsoft.owin.staticfiles": {
+      "Microsoft.Owin.StaticFiles": {
         "4.0.1": false
       },
-      "microsoft.owin.staticfiles.cs": {
+      "Microsoft.Owin.StaticFiles.cs": {
         "4.0.1": false
       },
-      "microsoft.owin.staticfiles.de": {
+      "Microsoft.Owin.StaticFiles.de": {
         "4.0.1": false
       },
-      "microsoft.owin.staticfiles.es": {
+      "Microsoft.Owin.StaticFiles.es": {
         "4.0.1": false
       },
-      "microsoft.owin.staticfiles.fr": {
+      "Microsoft.Owin.StaticFiles.fr": {
         "4.0.1": false
       },
-      "microsoft.owin.staticfiles.it": {
+      "Microsoft.Owin.StaticFiles.it": {
         "4.0.1": false
       },
-      "microsoft.owin.staticfiles.ja": {
+      "Microsoft.Owin.StaticFiles.ja": {
         "4.0.1": false
       },
-      "microsoft.owin.staticfiles.ko": {
+      "Microsoft.Owin.StaticFiles.ko": {
         "4.0.1": false
       },
-      "microsoft.owin.staticfiles.pl": {
+      "Microsoft.Owin.StaticFiles.pl": {
         "4.0.1": false
       },
-      "microsoft.owin.staticfiles.pt-br": {
+      "Microsoft.Owin.StaticFiles.pt-br": {
         "4.0.1": false
       },
-      "microsoft.owin.staticfiles.ru": {
+      "Microsoft.Owin.StaticFiles.ru": {
         "4.0.1": false
       },
-      "microsoft.owin.staticfiles.tr": {
+      "Microsoft.Owin.StaticFiles.tr": {
         "4.0.1": false
       },
-      "microsoft.owin.staticfiles.zh-hans": {
+      "Microsoft.Owin.StaticFiles.zh-Hans": {
         "4.0.1": false
       },
-      "microsoft.owin.staticfiles.zh-hant": {
+      "Microsoft.Owin.StaticFiles.zh-Hant": {
         "4.0.1": false
       },
-      "microsoft.owin.testing": {
+      "Microsoft.Owin.Testing": {
         "4.0.1": false
       },
-      "microsoft.owin.tr": {
+      "Microsoft.Owin.tr": {
         "4.0.1": false
       },
-      "microsoft.owin.zh-hans": {
+      "Microsoft.Owin.zh-Hans": {
         "4.0.1": false
       },
-      "microsoft.owin.zh-hant": {
+      "Microsoft.Owin.zh-Hant": {
         "4.0.1": false
       },
-      "microsoft.research.cntk.cpueval-mkl": {
+      "Microsoft.Research.CNTK.CpuEval-mkl": {
         "2.7.0-rc0.dev20190124": false
       },
-      "microsoft.rest.clientruntime.azure": {
+      "Microsoft.Rest.ClientRuntime.Azure": {
         "3.3.19": false
       },
-      "microsoft.rest.clientruntime.azure.authentication": {
+      "Microsoft.Rest.ClientRuntime.Azure.Authentication": {
         "2.3.7": false
       },
-      "microsoft.rest.clientruntime.azure.testframework": {
+      "Microsoft.Rest.ClientRuntime.Azure.TestFramework": {
         "1.7.6": false
       },
-      "microsoft.rest.clientruntime.etw": {
+      "Microsoft.Rest.ClientRuntime.Etw": {
         "2.1.3": false
       },
-      "microsoft.rest.clientruntime.log4net": {
+      "Microsoft.Rest.ClientRuntime.Log4Net": {
         "2.1.4": false
       },
-      "microsoft.visualstudio.azure.containers.tools.targets": {
+      "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": {
         "1.4.2": false,
         "1.4.4": false
       },
-      "microsoft.visualstudio.data": {
+      "Microsoft.VisualStudio.Data": {
         "16.0.28516-pre": false,
         "16.0.28523-pre": false
       },
-      "microsoft.visualstudio.data.framework": {
+      "Microsoft.VisualStudio.Data.Framework": {
         "16.0.28516-pre": false,
         "16.0.28523-pre": false
       },
-      "microsoft.visualstudio.debugger.engine": {
+      "Microsoft.VisualStudio.Debugger.Engine": {
         "16.0.28516-pre": false
       },
-      "microsoft.visualstudio.debugger.interop.15.0": {
+      "Microsoft.VisualStudio.Debugger.Interop.15.0": {
         "16.0.28516-pre": false
       },
-      "microsoft.visualstudio.debugger.interop.16.0": {
+      "Microsoft.VisualStudio.Debugger.Interop.16.0": {
         "16.0.28523-pre": false
       },
-      "microsoft.visualstudio.imagecatalog": {
+      "Microsoft.VisualStudio.ImageCatalog": {
         "16.0.28516-pre": false,
         "16.0.28523-pre": false
       },
-      "microsoft.visualstudio.imaging": {
+      "Microsoft.VisualStudio.Imaging": {
         "16.0.28522-pre": false,
         "16.0.28523-pre": false
       },
-      "microsoft.visualstudio.languageservices": {
+      "Microsoft.VisualStudio.LanguageServices": {
         "3.0.0-beta2-final": false
       },
-      "microsoft.visualstudio.package.languageservice.15.0": {
+      "Microsoft.VisualStudio.Package.LanguageService.15.0": {
         "16.0.28522-pre": false,
         "16.0.28524-pre": false
       },
-      "microsoft.visualstudio.qualitytools.vsip": {
+      "Microsoft.VisualStudio.QualityTools.Vsip": {
         "16.0.28522-pre": false,
         "16.0.28524-pre": false
       },
-      "microsoft.visualstudio.regdetour": {
+      "Microsoft.VisualStudio.RegDetour": {
         "16.0.28516-pre": false,
         "16.0.28523-pre": false
       },
-      "microsoft.visualstudio.settings.15.0": {
+      "Microsoft.VisualStudio.Settings.15.0": {
         "16.0.28522-pre": false,
         "16.0.28524-pre": false
       },
-      "microsoft.visualstudio.shell.15.0": {
+      "Microsoft.VisualStudio.Shell.15.0": {
         "16.0.28522-pre": false,
         "16.0.28524-pre": false
       },
-      "microsoft.visualstudio.shell.design": {
+      "Microsoft.VisualStudio.Shell.Design": {
         "16.0.28522-pre": false,
         "16.0.28524-pre": false
       },
-      "microsoft.visualstudio.shell.embeddable": {
+      "Microsoft.VisualStudio.Shell.Embeddable": {
         "16.0.28516-pre": false,
         "16.0.28523-pre": false
       },
-      "microsoft.visualstudio.shell.framework": {
+      "Microsoft.VisualStudio.Shell.Framework": {
         "16.0.28522-pre": false,
         "16.0.28524-pre": false
       },
-      "microsoft.visualstudio.texttemplating.15.0": {
+      "Microsoft.VisualStudio.TextTemplating.15.0": {
         "16.0.28517-pre": false,
         "16.0.28518-pre": false
       },
-      "microsoft.visualstudio.texttemplating.interfaces.15.0": {
+      "Microsoft.VisualStudio.TextTemplating.Interfaces.15.0": {
         "16.0.28516-pre": false,
         "16.0.28517-pre": false
       },
-      "microsoft.visualstudio.texttemplating.vshost.15.0": {
+      "Microsoft.VisualStudio.TextTemplating.VSHost.15.0": {
         "16.0.28522-pre": false,
         "16.0.28524-pre": false
       },
-      "microsoft.visualstudio.utilities": {
+      "Microsoft.VisualStudio.Utilities": {
         "16.0.28522-pre": false,
         "16.0.28523-pre": false
       },
-      "microsoft.vssdk.vsixsigntool": {
+      "Microsoft.VSSDK.VsixSignTool": {
         "16.0.28516-pre": false,
         "16.0.28517-pre": false
       },
-      "microsoft.windows.simulator.client": {
+      "Microsoft.Windows.Simulator.Client": {
         "16.0.28522-pre": false,
         "16.0.28523-pre": false
       },
-      "migradocxml": {
+      "MigraDocXML": {
         "2.0.0": false
       },
-      "migradocxml-wpf": {
+      "MigraDocXML-WPF": {
         "2.0.0": false
       },
-      "migradocxml-zxing": {
+      "MigraDocXML-ZXing": {
         "2.0.0": false
       },
-      "migradocxml-zxing-wpf": {
+      "MigraDocXML-ZXing-WPF": {
         "2.0.0": false
       },
-      "mmalsharp": {
+      "MMALSharp": {
         "0.5.0": false
       },
-      "mmalsharp.common": {
+      "MMALSharp.Common": {
         "0.5.0": false
       },
-      "mmalsharp.ffmpeg": {
+      "MMALSharp.FFmpeg": {
         "0.5.0": false
       },
-      "mmalsharp.processing": {
+      "MMALSharp.Processing": {
         "0.5.0": false
       },
-      "mocks.net": {
+      "Mocks.Net": {
         "0.0.8": false
       },
-      "mongo.crud": {
+      "Mongo.CRUD": {
         "1.0.10": false
       },
       "mongocsharpdriver": {
         "2.7.3": false
       },
-      "mongodb.bson": {
+      "MongoDB.Bson": {
         "2.7.3": false
       },
-      "mongodb.driver": {
+      "MongoDB.Driver": {
         "2.7.3": false
       },
-      "mongodb.driver.core": {
+      "MongoDB.Driver.Core": {
         "2.7.3": false
       },
-      "mongodb.driver.gridfs": {
+      "MongoDB.Driver.GridFS": {
         "2.7.3": false
       },
-      "moriyama.azuresearch.umbraco.core": {
+      "Moriyama.AzureSearch.Umbraco.Core": {
         "1.3.8.1": false
       },
-      "moriyama.azuresearch.umbraco.ui": {
+      "Moriyama.AzureSearch.Umbraco.UI": {
         "1.3.8.1": false
       },
-      "mozu.api.sdk": {
-        "2.1.2-rc3": false
+      "Mozu.Api.SDK": {
+        "2.1.2-RC3": false
       },
-      "msharp": {
+      "MSharp": {
         "4.1.405": false
       },
-      "msharp.framework": {
+      "MSharp.Framework": {
         "3.0.208": false
       },
-      "mvvmkit": {
+      "MvvmKit": {
         "1.0.0": false,
         "1.0.0.1": false,
         "1.0.0.2": false,
         "1.0.0.3": false,
         "1.0.0.4": false
       },
-      "mvvmslight": {
+      "MvvmSlight": {
         "0.3.22": false
       },
-      "my.jdownloader.api": {
+      "My.JDownloader.Api": {
         "2.2.0": false
       },
-      "nager.date": {
+      "Nager.Date": {
         "1.24.2": false,
         "1.24.3": false
       },
-      "nancy.scaffolding": {
+      "Nancy.Scaffolding": {
         "1.0.20": false
       },
-      "nehta.vendorlibrary.common": {
+      "Nehta.VendorLibrary.Common": {
         "4.2.0": false
       },
-      "netappdev.common": {
+      "NetAppDev.Common": {
         "1.1.3": false
       },
-      "netappdev.composition": {
+      "NetAppDev.Composition": {
         "1.1.3": false
       },
-      "netappdev.composition.unityextensions": {
+      "NetAppDev.Composition.UnityExtensions": {
         "1.1.3": false
       },
-      "netappdev.dataaccess": {
+      "NetAppDev.DataAccess": {
         "1.1.3": false
       },
-      "netappdev.dataaccess.dapper": {
+      "NetAppDev.DataAccess.Dapper": {
         "1.1.3": false
       },
-      "netappdev.messaging": {
+      "NetAppDev.Messaging": {
         "1.1.3": false
       },
-      "netappdev.messaging.rabbitmq": {
+      "NetAppDev.Messaging.RabbitMQ": {
         "1.1.3": false
       },
-      "netappdev.quelogger": {
+      "NetAppDev.QueLogger": {
         "1.1.3": false
       },
-      "netappdev.server.core": {
+      "NetAppDev.Server.Core": {
         "1.1.3": false
       },
-      "netappdev.server.messaging": {
+      "NetAppDev.Server.Messaging": {
         "1.1.3": false
       },
-      "nmslib.v141.static.x64": {
+      "NMSLIB.v141.static.x64": {
         "1.7.3.6": false
       },
-      "notlitecode": {
+      "NotLiteCode": {
         "1.5.1": false
       },
-      "nuget.build.tasks": {
+      "NuGet.Build.Tasks": {
         "4.9.3": false
       },
-      "nuget.build.tasks.pack": {
+      "NuGet.Build.Tasks.Pack": {
         "4.9.3": false
       },
-      "nuget.commandline.xplat": {
+      "NuGet.CommandLine.XPlat": {
         "4.9.3": false
       },
-      "nuget.commands": {
+      "NuGet.Commands": {
         "4.9.3": false
       },
-      "nuget.common": {
+      "NuGet.Common": {
         "4.9.3": false
       },
-      "nuget.configuration": {
+      "NuGet.Configuration": {
         "4.9.3": false
       },
-      "nuget.credentials": {
+      "NuGet.Credentials": {
         "4.9.3": false
       },
-      "nuget.dependencyresolver.core": {
+      "NuGet.DependencyResolver.Core": {
         "4.9.3": false
       },
-      "nuget.frameworks": {
+      "NuGet.Frameworks": {
         "4.9.3": false
       },
-      "nuget.indexing": {
+      "NuGet.Indexing": {
         "4.9.3": false
       },
-      "nuget.librarymodel": {
+      "NuGet.LibraryModel": {
         "4.9.3": false
       },
-      "nuget.packagemanagement": {
+      "NuGet.PackageManagement": {
         "4.9.3": false
       },
-      "nuget.packagemanagement.ui": {
+      "NuGet.PackageManagement.UI": {
         "4.9.3": false
       },
-      "nuget.packagemanagement.visualstudio": {
+      "NuGet.PackageManagement.VisualStudio": {
         "4.9.3": false
       },
-      "nuget.packaging": {
+      "NuGet.Packaging": {
         "4.9.3": false
       },
-      "nuget.packaging.core": {
+      "NuGet.Packaging.Core": {
         "4.9.3": false
       },
-      "nuget.projectmodel": {
+      "NuGet.ProjectModel": {
         "4.9.3": false
       },
-      "nuget.protocol": {
+      "NuGet.Protocol": {
         "4.9.3": false
       },
-      "nuget.resolver": {
+      "NuGet.Resolver": {
         "4.9.3": false
       },
-      "nuget.solutionrestoremanager.interop": {
+      "NuGet.SolutionRestoreManager.Interop": {
         "4.9.3": false
       },
-      "nuget.versioning": {
+      "NuGet.Versioning": {
         "4.9.3": false
       },
-      "nuget.visualstudio": {
+      "NuGet.VisualStudio": {
         "4.9.3": false
       },
-      "nuget.visualstudio.common": {
+      "NuGet.VisualStudio.Common": {
         "4.9.3": false
       },
-      "octopus.cli": {
+      "Octopus.Cli": {
         "5.0.0": false
       },
-      "octopus.client": {
+      "Octopus.Client": {
         "5.0.0": false
       },
-      "octopus.dotnet.cli": {
+      "Octopus.DotNet.Cli": {
         "5.0.0": false
       },
-      "octopustools": {
+      "OctopusTools": {
         "5.0.0": false
       },
-      "olekstra.bridge.oksana": {
+      "Olekstra.Bridge.Oksana": {
         "0.1.0": false
       },
-      "olive.testing": {
+      "Olive.Testing": {
         "2.1.108": false
       },
-      "oneway.m3u": {
+      "OneWay.M3U": {
         "1.0.2": false,
         "1.0.3": false
       },
-      "opendocx": {
+      "OpenDocx": {
         "0.9.0-alpha": false
       },
-      "owinhost": {
+      "OwinHost": {
         "4.0.1": false
       },
-      "package.elegance.service": {
+      "Package.Elegance.Service": {
         "1.0.7": false,
         "1.0.8": false
       },
-      "package.elegance.service.common": {
+      "Package.Elegance.Service.Common": {
         "1.0.7": false,
         "1.0.8": false
       },
-      "package.elegance.validator": {
+      "Package.Elegance.Validator": {
         "1.0.7": false,
         "1.0.8": false
       },
-      "pangcrypt": {
+      "PangCrypt": {
         "1.0.0-beta": false
       },
-      "pasysmodelsdto": {
+      "PasysModelsDTO": {
         "2.0.1.41": false
       },
-      "periait.datamodeler.dataaccess": {
+      "PeriaIT.DataModeler.DataAccess": {
         "1.0.0.37": false
       },
-      "perseusapi": {
+      "PerseusApi": {
         "1.6.4.3": false,
         "1.6.4.4": false
       },
-      "perseuslibs": {
+      "PerseusLibS": {
         "1.6.4.59": false,
         "1.6.4.61": false,
         "1.6.4.62": false
       },
-      "perseuspluginlib": {
+      "PerseusPluginLib": {
         "1.6.4.3": false,
         "1.6.4.4": false
       },
-      "piscraper.framework": {
+      "PiScraper.Framework": {
         "0.0.3": false,
         "0.0.4": false
       },
-      "pkcs11interop": {
+      "Pkcs11Interop": {
         "4.1.0": false
       },
-      "platform.common.configuration": {
+      "Platform.Common.Configuration": {
         "1.0.2.4": false
       },
-      "platform.common.infrastructure": {
+      "Platform.Common.Infrastructure": {
         "1.0.5.14": false,
         "1.0.5.15": false
       },
-      "pluginproteomicruler": {
+      "PluginProteomicRuler": {
         "1.6.4.3": false,
         "1.6.4.4": false
       },
-      "postsharp": {
+      "PostSharp": {
         "6.0.34": false
       },
-      "postsharp.compiler.common": {
+      "PostSharp.Compiler.Common": {
         "6.0.34": false
       },
-      "postsharp.compiler.engine": {
+      "PostSharp.Compiler.Engine": {
         "6.0.34": false
       },
-      "postsharp.compiler.settings": {
+      "PostSharp.Compiler.Settings": {
         "6.0.34": false
       },
-      "postsharp.patterns.aggregation": {
+      "PostSharp.Patterns.Aggregation": {
         "6.0.34": false
       },
-      "postsharp.patterns.aggregation.redist": {
+      "PostSharp.Patterns.Aggregation.Redist": {
         "6.0.34": false
       },
-      "postsharp.patterns.caching": {
+      "PostSharp.Patterns.Caching": {
         "6.0.34": false
       },
-      "postsharp.patterns.caching.azure": {
+      "PostSharp.Patterns.Caching.Azure": {
         "6.0.34": false
       },
-      "postsharp.patterns.caching.redis": {
+      "PostSharp.Patterns.Caching.Redis": {
         "6.0.34": false
       },
-      "postsharp.patterns.caching.redist": {
+      "PostSharp.Patterns.Caching.Redist": {
         "6.0.34": false
       },
-      "postsharp.patterns.common": {
+      "PostSharp.Patterns.Common": {
         "6.0.34": false
       },
-      "postsharp.patterns.common.redist": {
+      "PostSharp.Patterns.Common.Redist": {
         "6.0.34": false
       },
-      "postsharp.patterns.diagnostics": {
+      "PostSharp.Patterns.Diagnostics": {
         "6.0.34": false
       },
-      "postsharp.patterns.diagnostics.applicationinsights": {
+      "PostSharp.Patterns.Diagnostics.ApplicationInsights": {
         "6.0.34": false
       },
-      "postsharp.patterns.diagnostics.commonlogging": {
+      "PostSharp.Patterns.Diagnostics.CommonLogging": {
         "6.0.34": false
       },
-      "postsharp.patterns.diagnostics.enterpriselibrary": {
+      "PostSharp.Patterns.Diagnostics.EnterpriseLibrary": {
         "6.0.34": false
       },
-      "postsharp.patterns.diagnostics.frigate": {
+      "PostSharp.Patterns.Diagnostics.Frigate": {
         "6.0.34-preview": false
       },
-      "postsharp.patterns.diagnostics.log4net": {
+      "PostSharp.Patterns.Diagnostics.Log4Net": {
         "6.0.34": false
       },
-      "postsharp.patterns.diagnostics.loupe": {
+      "PostSharp.Patterns.Diagnostics.Loupe": {
         "6.0.34": false
       },
-      "postsharp.patterns.diagnostics.microsoft": {
+      "PostSharp.Patterns.Diagnostics.Microsoft": {
         "6.0.34": false
       },
-      "postsharp.patterns.diagnostics.nlog": {
+      "PostSharp.Patterns.Diagnostics.NLog": {
         "6.0.34": false
       },
-      "postsharp.patterns.diagnostics.redist": {
+      "PostSharp.Patterns.Diagnostics.Redist": {
         "6.0.34": false
       },
-      "postsharp.patterns.diagnostics.serilog": {
+      "PostSharp.Patterns.Diagnostics.Serilog": {
         "6.0.34": false
       },
-      "postsharp.patterns.diagnostics.tracing": {
+      "PostSharp.Patterns.Diagnostics.Tracing": {
         "6.0.34": false
       },
-      "postsharp.patterns.model": {
+      "PostSharp.Patterns.Model": {
         "6.0.34": false
       },
-      "postsharp.patterns.model.redist": {
+      "PostSharp.Patterns.Model.Redist": {
         "6.0.34": false
       },
-      "postsharp.patterns.threading": {
+      "PostSharp.Patterns.Threading": {
         "6.0.34": false
       },
-      "postsharp.patterns.threading.redist": {
+      "PostSharp.Patterns.Threading.Redist": {
         "6.0.34": false
       },
-      "postsharp.patterns.xaml": {
+      "PostSharp.Patterns.Xaml": {
         "6.0.34": false
       },
-      "postsharp.patterns.xaml.redist": {
+      "PostSharp.Patterns.Xaml.Redist": {
         "6.0.34": false
       },
-      "postsharp.redist": {
+      "PostSharp.Redist": {
         "6.0.34": false
       },
-      "prometheus.client": {
+      "Prometheus.Client": {
         "2.1.0": false
       },
-      "puresharp": {
+      "Puresharp": {
         "5.0.4": false,
         "5.0.5": false
       },
-      "puresharp.diagnostic": {
+      "Puresharp.Diagnostic": {
         "5.0.4": false,
         "5.0.5": false
       },
-      "qualm": {
+      "Qualm": {
         "0.0.10": false
       },
-      "qualm.aspnetcore": {
+      "Qualm.AspNetCore": {
         "0.0.10": false
       },
-      "qualm.aspnetcore.swagger": {
+      "Qualm.AspNetCore.Swagger": {
         "0.0.10": false
       },
-      "qualm.rmq": {
+      "Qualm.Rmq": {
         "0.0.10": false
       },
-      "rayson.objectcrawling": {
+      "Rayson.ObjectCrawling": {
         "0.0.18-pre": false
       },
-      "redcorners": {
+      "RedCorners": {
         "2.0.0": false
       },
-      "reify.rabbitmq.management": {
+      "Reify.RabbitMQ.Management": {
         "1.0.0-develop": false,
         "1.2.0-alpha": false,
         "1.3.0-alpha": false,
         "1.4.0-alpha": false,
         "1.5.0-alpha": false
       },
-      "reversemarkdown": {
+      "ReverseMarkdown": {
         "3.0.0": false
       },
-      "rfsoft_control": {
+      "RfSoft_Control": {
         "1.0.25": false,
         "1.0.26": false
       },
-      "rhino3dmio.android": {
+      "Rhino3dmIO.Android": {
         "6.12.19023.17101-rc": false,
         "7.0.19024.3445-wip": false
       },
-      "rhino3dmio.desktop": {
+      "Rhino3dmIO.Desktop": {
         "6.12.19023.17101-rc": false,
         "7.0.19024.3445-wip": false
       },
-      "rhino3dmio.ios": {
+      "Rhino3dmIO.iOS": {
         "6.12.19023.17101-rc": false,
         "7.0.19024.3445-wip": false
       },
-      "rhinocommon": {
+      "RhinoCommon": {
         "6.12.19023.17101-rc": false,
         "7.0.19024.3445-wip": false
       },
-      "rhinowindows": {
+      "RhinoWindows": {
         "6.12.19023.17101-rc": false,
         "7.0.19024.3445-wip": false
       },
-      "sanqit.swagger": {
+      "Sanqit.Swagger": {
         "1.0.10-dev": false
       },
-      "sanqit.users.sdk": {
+      "Sanqit.Users.SDK": {
         "1.0.14-dev": false
       },
-      "serilog.formatting.compact": {
+      "Serilog.Formatting.Compact": {
         "1.0.1-dev-00925": false
       },
-      "serilog.sinks.azureblobstorage": {
+      "Serilog.Sinks.AzureBlobStorage": {
         "1.0.2": false
       },
-      "sheller": {
+      "Sheller": {
         "2.1.0": false
       },
-      "shuttle.core.container.tests": {
+      "Shuttle.Core.Container.Tests": {
         "10.0.8": false
       },
-      "shuttle.core.unity": {
+      "Shuttle.Core.Unity": {
         "10.0.7": false
       },
-      "simix.mobile.core": {
+      "Simix.Mobile.Core": {
         "1.1.0": false
       },
-      "simpleiam.openidauthority": {
+      "SimpleIAM.OpenIdAuthority": {
         "0.4.0-beta4": false,
         "0.4.0-beta5": false
       },
-      "simpleiam.passwordlesslogin": {
+      "SimpleIAM.PasswordlessLogin": {
         "0.4.0-beta4": false,
         "0.4.0-beta5": false
       },
-      "sistran.alm.framework": {
+      "Sistran.Alm.Framework": {
         "1.0.0": false,
         "1.0.1": false
       },
-      "sixlabors.core": {
+      "SixLabors.Core": {
         "1.0.0-beta0007": false
       },
-      "skymind.skil": {
+      "Skymind.SKIL": {
         "1.2.1.2": false
       },
-      "snsnotificationforamazonses": {
+      "SNSNotificationForAmazonSES": {
         "1.0.0": false
       },
-      "solinerp.domain.reporting": {
+      "SolinERP.Domain.Reporting": {
         "4.0.6963.21467": false,
         "4.0.6963.29895": false
       },
-      "sourcecode.chasm": {
+      "SourceCode.Chasm": {
         "1.0.0-preview1-00314": false
       },
-      "sourcecode.chasm.repository": {
+      "SourceCode.Chasm.Repository": {
         "1.0.0-preview1-00314": false
       },
-      "sourcecode.chasm.repository.azureblob": {
+      "SourceCode.Chasm.Repository.AzureBlob": {
         "1.0.0-preview1-00314": false
       },
-      "sourcecode.chasm.repository.azuretable": {
+      "SourceCode.Chasm.Repository.AzureTable": {
         "1.0.0-preview1-00314": false
       },
-      "sourcecode.chasm.repository.disk": {
+      "SourceCode.Chasm.Repository.Disk": {
         "1.0.0-preview1-00314": false
       },
-      "sourcecode.chasm.serializer": {
+      "SourceCode.Chasm.Serializer": {
         "1.0.0-preview1-00314": false
       },
-      "sourcecode.chasm.serializer.json": {
+      "SourceCode.Chasm.Serializer.Json": {
         "1.0.0-preview1-00314": false
       },
-      "sourcecode.chasm.serializer.proto": {
+      "SourceCode.Chasm.Serializer.Proto": {
         "1.0.0-preview1-00314": false
       },
-      "sourcecode.chasm.serializer.text": {
+      "SourceCode.Chasm.Serializer.Text": {
         "1.0.0-preview1-00314": false
       },
-      "sourcecode.clay": {
+      "SourceCode.Clay": {
         "1.0.0-preview1-00681": false,
         "1.0.0-preview1-00682": false
       },
-      "sourcecode.clay.algorithms": {
+      "SourceCode.Clay.Algorithms": {
         "1.0.0-preview1-00681": false,
         "1.0.0-preview1-00682": false
       },
-      "sourcecode.clay.buffers": {
+      "SourceCode.Clay.Buffers": {
         "1.0.0-preview1-00681": false,
         "1.0.0-preview1-00682": false
       },
-      "sourcecode.clay.collections": {
+      "SourceCode.Clay.Collections": {
         "1.0.0-preview1-00681": false,
         "1.0.0-preview1-00682": false
       },
-      "sourcecode.clay.data": {
+      "SourceCode.Clay.Data": {
         "1.0.0-preview1-00681": false,
         "1.0.0-preview1-00682": false
       },
-      "sourcecode.clay.io": {
+      "SourceCode.Clay.IO": {
         "1.0.0-preview1-00681": false,
         "1.0.0-preview1-00682": false
       },
-      "sourcecode.clay.javascript": {
+      "SourceCode.Clay.Javascript": {
         "1.0.0-preview1-00681": false,
         "1.0.0-preview1-00682": false
       },
-      "sourcecode.clay.json": {
+      "SourceCode.Clay.Json": {
         "1.0.0-preview1-00681": false,
         "1.0.0-preview1-00682": false
       },
-      "sourcecode.clay.security": {
+      "SourceCode.Clay.Security": {
         "1.0.0-preview1-00681": false,
         "1.0.0-preview1-00682": false
       },
-      "sourcecode.clay.text": {
+      "SourceCode.Clay.Text": {
         "1.0.0-preview1-00681": false,
         "1.0.0-preview1-00682": false
       },
-      "sourcecode.clay.threading": {
+      "SourceCode.Clay.Threading": {
         "1.0.0-preview1-00681": false,
         "1.0.0-preview1-00682": false
       },
-      "spanjson": {
+      "SpanJson": {
         "2.0.4": false
       },
-      "spanjson.aspnetcore.formatter": {
+      "SpanJson.AspNetCore.Formatter": {
         "2.0.4": false
       },
-      "sqlitepclraw.bundle_e_sqlite3": {
+      "SQLitePCLRaw.bundle_e_sqlite3": {
         "1.1.13": false
       },
-      "sqlitepclraw.bundle_green": {
+      "SQLitePCLRaw.bundle_green": {
         "1.1.13": false
       },
-      "sqlitepclraw.bundle_sqlcipher": {
+      "SQLitePCLRaw.bundle_sqlcipher": {
         "1.1.13": false
       },
-      "sqlitepclraw.bundle_winsqlite3": {
+      "SQLitePCLRaw.bundle_winsqlite3": {
         "1.1.13": false
       },
-      "sqlitepclraw.bundle_zetetic": {
+      "SQLitePCLRaw.bundle_zetetic": {
         "1.1.13": false
       },
-      "sqlitepclraw.core": {
+      "SQLitePCLRaw.core": {
         "1.1.13": false
       },
-      "sqlitepclraw.lib.e_sqlite3.android": {
+      "SQLitePCLRaw.lib.e_sqlite3.android": {
         "1.1.13": false
       },
-      "sqlitepclraw.lib.e_sqlite3.ios_unified.static": {
+      "SQLitePCLRaw.lib.e_sqlite3.ios_unified.static": {
         "1.1.13": false
       },
-      "sqlitepclraw.lib.e_sqlite3.linux": {
+      "SQLitePCLRaw.lib.e_sqlite3.linux": {
         "1.1.13": false
       },
-      "sqlitepclraw.lib.e_sqlite3.osx": {
+      "SQLitePCLRaw.lib.e_sqlite3.osx": {
         "1.1.13": false
       },
-      "sqlitepclraw.lib.e_sqlite3.v110": {
+      "SQLitePCLRaw.lib.e_sqlite3.v110": {
         "1.1.13": false
       },
-      "sqlitepclraw.lib.e_sqlite3.v110_wp80": {
+      "SQLitePCLRaw.lib.e_sqlite3.v110_wp80": {
         "1.1.13": false
       },
-      "sqlitepclraw.lib.e_sqlite3.v110_xp": {
+      "SQLitePCLRaw.lib.e_sqlite3.v110_xp": {
         "1.1.13": false
       },
-      "sqlitepclraw.lib.e_sqlite3.v120": {
+      "SQLitePCLRaw.lib.e_sqlite3.v120": {
         "1.1.13": false
       },
-      "sqlitepclraw.lib.e_sqlite3.v120_wp81": {
+      "SQLitePCLRaw.lib.e_sqlite3.v120_wp81": {
         "1.1.13": false
       },
-      "sqlitepclraw.lib.e_sqlite3.v140": {
+      "SQLitePCLRaw.lib.e_sqlite3.v140": {
         "1.1.13": false
       },
-      "sqlitepclraw.lib.sqlcipher.android": {
+      "SQLitePCLRaw.lib.sqlcipher.android": {
         "1.1.13": false
       },
-      "sqlitepclraw.lib.sqlcipher.ios_unified.static": {
+      "SQLitePCLRaw.lib.sqlcipher.ios_unified.static": {
         "1.1.13": false
       },
-      "sqlitepclraw.lib.sqlcipher.linux": {
+      "SQLitePCLRaw.lib.sqlcipher.linux": {
         "1.1.13": false
       },
-      "sqlitepclraw.lib.sqlcipher.osx": {
+      "SQLitePCLRaw.lib.sqlcipher.osx": {
         "1.1.13": false
       },
-      "sqlitepclraw.lib.sqlcipher.windows": {
+      "SQLitePCLRaw.lib.sqlcipher.windows": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.custom_sqlite3.android": {
+      "SQLitePCLRaw.provider.custom_sqlite3.android": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.custom_sqlite3.macos": {
+      "SQLitePCLRaw.provider.custom_sqlite3.macos": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.custom_sqlite3.net35": {
+      "SQLitePCLRaw.provider.custom_sqlite3.net35": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.custom_sqlite3.net40": {
+      "SQLitePCLRaw.provider.custom_sqlite3.net40": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.custom_sqlite3.net45": {
+      "SQLitePCLRaw.provider.custom_sqlite3.net45": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.custom_sqlite3.netstandard11": {
+      "SQLitePCLRaw.provider.custom_sqlite3.netstandard11": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.custom_sqlite3.uwp10": {
+      "SQLitePCLRaw.provider.custom_sqlite3.uwp10": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.custom_sqlite3.win8": {
+      "SQLitePCLRaw.provider.custom_sqlite3.win8": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.custom_sqlite3.win81": {
+      "SQLitePCLRaw.provider.custom_sqlite3.win81": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.custom_sqlite3.wpa81": {
+      "SQLitePCLRaw.provider.custom_sqlite3.wpa81": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.e_sqlite3.android": {
+      "SQLitePCLRaw.provider.e_sqlite3.android": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.e_sqlite3.macos": {
+      "SQLitePCLRaw.provider.e_sqlite3.macos": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.e_sqlite3.net35": {
+      "SQLitePCLRaw.provider.e_sqlite3.net35": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.e_sqlite3.net40": {
+      "SQLitePCLRaw.provider.e_sqlite3.net40": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.e_sqlite3.net45": {
+      "SQLitePCLRaw.provider.e_sqlite3.net45": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.e_sqlite3.netstandard11": {
+      "SQLitePCLRaw.provider.e_sqlite3.netstandard11": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.e_sqlite3.uwp10": {
+      "SQLitePCLRaw.provider.e_sqlite3.uwp10": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.e_sqlite3.win8": {
+      "SQLitePCLRaw.provider.e_sqlite3.win8": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.e_sqlite3.win81": {
+      "SQLitePCLRaw.provider.e_sqlite3.win81": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.e_sqlite3.wp80": {
+      "SQLitePCLRaw.provider.e_sqlite3.wp80": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.e_sqlite3.wpa81": {
+      "SQLitePCLRaw.provider.e_sqlite3.wpa81": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.internal.ios_unified": {
+      "SQLitePCLRaw.provider.internal.ios_unified": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.sqlcipher.android": {
+      "SQLitePCLRaw.provider.sqlcipher.android": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.sqlcipher.macos": {
+      "SQLitePCLRaw.provider.sqlcipher.macos": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.sqlcipher.net35": {
+      "SQLitePCLRaw.provider.sqlcipher.net35": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.sqlcipher.net40": {
+      "SQLitePCLRaw.provider.sqlcipher.net40": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.sqlcipher.net45": {
+      "SQLitePCLRaw.provider.sqlcipher.net45": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.sqlcipher.netstandard11": {
+      "SQLitePCLRaw.provider.sqlcipher.netstandard11": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.sqlcipher.uwp10": {
+      "SQLitePCLRaw.provider.sqlcipher.uwp10": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.sqlcipher.win8": {
+      "SQLitePCLRaw.provider.sqlcipher.win8": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.sqlcipher.win81": {
+      "SQLitePCLRaw.provider.sqlcipher.win81": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.sqlcipher.wpa81": {
+      "SQLitePCLRaw.provider.sqlcipher.wpa81": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.sqlite3.android": {
+      "SQLitePCLRaw.provider.sqlite3.android": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.sqlite3.ios_unified": {
+      "SQLitePCLRaw.provider.sqlite3.ios_unified": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.sqlite3.macos": {
+      "SQLitePCLRaw.provider.sqlite3.macos": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.sqlite3.net35": {
+      "SQLitePCLRaw.provider.sqlite3.net35": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.sqlite3.net40": {
+      "SQLitePCLRaw.provider.sqlite3.net40": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.sqlite3.net45": {
+      "SQLitePCLRaw.provider.sqlite3.net45": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.sqlite3.netstandard11": {
+      "SQLitePCLRaw.provider.sqlite3.netstandard11": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.sqlite3.uwp10": {
+      "SQLitePCLRaw.provider.sqlite3.uwp10": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.sqlite3.win8": {
+      "SQLitePCLRaw.provider.sqlite3.win8": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.sqlite3.win81": {
+      "SQLitePCLRaw.provider.sqlite3.win81": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.sqlite3.wpa81": {
+      "SQLitePCLRaw.provider.sqlite3.wpa81": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.sqlite3_xamarin.android": {
+      "SQLitePCLRaw.provider.sqlite3_xamarin.android": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.winsqlite3.net45": {
+      "SQLitePCLRaw.provider.winsqlite3.net45": {
         "1.1.13": false
       },
-      "sqlitepclraw.provider.winsqlite3.uwp10": {
+      "SQLitePCLRaw.provider.winsqlite3.uwp10": {
         "1.1.13": false
       },
-      "sqlitepclraw.ugly": {
+      "SQLitePCLRaw.ugly": {
         "1.1.13": false
       },
-      "squidex.clientlibrary": {
+      "Squidex.ClientLibrary": {
         "2.2.0": false
       },
-      "stomp.net": {
+      "Stomp.Net": {
         "2.2.0.42": false,
         "2.2.0.43": false
       },
@@ -2673,265 +2673,265 @@
         "0.3.0-beta.17": false,
         "0.3.0-beta.18": false
       },
-      "tapeti": {
+      "Tapeti": {
         "1.2.0-beta0002": false
       },
-      "tapeti.annotations": {
+      "Tapeti.Annotations": {
         "1.2.0-beta0002": false
       },
-      "tapeti.dataannotations": {
+      "Tapeti.DataAnnotations": {
         "1.2.0-beta0002": false
       },
-      "tapeti.flow": {
+      "Tapeti.Flow": {
         "1.2.0-beta0002": false
       },
-      "tapeti.flow.sql": {
+      "Tapeti.Flow.SQL": {
         "1.2.0-beta0002": false
       },
-      "tapeti.serilog": {
+      "Tapeti.Serilog": {
         "1.2.0-beta0002": false
       },
-      "tapeti.simpleinjector": {
+      "Tapeti.SimpleInjector": {
         "1.2.0-beta0002": false
       },
-      "templater": {
+      "Templater": {
         "2.7.5": false,
         "2.9.6": false
       },
-      "tenduke.client": {
+      "Tenduke.Client": {
         "2.0.4": false
       },
-      "testingconfigsettings": {
+      "TestingConfigSettings": {
         "1.0.0": false,
         "1.0.1": false
       },
-      "tetl": {
+      "TETL": {
         "1.0.7": false,
         "1.0.9": false,
         "1.1.4": false
       },
-      "tor4net": {
+      "Tor4NET": {
         "1.1.2": false
       },
-      "trader.inventory.videomanager.models": {
+      "Trader.Inventory.VideoManager.Models": {
         "1.0.1": false
       },
-      "treerouter.http": {
+      "TreeRouter.Http": {
         "0.9.6.3": false
       },
-      "trestle.net": {
+      "Trestle.Net": {
         "0.0.6": false,
         "0.0.7": false
       },
-      "typescriptmodelsgenerator": {
+      "TypeScriptModelsGenerator": {
         "1.1.1": false
       },
-      "ulbegroup.templatemanager": {
+      "UlbeGroup.TemplateManager": {
         "1.6.3": false,
         "1.6.4": false
       },
-      "ultz.simpleserver": {
+      "Ultz.SimpleServer": {
         "1.1.0-rc1": false
       },
-      "ultz.simpleserver.abstractions": {
+      "Ultz.SimpleServer.Abstractions": {
         "1.1.0-rc1": false
       },
-      "ultz.simpleserver.minimal": {
+      "Ultz.SimpleServer.Minimal": {
         "1.1.0-rc1": false
       },
-      "unitsofmeasure.extra": {
+      "UnitsOfMeasure.Extra": {
         "1.0.0-beta-001": false
       },
-      "unity": {
+      "Unity": {
         "5.9.1": false
       },
-      "unity.abstractions": {
+      "Unity.Abstractions": {
         "4.0.1": false
       },
-      "unity.container": {
+      "Unity.Container": {
         "5.9.1": false
       },
-      "unity.log4net": {
+      "Unity.log4net": {
         "5.9.1": false
       },
-      "unity.microsoft.logging": {
+      "Unity.Microsoft.Logging": {
         "5.9.1": false
       },
-      "unity.nlog": {
+      "Unity.NLog": {
         "5.9.1": false
       },
-      "uno.ui": {
+      "Uno.UI": {
         "1.43.0-dev.700": false,
         "1.43.0-dev.702": false,
         "1.43.0-dev.704": false
       },
-      "uno.ui.wpfhost": {
+      "Uno.UI.WpfHost": {
         "1.43.0-dev.700": false,
         "1.43.0-dev.702": false,
         "1.43.0-dev.704": false
       },
-      "unofficial.system.unit": {
+      "Unofficial.System.Unit": {
         "0.1.0": false
       },
-      "util.applications": {
+      "Util.Applications": {
         "1.0.11-preview-20190124-1": false
       },
-      "util.biz": {
+      "Util.Biz": {
         "1.0.11-preview-20190124-1": false
       },
-      "util.biz.payments": {
+      "Util.Biz.Payments": {
         "1.0.11-preview-20190124-1": false
       },
-      "util.caches": {
+      "Util.Caches": {
         "1.0.11-preview-20190124-1": false
       },
-      "util.core": {
+      "Util.Core": {
         "1.0.11-preview-20190124-1": false
       },
-      "util.datas": {
+      "Util.Datas": {
         "1.0.11-preview-20190124-1": false
       },
-      "util.events": {
+      "Util.Events": {
         "1.0.11-preview-20190124-1": false
       },
-      "util.logs": {
+      "Util.Logs": {
         "1.0.11-preview-20190124-1": false
       },
-      "util.schedulers": {
+      "Util.Schedulers": {
         "1.0.11-preview-20190124-1": false
       },
-      "util.security": {
+      "Util.Security": {
         "1.0.11-preview-20190124-1": false
       },
-      "util.tools.qrcode": {
+      "Util.Tools.QrCode": {
         "1.0.11-preview-20190124-1": false
       },
-      "util.tools.sms": {
+      "Util.Tools.Sms": {
         "1.0.11-preview-20190124-1": false
       },
-      "util.ui.abstractions": {
+      "Util.Ui.Abstractions": {
         "1.0.11-preview-20190124-1": false
       },
-      "util.ui.angular": {
+      "Util.Ui.Angular": {
         "1.0.11-preview-20190124-1": false
       },
-      "util.ui.core": {
+      "Util.Ui.Core": {
         "1.0.11-preview-20190124-1": false
       },
-      "util.webs": {
+      "Util.Webs": {
         "1.0.11-preview-20190124-1": false
       },
-      "vaservicesint": {
+      "VAServicesInt": {
         "7.0.0": false
       },
       "vendasta-g-suite": {
         "0.0.1": false
       },
-      "videoxpertsdk": {
+      "VideoXpertSdk": {
         "3.0.2": false
       },
-      "vikings.wpf.extensions": {
+      "Vikings.Wpf.Extensions": {
         "1.0.0.3": false,
         "1.0.0.4": false
       },
-      "visioforge.dotnet.core.trial": {
+      "VisioForge.DotNet.Core.TRIAL": {
         "11.0.5": false
       },
-      "visioforge.dotnet.kinect.trial": {
+      "VisioForge.DotNet.Kinect.TRIAL": {
         "11.0.5": false
       },
-      "visioforge.dotnet.kinect2.trial": {
+      "VisioForge.DotNet.Kinect2.TRIAL": {
         "11.0.5": false
       },
-      "visioforge.dotnet.mediaplayer.trial": {
+      "VisioForge.DotNet.MediaPlayer.TRIAL": {
         "11.0.5": false
       },
-      "visioforge.dotnet.samples.trial": {
+      "VisioForge.DotNet.Samples.TRIAL": {
         "11.0.5": false
       },
-      "visioforge.dotnet.videocapture.trial": {
+      "VisioForge.DotNet.VideoCapture.TRIAL": {
         "11.0.5": false
       },
-      "visioforge.dotnet.videoedit.trial": {
+      "VisioForge.DotNet.VideoEdit.TRIAL": {
         "11.0.5": false
       },
-      "visioforge.dotnet.videofingerprinting.trial": {
+      "VisioForge.DotNet.VideoFingerprinting.TRIAL": {
         "11.0.5": false
       },
-      "voiceboxconditionsplugin": {
+      "VoiceboxConditionsPlugin": {
         "1.2.0": false
       },
-      "voiceboxgrapesjs": {
+      "VoiceboxGrapesJS": {
         "1.3.1": false
       },
-      "voiteq.netcore": {
+      "Voiteq.NetCore": {
         "1.1.6": false
       },
-      "vostok.clusterclient.transport.systemnethttp": {
+      "Vostok.ClusterClient.Transport.SystemNetHttp": {
         "0.0.1-pre000011": false
       },
-      "vostok.configuration.sources": {
+      "Vostok.Configuration.Sources": {
         "0.0.1-pre000040": false
       },
-      "webandwebapiautomation": {
+      "WebAndWebApiAutomation": {
         "1.0.3-alpha": false,
         "1.0.4-alpha": false,
         "1.0.5-alpha": false
       },
-      "webatoms.xamarin.forms": {
+      "WebAtoms.Xamarin.Forms": {
         "1.2.30": false
       },
-      "webdriverextended": {
+      "WebDriverExtended": {
         "2.1.2": false
       },
-      "xam.plugin.iconize": {
+      "Xam.Plugin.Iconize": {
         "3.4.0.110": false
       },
-      "xam.plugin.iconize.entypoplus": {
+      "Xam.Plugin.Iconize.EntypoPlus": {
         "3.4.0.110": false
       },
-      "xam.plugin.iconize.fontawesome": {
+      "Xam.Plugin.Iconize.FontAwesome": {
         "3.4.0.110": false
       },
-      "xam.plugin.iconize.fontawesomepro": {
+      "Xam.Plugin.Iconize.FontAwesomePro": {
         "3.4.0.110": false
       },
-      "xam.plugin.iconize.ionicons": {
+      "Xam.Plugin.Iconize.Ionicons": {
         "3.4.0.110": false
       },
-      "xam.plugin.iconize.jamicons": {
+      "Xam.Plugin.Iconize.JamIcons": {
         "3.4.0.110": false
       },
-      "xam.plugin.iconize.material": {
+      "Xam.Plugin.Iconize.Material": {
         "3.4.0.110": false
       },
-      "xam.plugin.iconize.meteocons": {
+      "Xam.Plugin.Iconize.Meteocons": {
         "3.4.0.110": false
       },
-      "xam.plugin.iconize.simplelineicons": {
+      "Xam.Plugin.Iconize.SimpleLineIcons": {
         "3.4.0.110": false
       },
-      "xam.plugin.iconize.typicons": {
+      "Xam.Plugin.Iconize.Typicons": {
         "3.4.0.110": false
       },
-      "xam.plugin.iconize.weathericons": {
+      "Xam.Plugin.Iconize.WeatherIcons": {
         "3.4.0.110": false
       },
-      "xamarin.judopay": {
+      "Xamarin.JudoPay": {
         "4.2.22": false
       },
-      "xamarinforms.reactive.fsharp": {
+      "XamarinForms.Reactive.FSharp": {
         "1.0.1.43": false
       },
-      "xfcore": {
+      "Xfcore": {
         "0.3.3": false
       },
-      "ypf.msframework": {
-        "1.2.24.1-rc": false,
-        "1.2.24.2-rc": false,
-        "1.2.24.3-rc": false
+      "YPF.MSFramework": {
+        "1.2.24.1-RC": false,
+        "1.2.24.2-RC": false,
+        "1.2.24.3-RC": false
       },
-      "yup.comun.core": {
+      "Yup.Comun.Core": {
         "2.1.3": false
       }
     }

@@ -45,12 +45,13 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             var verifiedPackageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             await foreach (var entry in data.Entries)
             {
-                if (!versionSet.DidIdEverExist(entry.Id))
+                var id = entry.Id;
+                if (!versionSet.TryGetId(entry.Id, out id))
                 {
                     continue;
                 }
 
-                verifiedPackageIds.Add(entry.Id);
+                verifiedPackageIds.Add(id);
             }
 
             foreach (var packageId in verifiedPackageIds)

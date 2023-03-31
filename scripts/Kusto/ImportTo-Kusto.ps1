@@ -30,6 +30,7 @@ param (
         "PackageContents",
         "PackageDeprecations",
         "PackageDownloads",
+        "PackageDownloadHistories",
         "PackageIcons",
         "PackageManifests",
         "PackageOwners",
@@ -69,6 +70,7 @@ $tableNameToContainerName = @{
     "PackageContents"             = "packagecontents";
     "PackageDeprecations"         = "packagedeprecations";
     "PackageDownloads"            = "packagedownloads";
+    "PackageDownloadHistories"    = "packagedownloadhistories";
     "PackageIcons"                = "packageicons";
     "PackageManifests"            = "packagemanifests";
     "PackageOwners"               = "packageowners";

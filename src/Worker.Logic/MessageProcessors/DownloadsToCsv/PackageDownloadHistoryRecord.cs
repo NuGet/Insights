@@ -5,9 +5,9 @@ using System;
 
 namespace NuGet.Insights.Worker.DownloadsToCsv
 {
-    public partial record PackageDownloadRecord : IPackageDownloadRecord, ICsvRecord
+    [NoKustoDDL]
+    public partial record PackageDownloadHistoryRecord : IPackageDownloadRecord, ICsvRecord
     {
-        [KustoIgnore]
         public DateTimeOffset AsOfTimestamp { get; set; }
 
         public string LowerId { get; set; }

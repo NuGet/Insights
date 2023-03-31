@@ -47,12 +47,13 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             var idToOwners = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
             await foreach (var entry in data.Entries)
             {
-                if (!versionSet.DidIdEverExist(entry.Id))
+                string id = entry.Id;
+                if (!versionSet.TryGetId(entry.Id, out id))
                 {
                     continue;
                 }
 
-                if (!idToOwners.TryGetValue(entry.Id, out var owners))
+                if (!idToOwners.TryGetValue(id, out var owners))
                 {
                     // Only write when we move to the next ID. This ensures all of the owners of a given ID are in the same record.
                     if (idToOwners.Any())
@@ -61,7 +62,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
                     }
 
                     owners = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    idToOwners.Add(entry.Id, owners);
+                    idToOwners.Add(id, owners);
                 }
 
                 owners.Add(entry.Username);

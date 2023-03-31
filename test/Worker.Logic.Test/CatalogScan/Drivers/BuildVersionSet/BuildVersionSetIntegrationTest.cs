@@ -19,6 +19,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
         private const string BuildVersionSet_WithDeleteDir = nameof(BuildVersionSet_WithDelete);
         private const string BuildVersionSet_WithDuplicatesDir = nameof(BuildVersionSet_WithDuplicates);
         private const string BuildVersionSet_WithUnicodeDuplicatesDir = nameof(BuildVersionSet_WithUnicodeDuplicates);
+        private const string BuildVersionSet_WithIdCaseChangeDir = nameof(BuildVersionSet_WithIdCaseChange);
 
         public class BuildVersionSet : BuildVersionSetIntegrationTest
         {
@@ -76,14 +77,14 @@ namespace NuGet.Insights.Worker.BuildVersionSet
                 // Assert
                 await AssertOutputAsync(BuildVersionSet_WithDeleteDir, Step1);
 
-                Assert.True(versionSet1.DidIdEverExist("Nut.MediatR.ServiceLike.DependencyInjection"));
-                Assert.True(versionSet1.DidVersionEverExist("Nut.MediatR.ServiceLike.DependencyInjection", "0.0.0-PREVIEW.0.44"));
+                Assert.True(versionSet1.TryGetId("Nut.MediatR.ServiceLike.DependencyInjection", out _));
+                Assert.True(versionSet1.TryGetVersion("Nut.MediatR.ServiceLike.DependencyInjection", "0.0.0-PREVIEW.0.44", out _));
 
-                Assert.True(versionSet1.DidIdEverExist("BehaviorSample"));
-                Assert.True(versionSet1.DidVersionEverExist("BehaviorSample", "1.0.0"));
+                Assert.True(versionSet1.TryGetId("BehaviorSample", out _));
+                Assert.True(versionSet1.TryGetVersion("BehaviorSample", "1.0.0", out _));
 
-                Assert.False(versionSet1.DidIdEverExist("doesnotexist"));
-                Assert.False(versionSet1.DidVersionEverExist("doesnotexist", "1.0.0"));
+                Assert.False(versionSet1.TryGetId("doesnotexist", out _));
+                Assert.False(versionSet1.TryGetVersion("doesnotexist", "1.0.0", out _));
 
                 // Act
                 await UpdateAsync(max2);
@@ -92,14 +93,46 @@ namespace NuGet.Insights.Worker.BuildVersionSet
                 // Assert
                 await AssertOutputAsync(BuildVersionSet_WithDeleteDir, Step2);
 
-                Assert.True(versionSet2.DidIdEverExist("Nut.MediatR.ServiceLike.DependencyInjection"));
-                Assert.True(versionSet2.DidVersionEverExist("Nut.MediatR.ServiceLike.DependencyInjection", "0.0.0-PREVIEW.0.44"));
+                Assert.True(versionSet2.TryGetId("Nut.MediatR.ServiceLike.DependencyInjection", out _));
+                Assert.True(versionSet2.TryGetVersion("Nut.MediatR.ServiceLike.DependencyInjection", "0.0.0-PREVIEW.0.44", out _));
 
-                Assert.True(versionSet2.DidIdEverExist("BehaviorSample"));
-                Assert.True(versionSet2.DidVersionEverExist("BehaviorSample", "1.0.0"));
+                Assert.True(versionSet2.TryGetId("BehaviorSample", out _));
+                Assert.True(versionSet2.TryGetVersion("BehaviorSample", "1.0.0", out _));
 
-                Assert.False(versionSet2.DidIdEverExist("doesnotexist"));
-                Assert.False(versionSet2.DidVersionEverExist("doesnotexist", "1.0.0"));
+                Assert.False(versionSet2.TryGetId("doesnotexist", out _));
+                Assert.False(versionSet2.TryGetVersion("doesnotexist", "1.0.0", out _));
+            }
+        }
+
+        public class BuildVersionSet_WithIdCaseChange : BuildVersionSetIntegrationTest
+        {
+            public BuildVersionSet_WithIdCaseChange(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task Execute()
+            {
+                // Arrange
+                var min0 = DateTimeOffset.Parse("2018-11-16T04:13:07.3793051Z");
+                var max1 = DateTimeOffset.Parse("2018-11-16T04:13:15.2076282Z");
+                var max2 = DateTimeOffset.Parse("2018-11-16T04:17:16.6086735Z");
+
+                await CatalogScanService.InitializeAsync();
+                await SetCursorAsync(min0);
+
+                // Act
+                await UpdateAsync(max1);
+
+                // Assert
+                await AssertOutputAsync(BuildVersionSet_WithIdCaseChangeDir, Step1);
+
+                // Act
+                await UpdateAsync(max2);
+
+                // Assert
+                await AssertOutputAsync(BuildVersionSet_WithIdCaseChangeDir, Step2);
             }
         }
 
@@ -160,10 +193,10 @@ namespace NuGet.Insights.Worker.BuildVersionSet
                 // Assert
                 await AssertOutputAsync(BuildVersionSet_WithUnicodeDuplicatesDir, Step1);
                 var versionSet1 = await VersionSetService.GetAsync();
-                Assert.True(versionSet1.DidIdEverExist("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tost\u00E3o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of"));
-                Assert.False(versionSet1.DidIdEverExist("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tosta\u0303o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of"));
-                Assert.True(versionSet1.DidIdEverExist("Christian-Bollmann-Herzensges\u00E4nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo"));
-                Assert.False(versionSet1.DidIdEverExist("Christian-Bollmann-Herzensgesa\u0308nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo"));
+                Assert.True(versionSet1.TryGetId("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tost\u00E3o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of", out _));
+                Assert.False(versionSet1.TryGetId("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tosta\u0303o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of", out _));
+                Assert.True(versionSet1.TryGetId("Christian-Bollmann-Herzensges\u00E4nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo", out _));
+                Assert.False(versionSet1.TryGetId("Christian-Bollmann-Herzensgesa\u0308nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo", out _));
 
                 // Act
                 await SetCursorAsync(min2);
@@ -172,10 +205,10 @@ namespace NuGet.Insights.Worker.BuildVersionSet
                 // Assert
                 await AssertOutputAsync(BuildVersionSet_WithUnicodeDuplicatesDir, Step2);
                 var versionSet2 = await VersionSetService.GetAsync();
-                Assert.True(versionSet2.DidIdEverExist("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tost\u00E3o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of"));
-                Assert.True(versionSet2.DidIdEverExist("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tosta\u0303o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of"));
-                Assert.True(versionSet2.DidIdEverExist("Christian-Bollmann-Herzensges\u00E4nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo"));
-                Assert.True(versionSet2.DidIdEverExist("Christian-Bollmann-Herzensgesa\u0308nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo"));
+                Assert.True(versionSet2.TryGetId("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tost\u00E3o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of", out _));
+                Assert.True(versionSet2.TryGetId("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tosta\u0303o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of", out _));
+                Assert.True(versionSet2.TryGetId("Christian-Bollmann-Herzensges\u00E4nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo", out _));
+                Assert.True(versionSet2.TryGetId("Christian-Bollmann-Herzensgesa\u0308nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo", out _));
             }
         }
 
@@ -203,7 +236,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
             using var memoryStream = new MemoryStream();
             await blob.DownloadToAsync(memoryStream);
-            var versions = MessagePackSerializer.Deserialize<VersionSetService.Versions<OrdinalSortedDictionary<OrdinalSortedDictionary<bool>>>>(
+            var versions = MessagePackSerializer.Deserialize<VersionSetService.Versions<CaseInsensitiveSortedDictionary<CaseInsensitiveSortedDictionary<bool>>>>(
                 memoryStream.ToArray(),
                 NuGetInsightsMessagePack.Options);
             var actual = SerializeTestJson(versions);
@@ -215,13 +248,6 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             }
             var expected = File.ReadAllText(Path.Combine(TestData, testName, stepName, fileName));
             Assert.Equal(expected, actual);
-        }
-
-        public class OrdinalSortedDictionary<TValue> : SortedDictionary<string, TValue>
-        {
-            public OrdinalSortedDictionary() : base(StringComparer.Ordinal)
-            {
-            }
         }
     }
 }

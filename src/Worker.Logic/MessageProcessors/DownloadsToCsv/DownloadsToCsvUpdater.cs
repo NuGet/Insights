@@ -42,26 +42,33 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
         public async Task WriteAsync(IVersionSet versionSet, AsOfData<PackageDownloads> data, StreamWriter writer)
         {
             var record = new PackageDownloadRecord { AsOfTimestamp = data.AsOfTimestamp };
+            await WriteAsync(versionSet, record, data.Entries, writer);
+        }
+
+        public static async Task WriteAsync(IVersionSet versionSet, IPackageDownloadRecord record, IAsyncEnumerable<PackageDownloads> entries, StreamWriter writer)
+        {
             record.WriteHeader(writer);
 
-            var idToVersions = new Dictionary<string, Dictionary<string, long>>(StringComparer.OrdinalIgnoreCase);
-            await foreach (var entry in data.Entries)
+            var idToVersions = new CaseInsensitiveDictionary<CaseInsensitiveDictionary<long>>();
+            await foreach (var entry in entries)
             {
+                if (!versionSet.TryGetId(entry.Id, out var id))
+                {
+                    continue;
+                }
+
                 if (!NuGetVersion.TryParse(entry.Version, out var parsedVersion))
                 {
                     continue;
                 }
 
                 var normalizedVersion = parsedVersion.ToNormalizedString();
-                if (!versionSet.DidVersionEverExist(entry.Id, normalizedVersion))
+                if (!versionSet.TryGetVersion(entry.Id, normalizedVersion, out normalizedVersion))
                 {
                     continue;
                 }
 
-                // Mark the ID as checked, since we have an existing version and will write at least one record for it.
-                versionSet.DidIdEverExist(entry.Id);
-
-                if (!idToVersions.TryGetValue(entry.Id, out var versionToDownloads))
+                if (!idToVersions.TryGetValue(id, out var versionToDownloads))
                 {
                     // Only write when we move to the next ID. This ensures all of the versions of a given ID are in the same segment.
                     if (idToVersions.Any())
@@ -69,8 +76,8 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                         WriteAndClear(writer, record, idToVersions, versionSet);
                     }
 
-                    versionToDownloads = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
-                    idToVersions.Add(entry.Id, versionToDownloads);
+                    versionToDownloads = new CaseInsensitiveDictionary<long>();
+                    idToVersions.Add(id, versionToDownloads);
                 }
 
                 versionToDownloads[normalizedVersion] = entry.Downloads;
@@ -99,7 +106,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             }
         }
 
-        private static void WriteAndClear(StreamWriter writer, PackageDownloadRecord record, Dictionary<string, Dictionary<string, long>> idToVersions, IVersionSet versionSet)
+        private static void WriteAndClear(StreamWriter writer, IPackageDownloadRecord record, CaseInsensitiveDictionary<CaseInsensitiveDictionary<long>> idToVersions, IVersionSet versionSet)
         {
             foreach (var idPair in idToVersions)
             {

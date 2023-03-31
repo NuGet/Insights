@@ -46,8 +46,8 @@ namespace NuGet.Insights.Worker.BuildVersionSet
                     leafItems.Max(x => x.CommitTimestamp),
                     leafItems
                         .Select(x => new CatalogLeafItemData(
-                            x.PackageId.ToLowerInvariant(),
-                            x.ParsePackageVersion().ToNormalizedString().ToLowerInvariant(),
+                            x.PackageId,
+                            x.ParsePackageVersion().ToNormalizedString(),
                             x.IsPackageDelete()))
                         .ToList());
 
@@ -66,20 +66,20 @@ namespace NuGet.Insights.Worker.BuildVersionSet
         {
             var descendingBatches = await _aggregateStorageService.GetDescendingBatchesAsync(indexScan.StorageSuffix);
 
-            var idToVersionToDeleted = new OrdinalSortedDictionary<OrdinalSortedDictionary<bool>>();
+            var idToVersionToDeleted = new CaseInsensitiveSortedDictionary<CaseInsensitiveSortedDictionary<bool>>();
             foreach (var batch in descendingBatches)
             {
                 foreach (var leaf in batch.Leaves)
                 {
-                    if (!idToVersionToDeleted.TryGetValue(leaf.LowerId, out var versions))
+                    if (!idToVersionToDeleted.TryGetValue(leaf.Id, out var versions))
                     {
-                        versions = new OrdinalSortedDictionary<bool>();
-                        idToVersionToDeleted.Add(leaf.LowerId, versions);
+                        versions = new CaseInsensitiveSortedDictionary<bool>();
+                        idToVersionToDeleted.Add(leaf.Id, versions);
                     }
 
-                    if (!versions.ContainsKey(leaf.LowerVersion))
+                    if (!versions.ContainsKey(leaf.Version))
                     {
-                        versions.Add(leaf.LowerVersion, leaf.IsDeleted);
+                        versions.Add(leaf.Version, leaf.IsDeleted);
                     }
                 }
             }

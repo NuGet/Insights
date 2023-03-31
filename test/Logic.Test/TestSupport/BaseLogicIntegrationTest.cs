@@ -249,18 +249,25 @@ namespace NuGet.Insights
             return actual;
         }
 
+        private static readonly ConcurrentDictionary<string, object> StringLock = new ConcurrentDictionary<string, object>();
+
         protected static void OverwriteTestDataAndCopyToSource(string testDataFile, string actual)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(testDataFile));
-            File.WriteAllText(testDataFile, actual);
-
             var sourcePath = Path.GetFullPath(testDataFile);
             var projectDir = sourcePath.Contains("Worker.Logic.Test") ? "Worker.Logic.Test" : "Logic.Test";
             var repoDir = TestSettings.GetRepositoryRoot();
             var destPath = Path.Combine(repoDir, "test", projectDir, testDataFile);
-            Directory.CreateDirectory(Path.GetDirectoryName(destPath));
 
-            File.Copy(sourcePath, destPath, overwrite: true);
+            lock (StringLock.GetOrAdd(sourcePath, _ => new object()))
+            lock (StringLock.GetOrAdd(destPath, _ => new object()))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(testDataFile));
+                File.WriteAllText(testDataFile, actual);
+
+                Directory.CreateDirectory(Path.GetDirectoryName(destPath));
+
+                File.Copy(sourcePath, destPath, overwrite: true);
+            }
         }
 
         public Task InitializeAsync()

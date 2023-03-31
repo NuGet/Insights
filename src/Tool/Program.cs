@@ -20,6 +20,7 @@ namespace NuGet.Insights.Tool
         private static readonly IReadOnlyDictionary<string, Type> Commands = new Dictionary<string, Type>
         {
             { "process-messages", typeof(ProcessMessagesCommand) },
+            { "ingest-downloads-json", typeof(IngestDownloadsJsonCommand) },
             { "sandbox", typeof(SandboxCommand) },
         };
 

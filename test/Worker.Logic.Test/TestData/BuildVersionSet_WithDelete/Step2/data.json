@@ -2,28 +2,28 @@
   "V1": {
     "CommitTimestamp": "2020-12-20T03:03:53.7885893+00:00",
     "IdToVersionToDeleted": {
-      "amazonks3": {
+      "AmazonKS3": {
         "1.5.0": false
       },
-      "behaviorsample": {
+      "BehaviorSample": {
         "1.0.0": true
       },
-      "lunabot.commands.public": {
+      "LunaBot.Commands.Public": {
         "1.2.0": false
       },
-      "lunabot.core": {
+      "LunaBot.Core": {
         "1.0.4": false
       },
-      "nut.mediatr.behaviors": {
+      "Nut.MediatR.Behaviors": {
         "0.0.0-preview.0.44": false
       },
-      "nut.mediatr.behaviors.fluentvalidation": {
+      "Nut.MediatR.Behaviors.FluentValidation": {
         "0.0.0-preview.0.44": false
       },
-      "nut.mediatr.servicelike.dependencyinjection": {
+      "Nut.MediatR.ServiceLike.DependencyInjection": {
         "0.0.0-preview.0.44": false
       },
-      "servicelikesample": {
+      "ServiceLikeSample": {
         "1.0.0": false
       }
     }

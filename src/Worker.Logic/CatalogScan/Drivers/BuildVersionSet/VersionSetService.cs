@@ -48,7 +48,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
         public async Task<IVersionSet> GetOrNullAsync()
         {
-            (var data, _) = await ReadOrNullAsync<CaseInsensitiveDictionary<CaseInsensitiveDictionary<bool>>>();
+            (var data, _) = await ReadOrNullAsync<CaseInsensitiveDictionary<ReadableKey<CaseInsensitiveDictionary<ReadableKey<bool>>>>>();
             if (data == null)
             {
                 return null;
@@ -79,22 +79,24 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             }
         }
 
-        public async Task UpdateAsync(DateTimeOffset commitTimestamp, OrdinalSortedDictionary<OrdinalSortedDictionary<bool>> idToVersionToDeleted)
+        public async Task UpdateAsync(DateTimeOffset commitTimestamp, CaseInsensitiveSortedDictionary<CaseInsensitiveSortedDictionary<bool>> idToVersionToDeleted)
         {
             // Read the existing data.
-            (var data, var etag) = await ReadOrNullAsync<OrdinalSortedDictionary<OrdinalSortedDictionary<bool>>>();
-            BlobRequestConditions requestConditions;
+            (var data, var etag) = await ReadOrNullAsync<CaseInsensitiveSortedDictionary<ReadableKey<CaseInsensitiveSortedDictionary<ReadableKey<bool>>>>>();
+
             if (data == null)
             {
-                data = new Versions<OrdinalSortedDictionary<OrdinalSortedDictionary<bool>>>
-                {
-                    V1 = new DataV1<OrdinalSortedDictionary<OrdinalSortedDictionary<bool>>>
+                await SaveAsync(
+                    commitTimestamp,
+                    new Versions<CaseInsensitiveSortedDictionary<CaseInsensitiveSortedDictionary<bool>>>
                     {
-                        CommitTimestamp = commitTimestamp,
-                        IdToVersionToDeleted = idToVersionToDeleted
-                    }
-                };
-                requestConditions = new BlobRequestConditions { IfNoneMatch = ETag.All };
+                        V1 = new DataV1<CaseInsensitiveSortedDictionary<CaseInsensitiveSortedDictionary<bool>>>
+                        {
+                            CommitTimestamp = commitTimestamp,
+                            IdToVersionToDeleted = idToVersionToDeleted
+                        }
+                    },
+                    new BlobRequestConditions { IfNoneMatch = ETag.All });
             }
             else
             {
@@ -106,28 +108,35 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
                 // Merge the new data into the existing data.
                 var idsAdded = 0;
+                var idsCaseChanged = 0;
                 var versionsAdded = 0;
                 var versionsUpdated = 0;
                 var versionsUnchanged = 0;
-                foreach (var newId in idToVersionToDeleted)
+                foreach ((var newId, var versions) in idToVersionToDeleted)
                 {
-                    if (!data.V1.IdToVersionToDeleted.TryGetValue(newId.Key, out var oldVersions))
+                    if (!data.V1.IdToVersionToDeleted.TryGetValue(newId, out var oldVersions))
                     {
-                        oldVersions = new OrdinalSortedDictionary<bool>();
-                        data.V1.IdToVersionToDeleted.Add(newId.Key, oldVersions);
+                        oldVersions = ReadableKey.Create(newId, new CaseInsensitiveSortedDictionary<ReadableKey<bool>>());
+                        data.V1.IdToVersionToDeleted.Add(newId, oldVersions);
                         idsAdded++;
                     }
-
-                    foreach (var newVersion in newId.Value)
+                    else if (oldVersions.Key != newId)
                     {
-                        if (!oldVersions.TryGetValue(newVersion.Key, out var oldDeleted))
+                        oldVersions.Key = newId;
+                        idsCaseChanged++;
+                    }
+
+                    foreach ((var version, var isDeleted) in versions)
+                    {
+                        if (!oldVersions.Value.TryGetValue(version, out var oldDeleted))
                         {
-                            oldVersions.Add(newVersion.Key, newVersion.Value);
+                            oldVersions.Value.Add(version, new ReadableKey<bool>(version, isDeleted));
                             versionsAdded++;
                         }
-                        else if (oldDeleted != newVersion.Value)
+                        else if (oldDeleted.Key != version || oldDeleted.Value != isDeleted)
                         {
-                            oldVersions[newVersion.Key] = newVersion.Value;
+                            oldDeleted.Key = version;
+                            oldDeleted.Value = isDeleted;
                             versionsUpdated++;
                         }
                         else
@@ -139,21 +148,27 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
                 _logger.LogInformation("The version set has been updated in memory. " +
                     "IDs added: {IdsAdded}, " +
+                    "IDs case changed: {IdsCaseChanged}, " +
                     "versions added: {VersionsAdded}, " +
                     "versions updated: {VersionsUpdated}, " +
                     "versions unchanged: {VersionsUnchanged}.",
                     idsAdded,
+                    idsCaseChanged,
                     versionsAdded,
                     versionsUpdated,
                     versionsUnchanged);
 
                 data.V1.CommitTimestamp = commitTimestamp;
-                requestConditions = new BlobRequestConditions { IfMatch = etag };
+                await SaveAsync(
+                    commitTimestamp,
+                    data,
+                    new BlobRequestConditions { IfMatch = etag });
             }
+        }
 
+        private async Task SaveAsync<T>(DateTimeOffset commitTimestamp, T data, BlobRequestConditions requestConditions)
+        {
             _logger.LogInformation("Writing the version set to storage with commit timestamp {CommitTimestamp:O}...", commitTimestamp);
-
-
             using var stream = await (await GetBlobAsync()).OpenWriteAsync(overwrite: true, new BlockBlobOpenWriteOptions
             {
                 OpenConditions = requestConditions,

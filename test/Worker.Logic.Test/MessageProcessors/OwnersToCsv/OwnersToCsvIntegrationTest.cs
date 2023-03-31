@@ -20,7 +20,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
 
         public OwnersToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
-            MockVersionSet.SetReturnsDefault(true);
+            SetupDefaultMockVersionSet();
         }
 
         protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
@@ -163,8 +163,9 @@ namespace NuGet.Insights.Worker.OwnersToCsv
                 var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
-                MockVersionSet.Setup(x => x.DidIdEverExist("Knapcode.TorSharp")).Returns(false);
-                MockVersionSet.Setup(x => x.DidIdEverExist("Newtonsoft.Json")).Returns(false);
+                string id;
+                MockVersionSet.Setup(x => x.TryGetId("Knapcode.TorSharp", out id)).Returns(false);
+                MockVersionSet.Setup(x => x.TryGetId("Newtonsoft.Json", out id)).Returns(false);
 
                 // Act
                 await ProcessQueueAsync(service);
@@ -176,7 +177,10 @@ namespace NuGet.Insights.Worker.OwnersToCsv
                 // Arrange
                 SetData(Step2);
                 await service.StartAsync();
-                MockVersionSet.Setup(x => x.DidIdEverExist("Knapcode.TorSharp")).Returns(true);
+                MockVersionSet
+                    .Setup(x => x.TryGetId("Knapcode.TorSharp", out id))
+                    .Returns(true)
+                    .Callback(new TryGetId((string id, out string outId) => outId = "knapcode.TORSHARP"));
 
                 // Act
                 await ProcessQueueAsync(service);

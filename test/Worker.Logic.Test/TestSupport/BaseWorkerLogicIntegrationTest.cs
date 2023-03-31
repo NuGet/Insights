@@ -42,6 +42,9 @@ namespace NuGet.Insights.Worker
 {
     public abstract class BaseWorkerLogicIntegrationTest : BaseLogicIntegrationTest
     {
+        public delegate void TryGetId(string id, out string outId);
+        public delegate void TryGetVersion(string id, string version, out string outVersion);
+
         protected BaseWorkerLogicIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
             // Version set
@@ -161,6 +164,20 @@ namespace NuGet.Insights.Worker
             }
 
             AssertStoragePrefix(x);
+        }
+
+        protected void SetupDefaultMockVersionSet()
+        {
+            string anyOutId;
+            string anyOutVersion;
+            MockVersionSet
+                .Setup(x => x.TryGetId(It.IsAny<string>(), out anyOutId))
+                .Returns(true)
+                .Callback(new TryGetId((string id, out string outId) => outId = id));
+            MockVersionSet
+                .Setup(x => x.TryGetVersion(It.IsAny<string>(), It.IsAny<string>(), out anyOutVersion))
+                .Returns(true)
+                .Callback(new TryGetVersion((string id, string version, out string outVersion) => outVersion = version));
         }
 
         protected async Task SetCursorAsync(CatalogScanDriverType driverType, DateTimeOffset min)

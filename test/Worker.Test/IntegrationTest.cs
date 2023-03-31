@@ -116,7 +116,7 @@ namespace NuGet.Insights.Worker
         {
             public CanRunTimersAsync(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {
-                MockVersionSet.SetReturnsDefault(true);
+                SetupDefaultMockVersionSet();
             }
 
             protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)

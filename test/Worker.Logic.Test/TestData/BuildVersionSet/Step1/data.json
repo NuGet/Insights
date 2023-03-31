@@ -2,94 +2,94 @@
   "V1": {
     "CommitTimestamp": "2020-12-27T05:07:21.9968244+00:00",
     "IdToVersionToDeleted": {
-      "aiwins.blogging.admin.application.contracts": {
+      "Aiwins.Blogging.Admin.Application.Contracts": {
         "4.9.9": false
       },
-      "aiwins.clientsimulation.web": {
+      "Aiwins.ClientSimulation.Web": {
         "4.9.9": false
       },
-      "aiwins.docs.admin.httpapi.client": {
+      "Aiwins.Docs.Admin.HttpApi.Client": {
         "4.9.9": false
       },
-      "aiwins.docs.domain.shared": {
+      "Aiwins.Docs.Domain.Shared": {
         "4.9.9": false
       },
-      "aiwins.rocket.featuremanagement.application.contracts": {
+      "Aiwins.Rocket.FeatureManagement.Application.Contracts": {
         "4.9.9": false
       },
-      "aiwins.rocket.identity.application.contracts": {
+      "Aiwins.Rocket.Identity.Application.Contracts": {
         "4.9.9": false
       },
-      "aiwins.rocket.identityserver.application": {
+      "Aiwins.Rocket.IdentityServer.Application": {
         "4.9.9": false
       },
-      "aiwins.rocket.identityserver.domain": {
+      "Aiwins.Rocket.IdentityServer.Domain": {
         "4.9.9": false
       },
-      "aiwins.rocket.permissionmanagement.domain.shared": {
+      "Aiwins.Rocket.PermissionManagement.Domain.Shared": {
         "4.9.9": false
       },
-      "aiwins.rocket.permissionmanagement.entityframeworkcore": {
+      "Aiwins.Rocket.PermissionManagement.EntityFrameworkCore": {
         "4.9.9": false
       },
-      "aiwins.rocket.permissionmanagement.httpapi.client": {
+      "Aiwins.Rocket.PermissionManagement.HttpApi.Client": {
         "4.9.9": false
       },
-      "aiwins.rocket.settingmanagement.domain.shared": {
+      "Aiwins.Rocket.SettingManagement.Domain.Shared": {
         "4.9.9": false
       },
-      "aiwins.rocket.storage.database.domain": {
+      "Aiwins.Rocket.Storage.Database.Domain": {
         "4.9.9": false
       },
-      "aiwins.rocket.storage.database.mongodb": {
+      "Aiwins.Rocket.Storage.Database.MongoDB": {
         "4.9.9": false
       },
-      "aiwins.rocket.tenantmanagement.application": {
+      "Aiwins.Rocket.TenantManagement.Application": {
         "4.9.9": false
       },
-      "aiwins.rocket.tenantmanagement.application.contracts": {
+      "Aiwins.Rocket.TenantManagement.Application.Contracts": {
         "4.9.9": false
       },
-      "aiwins.rocket.tenantmanagement.domain": {
+      "Aiwins.Rocket.TenantManagement.Domain": {
         "4.9.9": false
       },
-      "aiwins.rocket.tenantmanagement.entityframeworkcore": {
+      "Aiwins.Rocket.TenantManagement.EntityFrameworkCore": {
         "4.9.9": false
       },
-      "aiwins.rocket.tenantmanagement.httpapi.client": {
+      "Aiwins.Rocket.TenantManagement.HttpApi.Client": {
         "4.9.9": false
       },
-      "aiwins.rocket.tenantmanagement.web": {
+      "Aiwins.Rocket.TenantManagement.Web": {
         "4.9.9": false
       },
-      "aiwins.rocket.users.abstractions": {
+      "Aiwins.Rocket.Users.Abstractions": {
         "4.9.9": false
       },
-      "aiwins.rocket.users.domain": {
+      "Aiwins.Rocket.Users.Domain": {
         "4.9.9": false
       },
-      "aiwins.rocket.users.domain.shared": {
+      "Aiwins.Rocket.Users.Domain.Shared": {
         "4.9.9": false
       },
-      "aiwins.rocket.users.mongodb": {
+      "Aiwins.Rocket.Users.MongoDB": {
         "4.9.9": false
       },
-      "aiwins.rocket.virtualfileexplorer.web": {
+      "Aiwins.Rocket.VirtualFileExplorer.Web": {
         "4.9.9": false
       },
-      "aiwins.saas.domain": {
+      "Aiwins.Saas.Domain": {
         "4.9.9": false
       },
-      "aiwins.saas.host.httpapi": {
+      "Aiwins.Saas.Host.HttpApi": {
         "4.9.9": false
       },
-      "aiwins.saas.tenant.application": {
+      "Aiwins.Saas.Tenant.Application": {
         "4.9.9": false
       },
-      "aiwins.saas.tenant.httpapi.client": {
+      "Aiwins.Saas.Tenant.HttpApi.Client": {
         "4.9.9": false
       },
-      "cloudmersive.apiclient.netcore.documentanddataconvert": {
+      "Cloudmersive.APIClient.NETCore.DocumentAndDataConvert": {
         "2.1.8": false
       }
     }

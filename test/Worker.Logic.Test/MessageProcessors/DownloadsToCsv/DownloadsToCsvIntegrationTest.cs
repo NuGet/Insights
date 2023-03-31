@@ -16,12 +16,13 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
     {
         public const string DownloadsToCsvDir = nameof(DownloadsToCsv);
         private const string DownloadsToCsv_NonExistentVersionDir = nameof(DownloadsToCsv_NonExistentVersion);
+        private const string DownloadsToCsv_NonExistentIdDir = nameof(DownloadsToCsv_NonExistentId);
         private const string DownloadsToCsv_UnicodeDuplicatesDir = nameof(DownloadsToCsv_UnicodeDuplicates);
         private const string DownloadsToCsv_UncheckedIdAndVersionDir = nameof(DownloadsToCsv_UncheckedIdAndVersion);
 
         public DownloadsToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
-            MockVersionSet.SetReturnsDefault(true);
+            SetupDefaultMockVersionSet();
         }
 
         protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
@@ -149,6 +150,51 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             }
         }
 
+        public class DownloadsToCsv_NonExistentId : DownloadsToCsvIntegrationTest
+        {
+            public DownloadsToCsv_NonExistentId(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task ExecuteAsync()
+            {
+                // Arrange
+                ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
+                ConfigureAndSetLastModified();
+                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
+                await service.InitializeAsync();
+                await service.StartAsync();
+                string id;
+                MockVersionSet.Setup(x => x.TryGetId("Knapcode.TorSharp", out id)).Returns(false);
+                MockVersionSet.Setup(x => x.TryGetId("Newtonsoft.Json", out id)).Returns(false);
+
+                // Act
+                await ProcessQueueAsync(service);
+
+                // Assert
+                await AssertCsvBlobAsync(DownloadsToCsv_NonExistentIdDir, Step1, "downloads_08585909596854775807.csv.gz");
+                await AssertCsvBlobAsync(DownloadsToCsv_NonExistentIdDir, Step1, "latest_downloads.csv.gz");
+
+                // Arrange
+                SetData(Step2);
+                await service.StartAsync();
+                MockVersionSet
+                    .Setup(x => x.TryGetId("Knapcode.TorSharp", out id))
+                    .Returns(true)
+                    .Callback(new TryGetId((string id, out string outId) => outId = "knapcode.TORSHARP"));
+
+                // Act
+                await ProcessQueueAsync(service);
+
+                // Assert
+                await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 3);
+                await AssertCsvBlobAsync(DownloadsToCsv_NonExistentIdDir, Step1, "downloads_08585909596854775807.csv.gz");
+                await AssertCsvBlobAsync(DownloadsToCsv_NonExistentIdDir, Step2, "downloads_08585908696854775807.csv.gz");
+                await AssertCsvBlobAsync(DownloadsToCsv_NonExistentIdDir, Step2, "latest_downloads.csv.gz");
+            }
+        }
+
         public class DownloadsToCsv_NonExistentVersion : DownloadsToCsvIntegrationTest
         {
             public DownloadsToCsv_NonExistentVersion(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
@@ -164,8 +210,9 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
-                MockVersionSet.Setup(x => x.DidVersionEverExist("Knapcode.TorSharp", "2.0.7")).Returns(false);
-                MockVersionSet.Setup(x => x.DidVersionEverExist("Newtonsoft.Json", "10.5.0")).Returns(false);
+                string version;
+                MockVersionSet.Setup(x => x.TryGetVersion("Knapcode.TorSharp", "2.0.7", out version)).Returns(false);
+                MockVersionSet.Setup(x => x.TryGetVersion("Newtonsoft.Json", "10.5.0", out version)).Returns(false);
 
                 // Act
                 await ProcessQueueAsync(service);
@@ -177,7 +224,10 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 // Arrange
                 SetData(Step2);
                 await service.StartAsync();
-                MockVersionSet.Setup(x => x.DidVersionEverExist("Knapcode.TorSharp", "2.0.7")).Returns(true);
+                MockVersionSet
+                    .Setup(x => x.TryGetVersion("Knapcode.TorSharp", "2.0.7", out version))
+                    .Returns(true)
+                    .Callback(new TryGetVersion((string id, string version, out string outVersion) => outVersion = version));
 
                 // Act
                 await ProcessQueueAsync(service);
@@ -205,7 +255,8 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
                 await service.InitializeAsync();
                 await service.StartAsync();
-                MockVersionSet.Setup(x => x.DidVersionEverExist("Knapcode.TorSharp", "2.0.7")).Returns(false);
+                string version;
+                MockVersionSet.Setup(x => x.TryGetVersion("Knapcode.TorSharp", "2.0.7", out version)).Returns(false);
                 MockVersionSet.Setup(x => x.GetUncheckedIds()).Returns(new[] { "UncheckedB", "UncheckedA", "Knapcode.TorSharp" });
                 MockVersionSet.Setup(x => x.GetUncheckedVersions("UncheckedA")).Returns(new[] { "2.0.0", "1.0.0" });
                 MockVersionSet.Setup(x => x.GetUncheckedVersions("UncheckedB")).Returns(new[] { "3.0.0" });
