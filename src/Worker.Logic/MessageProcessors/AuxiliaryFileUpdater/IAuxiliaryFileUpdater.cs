@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,6 +18,6 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
         bool AutoStart { get; }
         TimeSpan Frequency { get; }
         Task<T> GetDataAsync();
-        Task WriteAsync(IVersionSet versionSet, T data, StreamWriter writer);
+        Task WriteAsync(IVersionSet versionSet, T data, TextWriter writer);
     }
 }

@@ -39,24 +39,19 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             return await _packageDownloadsClient.GetAsync();
         }
 
-        public async Task WriteAsync(IVersionSet versionSet, AsOfData<PackageDownloads> data, StreamWriter writer)
+        public async Task WriteAsync(IVersionSet versionSet, AsOfData<PackageDownloads> data, TextWriter writer)
         {
             var record = new PackageDownloadRecord { AsOfTimestamp = data.AsOfTimestamp };
             await WriteAsync(versionSet, record, data.Entries, writer);
         }
 
-        public static async Task WriteAsync(IVersionSet versionSet, IPackageDownloadRecord record, IAsyncEnumerable<PackageDownloads> entries, StreamWriter writer)
+        public static async Task WriteAsync(IVersionSet versionSet, IPackageDownloadRecord record, IAsyncEnumerable<PackageDownloads> entries, TextWriter writer)
         {
             record.WriteHeader(writer);
 
             var idToVersions = new CaseInsensitiveDictionary<CaseInsensitiveDictionary<long>>();
             await foreach (var entry in entries)
             {
-                if (!versionSet.TryGetId(entry.Id, out var id))
-                {
-                    continue;
-                }
-
                 if (!NuGetVersion.TryParse(entry.Version, out var parsedVersion))
                 {
                     continue;
@@ -64,6 +59,11 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
 
                 var normalizedVersion = parsedVersion.ToNormalizedString();
                 if (!versionSet.TryGetVersion(entry.Id, normalizedVersion, out normalizedVersion))
+                {
+                    continue;
+                }
+
+                if (!versionSet.TryGetId(entry.Id, out var id))
                 {
                     continue;
                 }
@@ -106,7 +106,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             }
         }
 
-        private static void WriteAndClear(StreamWriter writer, IPackageDownloadRecord record, CaseInsensitiveDictionary<CaseInsensitiveDictionary<long>> idToVersions, IVersionSet versionSet)
+        private static void WriteAndClear(TextWriter writer, IPackageDownloadRecord record, CaseInsensitiveDictionary<CaseInsensitiveDictionary<long>> idToVersions, IVersionSet versionSet)
         {
             foreach (var idPair in idToVersions)
             {

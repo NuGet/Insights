@@ -39,7 +39,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             return await _packageOwnersClient.GetAsync();
         }
 
-        public async Task WriteAsync(IVersionSet versionSet, AsOfData<PackageOwner> data, StreamWriter writer)
+        public async Task WriteAsync(IVersionSet versionSet, AsOfData<PackageOwner> data, TextWriter writer)
         {
             var record = new PackageOwnerRecord { AsOfTimestamp = data.AsOfTimestamp };
             record.WriteHeader(writer);
@@ -84,7 +84,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             }
         }
 
-        private static void WriteAndClear(StreamWriter writer, PackageOwnerRecord record, Dictionary<string, HashSet<string>> idToOwners)
+        private static void WriteAndClear(TextWriter writer, PackageOwnerRecord record, Dictionary<string, HashSet<string>> idToOwners)
         {
             foreach (var pair in idToOwners)
             {

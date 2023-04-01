@@ -37,7 +37,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             return await _client.GetAsync();
         }
 
-        public async Task WriteAsync(IVersionSet versionSet, AsOfData<VerifiedPackage> data, StreamWriter writer)
+        public async Task WriteAsync(IVersionSet versionSet, AsOfData<VerifiedPackage> data, TextWriter writer)
         {
             var record = new VerifiedPackageRecord { AsOfTimestamp = data.AsOfTimestamp };
             record.WriteHeader(writer);
