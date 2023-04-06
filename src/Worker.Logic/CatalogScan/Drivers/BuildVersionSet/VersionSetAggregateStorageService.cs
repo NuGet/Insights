@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -40,12 +40,11 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
         private static IEnumerable<CatalogLeafBatchData> Deserialize(IReadOnlyList<WideEntity> entities)
         {
+            var options = NuGetInsightsMessagePack.OptionsWithStringIntern;
             foreach (var entity in entities)
             {
                 using var stream = entity.GetStream();
-                yield return MessagePackSerializer.Deserialize<CatalogLeafBatchData>(
-                    stream,
-                    NuGetInsightsMessagePack.Options);
+                yield return MessagePackSerializer.Deserialize<CatalogLeafBatchData>(stream, options);
             }
         }
 

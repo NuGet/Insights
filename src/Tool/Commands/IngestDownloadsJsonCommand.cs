@@ -175,7 +175,7 @@ namespace NuGet.Insights.Tool
             using var fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read);
             var packageHistory = await MessagePackSerializer.DeserializeAsync<CaseInsensitiveDictionary<CaseInsensitiveDictionary<DateTimeOffset>>>(
                 fileStream,
-                NuGetInsightsMessagePack.Options);
+                NuGetInsightsMessagePack.OptionsWithStringIntern);
 
             var versionSet = new HistoryVersionSet();
             foreach ((var id, var versions) in packageHistory)

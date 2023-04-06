@@ -64,7 +64,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
                 _logger.LogInformation("Reading the version set from storage...");
                 var blob = await GetBlobAsync();
                 using BlobDownloadInfo info = await blob.DownloadAsync();
-                var data = await MessagePackSerializer.DeserializeAsync<Versions<T>>(info.Content, NuGetInsightsMessagePack.Options);
+                var data = await MessagePackSerializer.DeserializeAsync<Versions<T>>(info.Content, NuGetInsightsMessagePack.OptionsWithStringIntern);
                 _logger.LogInformation(
                     "The version set exists with commit timestamp {CommitTimestamp:O} and etag {ETag} and is {Size} bytes.",
                     data.V1.CommitTimestamp,
