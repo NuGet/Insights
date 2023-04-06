@@ -168,18 +168,32 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
         private async Task SaveAsync<T>(DateTimeOffset commitTimestamp, T data, BlobRequestConditions requestConditions)
         {
-            _logger.LogInformation("Writing the version set to storage with commit timestamp {CommitTimestamp:O}...", commitTimestamp);
-            using var stream = await (await GetBlobAsync()).OpenWriteAsync(overwrite: true, new BlockBlobOpenWriteOptions
+            _logger.LogInformation("Writing the version set to the temporary blob with commit timestamp {CommitTimestamp:O}...", commitTimestamp);
+            var tempBlob = await GetTempBlobAsync();
+            using (var stream = await tempBlob.OpenWriteAsync(overwrite: true))
             {
-                OpenConditions = requestConditions,
-            });
-            await MessagePackSerializer.SerializeAsync(stream, data, NuGetInsightsMessagePack.Options);
-            _logger.LogInformation("Done writing the version set to storage.");
+                await MessagePackSerializer.SerializeAsync(stream, data, NuGetInsightsMessagePack.Options);
+            }
+            _logger.LogInformation("Done writing the version set to the temporary blob.");
+
+            var tempBlobUrlWithSas = await _serviceClientFactory.GetBlobReadUrlAsync(tempBlob.BlobContainerName, tempBlob.Name);
+
+            _logger.LogInformation("Copying the temp version set to destination blob...");
+            var blob = await GetBlobAsync();
+            await blob.SyncCopyFromUriAsync(tempBlobUrlWithSas, new BlobCopyFromUriOptions { DestinationConditions = requestConditions });
+            _logger.LogInformation("Done copying the temp version set to the destination blob.");
+
+            await tempBlob.DeleteAsync();
         }
 
         private async Task<BlockBlobClient> GetBlobAsync()
         {
             return (await GetContainerAsync()).GetBlockBlobClient("version-set.dat");
+        }
+
+        private async Task<BlockBlobClient> GetTempBlobAsync()
+        {
+            return (await GetContainerAsync()).GetBlockBlobClient("version-set.dat.temp");
         }
 
         private async Task<BlobContainerClient> GetContainerAsync()
