@@ -94,6 +94,7 @@ namespace NuGet.Insights.Worker.Workflow
         private readonly WorkflowService _workflowService;
         private readonly WorkflowStorageService _storageService;
         private readonly KustoIngestionStorageService _kustoIngestionStorageService;
+        private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -103,6 +104,7 @@ namespace NuGet.Insights.Worker.Workflow
             WorkflowService workflowService,
             WorkflowStorageService storageService,
             KustoIngestionStorageService kustoIngestionStorageService,
+            AutoRenewingStorageLeaseService leaseService,
             IMessageEnqueuer messageEnqueuer,
             ITelemetryClient telemetryClient,
             IOptions<NuGetInsightsWorkerSettings> options,
@@ -111,6 +113,7 @@ namespace NuGet.Insights.Worker.Workflow
             _workflowService = workflowService;
             _storageService = storageService;
             _kustoIngestionStorageService = kustoIngestionStorageService;
+            _leaseService = leaseService;
             _messageEnqueuer = messageEnqueuer;
             _telemetryClient = telemetryClient;
             _options = options;
@@ -124,6 +127,12 @@ namespace NuGet.Insights.Worker.Workflow
             {
                 await Task.Delay(TimeSpan.FromSeconds(dequeueCount * 15));
                 throw new InvalidOperationException($"An incomplete workflow run for {message.WorkflowRunId} should have already been created.");
+            }
+
+            await using var lease = await LeaseOrNullAsync(message);
+            if (lease == null)
+            {
+                return;
             }
 
             _logger.LogInformation("Processing workflow run {RunId}.", run.GetRunId());
@@ -151,6 +160,20 @@ namespace NuGet.Insights.Worker.Workflow
                     await _storageService.ReplaceRunAsync(run);
                 }
             }
+        }
+
+        private async Task<IAsyncDisposable> LeaseOrNullAsync(WorkflowRunMessage message)
+        {
+            var lease = await _leaseService.TryAcquireAsync(nameof(WorkflowRunMessageProcessor));
+            if (!lease.Acquired)
+            {
+                _logger.LogTransientWarning("The lease for workflow run processing is not available.");
+                message.AttemptCount++;
+                await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                return null;
+            }
+
+            return lease;
         }
 
         private record WorkflowStateTransition(
