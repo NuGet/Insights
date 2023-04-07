@@ -14,6 +14,13 @@ namespace NuGet.Insights
 {
     public static class TestSettings
     {
+        public const string StorageAccountNameEnv = "NUGETINSIGHTS_STORAGEACCOUNTNAME";
+        public const string StorageSasEnv = "NUGETINSIGHTS_STORAGESAS";
+        public const string StorageBlobReadSasEnv = "NUGETINSIGHTS_STORAGEBLOBREADSAS";
+        public const string KustoConnectionStringEnv = "NUGETINSIGHTS_KUSTOCONNECTIONSTRING";
+        public const string KustoDatabaseNameEnv = "NUGETINSIGHTS_KUSTODATABASENAME";
+        public const string KustoClientCertificateEnv = "NUGETINSIGHTS_KUSTOCLIENTCERTIFICATE";
+
         private static readonly Lazy<StorageType> LazyStorageType = new Lazy<StorageType>(() =>
         {
             if (!IsStorageEmulator)
@@ -55,33 +62,36 @@ namespace NuGet.Insights
         public static bool IsStorageEmulator => StorageConnectionString == StorageEmulatorConnectionString;
         public static StorageType StorageType => LazyStorageType.Value;
 
+        public static string KustoConnectionString => GetEnvOrNull(KustoConnectionStringEnv);
+        public static string KustoDatabaseName => GetEnvOrNull(KustoDatabaseNameEnv);
+        public static string KustoClientCertificateContent => GetEnvOrNull(KustoClientCertificateEnv);
+
+        public static string StorageAccountName => GetEnvOrNull(StorageAccountNameEnv);
+        public static string StorageSharedAccessSignature => GetEnvOrNull(StorageSasEnv);
+        public static string StorageBlobReadSharedAccessSignature => GetEnvOrNull(StorageBlobReadSasEnv);
+
         public static string StorageConnectionString
         {
             get
             {
-                var accountName = Environment.GetEnvironmentVariable("NUGETINSIGHTS_STORAGEACCOUNTNAME");
-                var sas = Environment.GetEnvironmentVariable("NUGETINSIGHTS_STORAGESAS");
-                if (string.IsNullOrWhiteSpace(accountName) || string.IsNullOrWhiteSpace(sas))
+                if (StorageAccountName is null || StorageSharedAccessSignature is null)
                 {
                     return StorageEmulatorConnectionString;
                 }
 
-                return $"AccountName={accountName};SharedAccessSignature={sas}";
+                return $"AccountName={StorageAccountName};SharedAccessSignature={StorageSharedAccessSignature}";
             }
         }
 
-        public static string StorageBlobReadSharedAccessSignature
+        private static string GetEnvOrNull(string variable)
         {
-            get
+            var value = Environment.GetEnvironmentVariable(variable);
+            if (string.IsNullOrWhiteSpace(value))
             {
-                var sas = Environment.GetEnvironmentVariable("NUGETINSIGHTS_STORAGEBLOBREADSAS");
-                if (string.IsNullOrWhiteSpace(sas))
-                {
-                    return null;
-                }
-
-                return sas;
+                return null;
             }
+
+            return value;
         }
 
         private const string StoragePrefixPatternString = @"t(?<Date>\d{6})[a-z234567]{16}";

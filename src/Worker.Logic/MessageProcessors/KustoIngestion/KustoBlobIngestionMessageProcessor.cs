@@ -5,11 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Data.Tables;
 using Kusto.Data.Common;
 using Kusto.Ingest;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.WindowsAzure.Storage.Table;
 
 namespace NuGet.Insights.Worker.KustoIngestion
 {
@@ -104,13 +104,12 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 // To make the queued ingestion result queryable across method invocations, we must do some dirty hacks.
                 // We need to capture the "IngestionStatusTable" property on the "TableReportIngestionResult" class
                 // returned here. We capture the table URL and SAS so that we can poll the ingestion status later.
-                var resultType = result.GetType();
-                var tableProperty = resultType.GetProperty("IngestionStatusTable");
-                var table = (CloudTable)tableProperty.GetValue(result);
-                var tableSas = table.ServiceClient.Credentials.SASToken;
-                var tableUrl = new UriBuilder(table.Uri) { Query = tableSas };
+                var tableProperty = result.GetType().GetProperty("IngestionStatusTable");
+                var table = tableProperty.GetValue(result);
+                var tableSasUriProperty = table.GetType().GetProperty("TableSasUri");
+                var tableSasUri = (string)tableSasUriProperty.GetValue(table);
 
-                blob.StatusUrl = tableUrl.Uri.AbsoluteUri;
+                blob.StatusUrl = tableSasUri;
                 blob.State = KustoBlobIngestionState.Working;
                 blob.Started = DateTimeOffset.UtcNow;
                 await _storageService.ReplaceBlobAsync(blob);
@@ -196,35 +195,18 @@ namespace NuGet.Insights.Worker.KustoIngestion
         {
             using var metrics = _telemetryClient.StartQueryLoopMetrics();
 
-            var statusTable = new CloudTable(new Uri(blob.StatusUrl));
+            var tableUrl = new Uri(blob.StatusUrl);
+            var statusTable = new TableClient(tableUrl);
             _logger.LogInformation(
                 "Checking ingestion status of blob {ContainerName}/{BlobName} in status table {StatusTable}.",
                 blob.GetContainerName(),
                 blob.GetBlobName(),
-                statusTable.Uri.AbsoluteUri);
-            var statusQuery = new TableQuery<IngestionStatus>
-            {
-                FilterString = TableQuery.GenerateFilterCondition(
-                    StorageUtility.PartitionKey,
-                    QueryComparisons.Equal,
-                    blob.SourceId.ToString()),
-                TakeCount = StorageUtility.MaxTakeCount,
-            };
+                tableUrl.GetLeftPart(UriPartial.Path));
 
-            TableContinuationToken token = null;
-            var statusList = new List<IngestionStatus>();
-            do
-            {
-                TableQuerySegment<IngestionStatus> segment;
-                using (metrics.TrackQuery())
-                {
-                    segment = await statusTable.ExecuteQuerySegmentedAsync(statusQuery, token);
-                }
-
-                statusList.AddRange(segment.Results);
-                token = segment.ContinuationToken;
-            }
-            while (token != null);
+            var partitionKey = blob.SourceId.ToString();
+            var statusList = await statusTable
+                .QueryAsync<IngestionStatus>(s => s.PartitionKey == partitionKey)
+                .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
             _logger.LogInformation("Fetched {Count} ingestion status records.", statusList.Count);
 
             return statusList;

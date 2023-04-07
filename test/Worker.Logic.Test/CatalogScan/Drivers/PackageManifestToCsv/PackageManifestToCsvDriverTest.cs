@@ -39,10 +39,10 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
                 nameof(NuspecReader.Xml), // Gives too raw of information
                 
                 ".ctor", // constructor
-                nameof(object.Equals), // From base object
-                nameof(object.GetHashCode), // From base object
-                nameof(object.GetType), // From base object
-                nameof(object.ToString), // From base object
+                nameof(Equals), // From base object
+                nameof(GetHashCode), // From base object
+                nameof(GetType), // From base object
+                nameof(ToString), // From base object
             };
 
             var serialized = new Dictionary<string, string>

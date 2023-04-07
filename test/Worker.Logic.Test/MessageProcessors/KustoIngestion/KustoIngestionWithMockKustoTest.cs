@@ -19,9 +19,9 @@ using Xunit.Abstractions;
 
 namespace NuGet.Insights.Worker.KustoIngestion
 {
-    public class KustoIngestionIntegrationTest : BaseWorkerLogicIntegrationTest
+    public class KustoIngestionWithMockKustoTest : BaseWorkerLogicIntegrationTest
     {
-        public class KustoIngestion_IngestsAllBlobs : KustoIngestionIntegrationTest
+        public class KustoIngestion_IngestsAllBlobs : KustoIngestionWithMockKustoTest
         {
             [Theory]
             [InlineData(false)]
@@ -92,7 +92,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             }
         }
 
-        public class KustoIngestion_RetriesFailedBlob : KustoIngestionIntegrationTest
+        public class KustoIngestion_RetriesFailedBlob : KustoIngestionWithMockKustoTest
         {
             [Fact]
             public async Task ExecuteAsync()
@@ -177,7 +177,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             }
         }
 
-        public class KustoIngestion_MarksFailureWhenValidationFailsTooManyTimes : KustoIngestionIntegrationTest
+        public class KustoIngestion_MarksFailureWhenValidationFailsTooManyTimes : KustoIngestionWithMockKustoTest
         {
             [Fact]
             public async Task ExecuteAsync()
@@ -236,7 +236,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             }
         }
 
-        public KustoIngestionIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+        public KustoIngestionWithMockKustoTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
         }
 

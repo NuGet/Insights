@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -84,32 +84,15 @@ namespace NuGet.Insights.Worker
         }
 
         [Fact]
-        public async Task DeleteOldContainers()
+        public async Task DeleteOldStorageContainers()
         {
-            // Clean up
-            var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
-            var containerItems = await blobServiceClient.GetBlobContainersAsync().ToListAsync();
-            foreach (var containerItem in containerItems.Where(x => IsOldStoragePrefix(x.Name)))
-            {
-                Logger.LogInformation("Deleting old container: {Name}", containerItem.Name);
-                await blobServiceClient.DeleteBlobContainerAsync(containerItem.Name);
-            }
+            await CleanUpStorageContainers(IsOldStoragePrefix);
+        }
 
-            var queueServiceClient = await ServiceClientFactory.GetQueueServiceClientAsync();
-            var queueItems = await queueServiceClient.GetQueuesAsync().ToListAsync();
-            foreach (var queueItem in queueItems.Where(x => IsOldStoragePrefix(x.Name)))
-            {
-                Logger.LogInformation("Deleting old queue: {Name}", queueItem.Name);
-                await queueServiceClient.DeleteQueueAsync(queueItem.Name);
-            }
-
-            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
-            var tableItems = await tableServiceClient.QueryAsync().ToListAsync();
-            foreach (var tableItem in tableItems.Where(x => IsOldStoragePrefix(x.Name)))
-            {
-                Logger.LogInformation("Deleting old table: {Name}", tableItem.Name);
-                await tableServiceClient.DeleteTableAsync(tableItem.Name);
-            }
+        [KustoFact]
+        public async Task DeleteOldKustoTables()
+        {
+            await CleanUpKustoTablesAsync(IsOldStoragePrefix);
         }
 
         private bool IsOldStoragePrefix(string name)

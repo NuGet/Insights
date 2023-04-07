@@ -60,6 +60,14 @@ jobs:
           custom: "build"
           arguments: "--no-restore --configuration $(BuildConfiguration)"
 
+      - pwsh: |
+          $rawCertBase64 = "$(nugetinsightstests-KustoClientCertificate)"
+          $rawCert = [Convert]::FromBase64String($rawCertBase64)
+          $certFile = Join-Path $(Agent.TempDirectory) "nugetinsightstests.pfx"
+          Set-Content $certFile -Value $rawCert -AsByteStream
+          echo "##vso[task.setvariable variable=NUGETINSIGHTS_KUSTOCLIENTCERTIFICATE;]$certFile"
+        displayName: "Save Kusto client certificate"
+
       - task: DotNetCoreCLI@2
         displayName: "Run tests"
         inputs:
@@ -68,9 +76,11 @@ jobs:
           arguments: '--no-build --no-restore --configuration $(BuildConfiguration) --logger trx --blame-hang-timeout 30m --collect "Code coverage" --results-directory $(OutputDirectory)/TestResults/'
           publishTestResults: false
         env:
-          NUGETINSIGHTS_STORAGEACCOUNTNAME: nugetinsightstests
+          NUGETINSIGHTS_STORAGEACCOUNTNAME: $(nugetinsightstests-StorageAccountName)
           NUGETINSIGHTS_STORAGESAS: $(nugetinsightstests-BlobQueueTableFullAccessSas)
           NUGETINSIGHTS_STORAGEBLOBREADSAS: $(nugetinsightstests-BlobReadSas)
+          NUGETINSIGHTS_KUSTOCONNECTIONSTRING: $(nugetinsightstests-KustoConnectionString)
+          NUGETINSIGHTS_KUSTODATABASENAME: $(nugetinsightstests-KustoDatabaseName)
         retryCountOnTaskFailure: 3
 
       - task: PublishTestResults@2

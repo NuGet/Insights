@@ -13,20 +13,21 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
+using Azure.Data.Tables.Sas;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using DiffPlex;
 using DiffPlex.DiffBuilder;
 using DiffPlex.DiffBuilder.Model;
 using Kusto.Data.Common;
+using Kusto.Data.Net.Client;
 using Kusto.Ingest;
 using MessagePack;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Table;
 using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Insights.ReferenceTracking;
@@ -189,6 +190,11 @@ namespace NuGet.Insights.Worker
 
         public ConcurrentBag<CatalogIndexScan> ExpectedCatalogIndexScans { get; } = new ConcurrentBag<CatalogIndexScan>();
 
+        protected async Task<CatalogIndexScan> UpdateAsync(CatalogScanDriverType driverType, DateTimeOffset max)
+        {
+            return await UpdateAsync(driverType, null, max);
+        }
+
         protected async Task<CatalogIndexScan> UpdateAsync(CatalogScanDriverType driverType, bool? onlyLatestLeaves, DateTimeOffset max)
         {
             var result = await CatalogScanService.UpdateAsync(driverType, max, onlyLatestLeaves);
@@ -350,34 +356,26 @@ namespace NuGet.Insights.Worker
 
         public async Task<IKustoIngestionResult> MakeTableReportIngestionResultAsync(StorageSourceOptions options, Status status)
         {
-            var account = CloudStorageAccount.Parse(TestSettings.StorageConnectionString);
-            var client = account.CreateCloudTableClient();
-            var writeTable = client.GetTableReference(StoragePrefix + "1kir1");
+            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
+            var writeTable = tableServiceClient.GetTableClient(StoragePrefix + "1kir1");
             await writeTable.CreateIfNotExistsAsync();
-            await writeTable.ExecuteAsync(TableOperation.Insert(new IngestionStatus(options.SourceId)
+            await writeTable.AddEntityAsync(new IngestionStatus(options.SourceId)
             {
                 Status = status,
                 UpdatedOn = DateTime.UtcNow,
-            }));
+            });
 
-            string sas;
-            if (account.Credentials.IsSAS)
+            Uri tableSasUri;
+            if (TestSettings.StorageSharedAccessSignature is not null)
             {
-                sas = account.Credentials.SASToken;
+                tableSasUri = new UriBuilder(writeTable.Uri) { Query = TestSettings.StorageSharedAccessSignature }.Uri;
             }
             else
             {
-                // Workaround for https://github.com/Azure/Azurite/issues/959
-                sas = writeTable.GetSharedAccessSignature(new SharedAccessTablePolicy
-                {
-                    Permissions = SharedAccessTablePermissions.Query,
-                    SharedAccessExpiryTime = DateTimeOffset.UtcNow.AddDays(7),
-                });
+                tableSasUri = writeTable.GenerateSasUri(TableSasPermissions.Read, DateTimeOffset.UtcNow.AddHours(6));
             }
 
-            var tableUri = new UriBuilder(writeTable.Uri) { Query = sas };
-            var readTable = new CloudTable(tableUri.Uri);
-            return new TableReportIngestionResult(readTable);
+            return new TableReportIngestionResult(new AzureCloudTable(tableSasUri.AbsoluteUri));
         }
 
         protected static SortedDictionary<string, List<string>> NormalizeHeaders(ILookup<string, string> headers, IEnumerable<string> ignore)
@@ -448,12 +446,12 @@ namespace NuGet.Insights.Worker
             TableClient table,
             string dir,
             Action<T> cleanEntity = null,
-            string fileName = "entities.json") where T : class, Azure.Data.Tables.ITableEntity, new()
+            string fileName = "entities.json") where T : class, ITableEntity, new()
         {
             var entities = await table.QueryAsync<T>().ToListAsync();
 
             // Workaround: https://github.com/Azure/azure-sdk-for-net/issues/21023
-            var setTimestamp = typeof(T).GetProperty(nameof(Azure.Data.Tables.ITableEntity.Timestamp));
+            var setTimestamp = typeof(T).GetProperty(nameof(ITableEntity.Timestamp));
 
             foreach (var entity in entities)
             {
@@ -467,7 +465,7 @@ namespace NuGet.Insights.Worker
             AssertEqualWithDiff(testDataFile, actual);
         }
 
-        private void AssertEqualWithDiff(string expectedPath, string actual)
+        protected void AssertEqualWithDiff(string expectedPath, string actual)
         {
             if (OverwriteTestData)
             {
@@ -690,20 +688,68 @@ namespace NuGet.Insights.Worker
 
             var table = (await ServiceClientFactory.GetTableServiceClientAsync())
                 .GetTableClient(Options.Value.SubjectToOwnerReferenceTableName);
-            await AssertEntityOutputAsync<Azure.Data.Tables.TableEntity>(
+            await AssertEntityOutputAsync<TableEntity>(
                 table,
                 dir,
                 fileName: fileName ?? "subject-to-owner.json");
         }
 
-        private class TableReportIngestionResult : IKustoIngestionResult
+        private ICslAdminProvider GetKustoAdminClient()
         {
-            public TableReportIngestionResult(CloudTable ingestionStatusTable)
+            var connectionStringBuilder = ServiceCollectionExtensions.GetKustoConnectionStringBuilder(new NuGetInsightsWorkerSettings
             {
-                IngestionStatusTable = ingestionStatusTable;
+                KustoConnectionString = TestSettings.KustoConnectionString,
+                KustoClientCertificateContent = TestSettings.KustoClientCertificateContent,
+            });
+
+            return KustoClientFactory.CreateCslAdminProvider(connectionStringBuilder);
+        }
+
+        protected async Task CleanUpKustoTablesAsync(Predicate<string> shouldDelete = null)
+        {
+            var tables = await GetKustoTablesAsync(shouldDelete);
+
+            using var adminClient = GetKustoAdminClient();
+            foreach (var table in tables)
+            {
+                Logger.LogInformation("Deleting Kusto table: {Name}", table);
+                using var reader = await adminClient.ExecuteControlCommandAsync(TestSettings.KustoDatabaseName, ".drop table " + table);
+            }
+        }
+
+        protected async Task<List<string>> GetKustoTablesAsync(Predicate<string> shouldInclude = null)
+        {
+            if (shouldInclude is null)
+            {
+                shouldInclude = x => x.StartsWith(StoragePrefix);
             }
 
-            public CloudTable IngestionStatusTable { get; }
+            using var adminClient = GetKustoAdminClient();
+
+            var tables = new List<string>();
+            using (var reader = await adminClient.ExecuteControlCommandAsync(TestSettings.KustoDatabaseName, ".show tables"))
+            {
+                while (reader.Read())
+                {
+                    var tableName = (string)reader["TableName"];
+                    if (shouldInclude(tableName))
+                    {
+                        tables.Add(tableName);
+                    }
+                }
+            }
+
+            return tables;
+        }
+
+        private class TableReportIngestionResult : IKustoIngestionResult
+        {
+            public TableReportIngestionResult(ICloudTable table)
+            {
+                IngestionStatusTable = table;
+            }
+
+            public ICloudTable IngestionStatusTable { get; }
 
             public IngestionStatus GetIngestionStatusBySourceId(Guid sourceId)
             {
@@ -714,6 +760,21 @@ namespace NuGet.Insights.Worker
             {
                 throw new NotImplementedException();
             }
+        }
+
+        private interface ICloudTable
+        {
+            string TableSasUri { get; }
+        }
+
+        public class AzureCloudTable : ICloudTable
+        {
+            public AzureCloudTable(string tableSasUri)
+            {
+                TableSasUri = tableSasUri;
+            }
+
+            public string TableSasUri { get; }
         }
     }
 }

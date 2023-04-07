@@ -27,6 +27,7 @@ using NuGet.Insights.Worker.Workflow;
 using NuGet.Insights.Worker.ReferenceTracking;
 using NuGet.Insights.Worker.LoadPackageReadme;
 using NuGet.Insights.Worker.LoadSymbolPackageArchive;
+using System.Security.Cryptography.X509Certificates;
 
 namespace NuGet.Insights.Worker
 {
@@ -34,6 +35,28 @@ namespace NuGet.Insights.Worker
     {
         private class Marker
         {
+        }
+
+        public static KustoConnectionStringBuilder GetKustoConnectionStringBuilder(NuGetInsightsWorkerSettings settings)
+        {
+            var builder = new KustoConnectionStringBuilder(settings.KustoConnectionString);
+
+            if (settings.UserManagedIdentityClientId != null && settings.KustoUseUserManagedIdentity)
+            {
+                builder = builder.WithAadUserManagedIdentity(settings.UserManagedIdentityClientId);
+            }
+
+            if (settings.KustoClientCertificateContent != null)
+            {
+                var certificate = new X509Certificate2(settings.KustoClientCertificateContent);
+                builder = builder.WithAadApplicationCertificateAuthentication(
+                    builder.ApplicationClientId,
+                    certificate,
+                    builder.Authority,
+                    builder.ApplicationCertificateSendX5c);
+            }
+
+            return builder;
         }
 
         public static IServiceCollection AddNuGetInsightsWorker(this IServiceCollection serviceCollection)
@@ -80,13 +103,7 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient(x =>
             {
                 var options = x.GetRequiredService<IOptions<NuGetInsightsWorkerSettings>>();
-                var builder = new KustoConnectionStringBuilder(options.Value.KustoConnectionString);
-                if (options.Value.UserManagedIdentityClientId != null && options.Value.KustoUseUserManagedIdentity)
-                {
-                    builder = builder.WithAadUserManagedIdentity(options.Value.UserManagedIdentityClientId);
-                }
-
-                return builder;
+                return GetKustoConnectionStringBuilder(options.Value);
             });
             serviceCollection.AddSingleton(x =>
             {

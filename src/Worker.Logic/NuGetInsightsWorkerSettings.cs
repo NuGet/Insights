@@ -166,6 +166,13 @@ namespace NuGet.Insights.Worker
         public string KustoConnectionString { get; set; }
         public string KustoDatabaseName { get; set; }
         public bool KustoUseUserManagedIdentity { get; set; }
+
+        /// <summary>
+        /// A path to a certificate that will be loaded as a <see cref="System.Security.Cryptography.X509Certificates.X509Certificate2"/>
+        /// for Kusto AAD client app authentication.
+        /// </summary>
+        public string KustoClientCertificateContent { get; set; }
+
         public bool KustoApplyPartitioningPolicy { get; set; }
         public string KustoTableNameFormat { get; set; }
         public int OldKustoIngestionsToKeep { get; set; }

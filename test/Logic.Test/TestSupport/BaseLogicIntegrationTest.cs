@@ -284,27 +284,34 @@ namespace NuGet.Insights
             }
             finally
             {
-                // Clean up
-                var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
-                var containerItems = await blobServiceClient.GetBlobContainersAsync(prefix: StoragePrefix).ToListAsync();
-                foreach (var containerItem in containerItems)
-                {
-                    await blobServiceClient.DeleteBlobContainerAsync(containerItem.Name);
-                }
+                await CleanUpStorageContainers(x => x.StartsWith(StoragePrefix));
+            }
+        }
 
-                var queueServiceClient = await ServiceClientFactory.GetQueueServiceClientAsync();
-                var queueItems = await queueServiceClient.GetQueuesAsync(prefix: StoragePrefix).ToListAsync();
-                foreach (var queueItem in queueItems)
-                {
-                    await queueServiceClient.DeleteQueueAsync(queueItem.Name);
-                }
+        protected async Task CleanUpStorageContainers(Predicate<string> shouldDelete)
+        {
+            var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
+            var containerItems = await blobServiceClient.GetBlobContainersAsync().ToListAsync();
+            foreach (var containerItem in containerItems.Where(x => shouldDelete(x.Name)))
+            {
+                Logger.LogInformation("Deleting blob container: {Name}", containerItem.Name);
+                await blobServiceClient.DeleteBlobContainerAsync(containerItem.Name);
+            }
 
-                var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
-                var tableItems = await tableServiceClient.QueryAsync(prefix: StoragePrefix).ToListAsync();
-                foreach (var tableItem in tableItems)
-                {
-                    await tableServiceClient.DeleteTableAsync(tableItem.Name);
-                }
+            var queueServiceClient = await ServiceClientFactory.GetQueueServiceClientAsync();
+            var queueItems = await queueServiceClient.GetQueuesAsync().ToListAsync();
+            foreach (var queueItem in queueItems.Where(x => shouldDelete(x.Name)))
+            {
+                Logger.LogInformation("Deleting storage queue: {Name}", queueItem.Name);
+                await queueServiceClient.DeleteQueueAsync(queueItem.Name);
+            }
+
+            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
+            var tableItems = await tableServiceClient.QueryAsync().ToListAsync();
+            foreach (var tableItem in tableItems.Where(x => shouldDelete(x.Name)))
+            {
+                Logger.LogInformation("Deleting storage table: {Name}", tableItem.Name);
+                await tableServiceClient.DeleteTableAsync(tableItem.Name);
             }
         }
 
