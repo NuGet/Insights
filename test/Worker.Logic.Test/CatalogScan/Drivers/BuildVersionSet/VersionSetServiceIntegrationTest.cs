@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -40,7 +41,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
         }
 
         [Fact]
-        public async Task ReturnsCachedVersionSetWhenAnotherHandleIsActive()
+        public async Task ReturnsDifferentInstanceWhenAnotherHandleIsActive()
         {
             // Arrange
             await Target.InitializeAsync();
@@ -52,7 +53,36 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             using (var handleB = await Target.GetAsync())
             {
                 // Assert
-                Assert.Same(handleA.Value, handleB.Value);
+                Assert.NotSame(handleA.Value, handleB.Value);
+            }
+        }
+
+        [Fact]
+        public async Task UncheckedIdsAreTrackedSeparately()
+        {
+            // Arrange
+            await Target.InitializeAsync();
+            var commitTimestamp = new DateTimeOffset(2023, 4, 1, 12, 0, 0, TimeSpan.Zero);
+            await Target.UpdateAsync(
+                commitTimestamp,
+                new CaseInsensitiveSortedDictionary<CaseInsensitiveSortedDictionary<bool>>
+                {
+                    { "Knapcode.TorSharp", new CaseInsensitiveSortedDictionary<bool> { { "1.0.0", false } } },
+                    { "Newtonsoft.Json", new CaseInsensitiveSortedDictionary<bool> { { "9.0.1", false } } },
+                });
+
+            // Act
+            using (var handleA = await Target.GetAsync())
+            using (var handleB = await Target.GetAsync())
+            using (var handleC = await Target.GetAsync())
+            {
+                handleA.Value.TryGetId("newtonsoft.json", out _);
+                handleB.Value.TryGetId("knapcode.torsharp", out _);
+
+                // Assert
+                Assert.Equal(new[] { "Knapcode.TorSharp" }, handleA.Value.GetUncheckedIds());
+                Assert.Equal(new[] { "Newtonsoft.Json" }, handleB.Value.GetUncheckedIds());
+                Assert.Equal(new[] { "Knapcode.TorSharp", "Newtonsoft.Json" }, handleC.Value.GetUncheckedIds().OrderBy(x => x));
             }
         }
 

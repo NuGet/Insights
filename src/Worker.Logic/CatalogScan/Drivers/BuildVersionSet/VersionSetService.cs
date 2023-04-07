@@ -13,13 +13,14 @@ using Azure.Storage.Blobs.Specialized;
 using MessagePack;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using VersionListData = NuGet.Insights.CaseInsensitiveDictionary<NuGet.Insights.ReadableKey<NuGet.Insights.CaseInsensitiveDictionary<NuGet.Insights.ReadableKey<bool>>>>;
 
 namespace NuGet.Insights.Worker.BuildVersionSet
 {
     public class VersionSetService : IVersionSetProvider
     {
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
-        private readonly EntityReferenceCounter<Task<VersionSet>> _cachedVersionSet = new EntityReferenceCounter<Task<VersionSet>>();
+        private readonly EntityReferenceCounter<Task<Versions<VersionListData>>> _cachedVersionSet = new EntityReferenceCounter<Task<Versions<VersionListData>>>();
 
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
@@ -57,7 +58,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
         public async Task<EntityHandle<IVersionSet>> GetOrNullAsync()
         {
-            Task<VersionSet> task;
+            Task<Versions<VersionListData>> task;
 
             await _semaphore.WaitAsync();
             try
@@ -70,7 +71,10 @@ namespace NuGet.Insights.Worker.BuildVersionSet
                     _cachedVersionSet.Value = task;
                 }
 
-                return new EntityHandle<IVersionSet>(_cachedVersionSet, await task);
+                var data = await task;
+                var versionSet = data is null ? null : new VersionSet(data.V1.CommitTimestamp, data.V1.IdToVersionToDeleted);
+
+                return new EntityHandle<IVersionSet>(_cachedVersionSet, versionSet);
             }
             finally
             {
@@ -78,17 +82,17 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             }
         }
 
-        private async Task<VersionSet> GetOrNullWithoutLockAsync()
+        private async Task<Versions<VersionListData>> GetOrNullWithoutLockAsync()
         {
             var sw = Stopwatch.StartNew();
-            (var data, _) = await ReadOrNullWithoutLockingAsync<CaseInsensitiveDictionary<ReadableKey<CaseInsensitiveDictionary<ReadableKey<bool>>>>>();
+            (var data, _) = await ReadOrNullWithoutLockingAsync<VersionListData>();
             _telemetryClient.TrackMetric(nameof(VersionSetService) + ".ReadUnsorted.ElapsedMs", sw.Elapsed.TotalMilliseconds);
             if (data == null)
             {
                 return null;
             }
 
-            return new VersionSet(data.V1.CommitTimestamp, data.V1.IdToVersionToDeleted);
+            return data;
         }
 
         private async Task<(Versions<T> data, ETag etag)> ReadOrNullWithoutLockingAsync<T>()
