@@ -65,42 +65,46 @@ namespace NuGet.Insights.Worker.BuildVersionSet
                 await SetCursorAsync(min0);
 
                 // Act
-                var versionSet0 = await VersionSetService.GetOrNullAsync();
+                using (var versionSetHandle0 = await VersionSetService.GetOrNullAsync())
+                {
+                    // Assert
+                    Assert.Null(versionSetHandle0.Value);
+                }
 
-                // Assert
-                Assert.Null(versionSet0);
 
                 // Act
                 await UpdateAsync(max1);
-                var versionSet1 = await VersionSetService.GetAsync();
+                using (var versionSetHandle1 = await VersionSetService.GetAsync())
+                {
+                    // Assert
+                    await AssertOutputAsync(BuildVersionSet_WithDeleteDir, Step1);
 
-                // Assert
-                await AssertOutputAsync(BuildVersionSet_WithDeleteDir, Step1);
+                    Assert.True(versionSetHandle1.Value.TryGetId("Nut.MediatR.ServiceLike.DependencyInjection", out _));
+                    Assert.True(versionSetHandle1.Value.TryGetVersion("Nut.MediatR.ServiceLike.DependencyInjection", "0.0.0-PREVIEW.0.44", out _));
 
-                Assert.True(versionSet1.TryGetId("Nut.MediatR.ServiceLike.DependencyInjection", out _));
-                Assert.True(versionSet1.TryGetVersion("Nut.MediatR.ServiceLike.DependencyInjection", "0.0.0-PREVIEW.0.44", out _));
+                    Assert.True(versionSetHandle1.Value.TryGetId("BehaviorSample", out _));
+                    Assert.True(versionSetHandle1.Value.TryGetVersion("BehaviorSample", "1.0.0", out _));
 
-                Assert.True(versionSet1.TryGetId("BehaviorSample", out _));
-                Assert.True(versionSet1.TryGetVersion("BehaviorSample", "1.0.0", out _));
-
-                Assert.False(versionSet1.TryGetId("doesnotexist", out _));
-                Assert.False(versionSet1.TryGetVersion("doesnotexist", "1.0.0", out _));
+                    Assert.False(versionSetHandle1.Value.TryGetId("doesnotexist", out _));
+                    Assert.False(versionSetHandle1.Value.TryGetVersion("doesnotexist", "1.0.0", out _));
+                }
 
                 // Act
                 await UpdateAsync(max2);
-                var versionSet2 = await VersionSetService.GetAsync();
+                using (var versionSetHandle2 = await VersionSetService.GetAsync())
+                {
+                    // Assert
+                    await AssertOutputAsync(BuildVersionSet_WithDeleteDir, Step2);
 
-                // Assert
-                await AssertOutputAsync(BuildVersionSet_WithDeleteDir, Step2);
+                    Assert.True(versionSetHandle2.Value.TryGetId("Nut.MediatR.ServiceLike.DependencyInjection", out _));
+                    Assert.True(versionSetHandle2.Value.TryGetVersion("Nut.MediatR.ServiceLike.DependencyInjection", "0.0.0-PREVIEW.0.44", out _));
 
-                Assert.True(versionSet2.TryGetId("Nut.MediatR.ServiceLike.DependencyInjection", out _));
-                Assert.True(versionSet2.TryGetVersion("Nut.MediatR.ServiceLike.DependencyInjection", "0.0.0-PREVIEW.0.44", out _));
+                    Assert.True(versionSetHandle2.Value.TryGetId("BehaviorSample", out _));
+                    Assert.True(versionSetHandle2.Value.TryGetVersion("BehaviorSample", "1.0.0", out _));
 
-                Assert.True(versionSet2.TryGetId("BehaviorSample", out _));
-                Assert.True(versionSet2.TryGetVersion("BehaviorSample", "1.0.0", out _));
-
-                Assert.False(versionSet2.TryGetId("doesnotexist", out _));
-                Assert.False(versionSet2.TryGetVersion("doesnotexist", "1.0.0", out _));
+                    Assert.False(versionSetHandle2.Value.TryGetId("doesnotexist", out _));
+                    Assert.False(versionSetHandle2.Value.TryGetVersion("doesnotexist", "1.0.0", out _));
+                }
             }
         }
 
@@ -192,11 +196,13 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
                 // Assert
                 await AssertOutputAsync(BuildVersionSet_WithUnicodeDuplicatesDir, Step1);
-                var versionSet1 = await VersionSetService.GetAsync();
-                Assert.True(versionSet1.TryGetId("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tost\u00E3o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of", out _));
-                Assert.False(versionSet1.TryGetId("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tosta\u0303o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of", out _));
-                Assert.True(versionSet1.TryGetId("Christian-Bollmann-Herzensges\u00E4nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo", out _));
-                Assert.False(versionSet1.TryGetId("Christian-Bollmann-Herzensgesa\u0308nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo", out _));
+                using (var versionSetHandle1 = await VersionSetService.GetAsync())
+                {
+                    Assert.True(versionSetHandle1.Value.TryGetId("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tost\u00E3o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of", out _));
+                    Assert.False(versionSetHandle1.Value.TryGetId("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tosta\u0303o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of", out _));
+                    Assert.True(versionSetHandle1.Value.TryGetId("Christian-Bollmann-Herzensges\u00E4nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo", out _));
+                    Assert.False(versionSetHandle1.Value.TryGetId("Christian-Bollmann-Herzensgesa\u0308nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo", out _));
+                }
 
                 // Act
                 await SetCursorAsync(min2);
@@ -204,11 +210,13 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
                 // Assert
                 await AssertOutputAsync(BuildVersionSet_WithUnicodeDuplicatesDir, Step2);
-                var versionSet2 = await VersionSetService.GetAsync();
-                Assert.True(versionSet2.TryGetId("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tost\u00E3o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of", out _));
-                Assert.True(versionSet2.TryGetId("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tosta\u0303o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of", out _));
-                Assert.True(versionSet2.TryGetId("Christian-Bollmann-Herzensges\u00E4nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo", out _));
-                Assert.True(versionSet2.TryGetId("Christian-Bollmann-Herzensgesa\u0308nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo", out _));
+                using (var versionSetHandle2 = await VersionSetService.GetAsync())
+                {
+                    Assert.True(versionSetHandle2.Value.TryGetId("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tost\u00E3o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of", out _));
+                    Assert.True(versionSetHandle2.Value.TryGetId("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tosta\u0303o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of", out _));
+                    Assert.True(versionSetHandle2.Value.TryGetId("Christian-Bollmann-Herzensges\u00E4nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo", out _));
+                    Assert.True(versionSetHandle2.Value.TryGetId("Christian-Bollmann-Herzensgesa\u0308nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo", out _));
+                }
             }
         }
 

@@ -50,7 +50,7 @@ namespace NuGet.Insights.Worker
             // Version set
             MockVersionSet.Setup(x => x.GetUncheckedIds()).Returns(Array.Empty<string>());
             MockVersionSet.Setup(x => x.GetUncheckedVersions(It.IsAny<string>())).Returns(Array.Empty<string>());
-            MockVersionSetProvider.Setup(x => x.GetAsync()).ReturnsAsync(() => MockVersionSet.Object);
+            MockVersionSetProvider.Setup(x => x.GetAsync()).ReturnsAsync(() => EntityHandle.Create(MockVersionSet.Object));
 
             // Kusto SDK
             MockCslAdminProvider = new Mock<ICslAdminProvider>();

@@ -181,8 +181,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 {
                     _telemetryClient.TrackMetric(
                         nameof(KustoBlobIngestionMessageProcessor) + ".Complete.ElapsedMs",
-                        duration.TotalMilliseconds,
-                        new Dictionary<string, string>());
+                        duration.TotalMilliseconds);
 
                     _logger.LogInformation(
                         "The ingestion of blob {ContainerName}{BlobName} is complete.",

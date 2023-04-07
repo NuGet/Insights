@@ -380,8 +380,8 @@ namespace NuGet.Insights.Worker
         {
             serviceCollection.AddTransient<BuildVersionSetDriver>();
             serviceCollection.AddTransient<VersionSetAggregateStorageService>();
-            serviceCollection.AddTransient<VersionSetService>();
-            serviceCollection.AddTransient<IVersionSetProvider, VersionSetService>();
+            serviceCollection.AddSingleton<VersionSetService>();
+            serviceCollection.AddSingleton<IVersionSetProvider>(s => s.GetRequiredService<VersionSetService>());
         }
 
         private static void AddLoadLatestPackageLeaf(this IServiceCollection serviceCollection)

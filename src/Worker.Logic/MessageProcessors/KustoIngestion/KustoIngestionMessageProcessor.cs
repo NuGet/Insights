@@ -151,8 +151,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
                     _telemetryClient.TrackMetric(
                         nameof(KustoIngestionMessageProcessor) + ".Retrying.ElapsedMs",
-                        (DateTimeOffset.UtcNow - ingestion.Started.Value).TotalMilliseconds,
-                        new Dictionary<string, string>());
+                        (DateTimeOffset.UtcNow - ingestion.Started.Value).TotalMilliseconds);
 
                     ingestion.AttemptCount++;
                     ingestion.State = KustoIngestionState.Retrying;
@@ -183,8 +182,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     {
                         _telemetryClient.TrackMetric(
                             nameof(KustoIngestionMessageProcessor) + ".RetryingValidation.ElapsedMs",
-                            (DateTimeOffset.UtcNow - ingestion.Started.Value).TotalMilliseconds,
-                            new Dictionary<string, string>());
+                            (DateTimeOffset.UtcNow - ingestion.Started.Value).TotalMilliseconds);
 
                         await Task.Delay(TimeSpan.FromSeconds(10));
                     }
@@ -198,8 +196,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 {
                     _telemetryClient.TrackMetric(
                         nameof(KustoIngestionMessageProcessor) + ".FailedValidation.ElapsedMs",
-                        (DateTimeOffset.UtcNow - ingestion.Started.Value).TotalMilliseconds,
-                        new Dictionary<string, string>());
+                        (DateTimeOffset.UtcNow - ingestion.Started.Value).TotalMilliseconds);
 
                     _logger.LogWarning("The Kusto validation failed.");
                     await CleanUpAndSetTerminalStateAsync(ingestion, KustoIngestionState.FailedValidation);
@@ -231,8 +228,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             {
                 _telemetryClient.TrackMetric(
                     nameof(KustoIngestionMessageProcessor) + ".Complete.ElapsedMs",
-                    (DateTimeOffset.UtcNow - ingestion.Started.Value).TotalMilliseconds,
-                    new Dictionary<string, string>());
+                    (DateTimeOffset.UtcNow - ingestion.Started.Value).TotalMilliseconds);
 
                 _logger.LogInformation("The Kusto ingestion is complete.");
                 await CleanUpAndSetTerminalStateAsync(ingestion, KustoIngestionState.Complete);

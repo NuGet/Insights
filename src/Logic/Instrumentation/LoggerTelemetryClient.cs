@@ -44,7 +44,14 @@ namespace NuGet.Insights
 
         public void TrackMetric(string name, double value, IDictionary<string, string> properties)
         {
-            _logger.LogInformation("Metric emitted: {MetricName} = {MetricValue} with properties {Properties}", name, value, JsonSerializer.Serialize(properties));
+            if (properties.Count == 0)
+            {
+                _logger.LogInformation("Metric emitted: {MetricName} = {MetricValue}", name, value);
+            }
+            else
+            {
+                _logger.LogInformation("Metric emitted: {MetricName} = {MetricValue} with properties {Properties}", name, value, JsonSerializer.Serialize(properties));
+            }
         }
     }
 }

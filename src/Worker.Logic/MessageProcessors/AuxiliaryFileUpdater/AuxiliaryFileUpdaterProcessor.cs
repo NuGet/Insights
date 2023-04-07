@@ -66,7 +66,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
                 latestRequestConditions = new BlobRequestConditions { IfNoneMatch = ETag.All };
             }
 
-            var versionSet = await _versionSetProvider.GetAsync();
+            using var versionSetHandle = await _versionSetProvider.GetAsync();
 
             if (properties != null
                 && properties.Metadata.TryGetValue(AsOfTimestampMetadata, out var unparsedAsOfTimestamp)
@@ -75,7 +75,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
             {
                 if (properties.Metadata.TryGetValue(VersionSetCommitTimestampMetadata, out var unparsedVersionSetCommitTimestamp)
                     && DateTimeOffset.TryParse(unparsedVersionSetCommitTimestamp, out var versionSetCommitTimestamp)
-                    && versionSetCommitTimestamp == versionSet.CommitTimestamp)
+                    && versionSetCommitTimestamp == versionSetHandle.Value.CommitTimestamp)
                 {
                     _logger.LogInformation(
                         "The {OperationName} data from {AsOfTimestamp:O} with version set commit timestamp {VersionSetCommitTimestamp:O} already exists.",
@@ -88,17 +88,17 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 
             if (_options.Value.OnlyKeepLatestInAuxiliaryFileUpdater)
             {
-                await WriteDataAsync(versionSet, data, latestBlob);
+                await WriteDataAsync(versionSetHandle.Value, data, latestBlob);
             }
             else
             {
                 var dataBlob = await GetBlobAsync($"{_updater.BlobName}_{StorageUtility.GetDescendingId(data.AsOfTimestamp)}.csv.gz");
-                (var uncompressedLength, var etag) = await WriteDataAsync(versionSet, data, dataBlob);
+                (var uncompressedLength, var etag) = await WriteDataAsync(versionSetHandle.Value, data, dataBlob);
                 var dataRequestConditions = new BlobRequestConditions { IfMatch = etag };
                 await CopyLatestAsync(
                     uncompressedLength,
                     data.AsOfTimestamp,
-                    versionSet.CommitTimestamp,
+                    versionSetHandle.Value.CommitTimestamp,
                     dataBlob,
                     dataRequestConditions,
                     latestBlob,

@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Storage.Blobs;
@@ -16,16 +18,22 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 {
     public class VersionSetService : IVersionSetProvider
     {
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
+        private readonly EntityReferenceCounter<Task<VersionSet>> _cachedVersionSet = new EntityReferenceCounter<Task<VersionSet>>();
+
         private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<VersionSetService> _logger;
 
         public VersionSetService(
             ServiceClientFactory serviceClientFactory,
+            ITelemetryClient telemetryClient,
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<VersionSetService> logger)
         {
             _serviceClientFactory = serviceClientFactory;
+            _telemetryClient = telemetryClient;
             _options = options;
             _logger = logger;
         }
@@ -35,20 +43,46 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             await (await GetContainerAsync()).CreateIfNotExistsAsync(retry: true);
         }
 
-        public async Task<IVersionSet> GetAsync()
+        public async Task<EntityHandle<IVersionSet>> GetAsync()
         {
             var versionSet = await GetOrNullAsync();
-            if (versionSet == null)
+            if (versionSet.Value == null)
             {
+                versionSet.Dispose();
                 throw new InvalidOperationException($"No version set is available. Run the {nameof(CatalogScanDriverType.BuildVersionSet)} driver.");
             }
 
             return versionSet;
         }
 
-        public async Task<IVersionSet> GetOrNullAsync()
+        public async Task<EntityHandle<IVersionSet>> GetOrNullAsync()
         {
-            (var data, _) = await ReadOrNullAsync<CaseInsensitiveDictionary<ReadableKey<CaseInsensitiveDictionary<ReadableKey<bool>>>>>();
+            Task<VersionSet> task;
+
+            await _semaphore.WaitAsync();
+            try
+            {
+                task = _cachedVersionSet.Value;
+
+                if (task is null)
+                {
+                    task = GetOrNullWithoutLockAsync();
+                    _cachedVersionSet.Value = task;
+                }
+
+                return new EntityHandle<IVersionSet>(_cachedVersionSet, await task);
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+
+        private async Task<VersionSet> GetOrNullWithoutLockAsync()
+        {
+            var sw = Stopwatch.StartNew();
+            (var data, _) = await ReadOrNullWithoutLockingAsync<CaseInsensitiveDictionary<ReadableKey<CaseInsensitiveDictionary<ReadableKey<bool>>>>>();
+            _telemetryClient.TrackMetric(nameof(VersionSetService) + ".ReadUnsorted.ElapsedMs", sw.Elapsed.TotalMilliseconds);
             if (data == null)
             {
                 return null;
@@ -57,7 +91,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             return new VersionSet(data.V1.CommitTimestamp, data.V1.IdToVersionToDeleted);
         }
 
-        private async Task<(Versions<T> data, ETag etag)> ReadOrNullAsync<T>()
+        private async Task<(Versions<T> data, ETag etag)> ReadOrNullWithoutLockingAsync<T>()
         {
             try
             {
@@ -82,7 +116,9 @@ namespace NuGet.Insights.Worker.BuildVersionSet
         public async Task UpdateAsync(DateTimeOffset commitTimestamp, CaseInsensitiveSortedDictionary<CaseInsensitiveSortedDictionary<bool>> idToVersionToDeleted)
         {
             // Read the existing data.
-            (var data, var etag) = await ReadOrNullAsync<CaseInsensitiveSortedDictionary<ReadableKey<CaseInsensitiveSortedDictionary<ReadableKey<bool>>>>>();
+            var sw = Stopwatch.StartNew();
+            (var data, var etag) = await ReadOrNullWithoutLockingAsync<CaseInsensitiveSortedDictionary<ReadableKey<CaseInsensitiveSortedDictionary<ReadableKey<bool>>>>>();
+            _telemetryClient.TrackMetric(nameof(VersionSetService) + ".ReadSorted.ElapsedMs", sw.Elapsed.TotalMilliseconds);
 
             if (data == null)
             {
@@ -158,6 +194,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
                     versionsUpdated,
                     versionsUnchanged);
 
+                sw.Restart();
                 data.V1.CommitTimestamp = commitTimestamp;
                 await SaveAsync(
                     commitTimestamp,
@@ -168,6 +205,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
         private async Task SaveAsync<T>(DateTimeOffset commitTimestamp, T data, BlobRequestConditions requestConditions)
         {
+            var sw = Stopwatch.StartNew();
             _logger.LogInformation("Writing the version set to the temporary blob with commit timestamp {CommitTimestamp:O}...", commitTimestamp);
             var tempBlob = await GetTempBlobAsync();
             using (var stream = await tempBlob.OpenWriteAsync(overwrite: true))
@@ -184,6 +222,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             _logger.LogInformation("Done copying the temp version set to the destination blob.");
 
             await tempBlob.DeleteAsync();
+            _telemetryClient.TrackMetric(nameof(VersionSetService) + ".Save.ElapsedMs", sw.Elapsed.TotalMilliseconds);
         }
 
         private async Task<BlockBlobClient> GetBlobAsync()
