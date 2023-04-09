@@ -56,7 +56,7 @@ resource website 'Microsoft.Web/sites@2020-09-01' = {
           value: 'common'
         }
         {
-          name: 'AzureAd:UserAssignedManagedIdentityClientId'
+          name: 'AzureAd:ClientCredentials:0:ManagedIdentityClientId'
           value: userManagedIdentity.properties.clientId
         }
       ], config)
