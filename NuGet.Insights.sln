@@ -24,7 +24,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Insights.Tool", "src\Tool\NuGet.Insights.Tool.csproj", "{D9DDCBAE-4ECE-4C49-B2C3-52E011317838}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tool", "src\Tool\Tool.csproj", "{D9DDCBAE-4ECE-4C49-B2C3-52E011317838}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Worker", "src\Worker\Worker.csproj", "{A2AB8E23-B984-4436-AFD3-D627282944A4}"
 EndProject
