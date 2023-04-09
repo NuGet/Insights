@@ -7,10 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography.Pkcs;
 using System.Threading.Tasks;
+using CommunityToolkit.HighPerformance;
 using Knapcode.MiniZip;
 using MessagePack;
 using Microsoft.Extensions.Options;
-using Microsoft.Toolkit.HighPerformance;
 using NuGet.Packaging.Signing;
 
 #nullable enable

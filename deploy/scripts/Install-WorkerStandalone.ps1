@@ -16,7 +16,7 @@ param (
     [int]$LocalHealthPort,
     
     [Parameter(Mandatory = $true)]
-    [string]$ApplicationInsightsInstrumentationKey,
+    [string]$ApplicationInsightsConnectionString,
 
     [Parameter(Mandatory = $true)]
     [string]$UserManagedIdentityClientId,
@@ -109,8 +109,8 @@ $hostEnv = [ordered]@{
     "DOTNET_gcServer"                                    = "1"
 }
 
-if ($ApplicationInsightsInstrumentationKey) {
-    $hostEnv["APPINSIGHTS_INSTRUMENTATIONKEY"] = $ApplicationInsightsInstrumentationKey;
+if ($ApplicationInsightsConnectionString) {
+    $hostEnv["APPLICATIONINSIGHTS_CONNECTION_STRING"] = $ApplicationInsightsConnectionString;
 }
 
 if ($UserManagedIdentityClientId) {

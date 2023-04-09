@@ -83,10 +83,6 @@ resource appInsights 'Microsoft.Insights/components@2015-05-01' = {
 
 var sharedConfig = [
   {
-    name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-    value: appInsights.properties.InstrumentationKey
-  }
-  {
     name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
     value: appInsights.properties.ConnectionString
   }

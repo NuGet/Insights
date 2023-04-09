@@ -437,7 +437,7 @@ function New-WorkerStandaloneEnv($ResourceSettings) {
     $config = $ResourceSettings.WorkerConfig | ConvertTo-FlatConfig
 
     # Placeholder values will be overridden by the ARM deployment or by the installation script. 
-    $config["APPINSIGHTS_INSTRUMENTATIONKEY"] = "PLACEHOLDER";
+    $config["APPLICATIONINSIGHTS_CONNECTION_STRING"] = "PLACEHOLDER";
     $config["ASPNETCORE_URLS"] = "PLACEHOLDER";
     $config["AzureFunctionsJobHost__logging__Console__IsEnabled"] = "false";
     $config["AzureFunctionsJobHost__logging__LogLevel__Default"] = $ResourceSettings.WorkerLogLevel;

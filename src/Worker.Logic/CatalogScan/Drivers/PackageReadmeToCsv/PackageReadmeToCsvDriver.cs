@@ -7,8 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using CommunityToolkit.HighPerformance;
 using Microsoft.Extensions.Options;
-using Microsoft.Toolkit.HighPerformance;
 
 namespace NuGet.Insights.Worker.PackageReadmeToCsv
 {

@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.HighPerformance;
 using Knapcode.MiniZip;
 using MessagePack;
 using Microsoft.Extensions.Options;
-using Microsoft.Toolkit.HighPerformance;
 
 #nullable enable
 
