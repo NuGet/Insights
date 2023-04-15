@@ -10,8 +10,8 @@ using Kusto.Cloud.Platform.Utils;
 using Kusto.Data;
 using Kusto.Data.Net.Client;
 using Kusto.Ingest;
-using Microsoft.ApplicationInsights.TraceListener;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.BuildVersionSet;
@@ -111,30 +111,30 @@ namespace NuGet.Insights.Worker
             {
                 var options = x.GetRequiredService<IOptions<NuGetInsightsWorkerSettings>>();
 
-                ContextAwareTraceFormatter.GetStaticContext(
-                    out _,
-                    out var machineName,
-                    out var instanceId,
-                    out var instanceNumericId);
-                ContextAwareTraceFormatter.SetStaticContext(
-                    "KustoClientSideTracing",
-                    machineName,
-                    instanceId,
-                    instanceNumericId);
-
-                if (options.Value.EnableDiagnosticTracingToApplicationInsights)
+                if (options.Value.EnableDiagnosticTracingToLogger)
                 {
+                    ContextAwareTraceFormatter.GetStaticContext(
+                        out _,
+                        out var machineName,
+                        out var instanceId,
+                        out var instanceNumericId);
+                    ContextAwareTraceFormatter.SetStaticContext(
+                        "KustoClientSideTracing",
+                        machineName,
+                        instanceId,
+                        instanceNumericId);
+
                     lock (TraceListenersLock)
                     {
                         var anyListener = Trace
                             .Listeners
-                            .OfType<ApplicationInsightsTraceListener>()
+                            .OfType<LoggerTraceListener>()
                             .Any();
 
                         if (!anyListener)
                         {
-
-                            Trace.Listeners.Add(new ApplicationInsightsTraceListener());
+                            var loggerFactory = x.GetRequiredService<ILoggerFactory>();
+                            Trace.Listeners.Add(new LoggerTraceListener(loggerFactory));
                         }
                     }
                 }

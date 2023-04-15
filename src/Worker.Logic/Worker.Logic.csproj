@@ -19,7 +19,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.0.1" />
-    <PackageReference Include="Microsoft.ApplicationInsights.TraceListener" Version="2.21.0" />
     <PackageReference Include="Microsoft.Azure.Kusto.Ingest" Version="11.2.2" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.27.0" />
     <PackageReference Include="Sylvan.Data.Csv" Version="1.2.7" />
