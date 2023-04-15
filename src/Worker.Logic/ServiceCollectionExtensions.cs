@@ -107,23 +107,12 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient<KustoDataValidator>();
             serviceCollection.AddTransient<KustoIngestionTimer>();
             serviceCollection.AddTransient<CsvResultStorageContainers>();
-            serviceCollection.AddSingleton(x =>
+            serviceCollection.AddTransient(x =>
             {
                 var options = x.GetRequiredService<IOptions<NuGetInsightsWorkerSettings>>();
 
                 if (options.Value.EnableDiagnosticTracingToLogger)
                 {
-                    ContextAwareTraceFormatter.GetStaticContext(
-                        out _,
-                        out var machineName,
-                        out var instanceId,
-                        out var instanceNumericId);
-                    ContextAwareTraceFormatter.SetStaticContext(
-                        "KustoClientSideTracing",
-                        machineName,
-                        instanceId,
-                        instanceNumericId);
-
                     lock (TraceListenersLock)
                     {
                         var anyListener = Trace
@@ -133,6 +122,17 @@ namespace NuGet.Insights.Worker
 
                         if (!anyListener)
                         {
+                            ContextAwareTraceFormatter.GetStaticContext(
+                                out _,
+                                out var machineName,
+                                out var instanceId,
+                                out var instanceNumericId);
+                            ContextAwareTraceFormatter.SetStaticContext(
+                                "KustoClientSideTracing",
+                                machineName,
+                                instanceId,
+                                instanceNumericId);
+
                             var loggerFactory = x.GetRequiredService<ILoggerFactory>();
                             Trace.Listeners.Add(new LoggerTraceListener(loggerFactory));
                         }
