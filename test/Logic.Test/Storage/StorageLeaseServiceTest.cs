@@ -66,7 +66,7 @@ namespace NuGet.Insights
             public async Task FailsToReleaseLostLease()
             {
                 var leaseResultA = await Target.AcquireAsync(LeaseName, TimeSpan.FromSeconds(15));
-                await Task.Delay(TimeSpan.FromSeconds(15));
+                await Task.Delay(TimeSpan.FromSeconds(15) + TimeSpan.FromSeconds(1));
                 await Target.AcquireAsync(LeaseName, TimeSpan.FromSeconds(15));
 
                 var released = await Target.TryReleaseAsync(leaseResultA);
@@ -85,7 +85,7 @@ namespace NuGet.Insights
             public async Task FailsToReleaseLostLease()
             {
                 var leaseResultA = await Target.AcquireAsync(LeaseName, TimeSpan.FromSeconds(15));
-                await Task.Delay(TimeSpan.FromSeconds(15));
+                await Task.Delay(TimeSpan.FromSeconds(15) + TimeSpan.FromSeconds(1));
                 var leaseResultB = await Target.AcquireAsync(LeaseName, TimeSpan.FromSeconds(15));
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(
