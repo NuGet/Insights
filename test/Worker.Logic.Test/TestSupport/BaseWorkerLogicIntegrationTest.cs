@@ -707,13 +707,27 @@ namespace NuGet.Insights.Worker
 
         protected async Task CleanUpKustoTablesAsync(Predicate<string> shouldDelete = null)
         {
-            var tables = await GetKustoTablesAsync(shouldDelete);
-
-            using var adminClient = GetKustoAdminClient();
-            foreach (var table in tables)
+            var attempts = 0;
+            while (true)
             {
-                Logger.LogInformation("Deleting Kusto table: {Name}", table);
-                using var reader = await adminClient.ExecuteControlCommandAsync(TestSettings.KustoDatabaseName, ".drop table " + table);
+                try
+                {
+                    attempts++;
+                    var tables = await GetKustoTablesAsync(shouldDelete);
+
+                    using var adminClient = GetKustoAdminClient();
+                    foreach (var table in tables)
+                    {
+                        Logger.LogInformation("Deleting Kusto table: {Name}", table);
+                        using var reader = await adminClient.ExecuteControlCommandAsync(TestSettings.KustoDatabaseName, ".drop table " + table);
+                    }
+
+                    break;
+                }
+                catch (Exception ex) when (attempts < 3)
+                {
+                    Output.WriteLine("On attempt {0}, Kusto table clean-up failed with exception: {1}", attempts, ex);
+                }
             }
         }
 
