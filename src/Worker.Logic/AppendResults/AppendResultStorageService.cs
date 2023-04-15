@@ -24,6 +24,14 @@ namespace NuGet.Insights.Worker
 {
     public class AppendResultStorageService
     {
+        static AppendResultStorageService()
+        {
+            if (!BitConverter.IsLittleEndian)
+            {
+                throw new NotSupportedException($"The {nameof(GetBucket)} method only works on little endian systems right now.");
+            }
+        }
+
         private static readonly ConcurrentDictionary<Type, string> TypeToHeader = new ConcurrentDictionary<Type, string>();
 
         private const string ContentType = "text/plain";
