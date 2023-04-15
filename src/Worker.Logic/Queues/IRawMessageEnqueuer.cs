@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,5 +20,7 @@ namespace NuGet.Insights.Worker
         Task AddAsync(QueueType queue, IReadOnlyList<string> messages, TimeSpan notBefore);
         Task AddPoisonAsync(QueueType queue, IReadOnlyList<string> messages);
         Task AddPoisonAsync(QueueType queue, IReadOnlyList<string> messages, TimeSpan notBefore);
+        Task ClearAsync(QueueType queue);
+        Task ClearPoisonAsync(QueueType queue);
     }
 }

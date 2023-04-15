@@ -1,4 +1,4 @@
-﻿@{
+@{
     var title = Model.Name.Humanize().Replace("csv", "CSV");
     var isEnabled = Model.IsEnabledInConfig && Model.IsEnabledInStorage != false;
 
@@ -89,7 +89,7 @@
             <button type="submit" class="btn btn-primary mr-1" name="runNow" value="true" disabled="@(!Model.IsEnabledInConfig)">Run now</button>
             @if (isEnabled)
             {
-                <button type="submit" class="btn btn-danger" name="disable" value="true">Disable</button>
+                <button type="submit" class="btn btn-warning" name="disable" value="true">Disable</button>
             }
             else
             {

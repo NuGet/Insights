@@ -22,20 +22,21 @@
 }
 <CollapseCard IdPrefix="@Model.DriverType.ToString()" Title="@title" StatusText="@statusText" StatusTitle="@statusTitle" BorderClass="@borderClass">
     <ul class="list-group list-group-flush">
+        <li class="list-group-item"><b>Cursor:</b> @Model.Cursor.Value.ToZulu()</li>
         <li class="list-group-item"><b>Cursor age:</b> @Model.CursorAge.Humanize(precision: 7, maxUnit: Humanizer.Localisation.TimeUnit.Year, minUnit: Humanizer.Localisation.TimeUnit.Second)</li>
     </ul>
 
-    <div class="card-body">
+    <div class="card-body border-top">
         <form action="@Url.Action("UpdateCatalogScan")" method="post">
             <fieldset disabled="@(!Model.IsEnabled)" class="form-group">
                 <input type="hidden" name="driverType" value="@Model.DriverType" />
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="@Model.DriverType.ToString()-useCustomMax" name="useCustomMax" value="true" />
-                    <label class="form-check-label" for="@Model.DriverType.ToString()-useCustomMax">Use custom max</label>
+                    <input class="form-check-input" type="checkbox" id="@Model.DriverType.ToString()-useCustomCursor" name="useCustomCursor" value="true" />
+                    <label class="form-check-label" for="@Model.DriverType.ToString()-useCustomCursor">Use custom cursor</label>
                 </div>
-                <div class="form-group custom-max" style="display: none">
-                    <label for="@Model.DriverType-max">Custom max</label>
-                    <input type="text" class="form-control" name="max" id="@Model.DriverType-max" value="@Model.DefaultMax.ToZulu()">
+                <div class="form-group custom-cursor" style="display: none">
+                    <label for="@Model.DriverType-cursor">Custom cursor</label>
+                    <input type="text" class="form-control" name="max" id="@Model.DriverType-cursor" value="@Model.DefaultMax.ToZulu()">
                 </div>
                 @if (!Model.OnlyLatestLeavesSupport.HasValue)
                 {
@@ -51,7 +52,11 @@
                         <label class="form-check-label" for="@Model.DriverType.ToString()-reprocess">Reprocess</label>
                     </div>
                 }
-                <button type="submit" class="btn btn-primary">Start</button>
+                <button type="submit" class="btn btn-primary" name="start" value="true">Start</button>
+                <button type="submit" class="btn btn-danger" name="overrideCursor" value="true" style="display: none"
+                        data-message="Are you sure you want to override the cursor value on the '@title' catalog scan driver? If the new cursor value is later than the current value, some packages will likely not get processed. If the new cursor value is earlier than the current value, some packages will be reprocessed, which is typically harmless.">
+                    Override cursor
+                </button>
                 @if (!Model.IsEnabled)
                 {
                     <b class="ml-1">⚠️ This driver is disabled in configuration.</b>

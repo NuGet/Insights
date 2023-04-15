@@ -1,4 +1,4 @@
-﻿
+
 (function () {
     // Inspired by: https://scottdorman.blog/2018/08/18/saving-bootstrap-component-state/
     const collapseStateKey = "collapse-state";
@@ -53,9 +53,19 @@
     }
 
     $(function () {
-        $('input[name="useCustomMax"]').on('click', function () {
-            $(this).parent().siblings('.custom-max').toggle();
+        $('input[name="useCustomCursor"]').change(function () {
+            $(this).parent().siblings('.custom-cursor').toggle(this.checked);
+            $(this).parent().siblings('button[name="overrideCursor"]').toggle(this.checked);
         });
+
+        $('.btn-danger').on('click', function () {
+            var message = $(this).data('message');
+            if (!message) {
+                message = "Are you sure you want to do this?";
+            }
+
+            return confirm(message);
+        })
 
         $('.collapse-remember').on('hide.bs.collapse show.bs.collapse', function (e) {
             $(this).data('kc.hidden', e.type == 'hide');

@@ -1,4 +1,4 @@
-﻿footer {
+footer {
     line-height: 60px;
 }
 
@@ -65,4 +65,12 @@
 
 .admin-index [data-toggle="collapse"].collapsed .bi::before {
     content: "\f285";
+}
+
+.admin-index .card-body .form-group:last-child {
+    margin-bottom: 0;
+}
+
+.admin-index label {
+    user-select: none;
 }

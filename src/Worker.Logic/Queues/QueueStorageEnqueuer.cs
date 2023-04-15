@@ -72,6 +72,18 @@ namespace NuGet.Insights.Worker
             return messages.Length;
         }
 
+        public async Task ClearAsync(QueueType queue)
+        {
+            var queueClient = await _workerQueueFactory.GetQueueAsync(queue);
+            await queueClient.ClearMessagesAsync();
+        }
+
+        public async Task ClearPoisonAsync(QueueType queue)
+        {
+            var queueClient = await _workerQueueFactory.GetPoisonQueueAsync(queue);
+            await queueClient.ClearMessagesAsync();
+        }
+
         public async Task AddAsync(QueueType queue, IReadOnlyList<string> messages)
         {
             await AddAsync(queue, messages, TimeSpan.Zero);

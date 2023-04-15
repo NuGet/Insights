@@ -1,4 +1,4 @@
-﻿@model AdminViewModel
+@model AdminViewModel
 @{
     ViewData["Title"] = "Admin";
     ViewData["PageClass"] = "admin-index";
@@ -6,11 +6,15 @@
 
 <component type="typeof(WorkerQueueCard)"
            render-mode="Static"
-           param-Model="Model.WorkQueue" />
+           param-Model="Model.WorkQueue"
+           param-TempData="TempData"
+           param-Url="Url" />
 
 <component type="typeof(WorkerQueueCard)"
            render-mode="Static"
-           param-Model="Model.ExpandQueue" />
+           param-Model="Model.ExpandQueue"
+           param-TempData="TempData"
+           param-Url="Url" />
 
 <component type="typeof(CatalogScansCard)"
            render-mode="Static"

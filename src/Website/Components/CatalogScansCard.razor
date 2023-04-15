@@ -1,4 +1,4 @@
-﻿@{
+@{
     var error = TempData["CatalogScans.Error"]?.ToString();
     var success = TempData["CatalogScans.Success"]?.ToString();
     var hasError = !string.IsNullOrEmpty(error);
@@ -23,14 +23,19 @@
         <form action="@Url.Action("UpdateAllCatalogScans")" method="post">
             <fieldset disabled="@isDisabled" class="form-group">
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="CatalogScans-useCustomMax" name="useCustomMax" value="true" />
-                    <label class="form-check-label" for="CatalogScans-useCustomMax">Use custom max</label>
+                    <input class="form-check-input" type="checkbox" id="CatalogScans-useCustomCursor" name="useCustomCursor" value="true" />
+                    <label class="form-check-label" for="CatalogScans-useCustomCursor">Use custom cursor</label>
                 </div>
-                <div class="form-group custom-max" style="display: none">
-                    <label for="CatalogScans-max">Custom max</label>
-                    <input type="text" class="form-control" name="max" id="CatalogScans-max" value="@Model.DefaultMax.ToZulu()">
+                <div class="form-group custom-cursor" style="display: none">
+                    <label for="CatalogScans-cursor">Custom cursor</label>
+                    <input type="text" class="form-control" name="max" id="CatalogScans-cursor" value="@Model.DefaultMax.ToZulu()">
                 </div>
-                <button type="submit" class="btn btn-primary">Start all</button>
+                <button type="submit" class="btn btn-primary" name="start" value="true">Start all</button>
+                <button
+                    type="submit" class="btn btn-danger" name="overrideCursor" value="true" style="display: none"
+                    data-message="Are you sure you want to override the cursor value on all catalog scan drivers? If the new cursor value is later than the current value, some packages will likely not get processed. If the new cursor value is earlier than the current value, some packages will be reprocessed, which is typically harmless.">
+                    Override all cursors
+                </button>
                 @if (isDisabled)
                 {
                     <b class="ml-1">⚠️ Disabled because the workflow is running to avoid Kusto data inconsistency.</b>
@@ -55,5 +60,5 @@
     public ITempDataDictionary TempData { get; set; }
 
     [Parameter]
-    public IUrlHelper Url { get;  set; }
+    public IUrlHelper Url { get; set; }
 }

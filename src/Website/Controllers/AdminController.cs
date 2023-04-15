@@ -158,9 +158,28 @@ namespace NuGet.Insights.Website.Controllers
         }
 
         [HttpPost]
+        public async Task<RedirectToActionResult> ClearQueue(QueueType queueType, bool poison)
+        {
+            if (poison)
+            {
+                await _rawMessageEnqueuer.ClearPoisonAsync(queueType);
+            }
+            else
+            {
+                await _rawMessageEnqueuer.ClearAsync(queueType);
+            }
+
+            var fragment = queueType.ToString() + "Queue";
+            TempData[fragment + ".Success"] = $"Cleared the {queueType} {(poison ? "main" : "poison")} queue.";
+            return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment);
+        }
+
+        [HttpPost]
         public async Task<RedirectToActionResult> UpdateAllCatalogScans(
             bool useCustomMax,
-            string max)
+            string max,
+            bool start,
+            bool overrideCursor)
         {
             (var success, var message, var fragment) = await UpdateAllCatalogScansAsync(useCustomMax, max);
             if (success)

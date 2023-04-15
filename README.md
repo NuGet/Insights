@@ -97,7 +97,7 @@ https://nugetinsights-joel-worker-0.azurewebsites.net/ - 200 OK
 
 You can go the first URL which is the website URL. in your web browser click on
 the **Admin** link in the nav bar. Then, you can start a short run using the
-"All catalog scans" section, "Use custom max" checkbox, and "Start all" button.
+"All catalog scans" section, "Use custom cursor" checkbox, and "Start all" button.
 
 For more information about running catalog scans, see [Starting a catalog
 scan](#starting-a-catalog-scan).
@@ -178,7 +178,7 @@ steps to start your first catalog scan from the Insights admin panel.
      catalog](https://docs.microsoft.com/en-us/nuget/api/catalog-resource)
      commit.
      - Expand the **Load package archive** section.
-     - Check **Use custom max**.
+     - Check **Use custom cursor**.
      - Use the default value of `2015-02-01T06:22:45.8488496Z`, which is the
        very first commit timestamp in the NuGet V3 catalog.
      - Click **Start**.
