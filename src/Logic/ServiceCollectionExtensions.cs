@@ -73,6 +73,8 @@ namespace NuGet.Insights
                 return serviceCollection;
             }
 
+            serviceCollection.AddSingleton<Marker>();
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 string error = null;

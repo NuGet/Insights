@@ -1,12 +1,30 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xunit;
 
 namespace NuGet.Insights
 {
     public class ServiceCollectionExtensionsTest
     {
+        [Fact]
+        public void DoesNotAddTypesASecondTime()
+        {
+            // Arrange
+            var builder = new ServiceCollection();
+            builder.AddNuGetInsights();
+            Assert.Contains(builder, x => x.ServiceType == typeof(FileDownloader));
+            builder.RemoveAll<FileDownloader>();
+
+            // Act
+            builder.AddNuGetInsights();
+
+            // Assert
+            Assert.DoesNotContain(builder, x => x.ServiceType == typeof(FileDownloader));
+        }
+
         public class IcuMode
         {
             [OSPlatformFact(OSPlatformType.Windows)]

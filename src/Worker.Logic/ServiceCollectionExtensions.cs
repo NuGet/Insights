@@ -67,6 +67,8 @@ namespace NuGet.Insights.Worker
                 return serviceCollection;
             }
 
+            serviceCollection.AddSingleton<Marker>();
+
             serviceCollection.AddTransient<IRawMessageEnqueuer, QueueStorageEnqueuer>();
             serviceCollection.AddTransient<IWorkerQueueFactory, WorkerQueueFactory>();
 
