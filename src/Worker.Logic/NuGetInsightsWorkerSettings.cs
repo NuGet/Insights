@@ -87,6 +87,8 @@ namespace NuGet.Insights.Worker
             OldKustoIngestionsToKeep = 9;
             KustoIngestionMaxAttempts = 10;
             KustoValidationMaxAttempts = 3;
+
+            EnableDiagnosticTracingToApplicationInsights = false;
         }
 
         public bool UseBulkEnqueueStrategy { get; set; }
@@ -178,5 +180,7 @@ namespace NuGet.Insights.Worker
         public int OldKustoIngestionsToKeep { get; set; }
         public int KustoIngestionMaxAttempts { get; set; }
         public int KustoValidationMaxAttempts { get; set; }
+
+        public bool EnableDiagnosticTracingToApplicationInsights { get; set; }
     }
 }

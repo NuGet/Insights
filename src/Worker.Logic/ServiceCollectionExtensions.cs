@@ -2,11 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using Azure.Data.Tables;
+using Kusto.Cloud.Platform.Utils;
 using Kusto.Data;
 using Kusto.Data.Net.Client;
 using Kusto.Ingest;
+using Microsoft.ApplicationInsights.TraceListener;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
@@ -17,17 +21,16 @@ using NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId;
 using NuGet.Insights.Worker.KustoIngestion;
 using NuGet.Insights.Worker.LoadLatestPackageLeaf;
 using NuGet.Insights.Worker.LoadPackageArchive;
+using NuGet.Insights.Worker.LoadPackageManifest;
+using NuGet.Insights.Worker.LoadPackageReadme;
+using NuGet.Insights.Worker.LoadPackageVersion;
+using NuGet.Insights.Worker.LoadSymbolPackageArchive;
 #if ENABLE_CRYPTOAPI
 using NuGet.Insights.Worker.PackageCertificateToCsv;
 #endif
-using NuGet.Insights.Worker.LoadPackageManifest;
-using NuGet.Insights.Worker.LoadPackageVersion;
+using NuGet.Insights.Worker.ReferenceTracking;
 using NuGet.Insights.Worker.TableCopy;
 using NuGet.Insights.Worker.Workflow;
-using NuGet.Insights.Worker.ReferenceTracking;
-using NuGet.Insights.Worker.LoadPackageReadme;
-using NuGet.Insights.Worker.LoadSymbolPackageArchive;
-using System.Security.Cryptography.X509Certificates;
 
 namespace NuGet.Insights.Worker
 {
@@ -58,6 +61,8 @@ namespace NuGet.Insights.Worker
 
             return builder;
         }
+
+        private static readonly object TraceListenersLock = new object();
 
         public static IServiceCollection AddNuGetInsightsWorker(this IServiceCollection serviceCollection)
         {
@@ -102,9 +107,38 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient<KustoDataValidator>();
             serviceCollection.AddTransient<KustoIngestionTimer>();
             serviceCollection.AddTransient<CsvResultStorageContainers>();
-            serviceCollection.AddTransient(x =>
+            serviceCollection.AddSingleton(x =>
             {
                 var options = x.GetRequiredService<IOptions<NuGetInsightsWorkerSettings>>();
+
+                ContextAwareTraceFormatter.GetStaticContext(
+                    out _,
+                    out var machineName,
+                    out var instanceId,
+                    out var instanceNumericId);
+                ContextAwareTraceFormatter.SetStaticContext(
+                    "KustoClientSideTracing",
+                    machineName,
+                    instanceId,
+                    instanceNumericId);
+
+                if (options.Value.EnableDiagnosticTracingToApplicationInsights)
+                {
+                    lock (TraceListenersLock)
+                    {
+                        var anyListener = Trace
+                            .Listeners
+                            .OfType<ApplicationInsightsTraceListener>()
+                            .Any();
+
+                        if (!anyListener)
+                        {
+
+                            Trace.Listeners.Add(new ApplicationInsightsTraceListener());
+                        }
+                    }
+                }
+
                 return GetKustoConnectionStringBuilder(options.Value);
             });
             serviceCollection.AddSingleton(x =>
