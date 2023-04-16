@@ -154,6 +154,21 @@ namespace NuGet.Insights.Worker
             return $"CatalogScan-{driverType}";
         }
 
+        public async Task SetCursorAsync(CatalogScanDriverType driverType, DateTimeOffset value)
+        {
+            var entity = await _cursorStorageService.GetOrCreateAsync(GetCursorName(driverType));
+            entity.Value = value;
+            await _cursorStorageService.UpdateAsync(entity);
+        }
+
+        public async Task SetAllCursorsAsync(DateTimeOffset value)
+        {
+            foreach (var driverType in SortedDriverTypes)
+            {
+                await SetCursorAsync(driverType, value);
+            }
+        }
+
         public async Task<CursorTableEntity> GetCursorAsync(CatalogScanDriverType driverType)
         {
             return await _cursorStorageService.GetOrCreateAsync(GetCursorName(driverType));

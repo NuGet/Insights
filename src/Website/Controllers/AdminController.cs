@@ -13,24 +13,29 @@ namespace NuGet.Insights.Website.Controllers
     [Authorize(Policy = AllowListAuthorizationHandler.PolicyName)]
     public class AdminController : Controller
     {
+        private const string CatalogScansFragment = "CatalogScans";
+
         private readonly ControllerInitializer _initializer;
         private readonly ViewModelFactory _viewModelFactory;
         private readonly CatalogScanService _catalogScanService;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
         private readonly TimerExecutionService _timerExecutionService;
+        private readonly CatalogScanCursorService _catalogScanCursorService;
 
         public AdminController(
             ControllerInitializer initializer,
             ViewModelFactory service,
             CatalogScanService catalogScanService,
             IRawMessageEnqueuer rawMessageEnqueuer,
-            TimerExecutionService timerExecutionService)
+            TimerExecutionService timerExecutionService,
+            CatalogScanCursorService catalogScanCursorService)
         {
             _initializer = initializer;
             _viewModelFactory = service;
             _catalogScanService = catalogScanService;
             _rawMessageEnqueuer = rawMessageEnqueuer;
             _timerExecutionService = timerExecutionService;
+            _catalogScanCursorService = catalogScanCursorService;
         }
 
         [HttpGet]
@@ -55,46 +60,46 @@ namespace NuGet.Insights.Website.Controllers
             }
 
             var fragment = queueType.ToString() + "Queue";
-            TempData[fragment + ".Success"] = $"Cleared the {queueType} {(poison ? "main" : "poison")} queue.";
+            TempData[fragment + ".Success"] = $"Cleared the {queueType} {(poison ? "poison" : "main")} queue.";
             return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment);
         }
 
         [HttpPost]
         public async Task<RedirectToActionResult> UpdateAllCatalogScans(
-            bool useCustomMax,
-            string max,
+            bool useCustomCursor,
+            string cursor,
             bool start,
             bool overrideCursor)
         {
-            (var success, var message, var fragment) = await UpdateAllCatalogScansAsync(useCustomMax, max);
-            if (success)
+            DateTimeOffset? parsedCursor = null;
+            if (useCustomCursor)
             {
-                TempData[fragment + ".Success"] = message;
+                if (!DateTimeOffset.TryParse(cursor, out var parsedCursorValue))
+                {
+                    return Redirect(false, "Unable to parse the custom cursor value.", CatalogScansFragment);
+                }
+
+                parsedCursor = parsedCursorValue;
+            }
+
+            if (start)
+            {
+                return await UpdateAllCatalogScansAsync(parsedCursor);
+            }
+            else if (overrideCursor)
+            {
+                await _catalogScanCursorService.SetAllCursorsAsync(parsedCursor.Value);
+                return Redirect(true, $"All catalog scan cursors have been set to <b>{parsedCursor.Value.ToZulu()}</b>.", CatalogScansFragment);
             }
             else
             {
-                TempData[fragment + ".Error"] = message;
+                throw new NotImplementedException();
             }
-
-            return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment);
         }
 
-        private async Task<(bool Success, string Message, string Fragment)> UpdateAllCatalogScansAsync(bool useCustomMax, string max)
+        private async Task<RedirectToActionResult> UpdateAllCatalogScansAsync(DateTimeOffset? max)
         {
-            const string fragment = "CatalogScans";
-
-            DateTimeOffset? parsedMax = null;
-            if (useCustomMax)
-            {
-                if (!DateTimeOffset.TryParse(max, out var parsedMaxValue))
-                {
-                    return (false, "Unable to parse the custom max value.", fragment);
-                }
-
-                parsedMax = parsedMaxValue;
-            }
-
-            var results = await _catalogScanService.UpdateAllAsync(parsedMax);
+            var results = await _catalogScanService.UpdateAllAsync(max);
             var newStarted = results
                 .Where(x => x.Value.Type == CatalogScanServiceResultType.NewStarted)
                 .OrderBy(x => x.Key)
@@ -103,19 +108,21 @@ namespace NuGet.Insights.Website.Controllers
             if (newStarted.Count > 0)
             {
                 var firstNewStarted = newStarted[0];
-                return (true, GetNewStartedMessage(firstNewStarted.Value), firstNewStarted.Key.ToString());
+                return Redirect(true, GetNewStartedMessage(firstNewStarted.Value), firstNewStarted.Key.ToString());
             }
 
-            return (false, "No catalog scan could be started.", fragment);
+            return Redirect(false, "No catalog scan could be started.", CatalogScansFragment);
         }
 
         [HttpPost]
         public async Task<RedirectToActionResult> UpdateCatalogScan(
             CatalogScanDriverType driverType,
-            bool useCustomMax,
+            bool useCustomCursor,
             bool? onlyLatestLeaves,
             bool reprocess,
-            string max)
+            string cursor,
+            bool start,
+            bool overrideCursor)
         {
             if (!_catalogScanService.GetOnlyLatestLeavesSupport(driverType).HasValue
                 && !onlyLatestLeaves.HasValue)
@@ -123,42 +130,46 @@ namespace NuGet.Insights.Website.Controllers
                 onlyLatestLeaves = false;
             }
 
-            (var success, var message) = await UpdateCatalogScanAsync(driverType, useCustomMax, onlyLatestLeaves, reprocess, max);
-            if (success)
+            var fragment = driverType.ToString();
+
+            DateTimeOffset? parsedCursor = null;
+            if (useCustomCursor)
             {
-                TempData[driverType + ".Success"] = message;
+                if (reprocess)
+                {
+                    return Redirect(false, "Unable to reprocess with a custom max value.", fragment);
+                }
+
+                if (!DateTimeOffset.TryParse(cursor, out var parsedCursorValue))
+                {
+                    return Redirect(false, "Unable to parse the custom max value.", fragment);
+                }
+
+                parsedCursor = parsedCursorValue;
+            }
+
+            if (start)
+            {
+                (var success, var message) = await UpdateCatalogScanAsync(driverType, onlyLatestLeaves, reprocess, parsedCursor);
+                return Redirect(success, message, fragment);
+            }
+            else if (overrideCursor)
+            {
+                await _catalogScanCursorService.SetCursorAsync(driverType, parsedCursor.Value);
+                return Redirect(true, $"The cursor has been set to <b>{parsedCursor.Value.ToZulu()}</b>.", fragment);
             }
             else
             {
-                TempData[driverType + ".Error"] = message;
+                throw new NotImplementedException();
             }
-
-            return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment: driverType.ToString());
         }
 
         private async Task<(bool Success, string Message)> UpdateCatalogScanAsync(
             CatalogScanDriverType driverType,
-            bool useCustomMax,
             bool? onlyLatestLeaves,
             bool reprocess,
-            string max)
+            DateTimeOffset? max)
         {
-            DateTimeOffset? parsedMax = null;
-            if (useCustomMax)
-            {
-                if (reprocess)
-                {
-                    return (false, "Unable to reprocess with a custom max value.");
-                }
-
-                if (!DateTimeOffset.TryParse(max, out var parsedMaxValue))
-                {
-                    return (false, "Unable to parse the custom max value.");
-                }
-
-                parsedMax = parsedMaxValue;
-            }
-
             CatalogScanServiceResult result;
             if (reprocess)
             {
@@ -166,7 +177,7 @@ namespace NuGet.Insights.Website.Controllers
             }
             else
             {
-                result = await _catalogScanService.UpdateAsync(driverType, parsedMax, onlyLatestLeaves);
+                result = await _catalogScanService.UpdateAsync(driverType, max, onlyLatestLeaves);
             }
 
             switch (result.Type)
@@ -192,11 +203,6 @@ namespace NuGet.Insights.Website.Controllers
             }
         }
 
-        private static string GetNewStartedMessage(CatalogScanServiceResult result)
-        {
-            return $"Catalog scan <b>{result.Scan.GetScanId()}</b> has been started.";
-        }
-
         [HttpPost]
         public async Task<RedirectToActionResult> UpdateTimer(string timerName, bool? runNow, bool? disable, bool? enable)
         {
@@ -218,6 +224,25 @@ namespace NuGet.Insights.Website.Controllers
             }
 
             return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment: timerName);
+        }
+
+        private static string GetNewStartedMessage(CatalogScanServiceResult result)
+        {
+            return $"Catalog scan <b>{result.Scan.GetScanId()}</b> has been started.";
+        }
+
+        private RedirectToActionResult Redirect(bool success, string message, string fragment)
+        {
+            if (success)
+            {
+                TempData[fragment + ".Success"] = message;
+            }
+            else
+            {
+                TempData[fragment + ".Error"] = message;
+            }
+
+            return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment);
         }
     }
 }
