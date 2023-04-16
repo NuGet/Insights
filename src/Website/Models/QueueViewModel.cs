@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Insights.Worker;
@@ -14,5 +14,7 @@ namespace NuGet.Insights.Website.Models
         public int PoisonApproximateMessageCount { get; set; }
         public int PoisonAvailableMessageCountLowerBound { get; set; }
         public bool PoisonAvailableMessageCountIsExact { get; set; }
+        public MoveQueueMessagesState MoveMainToPoisonState { get; set; }
+        public MoveQueueMessagesState MovePoisonToMainState { get; set; }
     }
 }

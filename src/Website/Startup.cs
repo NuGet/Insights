@@ -35,10 +35,12 @@ namespace NuGet.Insights.Website
             services.AddNuGetInsightsWorker();
 
             services.AddSingleton<ControllerInitializer>();
+            services.AddSingleton<MoveMessagesTaskQueue>();
             services.AddScoped<IAuthorizationHandler, AllowListAuthorizationHandler>();
             services.AddScoped<AllowListAuthorizationHandler>();
             services.AddTransient<ViewModelFactory>();
             services.AddHostedService<InitializerHostedService>();
+            services.AddHostedService<MoveMessagesHostedService>();
 
             services.AddApplicationInsightsTelemetry(options =>
             {

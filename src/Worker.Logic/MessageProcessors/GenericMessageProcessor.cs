@@ -6,7 +6,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -37,17 +36,7 @@ namespace NuGet.Insights.Worker
 
         public async Task ProcessSingleAsync(QueueType queue, ReadOnlyMemory<byte> message, long dequeueCount)
         {
-            NameVersionMessage<object> deserializedMessage;
-            try
-            {
-                deserializedMessage = _serializer.Deserialize(message);
-            }
-            catch (JsonException)
-            {
-                var base64 = Encoding.ASCII.GetString(message.Span);
-                var json = Encoding.UTF8.GetString(Convert.FromBase64String(base64));
-                deserializedMessage = _serializer.Deserialize(json);
-            }
+            var deserializedMessage = _serializer.Deserialize(message);
 
             await ProcessSingleMessageAsync(
                 isBatch: false,

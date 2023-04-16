@@ -12,6 +12,7 @@ namespace NuGet.Insights
     {
         public const int MaxBatchSize = 100;
         public const int MaxTakeCount = 1000;
+        public const int MaxDequeueCount = 32;
 
         public const string PartitionKey = "PartitionKey";
         public const string RowKey = "RowKey";

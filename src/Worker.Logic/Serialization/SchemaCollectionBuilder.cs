@@ -35,6 +35,7 @@ namespace NuGet.Insights.Worker
         public static IReadOnlyList<ISchemaDeserializer> DefaultMessageSchemas { get; } = new ISchemaDeserializer[]
         {
             new SchemaV1<HomogeneousBulkEnqueueMessage>("hbe"),
+            new SchemaV1<HeterogeneousBulkEnqueueMessage>("hebe"),
             new SchemaV1<HomogeneousBatchMessage>("hb"),
 
             new SchemaV1<CatalogIndexScanMessage>("cis"),

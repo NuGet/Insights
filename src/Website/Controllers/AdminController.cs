@@ -21,6 +21,7 @@ namespace NuGet.Insights.Website.Controllers
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
         private readonly TimerExecutionService _timerExecutionService;
         private readonly CatalogScanCursorService _catalogScanCursorService;
+        private readonly MoveMessagesTaskQueue _moveMessagesTaskQueue;
 
         public AdminController(
             ControllerInitializer initializer,
@@ -28,7 +29,8 @@ namespace NuGet.Insights.Website.Controllers
             CatalogScanService catalogScanService,
             IRawMessageEnqueuer rawMessageEnqueuer,
             TimerExecutionService timerExecutionService,
-            CatalogScanCursorService catalogScanCursorService)
+            CatalogScanCursorService catalogScanCursorService,
+            MoveMessagesTaskQueue moveMessagesTaskQueue)
         {
             _initializer = initializer;
             _viewModelFactory = service;
@@ -36,6 +38,7 @@ namespace NuGet.Insights.Website.Controllers
             _rawMessageEnqueuer = rawMessageEnqueuer;
             _timerExecutionService = timerExecutionService;
             _catalogScanCursorService = catalogScanCursorService;
+            _moveMessagesTaskQueue = moveMessagesTaskQueue;
         }
 
         [HttpGet]
@@ -45,6 +48,32 @@ namespace NuGet.Insights.Website.Controllers
 
             var model = await _viewModelFactory.GetAdminViewModelAsync();
             return View(model);
+        }
+        
+        [HttpPost]
+        public async Task<RedirectToActionResult> MoveMessages(QueueType source, bool isPoisonSource, QueueType destination, bool isPoisonDestination)
+        {
+            var task = new MoveMessagesTask(source, isPoisonSource, destination, isPoisonDestination);
+            bool success;
+            string message;
+            if (_moveMessagesTaskQueue.IsScheduled(task))
+            {
+                success = false;
+                message = $"A copy task from {source} {(isPoisonSource ? "poison" : "main")} queue to {destination} {(isPoisonDestination ? "poison" : "main")} queue is already scheduled.";
+            }
+            else if (_moveMessagesTaskQueue.IsWorking(task))
+            {
+                success = false;
+                message = $"A copy task from {source} {(isPoisonSource ? "poison" : "main")} queue to {destination} {(isPoisonDestination ? "poison" : "main")} queue is already in progress.";
+            }
+            else
+            {
+                await _moveMessagesTaskQueue.EnqueueAsync(task);
+                success = true;
+                message = $"A copy task from {source} {(isPoisonSource ? "poison" : "main")} queue to {destination} {(isPoisonDestination ? "poison" : "main")} queue has been scheduled.";
+            }
+
+            return Redirect(success, message, source.ToString() + "Queue");
         }
 
         [HttpPost]

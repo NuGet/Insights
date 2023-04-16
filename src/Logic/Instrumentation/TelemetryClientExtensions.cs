@@ -40,5 +40,74 @@ namespace NuGet.Insights
                 sourceFilePath,
                 memberName);
         }
+
+        public static QueryLoopMetrics StartQueryLoopMetrics(
+            this ITelemetryClient telemetryClient,
+            string dimension1Name,
+            string dimension1Value,
+            string dimension2Name,
+            string dimension2Value,
+            [CallerFilePath] string sourceFilePath = "",
+            [CallerMemberName] string memberName = "")
+        {
+            return QueryLoopMetrics.New(
+                telemetryClient,
+                dimension1Name,
+                dimension1Value,
+                dimension2Name,
+                dimension2Value,
+                sourceFilePath,
+                memberName);
+        }
+
+        public static QueryLoopMetrics StartQueryLoopMetrics(
+            this ITelemetryClient telemetryClient,
+            string dimension1Name,
+            string dimension1Value,
+            string dimension2Name,
+            string dimension2Value,
+            string dimension3Name,
+            string dimension3Value,
+            [CallerFilePath] string sourceFilePath = "",
+            [CallerMemberName] string memberName = "")
+        {
+            return QueryLoopMetrics.New(
+                telemetryClient,
+                dimension1Name,
+                dimension1Value,
+                dimension2Name,
+                dimension2Value,
+                dimension3Name,
+                dimension3Value,
+                sourceFilePath,
+                memberName);
+        }
+
+        public static QueryLoopMetrics StartQueryLoopMetrics(
+            this ITelemetryClient telemetryClient,
+            string dimension1Name,
+            string dimension1Value,
+            string dimension2Name,
+            string dimension2Value,
+            string dimension3Name,
+            string dimension3Value,
+            string dimension4Name,
+            string dimension4Value,
+            [CallerFilePath] string sourceFilePath = "",
+            [CallerMemberName] string memberName = "")
+        {
+            return QueryLoopMetrics.New(
+                telemetryClient,
+                dimension1Name,
+                dimension1Value,
+                dimension2Name,
+                dimension2Value,
+                dimension3Name,
+                dimension3Value,
+                dimension4Name,
+                dimension4Value,
+                sourceFilePath,
+                memberName);
+        }
     }
 }

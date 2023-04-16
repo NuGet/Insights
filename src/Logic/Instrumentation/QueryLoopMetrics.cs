@@ -46,6 +46,9 @@ namespace NuGet.Insights
                     case 3:
                         var metric3 = telemetryClient.GetMetric(metricId, dimensionNames[0], dimensionNames[1], dimensionNames[2]);
                         return x => metric3.TrackValue(x, dimensionValues[0], dimensionValues[1], dimensionValues[2]);
+                    case 4:
+                        var metric4 = telemetryClient.GetMetric(metricId, dimensionNames[0], dimensionNames[1], dimensionNames[2], dimensionNames[3]);
+                        return x => metric4.TrackValue(x, dimensionValues[0], dimensionValues[1], dimensionValues[2], dimensionValues[3]);
                     default:
                         throw new NotImplementedException();
                 }
@@ -72,6 +75,63 @@ namespace NuGet.Insights
                 memberName,
                 dimensionNames: new[] { dimension1Name },
                 dimensionValues: new[] { dimension1Value } );
+        }
+
+        public static QueryLoopMetrics New(
+            ITelemetryClient telemetryClient,
+            string dimension1Name,
+            string dimension1Value,
+            string dimension2Name,
+            string dimension2Value,
+            [CallerFilePath] string sourceFilePath = DefaultClassName,
+            [CallerMemberName] string memberName = DefaultMethodName)
+        {
+            return New(
+                telemetryClient,
+                sourceFilePath,
+                memberName,
+                dimensionNames: new[] { dimension1Name, dimension2Name },
+                dimensionValues: new[] { dimension1Value, dimension2Value });
+        }
+
+        public static QueryLoopMetrics New(
+            ITelemetryClient telemetryClient,
+            string dimension1Name,
+            string dimension1Value,
+            string dimension2Name,
+            string dimension2Value,
+            string dimension3Name,
+            string dimension3Value,
+            [CallerFilePath] string sourceFilePath = DefaultClassName,
+            [CallerMemberName] string memberName = DefaultMethodName)
+        {
+            return New(
+                telemetryClient,
+                sourceFilePath,
+                memberName,
+                dimensionNames: new[] { dimension1Name, dimension2Name, dimension3Name },
+                dimensionValues: new[] { dimension1Value, dimension2Value, dimension3Value });
+        }
+
+        public static QueryLoopMetrics New(
+            ITelemetryClient telemetryClient,
+            string dimension1Name,
+            string dimension1Value,
+            string dimension2Name,
+            string dimension2Value,
+            string dimension3Name,
+            string dimension3Value,
+            string dimension4Name,
+            string dimension4Value,
+            [CallerFilePath] string sourceFilePath = DefaultClassName,
+            [CallerMemberName] string memberName = DefaultMethodName)
+        {
+            return New(
+                telemetryClient,
+                sourceFilePath,
+                memberName,
+                dimensionNames: new[] { dimension1Name, dimension2Name, dimension3Name, dimension4Name },
+                dimensionValues: new[] { dimension1Value, dimension2Value, dimension3Value, dimension4Value });
         }
 
         public static QueryLoopMetrics New(

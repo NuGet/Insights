@@ -20,6 +20,7 @@ namespace NuGet.Insights.Website
         private readonly IRemoteCursorClient _remoteCursorClient;
         private readonly TimerExecutionService _timerExecutionService;
         private readonly WorkflowService _workflowService;
+        private readonly MoveMessagesTaskQueue _moveMessagesTaskQueue;
 
         public ViewModelFactory(
             CatalogCommitTimestampProvider catalogCommitTimestampProvider,
@@ -29,7 +30,8 @@ namespace NuGet.Insights.Website
             CatalogScanService catalogScanService,
             IRemoteCursorClient remoteCursorClient,
             TimerExecutionService timerExecutionService,
-            WorkflowService workflowService)
+            WorkflowService workflowService,
+            MoveMessagesTaskQueue moveMessagesTaskQueue)
         {
             _catalogCommitTimestampProvider = catalogCommitTimestampProvider;
             _rawMessageEnqueuer = rawMessageEnqueuer;
@@ -39,6 +41,7 @@ namespace NuGet.Insights.Website
             _remoteCursorClient = remoteCursorClient;
             _timerExecutionService = timerExecutionService;
             _workflowService = workflowService;
+            _moveMessagesTaskQueue = moveMessagesTaskQueue;
         }
 
         public async Task<AdminViewModel> GetAdminViewModelAsync()
@@ -98,9 +101,8 @@ namespace NuGet.Insights.Website
         {
             var approximateMessageCountTask = _rawMessageEnqueuer.GetApproximateMessageCountAsync(queue);
             var poisonApproximateMessageCountTask = _rawMessageEnqueuer.GetPoisonApproximateMessageCountAsync(queue);
-            const int messageCount = 32;
-            var availableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetAvailableMessageCountLowerBoundAsync(queue, messageCount);
-            var poisonAvailableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetPoisonAvailableMessageCountLowerBoundAsync(queue, messageCount);
+            var availableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetAvailableMessageCountLowerBoundAsync(queue, StorageUtility.MaxDequeueCount);
+            var poisonAvailableMessageCountLowerBoundTask = _rawMessageEnqueuer.GetPoisonAvailableMessageCountLowerBoundAsync(queue, StorageUtility.MaxDequeueCount);
 
             var model = new QueueViewModel
             {
@@ -108,13 +110,32 @@ namespace NuGet.Insights.Website
                 ApproximateMessageCount = await approximateMessageCountTask,
                 PoisonApproximateMessageCount = await poisonApproximateMessageCountTask,
                 AvailableMessageCountLowerBound = await availableMessageCountLowerBoundTask,
-                PoisonAvailableMessageCountLowerBound = await poisonAvailableMessageCountLowerBoundTask
+                PoisonAvailableMessageCountLowerBound = await poisonAvailableMessageCountLowerBoundTask,
+                MoveMainToPoisonState = GetMoveQueueMessagesState(queue, fromPoison: false),
+                MovePoisonToMainState = GetMoveQueueMessagesState(queue, fromPoison: true),
             };
 
-            model.AvailableMessageCountIsExact = model.AvailableMessageCountLowerBound < messageCount;
-            model.PoisonAvailableMessageCountIsExact = model.PoisonAvailableMessageCountLowerBound < messageCount;
+            model.AvailableMessageCountIsExact = model.AvailableMessageCountLowerBound < StorageUtility.MaxDequeueCount;
+            model.PoisonAvailableMessageCountIsExact = model.PoisonAvailableMessageCountLowerBound < StorageUtility.MaxDequeueCount;
 
             return model;
+        }
+
+        private MoveQueueMessagesState GetMoveQueueMessagesState(QueueType queueType, bool fromPoison)
+        {
+            var task = new MoveMessagesTask(queueType, fromPoison, queueType, !fromPoison);
+            if (_moveMessagesTaskQueue.IsScheduled(task))
+            {
+                return MoveQueueMessagesState.Scheduled;
+            }
+            else if (_moveMessagesTaskQueue.IsWorking(task))
+            {
+                return MoveQueueMessagesState.Working;
+            }
+            else
+            {
+                return MoveQueueMessagesState.None;
+            }
         }
 
         private async Task<CatalogScanViewModel> GetCatalogScanAsync(CatalogScanDriverType driverType)

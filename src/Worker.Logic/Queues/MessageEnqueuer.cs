@@ -74,6 +74,22 @@ namespace NuGet.Insights.Worker
             return EnqueueAsync(isPoison: true, _rawMessageEnqueuer.AddPoisonAsync, messages, NoSplit, _serializer.GetSerializer<T>(), notBefore);
         }
 
+        public async Task EnqueueAsync<T>(
+            QueueType queue,
+            bool isPoison,
+            IReadOnlyList<T> messages,
+            Func<T, IReadOnlyList<T>> split,
+            TimeSpan notBefore)
+        {
+            await EnqueueAsync(
+                queue,
+                isPoison,
+                isPoison ? _rawMessageEnqueuer.AddPoisonAsync : _rawMessageEnqueuer.AddAsync,
+                messages, split,
+                _serializer.GetSerializer<T>(),
+                notBefore);
+        }
+
         private async Task EnqueueAsync<T>(
             bool isPoison,
             AddAsync addAsync,
