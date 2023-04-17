@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using NuGet.Insights.Worker;
 
-namespace NuGet.Insights.Website.Models
+namespace NuGet.Insights.Website
 {
     public class CatalogScanViewModel
     {

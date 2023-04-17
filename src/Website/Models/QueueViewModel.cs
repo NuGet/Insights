@@ -3,7 +3,7 @@
 
 using NuGet.Insights.Worker;
 
-namespace NuGet.Insights.Website.Models
+namespace NuGet.Insights.Website
 {
     public class QueueViewModel
     {

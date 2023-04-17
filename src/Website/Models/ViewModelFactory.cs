@@ -4,7 +4,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using NuGet.Insights.Website.Models;
 using NuGet.Insights.Worker;
 using NuGet.Insights.Worker.Workflow;
 

@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace NuGet.Insights.Website.Models
+namespace NuGet.Insights.Website
 {
     public class AdminViewModel
     {
