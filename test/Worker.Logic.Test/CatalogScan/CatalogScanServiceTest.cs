@@ -33,9 +33,10 @@ namespace NuGet.Insights.Worker
         }
 
         [Fact]
-        public async Task Abort_CleansUpFindLatest()
+        public async Task AbortCleansUpFindLatest()
         {
             // Arrange
+            DriverType = CatalogScanDriverType.PackageAssetToCsv;
             await CatalogScanService.InitializeAsync();
             await SetDependencyCursorsAsync(DriverType, CursorValue);
             var scanResult = await CatalogScanService.UpdateAsync(DriverType);
@@ -51,7 +52,7 @@ namespace NuGet.Insights.Worker
                     return !isComplete;
                 },
                 () => Task.FromResult(isComplete));
-            var originalScans = await CatalogScanStorageService.GetIndexScansAsync();
+            var scansBefore = await CatalogScanStorageService.GetIndexScansAsync();
 
             // Act
             var aborted = await CatalogScanService.AbortAsync(DriverType);
@@ -59,14 +60,88 @@ namespace NuGet.Insights.Worker
             // Assert
             Assert.Equal(scan.GetScanId(), aborted.GetScanId());
 
-            Assert.Equal(2, originalScans.Count);
-            Assert.Contains(scan.GetScanId(), originalScans.Select(x => x.GetScanId()));
-            Assert.Contains(CatalogScanDriverType.Internal_FindLatestCatalogLeafScan, originalScans.Select(x => x.DriverType));
+            Assert.Equal(2, scansBefore.Count);
+            Assert.Contains(scan.GetScanId(), scansBefore.Select(x => x.GetScanId()));
+            Assert.Contains(CatalogScanDriverType.Internal_FindLatestCatalogLeafScan, scansBefore.Select(x => x.DriverType));
 
-            var scans = await CatalogScanStorageService.GetIndexScansAsync();
-            Assert.Single(scans);
-            Assert.Contains(scan.GetScanId(), scans.Select(x => x.GetScanId()));
-            Assert.DoesNotContain(CatalogScanDriverType.Internal_FindLatestCatalogLeafScan, scans.Select(x => x.DriverType));
+            var scansAfter = await CatalogScanStorageService.GetIndexScansAsync();
+            Assert.Single(scansAfter);
+            Assert.Contains(scan.GetScanId(), scansAfter.Select(x => x.GetScanId()));
+            Assert.DoesNotContain(CatalogScanDriverType.Internal_FindLatestCatalogLeafScan, scansAfter.Select(x => x.DriverType));
+        }
+
+        [Fact]
+        public async Task AbortCleansUpTemporaryCsvState()
+        {
+            // Arrange
+            DriverType = CatalogScanDriverType.CatalogDataToCsv;
+            await CatalogScanService.InitializeAsync();
+            await SetDependencyCursorsAsync(DriverType, CursorValue);
+            var scanResult = await CatalogScanService.UpdateAsync(DriverType);
+            var scan = scanResult.Scan;
+            var isComplete = false;
+            await ProcessQueueAsync(
+                async _ =>
+                {
+                    scan = await CatalogScanStorageService.GetIndexScanAsync(scan.GetCursorName(), scan.GetScanId());
+                    isComplete = scan.State == CatalogIndexScanState.Working;
+                    return !isComplete;
+                },
+                () => Task.FromResult(isComplete));
+            var tablesBefore = await GetTableNamesAsync();
+
+            // Act
+            var aborted = await CatalogScanService.AbortAsync(DriverType);
+
+            // Assert
+            Assert.Equal(scan.GetScanId(), aborted.GetScanId());
+
+            Assert.Contains(Options.Value.CursorTableName, tablesBefore);
+            Assert.Contains(Options.Value.CatalogIndexScanTableName, tablesBefore);
+            Assert.Contains($"{Options.Value.CatalogPageScanTableName}{scan.StorageSuffix}", tablesBefore);
+            Assert.Contains($"{Options.Value.CatalogLeafScanTableName}{scan.StorageSuffix}", tablesBefore);
+            Assert.Contains($"{Options.Value.CsvRecordTableName}{scan.StorageSuffix}0", tablesBefore);
+            Assert.Contains($"{Options.Value.CsvRecordTableName}{scan.StorageSuffix}1", tablesBefore);
+            Assert.Contains($"{Options.Value.CsvRecordTableName}{scan.StorageSuffix}2", tablesBefore);
+            Assert.Contains($"{Options.Value.TaskStateTableName}{scan.StorageSuffix}", tablesBefore);
+            Assert.Equal(8, tablesBefore.Count);
+
+            var tablesAfter = await GetTableNamesAsync();
+            Assert.Contains(Options.Value.CursorTableName, tablesAfter);
+            Assert.Contains(Options.Value.CatalogIndexScanTableName, tablesAfter);
+            Assert.Equal(2, tablesAfter.Count);
+        }
+
+        [Fact]
+        public async Task AbortCanBeRunImmediately()
+        {
+            // Arrange
+            DriverType = CatalogScanDriverType.CatalogDataToCsv;
+            await CatalogScanService.InitializeAsync();
+            await SetDependencyCursorsAsync(DriverType, CursorValue);
+            var scanResult = await CatalogScanService.UpdateAsync(DriverType);
+            var scan = scanResult.Scan;
+            var tablesBefore = await GetTableNamesAsync();
+
+            // Act
+            var aborted = await CatalogScanService.AbortAsync(DriverType);
+
+            // Assert
+            Assert.Equal(scan.GetScanId(), aborted.GetScanId());
+
+            Assert.Contains(Options.Value.CursorTableName, tablesBefore);
+            Assert.Contains(Options.Value.CatalogIndexScanTableName, tablesBefore);
+            Assert.Equal(2, tablesBefore.Count);
+
+            var tablesAfter = await GetTableNamesAsync();
+            Assert.Equal(tablesBefore, tablesAfter);
+        }
+
+        private async Task<List<string>> GetTableNamesAsync()
+        {
+            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
+            var tables = await tableServiceClient.QueryAsync().ToListAsync();
+            return tables.Select(x => x.Name).Where(x => x.StartsWith(StoragePrefix)).ToList();
         }
 
         [Fact]
@@ -618,7 +693,7 @@ namespace NuGet.Insights.Worker
         public Mock<IRemoteCursorClient> RemoteCursorClient { get; }
         public DateTimeOffset FlatContainerCursor { get; set; }
         public DateTimeOffset CursorValue { get; }
-        public CatalogScanDriverType DriverType { get; }
+        public CatalogScanDriverType DriverType { get; set; }
 
         public CatalogScanServiceTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {

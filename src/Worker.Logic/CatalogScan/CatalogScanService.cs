@@ -21,6 +21,7 @@ namespace NuGet.Insights.Worker
         private readonly CatalogScanStorageService _storageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly TaskStateStorageService _taskStateStorageService;
+        private readonly ICatalogScanDriverFactory _driverFactory;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<CatalogScanService> _logger;
@@ -32,6 +33,7 @@ namespace NuGet.Insights.Worker
             CatalogScanStorageService catalogScanStorageService,
             AutoRenewingStorageLeaseService leaseService,
             TaskStateStorageService taskStateStorageService,
+            ICatalogScanDriverFactory driverFactory,
             IOptions<NuGetInsightsWorkerSettings> options,
             ITelemetryClient telemetryClient,
             ILogger<CatalogScanService> logger)
@@ -42,6 +44,7 @@ namespace NuGet.Insights.Worker
             _storageService = catalogScanStorageService;
             _leaseService = leaseService;
             _taskStateStorageService = taskStateStorageService;
+            _driverFactory = driverFactory;
             _options = options;
             _telemetryClient = telemetryClient;
             _logger = logger;
@@ -215,6 +218,7 @@ namespace NuGet.Insights.Worker
                 await AbortAsync(findLatestScan, delete: true);
             }
 
+            await _driverFactory.Create(scan.DriverType).FinalizeAsync(scan);
             await _storageService.DeleteChildTablesAsync(scan.StorageSuffix);
             await _taskStateStorageService.DeleteTableAsync(scan.StorageSuffix);
 
