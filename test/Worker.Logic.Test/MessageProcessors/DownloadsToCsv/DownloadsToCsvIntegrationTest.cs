@@ -331,7 +331,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
 
         private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>> service)
         {
-            await ProcessQueueAsync(() => { }, async () => !await service.IsRunningAsync());
+            await ProcessQueueAsync(async () => !await service.IsRunningAsync());
         }
 
         private void ConfigureAndSetLastModified(string dirName = DownloadsToCsvDir)

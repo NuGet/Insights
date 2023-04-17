@@ -177,7 +177,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
         {
             await Target.InitializeAsync();
             await Target.StartAsync();
-            await ProcessQueueAsync(() => { }, async () => !await Target.IsRunningAsync());
+            await ProcessQueueAsync(async () => !await Target.IsRunningAsync());
         }
 
         private async Task SetReferencesAsync(List<TestSubjectRecord> subjectRecords, Dictionary<string, List<int>> ownerPartitionKeyToSubjectIndex)

@@ -33,6 +33,43 @@ namespace NuGet.Insights.Worker
         }
 
         [Fact]
+        public async Task Abort_CleansUpFindLatest()
+        {
+            // Arrange
+            await CatalogScanService.InitializeAsync();
+            await SetDependencyCursorsAsync(DriverType, CursorValue);
+            var scanResult = await CatalogScanService.UpdateAsync(DriverType);
+            var scan = scanResult.Scan;
+            var isComplete = false;
+            await ProcessQueueAsync(
+                async _ =>
+                {
+                    scan = await CatalogScanStorageService.GetIndexScanAsync(scan.GetCursorName(), scan.GetScanId());
+                    var anyFindLatest = (await CatalogScanStorageService.GetIndexScansAsync())
+                        .Any(x => x.DriverType == CatalogScanDriverType.Internal_FindLatestCatalogLeafScan);
+                    isComplete = scan.State == CatalogIndexScanState.FindingLatest && anyFindLatest;
+                    return !isComplete;
+                },
+                () => Task.FromResult(isComplete));
+            var originalScans = await CatalogScanStorageService.GetIndexScansAsync();
+
+            // Act
+            var aborted = await CatalogScanService.AbortAsync(DriverType);
+
+            // Assert
+            Assert.Equal(scan.GetScanId(), aborted.GetScanId());
+
+            Assert.Equal(2, originalScans.Count);
+            Assert.Contains(scan.GetScanId(), originalScans.Select(x => x.GetScanId()));
+            Assert.Contains(CatalogScanDriverType.Internal_FindLatestCatalogLeafScan, originalScans.Select(x => x.DriverType));
+
+            var scans = await CatalogScanStorageService.GetIndexScansAsync();
+            Assert.Single(scans);
+            Assert.Contains(scan.GetScanId(), scans.Select(x => x.GetScanId()));
+            Assert.DoesNotContain(CatalogScanDriverType.Internal_FindLatestCatalogLeafScan, scans.Select(x => x.DriverType));
+        }
+
+        [Fact]
         public async Task BlockedByDependencyThatHasNeverRun()
         {
             // Arrange

@@ -170,7 +170,7 @@ namespace NuGet.Insights.Worker
                         .TimerAsync(timerInfo: null);
                 }
 
-                await ProcessQueueAsync(() => { }, () => Task.FromResult(true));
+                await ProcessQueueAsync(() => Task.FromResult(true));
 
                 // Assert
                 await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 1);
@@ -265,7 +265,6 @@ namespace NuGet.Insights.Worker
                 Assert.NotNull(run);
                 var attempts = 0;
                 await ProcessQueueAsync(
-                    () => { },
                     async () =>
                     {
                         if (!await WorkflowService.IsAnyWorkflowStepRunningAsync())

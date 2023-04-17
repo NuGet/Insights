@@ -281,10 +281,10 @@ namespace NuGet.Insights.Worker
 
         protected async Task ProcessQueueAsync(Func<Task<bool>> isCompleteAsync, int workerCount = 1)
         {
-            await ProcessQueueAsync(() => { }, isCompleteAsync, workerCount);
+            await ProcessQueueAsync(_ => Task.FromResult(true), isCompleteAsync, workerCount);
         }
 
-        protected async Task ProcessQueueAsync(Action foundMessage, Func<Task<bool>> isCompleteAsync, int workerCount = 1)
+        protected async Task ProcessQueueAsync(Func<QueueMessage, Task<bool>> shouldProcessAsync, Func<Task<bool>> isCompleteAsync, int workerCount = 1)
         {
             var expandQueue = await WorkerQueueFactory.GetQueueAsync(QueueType.Expand);
             var workerQueue = await WorkerQueueFactory.GetQueueAsync(QueueType.Work);
@@ -318,10 +318,12 @@ namespace NuGet.Insights.Worker
                             (var queueType, var queue, var message) = await ReceiveMessageAsync();
                             if (message != null)
                             {
-                                foundMessage();
-                                using (var scope = Host.Services.CreateScope())
+                                if (await shouldProcessAsync(message))
                                 {
-                                    await ProcessMessageAsync(scope.ServiceProvider, queueType, message);
+                                    using (var scope = Host.Services.CreateScope())
+                                    {
+                                        await ProcessMessageAsync(scope.ServiceProvider, queueType, message);
+                                    }
                                 }
 
                                 try

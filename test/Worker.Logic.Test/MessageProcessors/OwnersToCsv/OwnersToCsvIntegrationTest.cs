@@ -255,7 +255,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
 
         private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>> service)
         {
-            await ProcessQueueAsync(() => { }, async () => !await service.IsRunningAsync());
+            await ProcessQueueAsync(async () => !await service.IsRunningAsync());
         }
 
         private void ConfigureAndSetLastModified()

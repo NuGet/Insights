@@ -201,27 +201,35 @@ namespace NuGet.Insights.Worker
                 return null;
             }
 
-            await AbortAsync(scan);
+            await AbortAsync(scan, delete: false);
 
             return scan;
         }
 
-        private async Task AbortAsync(CatalogIndexScan scan)
+        private async Task AbortAsync(CatalogIndexScan scan, bool delete)
         {
             var findLatestScanId = _storageService.GenerateFindLatestScanId(scan);
             var findLatestScan = await _storageService.GetIndexScanAsync(NoCursor, findLatestScanId);
             if (findLatestScan is not null)
             {
-                await AbortAsync(findLatestScan);
+                await AbortAsync(findLatestScan, delete: true);
             }
 
             await _storageService.DeleteChildTablesAsync(scan.StorageSuffix);
             await _taskStateStorageService.DeleteTableAsync(scan.StorageSuffix);
 
-            scan.ETag = ETag.All;
-            scan.Completed = DateTimeOffset.UtcNow;
-            scan.State = CatalogIndexScanState.Aborted;
-            await _storageService.ReplaceAsync(scan);
+            if (delete)
+            {
+                scan.ETag = ETag.All;
+                await _storageService.DeleteAsync(scan);
+            }
+            else
+            {
+                scan.ETag = ETag.All;
+                scan.Completed = DateTimeOffset.UtcNow;
+                scan.State = CatalogIndexScanState.Aborted;
+                await _storageService.ReplaceAsync(scan);
+            }
         }
 
         public async Task<IReadOnlyDictionary<CatalogScanDriverType, CatalogScanServiceResult>> UpdateAllAsync(DateTimeOffset? max)

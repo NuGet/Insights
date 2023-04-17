@@ -255,7 +255,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
 
         private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>> service)
         {
-            await ProcessQueueAsync(() => { }, async () => !await service.IsRunningAsync());
+            await ProcessQueueAsync(async () => !await service.IsRunningAsync());
         }
 
         private void ConfigureAndSetLastModified()
