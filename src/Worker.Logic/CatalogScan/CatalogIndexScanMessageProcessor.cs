@@ -69,6 +69,11 @@ namespace NuGet.Insights.Worker
                 }
             }
 
+            if (scan.State.IsTerminal())
+            {
+                return;
+            }
+
             var driver = _driverFactory.Create(scan.DriverType);
 
             // Created: initialize the storage for the driver and set the started time
@@ -443,7 +448,7 @@ namespace NuGet.Insights.Worker
                 }
 
                 // Update the cursor, now that the work is done.
-                if (scan.GetCursorName() != string.Empty)
+                if (scan.GetCursorName() != CatalogScanService.NoCursor)
                 {
                     var cursor = await _cursorStorageService.GetOrCreateAsync(scan.GetCursorName());
                     if (cursor.Value <= scan.Max.Value)

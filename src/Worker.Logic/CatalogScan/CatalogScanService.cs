@@ -13,7 +13,7 @@ namespace NuGet.Insights.Worker
 {
     public class CatalogScanService
     {
-        private static readonly string NoCursor = string.Empty;
+        internal static readonly string NoCursor = string.Empty;
 
         private readonly CatalogScanCursorService _cursorService;
         private readonly IMessageEnqueuer _messageEnqueuer;
@@ -175,6 +175,21 @@ namespace NuGet.Insights.Worker
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        public async Task<List<CatalogIndexScan>> AbortAllAsync()
+        {
+            var scans = new List<CatalogIndexScan>();
+            foreach (var driverType in _cursorService.StartableDriverTypes)
+            {
+                var scan = await AbortAsync(driverType);
+                if (scan is not null)
+                {
+                    scans.Add(scan);
+                }
+            }
+
+            return scans;
         }
 
         public async Task<CatalogIndexScan> AbortAsync(CatalogScanDriverType driverType)

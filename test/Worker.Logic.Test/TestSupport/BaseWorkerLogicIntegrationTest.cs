@@ -208,11 +208,13 @@ namespace NuGet.Insights.Worker
             {
                 run = await WorkflowStorageService.GetRunAsync(run.GetRunId());
 
-                if (run.State != WorkflowRunState.Complete)
+                if (!run.State.IsTerminal())
                 {
                     await Task.Delay(TimeSpan.FromMilliseconds(100));
                     return false;
                 }
+
+                Assert.Equal(WorkflowRunState.Complete, run.State);
 
                 return true;
             });

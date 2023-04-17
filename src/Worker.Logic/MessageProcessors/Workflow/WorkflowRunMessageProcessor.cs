@@ -61,7 +61,7 @@ namespace NuGet.Insights.Worker.Workflow
                 TransitionAsync: async (self, run) =>
                 {
                     var latestState = await self._kustoIngestionStorageService.GetLatestStateAsync();
-                    if (latestState != KustoIngestionState.Complete)
+                    if (latestState == KustoIngestionState.FailedValidation)
                     {
                         if (run.AttemptCount >= self._options.Value.WorkflowMaxAttempts)
                         {
@@ -71,6 +71,10 @@ namespace NuGet.Insights.Worker.Workflow
                         self._logger.LogWarning("Retrying the entire workflow due to Kusto {latestState} state.", latestState);
                         run.AttemptCount++;
                         return WorkflowRunState.Created;
+                    }
+                    else if (latestState != KustoIngestionState.Complete)
+                    {
+                        throw new InvalidOperationException("Unexpected workflow state: " + latestState);
                     }
 
                     return WorkflowRunState.Finalizing;
@@ -137,7 +141,7 @@ namespace NuGet.Insights.Worker.Workflow
 
             _logger.LogInformation("Processing workflow run {RunId}.", run.GetRunId());
 
-            while (run.State != WorkflowRunState.Complete)
+            while (!run.State.IsTerminal())
             {
                 var transition = CurrentStateToTransition[run.State];
                 if (await transition.IsIncompleteAsync(this))

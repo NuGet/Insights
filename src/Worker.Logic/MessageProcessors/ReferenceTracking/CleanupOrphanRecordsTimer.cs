@@ -24,6 +24,12 @@ namespace NuGet.Insights.Worker.ReferenceTracking
         public bool AutoStart => false;
         public bool IsEnabled => true;
         public int Order => 20;
+        public bool CanAbort => false;
+
+        public Task AbortAsync()
+        {
+            throw new NotSupportedException();
+        }
 
         public async Task<bool> ExecuteAsync()
         {

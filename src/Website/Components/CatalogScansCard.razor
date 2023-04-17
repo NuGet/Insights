@@ -29,23 +29,24 @@
             <fieldset disabled="@isDisabled" class="form-group">
                 <div class="form-check mr-1">
                     <input class="form-check-input" type="checkbox" id="CatalogScans-useCustomCursor" name="useCustomCursor" value="true" />
-                    <label class="form-check-label" for="CatalogScans-useCustomCursor">Use custom cursor</label>
+                    <label class="form-check-label" for="CatalogScans-useCustomCursor"
+                           title="Use a custom max cursor value for starting the next catalog scans or for overriding all cursor values.">Use custom cursor</label>
                 </div>
                 <div class="form-group custom-cursor mr-1" style="display: none">
                     <label class="sr-only" for="CatalogScans-cursor">Custom cursor</label>
                     <input type="text" class="form-control" name="cursor" id="CatalogScans-cursor" value="@Model.DefaultMax.ToZulu()">
                 </div>
                 <div class="form-group mr-1">
+                    <button type="submit" class="btn btn-danger mr-1" name="overrideCursor" value="true" style="display: none"
+                            data-message="Are you sure you want to override the cursor value on all catalog scan drivers? If the new cursor value is later than the current value, some packages will likely not get processed. If the new cursor value is earlier than the current value, some packages will be reprocessed, which is typically harmless.">
+                        Override all cursors
+                    </button>
                     <button type="submit" class="btn btn-primary mr-1" name="start" value="true">
                         Start all
                     </button>
                     <button type="submit" class="btn btn-danger mr-1" name="abort" value="true"
                             data-message="Are you sure you want to abort all running catalog scans? Note that blob and table storage is cleaned up in a best effort but some queue messages may still get processed. The cursors will not move forward.">
                         Abort all
-                    </button>
-                    <button type="submit" class="btn btn-danger mr-1" name="overrideCursor" value="true" style="display: none"
-                            data-message="Are you sure you want to override the cursor value on all catalog scan drivers? If the new cursor value is later than the current value, some packages will likely not get processed. If the new cursor value is earlier than the current value, some packages will be reprocessed, which is typically harmless.">
-                        Override all cursors
                     </button>
                     @if (isDisabled)
                     {

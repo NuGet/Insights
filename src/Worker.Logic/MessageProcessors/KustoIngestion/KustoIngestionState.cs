@@ -15,6 +15,17 @@ namespace NuGet.Insights.Worker.KustoIngestion
         SwappingTables,
         DroppingOldTables,
         Finalizing,
+        Aborted,
         Complete,
+    }
+
+    public static class KustoIngestionStateExtensions
+    {
+        public static bool IsTerminal(this KustoIngestionState state)
+        {
+            return state == KustoIngestionState.FailedValidation
+                || state == KustoIngestionState.Aborted
+                || state == KustoIngestionState.Complete;
+        }
     }
 }

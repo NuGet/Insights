@@ -1,7 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Linq;
 using System.Threading.Tasks;
+using Azure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -67,6 +70,25 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 _logger.LogInformation("Started Kusto ingestion {IngestionId}.", ingestion.GetIngestionId());
                 return ingestion;
             }
+        }
+
+        public async Task AbortAsync()
+        {
+            var ingestions = await _storageService.GetIngestionsAsync();
+            var latestIngestion = ingestions.MaxBy(x => x.Created);
+            if (latestIngestion is null
+                || latestIngestion.State == KustoIngestionState.Aborted
+                || latestIngestion.State == KustoIngestionState.Complete)
+            {
+                return;
+            }
+
+            await _storageService.DeleteChildTableAsync(latestIngestion.StorageSuffix);
+
+            latestIngestion.ETag = ETag.All;
+            latestIngestion.State = KustoIngestionState.Aborted;
+            latestIngestion.Completed = DateTimeOffset.UtcNow;
+            await _storageService.ReplaceIngestionAsync(latestIngestion);
         }
     }
 }

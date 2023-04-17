@@ -24,6 +24,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public bool AutoStart => false;
         public bool IsEnabled => _kustoIngestionService.HasRequiredConfiguration;
         public int Order => 40;
+        public bool CanAbort => true;
 
         public async Task InitializeAsync()
         {
@@ -39,6 +40,11 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public async Task<bool> IsRunningAsync()
         {
             return await _kustoIngestionStorageService.IsIngestionRunningAsync();
+        }
+
+        public async Task AbortAsync()
+        {
+            await _kustoIngestionService.AbortAsync();
         }
     }
 }

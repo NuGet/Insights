@@ -78,6 +78,7 @@ namespace NuGet.Insights
                         IsEnabledInStorage = entity?.IsEnabled ?? pair.AutoStart,
                         LastExecuted = entity?.LastExecuted,
                         Frequency = pair.Frequency,
+                        CanAbort = pair.CanAbort,
                     };
                 })
                 .ToList();
@@ -87,7 +88,9 @@ namespace NuGet.Insights
         {
             // Get the existing timer entities.
             var table = await GetTableAsync();
-            var entities = await table.QueryAsync<TimerEntity>(x => x.PartitionKey == PartitionKey).ToListAsync(_telemetryClient.StartQueryLoopMetrics());
+            var entities = await table
+                .QueryAsync<TimerEntity>(x => x.PartitionKey == PartitionKey)
+                .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
             var nameToEntity = entities.ToDictionary(x => x.RowKey);
 
             // Determine what to do for each timer.
@@ -152,14 +155,14 @@ namespace NuGet.Insights
             }
 
             // Execute timers in ordered groups.
-            var anyExecuted = false;
+            var allExecuted = true;
             foreach (var group in toExecute.GroupBy(x => x.timer.Order).OrderBy(x => x.Key))
             {
                 var executed = await Task.WhenAll(group.Select(x => ExecuteAsync(x.timer, x.entity, x.persistAsync, now)));
-                anyExecuted |= executed.Any(x => x);
+                allExecuted &= executed.All(x => x);
             }
 
-            return anyExecuted;
+            return allExecuted;
         }
 
         private async Task<bool> ExecuteAsync(ITimer timer, TimerEntity entity, Func<Task> persistAsync, DateTimeOffset now)

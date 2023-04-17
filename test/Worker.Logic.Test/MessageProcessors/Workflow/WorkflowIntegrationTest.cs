@@ -161,12 +161,145 @@ namespace NuGet.Insights.Worker.Workflow
                 // Act & Assert
                 var workflow = await WorkflowService.StartAsync();
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => UpdateAsync(workflow));
+                Assert.Equal("The workflow could not complete due to Kusto FailedValidation state after 3 attempts.", ex.Message);
                 workflow = await WorkflowStorageService.GetRunAsync(workflow.GetRunId());
                 Assert.Equal(WorkflowRunState.KustoIngestionWorking, workflow.State);
                 Assert.Equal(3, workflow.AttemptCount);
             }
 
             public Workflow_FailsIfKustoIngestionFailsTooMuch(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+                FailFastLogLevel = LogLevel.None;
+                AssertLogLevel = LogLevel.None;
+            }
+
+            protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
+            {
+                base.ConfigureHostBuilder(hostBuilder);
+
+                hostBuilder.ConfigureServices(serviceCollection =>
+                {
+                    serviceCollection.AddSingleton(MockRemoteCursorClient.Object);
+                    serviceCollection.AddTransient(x => MockCslAdminProvider.Object);
+                    serviceCollection.AddTransient(x => MockKustoQueueIngestClient.Object);
+                    serviceCollection.AddTransient(x => MockCslQueryProvider.Object);
+                });
+            }
+        }
+
+        public class Workflow_FailsWithAbortedCatalogScan : WorkflowIntegrationTest
+        {
+            [Fact]
+            public async Task ExecuteAsync()
+            {
+                ConfigureWorkerSettings = x =>
+                {
+                    x.KustoTableNameFormat = "A{0}Z";
+                    x.AppendResultStorageBucketCount = 1;
+                    x.KustoConnectionString = "fake connection string";
+                    x.KustoDatabaseName = "fake database name";
+                    x.KustoValidationMaxAttempts = 1;
+                    x.WorkflowMaxAttempts = 3;
+                    x.DisabledDrivers = Enum
+                        .GetValues<CatalogScanDriverType>()
+                        .Except(new[] { CatalogScanDriverType.LoadPackageManifest, CatalogScanDriverType.PackageManifestToCsv, CatalogScanDriverType.CatalogDataToCsv })
+                        .ToList();
+                };
+
+                // Arrange
+                await WorkflowService.InitializeAsync();
+
+                var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
+                var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+                MockRemoteCursorClient
+                    .Setup(x => x.GetFlatContainerAsync(It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(max1);
+
+                await CatalogScanService.InitializeAsync();
+                await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, max1);
+                await SetCursorAsync(CatalogScanDriverType.PackageManifestToCsv, min0);
+                await SetCursorAsync(CatalogScanDriverType.CatalogDataToCsv, min0);
+
+                var catalogScanResult = await CatalogScanService.UpdateAsync(CatalogScanDriverType.CatalogDataToCsv);
+                await CatalogScanService.AbortAsync(CatalogScanDriverType.CatalogDataToCsv);
+
+                // Act & Assert
+                var workflow = await WorkflowService.StartAsync();
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => UpdateAsync(workflow));
+                Assert.Equal("The CatalogScanUpdate timer could not be started.", ex.Message);
+                workflow = await WorkflowStorageService.GetRunAsync(workflow.GetRunId());
+                Assert.Equal(WorkflowRunState.Created, workflow.State);
+                Assert.Equal(1, workflow.AttemptCount);
+                var scans = await CatalogScanStorageService.GetIndexScansAsync();
+                var onlyScan = Assert.Single(scans);
+                Assert.Equal(CatalogIndexScanState.Aborted, onlyScan.State);
+                Assert.Equal(catalogScanResult.Scan.GetScanId(), onlyScan.GetScanId());
+            }
+
+            public Workflow_FailsWithAbortedCatalogScan(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+                FailFastLogLevel = LogLevel.None;
+                AssertLogLevel = LogLevel.None;
+            }
+
+            protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
+            {
+                base.ConfigureHostBuilder(hostBuilder);
+
+                hostBuilder.ConfigureServices(serviceCollection =>
+                {
+                    serviceCollection.AddSingleton(MockRemoteCursorClient.Object);
+                    serviceCollection.AddTransient(x => MockCslAdminProvider.Object);
+                    serviceCollection.AddTransient(x => MockKustoQueueIngestClient.Object);
+                    serviceCollection.AddTransient(x => MockCslQueryProvider.Object);
+                });
+            }
+        }
+
+        public class Workflow_SucceedsIfAllCatalogScansAreCaughtUp : WorkflowIntegrationTest
+        {
+            [Fact]
+            public async Task ExecuteAsync()
+            {
+                ConfigureWorkerSettings = x =>
+                {
+                    x.KustoTableNameFormat = "A{0}Z";
+                    x.AppendResultStorageBucketCount = 1;
+                    x.KustoConnectionString = "fake connection string";
+                    x.KustoDatabaseName = "fake database name";
+                    x.KustoValidationMaxAttempts = 1;
+                    x.WorkflowMaxAttempts = 3;
+                    x.DisabledDrivers = Enum
+                        .GetValues<CatalogScanDriverType>()
+                        .Except(new[] { CatalogScanDriverType.LoadPackageManifest, CatalogScanDriverType.PackageManifestToCsv, CatalogScanDriverType.CatalogDataToCsv })
+                        .ToList();
+                };
+
+                // Arrange
+                await WorkflowService.InitializeAsync();
+
+                var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
+                var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+                MockRemoteCursorClient
+                    .Setup(x => x.GetFlatContainerAsync(It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(max1);
+
+                await CatalogScanService.InitializeAsync();
+                await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, max1);
+                await SetCursorAsync(CatalogScanDriverType.PackageManifestToCsv, max1);
+                await SetCursorAsync(CatalogScanDriverType.CatalogDataToCsv, max1);
+
+                // Act
+                var workflow = await WorkflowService.StartAsync();
+                workflow = await UpdateAsync(workflow);
+
+                // Assert
+                Assert.Equal(WorkflowRunState.Complete, workflow.State);
+                Assert.Equal(1, workflow.AttemptCount);
+                Assert.Empty(await CatalogScanStorageService.GetIndexScansAsync());
+            }
+
+            public Workflow_SucceedsIfAllCatalogScansAreCaughtUp(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {
                 FailFastLogLevel = LogLevel.None;
                 AssertLogLevel = LogLevel.None;

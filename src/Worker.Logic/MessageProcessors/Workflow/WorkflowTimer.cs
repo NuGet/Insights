@@ -23,6 +23,12 @@ namespace NuGet.Insights.Worker.Workflow
         public bool AutoStart => false;
         public bool IsEnabled => _service.HasRequiredConfiguration;
         public int Order => default;
+        public bool CanAbort => true;
+
+        public async Task AbortAsync()
+        {
+            await _service.AbortAsync();
+        }
 
         public async Task<bool> ExecuteAsync()
         {

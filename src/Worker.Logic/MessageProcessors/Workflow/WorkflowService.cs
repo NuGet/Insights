@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure;
+using Microsoft.Extensions.Logging;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.KustoIngestion;
 using NuGet.Insights.Worker.ReferenceTracking;
@@ -21,6 +23,7 @@ namespace NuGet.Insights.Worker.Workflow
         private readonly IReadOnlyList<IAuxiliaryFileUpdaterTimer> _auxiliaryFileUpdaterTimers;
         private readonly KustoIngestionTimer _kustoIngestionTimer;
         private readonly IMessageEnqueuer _messageEnqueuer;
+        private readonly ILogger<WorkflowService> _logger;
 
         public WorkflowService(
             WorkflowStorageService workflowStorageService,
@@ -30,7 +33,8 @@ namespace NuGet.Insights.Worker.Workflow
             IEnumerable<ICleanupOrphanRecordsTimer> cleanupOrphanRecordsTimers,
             IEnumerable<IAuxiliaryFileUpdaterTimer> auxiliaryFileUpdaterTimers,
             KustoIngestionTimer kustoIngestionTimer,
-            IMessageEnqueuer messageEnqueuer)
+            IMessageEnqueuer messageEnqueuer,
+            ILogger<WorkflowService> logger)
         {
             _workflowStorageService = workflowStorageService;
             _leaseService = leaseService;
@@ -40,6 +44,7 @@ namespace NuGet.Insights.Worker.Workflow
             _auxiliaryFileUpdaterTimers = auxiliaryFileUpdaterTimers.ToList();
             _kustoIngestionTimer = kustoIngestionTimer;
             _messageEnqueuer = messageEnqueuer;
+            _logger = logger;
         }
 
         public async Task InitializeAsync()
@@ -51,6 +56,24 @@ namespace NuGet.Insights.Worker.Workflow
                 .Concat(new ITimer[] { _catalogScanUpdateTimer, _kustoIngestionTimer })
                 .Concat(_cleanupOrphanRecordsTimers)
                 .Concat(_auxiliaryFileUpdaterTimers));
+        }
+
+        public async Task AbortAsync()
+        {
+            var runs = await _workflowStorageService.GetRunsAsync();
+            var latestRun = runs.MaxBy(x => x.Created);
+            if (latestRun is null || latestRun.State.IsTerminal())
+            {
+                return;
+            }
+
+            await _catalogScanUpdateTimer.AbortAsync();
+            await _kustoIngestionTimer.AbortAsync();
+
+            latestRun.ETag = ETag.All;
+            latestRun.Completed = DateTimeOffset.UtcNow;
+            latestRun.State = WorkflowRunState.Aborted;
+            await _workflowStorageService.ReplaceRunAsync(latestRun);
         }
 
         public bool HasRequiredConfiguration => _catalogScanUpdateTimer.IsEnabled
@@ -90,7 +113,7 @@ namespace NuGet.Insights.Worker.Workflow
         public async Task<bool> IsWorkflowRunningAsync()
         {
             var runs = await _workflowStorageService.GetRunsAsync();
-            return runs.Any(x => x.State != WorkflowRunState.Complete);
+            return runs.Any(x => !x.State.IsTerminal());
         }
 
         public async Task<bool> IsAnyWorkflowStepRunningAsync()
@@ -104,22 +127,43 @@ namespace NuGet.Insights.Worker.Workflow
 
         internal async Task StartCatalogScansAsync()
         {
-            await _timerExecutionService.ExecuteAsync(new[] { _catalogScanUpdateTimer }, executeNow: true);
+            await StartTimerAsync(_catalogScanUpdateTimer);
         }
 
         internal async Task StartCleanupOrphanRecordsAsync()
         {
-            await _timerExecutionService.ExecuteAsync(_cleanupOrphanRecordsTimers, executeNow: true);
+            foreach (var timer in _cleanupOrphanRecordsTimers)
+            {
+                await StartTimerAsync(timer);
+            }
         }
 
         internal async Task StartAuxiliaryFilesAsync()
         {
-            await _timerExecutionService.ExecuteAsync(_auxiliaryFileUpdaterTimers, executeNow: true);
+            foreach (var timer in _auxiliaryFileUpdaterTimers)
+            {
+                await StartTimerAsync(timer);
+            }
         }
 
         internal async Task StartKustoIngestionAsync()
         {
-            await _timerExecutionService.ExecuteAsync(new[] { _kustoIngestionTimer }, executeNow: true);
+            await StartTimerAsync(_kustoIngestionTimer);
+        }
+
+        private async Task StartTimerAsync(ITimer timer)
+        {
+            if (await timer.IsRunningAsync())
+            {
+                _logger.LogInformation("The {TimerName} timer is already running.", timer.Name);
+                return;
+            }
+
+            var started = await _timerExecutionService.ExecuteAsync(new[] { timer }, executeNow: true);
+            if (!started)
+            {
+                throw new InvalidOperationException($"The {timer.Name} timer could not be started.");
+            }
         }
 
         internal async Task<bool> AreCatalogScansRunningAsync()

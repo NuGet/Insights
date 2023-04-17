@@ -11,6 +11,15 @@ namespace NuGet.Insights.Worker.Workflow
         AuxiliaryFilesWorking,
         KustoIngestionWorking,
         Finalizing,
+        Aborted,
         Complete,
+    }
+
+    public static class WorkflowRunStateExtensions
+    {
+        public static bool IsTerminal(this WorkflowRunState state)
+        {
+            return state == WorkflowRunState.Complete || state == WorkflowRunState.Aborted;
+        }
     }
 }

@@ -118,25 +118,15 @@ namespace NuGet.Insights.Website.Controllers
             }
             else if (abort)
             {
-                var aborted = 0;
-                foreach (var driverType in _catalogScanCursorService.StartableDriverTypes)
-                {
-                    var scan = await _catalogScanService.AbortAsync(driverType);
-                    if (scan is not null)
-                    {
-                        aborted++;
-                    }
-                }
-
-                if (aborted == 0)
+                var scans = await _catalogScanService.AbortAllAsync();
+                if (scans.Count == 0)
                 {
                     return Redirect(false, "No catalog scans were aborted.", CatalogScansFragment);
                 }
                 else
                 {
-                    return Redirect(true, $"{aborted} catalog scan(s) have been aborted.", CatalogScansFragment);
+                    return Redirect(true, $"{scans.Count} catalog scan(s) have been aborted.", CatalogScansFragment);
                 }
-
             }
             else if (overrideCursor)
             {
@@ -269,7 +259,12 @@ namespace NuGet.Insights.Website.Controllers
         }
 
         [HttpPost]
-        public async Task<RedirectToActionResult> UpdateTimer(string timerName, bool? runNow, bool? disable, bool? enable)
+        public async Task<RedirectToActionResult> UpdateTimer(
+            string timerName,
+            bool? runNow,
+            bool? disable,
+            bool? enable,
+            bool? abort)
         {
             if (runNow == true)
             {
@@ -286,6 +281,12 @@ namespace NuGet.Insights.Website.Controllers
             else if (enable == true)
             {
                 await _timerExecutionService.SetIsEnabledAsync(timerName, isEnabled: true);
+            }
+            else if (abort == true)
+            {
+                await _timerExecutionService.SetIsEnabledAsync(timerName, isEnabled: false);
+                await _timerExecutionService.AbortAsync(timerName);
+                TempData[timerName + ".Success"] = "The timer has been disabled and aborted.";
             }
 
             return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment: timerName);

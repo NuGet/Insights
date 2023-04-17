@@ -58,6 +58,12 @@ namespace NuGet.Insights
             await _timerExecutionService.SetIsEnabledAsync(timer, isEnabled);
         }
 
+        public async Task AbortAsync(string timerName)
+        {
+            var timer = ValidateAndGetTimer(timerName);
+            await timer.AbortAsync();
+        }
+
         private ITimer ValidateAndGetTimer(string timerName)
         {
             if (!_nameToTimer.TryGetValue(timerName, out var timer))

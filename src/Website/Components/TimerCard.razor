@@ -89,17 +89,23 @@
             <button type="submit" class="btn btn-primary mr-1" name="runNow" value="true" disabled="@(!Model.IsEnabledInConfig)">Run now</button>
             @if (isEnabled)
             {
-                <button type="submit" class="btn btn-warning" name="disable" value="true">Disable</button>
+                <button type="submit" class="btn btn-warning mr-1" name="disable" value="true">Disable</button>
             }
             else
             {
-                <button type="submit" class="btn btn-success" disabled="@(!Model.IsEnabledInConfig)" name="enable"
+                <button type="submit" class="btn btn-success mr-1" disabled="@(!Model.IsEnabledInConfig)" name="enable"
                         value="true">Enable</button>
+            }
+
+            @if (Model.CanAbort && Model.IsRunning)
+            {
+                <button type="submit" class="btn btn-danger mr-1" name="abort" value="true"
+                        data-message="Are you sure you want to abort this running timer? Note that blob and table storage is cleaned up in a best effort but some queue messages may still get processed. The timer will also be disabled in the process.">Abort</button>
             }
 
             @if (!Model.IsEnabledInConfig)
             {
-                <b class="ml-1">⚠️ This timer is disabled due to missing configuration.</b>
+                <b>⚠️ This timer is disabled due to missing configuration.</b>
             }
         </form>
     </div>

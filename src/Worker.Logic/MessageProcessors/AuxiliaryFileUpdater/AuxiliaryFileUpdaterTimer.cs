@@ -24,6 +24,12 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
         public bool IsEnabled => _service.HasRequiredConfiguration;
         public bool AutoStart => _updater.AutoStart;
         public int Order => 30;
+        public bool CanAbort => false;
+
+        public Task AbortAsync()
+        {
+            throw new NotSupportedException();
+        }
 
         public async Task<bool> ExecuteAsync()
         {
