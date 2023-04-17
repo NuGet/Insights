@@ -49,7 +49,7 @@ namespace NuGet.Insights.Website.Controllers
             var model = await _viewModelFactory.GetAdminViewModelAsync();
             return View(model);
         }
-        
+
         [HttpPost]
         public async Task<RedirectToActionResult> MoveMessages(QueueType source, bool isPoisonSource, QueueType destination, bool isPoisonDestination)
         {
@@ -73,7 +73,7 @@ namespace NuGet.Insights.Website.Controllers
                 message = $"A copy task from {source} {(isPoisonSource ? "poison" : "main")} queue to {destination} {(isPoisonDestination ? "poison" : "main")} queue has been scheduled.";
             }
 
-            return Redirect(success, message, source.ToString() + "Queue");
+            return Redirect(success, message, GetFragment(source));
         }
 
         [HttpPost]
@@ -88,7 +88,7 @@ namespace NuGet.Insights.Website.Controllers
                 await _rawMessageEnqueuer.ClearAsync(queueType);
             }
 
-            var fragment = queueType.ToString() + "Queue";
+            var fragment = GetFragment(queueType);
             TempData[fragment + ".Success"] = $"Cleared the {queueType} {(poison ? "poison" : "main")} queue.";
             return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment);
         }
@@ -98,6 +98,7 @@ namespace NuGet.Insights.Website.Controllers
             bool useCustomCursor,
             string cursor,
             bool start,
+            bool abort,
             bool overrideCursor)
         {
             DateTimeOffset? parsedCursor = null;
@@ -114,6 +115,28 @@ namespace NuGet.Insights.Website.Controllers
             if (start)
             {
                 return await UpdateAllCatalogScansAsync(parsedCursor);
+            }
+            else if (abort)
+            {
+                var aborted = 0;
+                foreach (var driverType in _catalogScanCursorService.StartableDriverTypes)
+                {
+                    var scan = await _catalogScanService.AbortAsync(driverType);
+                    if (scan is not null)
+                    {
+                        aborted++;
+                    }
+                }
+
+                if (aborted == 0)
+                {
+                    return Redirect(false, "No catalog scans were aborted.", CatalogScansFragment);
+                }
+                else
+                {
+                    return Redirect(true, $"{aborted} catalog scan(s) have been aborted.", CatalogScansFragment);
+                }
+
             }
             else if (overrideCursor)
             {
@@ -151,6 +174,7 @@ namespace NuGet.Insights.Website.Controllers
             bool reprocess,
             string cursor,
             bool start,
+            bool abort,
             bool overrideCursor)
         {
             if (!_catalogScanService.GetOnlyLatestLeavesSupport(driverType).HasValue
@@ -159,7 +183,7 @@ namespace NuGet.Insights.Website.Controllers
                 onlyLatestLeaves = false;
             }
 
-            var fragment = driverType.ToString();
+            var fragment = GetFragment(driverType);
 
             DateTimeOffset? parsedCursor = null;
             if (useCustomCursor)
@@ -181,6 +205,18 @@ namespace NuGet.Insights.Website.Controllers
             {
                 (var success, var message) = await UpdateCatalogScanAsync(driverType, onlyLatestLeaves, reprocess, parsedCursor);
                 return Redirect(success, message, fragment);
+            }
+            else if (abort)
+            {
+                var aborted = await _catalogScanService.AbortAsync(driverType);
+                if (aborted is not null)
+                {
+                    return Redirect(true, $"Catalog scan <b>{aborted.GetScanId()}</b> has been aborted.", fragment);
+                }
+                else
+                {
+                    return Redirect(false, "There was no incomplete catalog scan to abort.", fragment);
+                }
             }
             else if (overrideCursor)
             {
@@ -258,6 +294,16 @@ namespace NuGet.Insights.Website.Controllers
         private static string GetNewStartedMessage(CatalogScanServiceResult result)
         {
             return $"Catalog scan <b>{result.Scan.GetScanId()}</b> has been started.";
+        }
+
+        private static string GetFragment(QueueType source)
+        {
+            return source.ToString() + "Queue";
+        }
+
+        private static string GetFragment(CatalogScanDriverType driverType)
+        {
+            return driverType.ToString();
         }
 
         private RedirectToActionResult Redirect(bool success, string message, string fragment)

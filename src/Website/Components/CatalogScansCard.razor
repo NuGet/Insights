@@ -12,34 +12,46 @@
 
     string statusText = null;
     string statusTitle = null;
-    if (Model.CatalogScans.SelectMany(x => x.LatestScans).Any(x => x.State != CatalogIndexScanState.Complete))
+    if (Model.CatalogScans.Any(x => x.LatestScans.FirstOrDefault()?.State == CatalogIndexScanState.Aborted))
+    {
+        statusText = "⚠️";
+        statusTitle = "At least one catalog scan driver has been aborted.";
+    }
+    else if (Model.CatalogScans.SelectMany(x => x.LatestScans).Any(x => !x.State.IsTerminal()))
     {
         statusText = "⌛";
-        statusTitle = "A catalog scan is running.";
+        statusTitle = "At least one catalog scan is running or aborted.";
     }
 }
 <CollapseCard IdPrefix="CatalogScans" Title="All catalog scans" StatusText="@statusText" StatusTitle="@statusTitle" BorderClass="@borderClass">
     <div class="card-body">
-        <form action="@Url.Action("UpdateAllCatalogScans")" method="post">
+        <form action="@Url.Action("UpdateAllCatalogScans")" method="post" class="form-inline">
             <fieldset disabled="@isDisabled" class="form-group">
-                <div class="form-check">
+                <div class="form-check mr-1">
                     <input class="form-check-input" type="checkbox" id="CatalogScans-useCustomCursor" name="useCustomCursor" value="true" />
                     <label class="form-check-label" for="CatalogScans-useCustomCursor">Use custom cursor</label>
                 </div>
-                <div class="form-group custom-cursor" style="display: none">
-                    <label for="CatalogScans-cursor">Custom cursor</label>
+                <div class="form-group custom-cursor mr-1" style="display: none">
+                    <label class="sr-only" for="CatalogScans-cursor">Custom cursor</label>
                     <input type="text" class="form-control" name="cursor" id="CatalogScans-cursor" value="@Model.DefaultMax.ToZulu()">
                 </div>
-                <button type="submit" class="btn btn-primary" name="start" value="true">Start all</button>
-                <button
-                    type="submit" class="btn btn-danger" name="overrideCursor" value="true" style="display: none"
-                    data-message="Are you sure you want to override the cursor value on all catalog scan drivers? If the new cursor value is later than the current value, some packages will likely not get processed. If the new cursor value is earlier than the current value, some packages will be reprocessed, which is typically harmless.">
-                    Override all cursors
-                </button>
-                @if (isDisabled)
-                {
-                    <b class="ml-1">⚠️ Disabled because the workflow is running to avoid Kusto data inconsistency.</b>
-                }
+                <div class="form-group mr-1">
+                    <button type="submit" class="btn btn-primary mr-1" name="start" value="true">
+                        Start all
+                    </button>
+                    <button type="submit" class="btn btn-danger mr-1" name="abort" value="true"
+                            data-message="Are you sure you want to abort all running catalog scans? Note that blob and table storage is cleaned up in a best effort but some queue messages may still get processed. The cursors will not move forward.">
+                        Abort all
+                    </button>
+                    <button type="submit" class="btn btn-danger mr-1" name="overrideCursor" value="true" style="display: none"
+                            data-message="Are you sure you want to override the cursor value on all catalog scan drivers? If the new cursor value is later than the current value, some packages will likely not get processed. If the new cursor value is earlier than the current value, some packages will be reprocessed, which is typically harmless.">
+                        Override all cursors
+                    </button>
+                    @if (isDisabled)
+                    {
+                        <b>⚠️ Disabled because the workflow is running to avoid Kusto data inconsistency.</b>
+                    }
+                </div>
             </fieldset>
         </form>
     </div>

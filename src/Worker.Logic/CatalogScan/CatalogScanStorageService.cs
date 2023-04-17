@@ -55,6 +55,16 @@ namespace NuGet.Insights.Worker
             await (await GetPageScanTableAsync(storageSuffix)).DeleteAsync();
         }
 
+        public string GenerateFindLatestScanId(CatalogIndexScan scan)
+        {
+            return scan.GetScanId() + "-fl";
+        }
+
+        public string GenerateFindLatestStorageSuffix(CatalogIndexScan scan)
+        {
+            return scan.StorageSuffix + "fl";
+        }
+
         public async Task InsertAsync(CatalogIndexScan indexScan)
         {
             var table = await GetIndexScanTableAsync();
@@ -212,7 +222,7 @@ namespace NuGet.Insights.Worker
                 .OrderByDescending(x => x.Created)
                 .Skip(_options.Value.OldCatalogIndexScansToKeep)
                 .OrderBy(x => x.Created)
-                .Where(x => x.State == CatalogIndexScanState.Complete)
+                .Where(x => x.State.IsTerminal())
                 .ToList();
             _logger.LogInformation("Deleting {Count} old catalog index scans.", oldScansToDelete.Count);
 

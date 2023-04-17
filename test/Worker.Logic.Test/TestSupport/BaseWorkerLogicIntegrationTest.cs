@@ -246,11 +246,13 @@ namespace NuGet.Insights.Worker
             {
                 indexScan = await CatalogScanStorageService.GetIndexScanAsync(indexScan.GetCursorName(), indexScan.GetScanId());
 
-                if (indexScan.State != CatalogIndexScanState.Complete)
+                if (!indexScan.State.IsTerminal())
                 {
                     await Task.Delay(TimeSpan.FromMilliseconds(100));
                     return false;
                 }
+
+                Assert.Equal(CatalogIndexScanState.Complete, indexScan.State);
 
                 return true;
             });

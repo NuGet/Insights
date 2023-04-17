@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace NuGet.Insights.Worker
@@ -15,6 +15,15 @@ namespace NuGet.Insights.Worker
         StartingAggregate, // Starting the aggregating processes
         Aggregating, // Waiting for the aggregation to complete
         Finalizing, // Finalize or clean up from the scan
+        Aborted, // The scan was aborted before completed and will no longer be processed
         Complete, // The scan is complete, no more work is required
+    }
+
+    public static class CatalogIndexScanStateExtensions
+    {
+        public static bool IsTerminal(this CatalogIndexScanState state)
+        {
+            return state == CatalogIndexScanState.Complete || state == CatalogIndexScanState.Aborted;
+        }
     }
 }

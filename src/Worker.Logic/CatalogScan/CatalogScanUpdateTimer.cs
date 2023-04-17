@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -44,7 +44,11 @@ namespace NuGet.Insights.Worker
         public async Task<bool> IsRunningAsync()
         {
             var indexScans = await _catalogScanStorageService.GetIndexScansAsync();
-            return indexScans.Any(x => x.State != CatalogIndexScanState.Complete);
+
+            // Only allow the timer to trigger again if all of the scans are terminal. Also, don't start the timer if
+            // the latest scan was aborted. This forces the admin to do any manual clean-up necessary.
+            return indexScans.Any(x => !x.State.IsTerminal())
+                || indexScans.MaxBy(x => x.Created)?.State == CatalogIndexScanState.Aborted;
         }
     }
 }

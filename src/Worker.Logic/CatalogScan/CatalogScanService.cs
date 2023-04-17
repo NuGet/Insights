@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -12,11 +13,14 @@ namespace NuGet.Insights.Worker
 {
     public class CatalogScanService
     {
+        private static readonly string NoCursor = string.Empty;
+
         private readonly CatalogScanCursorService _cursorService;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly SchemaSerializer _serializer;
         private readonly CatalogScanStorageService _storageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
+        private readonly TaskStateStorageService _taskStateStorageService;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<CatalogScanService> _logger;
@@ -27,6 +31,7 @@ namespace NuGet.Insights.Worker
             SchemaSerializer serializer,
             CatalogScanStorageService catalogScanStorageService,
             AutoRenewingStorageLeaseService leaseService,
+            TaskStateStorageService taskStateStorageService,
             IOptions<NuGetInsightsWorkerSettings> options,
             ITelemetryClient telemetryClient,
             ILogger<CatalogScanService> logger)
@@ -36,6 +41,7 @@ namespace NuGet.Insights.Worker
             _serializer = serializer;
             _storageService = catalogScanStorageService;
             _leaseService = leaseService;
+            _taskStateStorageService = taskStateStorageService;
             _options = options;
             _telemetryClient = telemetryClient;
             _logger = logger;
@@ -169,6 +175,38 @@ namespace NuGet.Insights.Worker
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        public async Task<CatalogIndexScan> AbortAsync(CatalogScanDriverType driverType)
+        {
+            var cursor = await _cursorService.GetCursorAsync(driverType);
+            var scan = await GetLatestIncompleteScanAsync(cursor.GetName());
+            if (scan is null)
+            {
+                return null;
+            }
+
+            await AbortAsync(scan);
+
+            return scan;
+        }
+
+        private async Task AbortAsync(CatalogIndexScan scan)
+        {
+            var findLatestScanId = _storageService.GenerateFindLatestScanId(scan);
+            var findLatestScan = await _storageService.GetIndexScanAsync(NoCursor, findLatestScanId);
+            if (findLatestScan is not null)
+            {
+                await AbortAsync(findLatestScan);
+            }
+
+            await _storageService.DeleteChildTablesAsync(scan.StorageSuffix);
+            await _taskStateStorageService.DeleteTableAsync(scan.StorageSuffix);
+
+            scan.ETag = ETag.All;
+            scan.Completed = DateTimeOffset.UtcNow;
+            scan.State = CatalogIndexScanState.Aborted;
+            await _storageService.ReplaceAsync(scan);
         }
 
         public async Task<IReadOnlyDictionary<CatalogScanDriverType, CatalogScanServiceResult>> UpdateAllAsync(DateTimeOffset? max)
@@ -452,10 +490,8 @@ namespace NuGet.Insights.Worker
             DateTimeOffset min,
             DateTimeOffset max)
         {
-            var cursorName = string.Empty;
-
             // Check if a scan is already running, outside the lease.
-            var incompleteScan = await _storageService.GetIndexScanAsync(cursorName, scanId);
+            var incompleteScan = await _storageService.GetIndexScanAsync(NoCursor, scanId);
             if (incompleteScan != null)
             {
                 return incompleteScan;
@@ -470,14 +506,14 @@ namespace NuGet.Insights.Worker
                 }
 
                 // Check if a scan is already running, inside the lease.
-                incompleteScan = await _storageService.GetIndexScanAsync(cursorName, scanId);
+                incompleteScan = await _storageService.GetIndexScanAsync(NoCursor, scanId);
                 if (incompleteScan != null)
                 {
                     return incompleteScan;
                 }
 
                 return await StartWithoutLeaseAsync(
-                    cursorName,
+                    NoCursor,
                     scanId,
                     storageSuffix,
                     driverType,
@@ -524,7 +560,7 @@ namespace NuGet.Insights.Worker
         private async Task<CatalogIndexScan> GetLatestIncompleteScanAsync(string cursorName)
         {
             var latestScans = await _storageService.GetLatestIndexScansAsync(cursorName, maxEntities: 20);
-            var incompleteScans = latestScans.Where(x => x.State != CatalogIndexScanState.Complete);
+            var incompleteScans = latestScans.Where(x => !x.State.IsTerminal());
             if (incompleteScans.Any())
             {
                 return incompleteScans.First();

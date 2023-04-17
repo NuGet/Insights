@@ -31,61 +31,59 @@
         <li class="list-group-item"><b>Poison - approximate message count:</b> @Model.PoisonApproximateMessageCount</li>
         <li class="list-group-item"><b>Poison - available messages:</b> @(Model.PoisonAvailableMessageCountIsExact ? string.Empty : "≥") @Model.PoisonAvailableMessageCountLowerBound</li>
     </ul>
-    <div class="card-body border-top">
-        <fieldset class="form-inline">
-            <form action="@Url.Action("ClearQueue")" class="input-group" method="post">
-                <input type="hidden" name="queueType" value="@Model.QueueType" />
-                <button type="submit" class="btn btn-danger mr-1" name="poison" value="false"
-                        data-message="Are you sure you want to clear the @(Model.QueueType) main queue? This may cause long running flows to hang indefinitely, waiting for the dropped queue messages to be completed. You may need to manually clean up these flows before proceeding.">
-                    Clear main queue
-                </button>
-                <button type="submit" class="btn btn-danger mr-1" name="poison" value="true"
-                        data-message="Are you sure you want to clear the @(Model.QueueType) poison queue? Another option would be to move the poison queue messages to the main queue so they can be tried again.">
-                    Clear poison queue
-                </button>
-            </form>
-            <form action="@Url.Action("MoveMessages")" class="input-group" method="post">
-                <input type="hidden" name="source" value="@Model.QueueType" />
-                <input type="hidden" name="isPoisonSource" value="true" />
-                <input type="hidden" name="destination" value="@Model.QueueType" />
-                <input type="hidden" name="isPoisonDestination" value="false" />
-                <button type="submit" class="btn btn-warning mr-1" disabled="@(Model.MovePoisonToMainState != MoveQueueMessagesState.None)">
-                    Move poison queue to main queue
-                    @{
-                        switch (Model.MovePoisonToMainState)
-                        {
-                            case MoveQueueMessagesState.Working:
-                                <text>- working ⌛</text>
-                                break;
-                            case MoveQueueMessagesState.Scheduled:
-                                <text>- scheduled ⏱️</text>
-                                break;
-                        }
+    <div class="card-body border-top form-inline">
+        <form action="@Url.Action("ClearQueue")" method="post" class="mr-1">
+            <input type="hidden" name="queueType" value="@Model.QueueType" />
+            <button type="submit" class="btn btn-danger" name="poison" value="false"
+                    data-message="Are you sure you want to clear the @(Model.QueueType) main queue? This may cause long running flows to hang indefinitely, waiting for the dropped queue messages to be completed. You may need to manually clean up these flows before proceeding.">
+                Clear main queue
+            </button>
+            <button type="submit" class="btn btn-danger" name="poison" value="true"
+                    data-message="Are you sure you want to clear the @(Model.QueueType) poison queue? Another option would be to move the poison queue messages to the main queue so they can be tried again.">
+                Clear poison queue
+            </button>
+        </form>
+        <form action="@Url.Action("MoveMessages")" method="post" class="mr-1">
+            <input type="hidden" name="source" value="@Model.QueueType" />
+            <input type="hidden" name="isPoisonSource" value="true" />
+            <input type="hidden" name="destination" value="@Model.QueueType" />
+            <input type="hidden" name="isPoisonDestination" value="false" />
+            <button type="submit" class="btn btn-warning" disabled="@(Model.MovePoisonToMainState != MoveQueueMessagesState.None)">
+                Move poison queue to main queue
+                @{
+                    switch (Model.MovePoisonToMainState)
+                    {
+                        case MoveQueueMessagesState.Working:
+                            <text>- working ⌛</text>
+                            break;
+                        case MoveQueueMessagesState.Scheduled:
+                            <text>- scheduled ⏱️</text>
+                            break;
                     }
-                </button>
-            </form>
-            <form action="@Url.Action("MoveMessages")" class="input-group" method="post">
-                <input type="hidden" name="source" value="@Model.QueueType" />
-                <input type="hidden" name="isPoisonSource" value="false" />
-                <input type="hidden" name="destination" value="@Model.QueueType" />
-                <input type="hidden" name="isPoisonDestination" value="true" />
-                <button type="submit" class="btn btn-danger mr-1" disabled="@(Model.MoveMainToPoisonState != MoveQueueMessagesState.None)"
-                        data-message="Are you sure you want to move messages from the main queue to the poison queue? This may cause long running flows to hang indefinitely, waiting for the dropped queue messages to be completed.">
-                    Move main queue to poison queue
-                    @{
-                        switch (Model.MoveMainToPoisonState)
-                        {
-                            case MoveQueueMessagesState.Working:
-                                <text>- working ⌛</text>
-                                break;
-                            case MoveQueueMessagesState.Scheduled:
-                                <text>- scheduled ⏱️</text>
-                                break;
-                        }
+                }
+            </button>
+        </form>
+        <form action="@Url.Action("MoveMessages")" method="post">
+            <input type="hidden" name="source" value="@Model.QueueType" />
+            <input type="hidden" name="isPoisonSource" value="false" />
+            <input type="hidden" name="destination" value="@Model.QueueType" />
+            <input type="hidden" name="isPoisonDestination" value="true" />
+            <button type="submit" class="btn btn-danger" disabled="@(Model.MoveMainToPoisonState != MoveQueueMessagesState.None)"
+                    data-message="Are you sure you want to move messages from the main queue to the poison queue? This may cause long running flows to hang indefinitely, waiting for the dropped queue messages to be completed.">
+                Move main queue to poison queue
+                @{
+                    switch (Model.MoveMainToPoisonState)
+                    {
+                        case MoveQueueMessagesState.Working:
+                            <text>- working ⌛</text>
+                            break;
+                        case MoveQueueMessagesState.Scheduled:
+                            <text>- scheduled ⏱️</text>
+                            break;
                     }
-                </button>
-            </form>
-        </fieldset>
+                }
+            </button>
+        </form>
     </div>
 
     @if (message != null)

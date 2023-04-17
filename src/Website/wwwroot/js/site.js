@@ -54,8 +54,9 @@
 
     $(function () {
         $('input[name="useCustomCursor"]').change(function () {
-            $(this).parent().siblings('.custom-cursor').toggle(this.checked);
-            $(this).parent().siblings('button[name="overrideCursor"]').toggle(this.checked);
+            var card = $(this).parents('.card')
+            card.find('.custom-cursor').toggle(this.checked);
+            card.find('button[name="overrideCursor"]').toggle(this.checked);
         });
 
         $('.btn-danger').on('click', function () {

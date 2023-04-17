@@ -176,7 +176,7 @@ namespace NuGet.Insights.Worker
 
         private async Task ExpandLatestLeavesAsync(CatalogIndexScanMessage message, CatalogIndexScan scan, ICatalogScanDriver driver, bool perId)
         {
-            var findLatestLeafScanId = scan.GetScanId() + "-fl";
+            var findLatestLeafScanId = _storageService.GenerateFindLatestScanId(scan);
             var taskStateKey = new TaskStateKey(scan.StorageSuffix, $"{scan.GetScanId()}-{TableScanDriverType.EnqueueCatalogLeafScans}", "start");
 
             await HandleInitializedStateAsync(scan, nextState: CatalogIndexScanState.FindingLatest);
@@ -184,7 +184,7 @@ namespace NuGet.Insights.Worker
             // FindingLatest: start and wait on a "find latest leaves" scan for the range of this parent scan
             if (scan.State == CatalogIndexScanState.FindingLatest)
             {
-                var storageSuffix = scan.StorageSuffix + "fl";
+                var storageSuffix = _storageService.GenerateFindLatestStorageSuffix(scan);
                 CatalogIndexScan findLatestScan;
                 if (perId)
                 {
@@ -205,7 +205,7 @@ namespace NuGet.Insights.Worker
                         scan.Max.Value);
                 }
 
-                if (findLatestScan.State != CatalogIndexScanState.Complete)
+                if (!findLatestScan.State.IsTerminal())
                 {
                     _logger.LogInformation("Still finding latest catalog leaf scans.");
                     message.AttemptCount++;
@@ -214,6 +214,11 @@ namespace NuGet.Insights.Worker
                 }
                 else
                 {
+                    if (findLatestScan.State != CatalogIndexScanState.Complete)
+                    {
+                        throw new InvalidOperationException("The find latest scan had an unexpected terminal state: " + findLatestScan.State);
+                    }
+
                     _logger.LogInformation("Finding the latest catalog leaf scans is complete.");
 
                     scan.State = CatalogIndexScanState.Expanding;
