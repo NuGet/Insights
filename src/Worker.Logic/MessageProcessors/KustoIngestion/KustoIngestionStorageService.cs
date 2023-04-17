@@ -107,6 +107,14 @@ namespace NuGet.Insights.Worker.KustoIngestion
             return await query.ToListAsync();
         }
 
+        public async Task<IReadOnlyList<KustoIngestionEntity>> GetLatestIngestionsAsync(int maxEntities)
+        {
+            return await (await GetKustoIngestionTableAsync())
+                .QueryAsync<KustoIngestionEntity>(x => x.PartitionKey == KustoContainerIngestion.DefaultPartitionKey)
+                .Take(maxEntities)
+                .ToListAsync();
+        }
+
         public async Task AddIngestionAsync(KustoIngestionEntity ingestion)
         {
             var table = await GetKustoIngestionTableAsync();

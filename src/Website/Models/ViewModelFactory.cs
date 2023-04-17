@@ -1,16 +1,19 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Insights.Worker;
+using NuGet.Insights.Worker.KustoIngestion;
 using NuGet.Insights.Worker.Workflow;
 
 namespace NuGet.Insights.Website
 {
     public class ViewModelFactory
     {
+        private const int HistoryCount = 10;
+
         private readonly CatalogCommitTimestampProvider _catalogCommitTimestampProvider;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
         private readonly CatalogScanStorageService _catalogScanStorageService;
@@ -19,6 +22,8 @@ namespace NuGet.Insights.Website
         private readonly IRemoteCursorClient _remoteCursorClient;
         private readonly TimerExecutionService _timerExecutionService;
         private readonly WorkflowService _workflowService;
+        private readonly WorkflowStorageService _workflowStorageService;
+        private readonly KustoIngestionStorageService _kustoIngestionStorageService;
         private readonly MoveMessagesTaskQueue _moveMessagesTaskQueue;
 
         public ViewModelFactory(
@@ -30,6 +35,8 @@ namespace NuGet.Insights.Website
             IRemoteCursorClient remoteCursorClient,
             TimerExecutionService timerExecutionService,
             WorkflowService workflowService,
+            WorkflowStorageService workflowStorageService,
+            KustoIngestionStorageService kustoIngestionStorageService,
             MoveMessagesTaskQueue moveMessagesTaskQueue)
         {
             _catalogCommitTimestampProvider = catalogCommitTimestampProvider;
@@ -40,6 +47,8 @@ namespace NuGet.Insights.Website
             _remoteCursorClient = remoteCursorClient;
             _timerExecutionService = timerExecutionService;
             _workflowService = workflowService;
+            _workflowStorageService = workflowStorageService;
+            _kustoIngestionStorageService = kustoIngestionStorageService;
             _moveMessagesTaskQueue = moveMessagesTaskQueue;
         }
 
@@ -55,6 +64,8 @@ namespace NuGet.Insights.Website
 
             var isWorkflowRunningTask = _workflowService.IsWorkflowRunningAsync();
             var timerStatesTask = _timerExecutionService.GetStateAsync();
+            var workflowRunsTask = GetWorkflowRunsAsync();
+            var kustoIngestionsTask = GetKustoIngestionsAsync();
             var catalogCommitTimestampTask = _remoteCursorClient.GetCatalogAsync();
 
             await Task.WhenAll(
@@ -62,6 +73,8 @@ namespace NuGet.Insights.Website
                 expandQueueTask,
                 isWorkflowRunningTask,
                 timerStatesTask,
+                workflowRunsTask,
+                kustoIngestionsTask,
                 catalogCommitTimestampTask);
 
             var catalogScans = await Task.WhenAll(catalogScanTasks);
@@ -90,10 +103,22 @@ namespace NuGet.Insights.Website
                 WorkQueue = await workQueueTask,
                 ExpandQueue = await expandQueueTask,
                 CatalogScans = catalogScans,
+                WorkflowRuns = await workflowRunsTask,
+                KustoIngestions = await kustoIngestionsTask,
                 TimerStates = await timerStatesTask,
             };
 
             return model;
+        }
+
+        private async Task<IReadOnlyList<WorkflowRun>> GetWorkflowRunsAsync()
+        {
+            return await _workflowStorageService.GetLatestRunsAsync(HistoryCount);
+        }
+
+        private async Task<IReadOnlyList<KustoIngestionEntity>> GetKustoIngestionsAsync()
+        {
+            return await _kustoIngestionStorageService.GetLatestIngestionsAsync(HistoryCount);
         }
 
         private async Task<QueueViewModel> GetQueueAsync(QueueType queue)
@@ -140,7 +165,7 @@ namespace NuGet.Insights.Website
         private async Task<CatalogScanViewModel> GetCatalogScanAsync(CatalogScanDriverType driverType)
         {
             var cursor = await _catalogScanCursorService.GetCursorAsync(driverType);
-            var latestScans = await _catalogScanStorageService.GetLatestIndexScansAsync(cursor.GetName(), maxEntities: 5);
+            var latestScans = await _catalogScanStorageService.GetLatestIndexScansAsync(cursor.GetName(), HistoryCount);
             var nextCommitTimestamp = await _catalogCommitTimestampProvider.GetNextAsync(cursor.Value);
 
             return new CatalogScanViewModel
@@ -151,7 +176,7 @@ namespace NuGet.Insights.Website
                 SupportsReprocess = _catalogScanService.SupportsReprocess(driverType),
                 OnlyLatestLeavesSupport = _catalogScanService.GetOnlyLatestLeavesSupport(driverType),
                 IsEnabled = _catalogScanService.IsEnabled(driverType),
-                DefaultMax = nextCommitTimestamp ?? DateTimeOffset.Parse("2015-02-01T06:22:45.8488496Z"),
+                DefaultMax = nextCommitTimestamp ?? CatalogClient.NuGetOrgFirstCommit,
             };
         }
     }

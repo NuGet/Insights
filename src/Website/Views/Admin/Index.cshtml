@@ -1,7 +1,12 @@
+@using NuGet.Insights.Worker.KustoIngestion;
+@using NuGet.Insights.Worker.Workflow;
 @model AdminViewModel
 @{
     ViewData["Title"] = "Admin";
     ViewData["PageClass"] = "admin-index";
+
+    var isWorkflowEnabled = Model.TimerStates.Single(x => x.Name == WorkflowTimer.TimerName).IsEnabledInConfig;
+    var isKustoIngestionEnabled = Model.TimerStates.Single(x => x.Name == KustoIngestionTimer.TimerName).IsEnabledInConfig;
 }
 
 <component type="typeof(WorkerQueueCard)"
@@ -42,4 +47,23 @@
                param-Model="@timerState"
                param-TempData="TempData"
                param-Url="Url" />
+}
+
+@if (isWorkflowEnabled || isKustoIngestionEnabled)
+{
+    <h3>Timer history</h3>
+
+    @if (isWorkflowEnabled)
+    {
+        <component type="typeof(WorkflowRunsCard)"
+                   render-mode="Static"
+                   param-Model="Model.WorkflowRuns" />
+    }
+
+    @if (isKustoIngestionEnabled)
+    {
+        <component type="typeof(KustoIngestionsCard)"
+                   render-mode="Static"
+                   param-Model="Model.KustoIngestions" />
+    }
 }

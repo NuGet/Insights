@@ -35,10 +35,15 @@ namespace NuGet.Insights
         */
 
         /// <summary>
-        /// This is the absolute min in the NuGet.org catalog.
+        /// This is the earliest commit timestamp in the NuGet.org catalog.
         /// </summary>
-        public static readonly DateTimeOffset NuGetOrgMin = DateTimeOffset
-            .Parse("2015-02-01T06:22:45.8488496Z")
+        public static readonly DateTimeOffset NuGetOrgFirstCommit = DateTimeOffset
+            .Parse("2015-02-01T06:22:45.8488496Z");
+
+        /// <summary>
+        /// This is a min value right before (by 1 tick) the earliest commit timestamp in the NuGet.org catalog.
+        /// </summary>
+        public static readonly DateTimeOffset NuGetOrgMin = NuGetOrgFirstCommit
             .Subtract(TimeSpan.FromTicks(1));
 
         /// <summary>

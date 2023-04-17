@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using NuGet.Insights.Worker.KustoIngestion;
+using NuGet.Insights.Worker.Workflow;
 
 namespace NuGet.Insights.Website
 {
@@ -15,6 +17,8 @@ namespace NuGet.Insights.Website
 
         public DateTimeOffset DefaultMax { get; set; }
         public IReadOnlyList<CatalogScanViewModel> CatalogScans { get; set; }
+        public IReadOnlyList<WorkflowRun> WorkflowRuns { get; set; }
+        public IReadOnlyList<KustoIngestionEntity> KustoIngestions { get; set; }
         public IReadOnlyList<TimerState> TimerStates { get; set; }
     }
 }

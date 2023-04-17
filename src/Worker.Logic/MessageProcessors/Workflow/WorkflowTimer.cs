@@ -9,6 +9,8 @@ namespace NuGet.Insights.Worker.Workflow
 {
     public class WorkflowTimer : ITimer
     {
+        public static string TimerName => "Workflow";
+
         private readonly WorkflowService _service;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
@@ -18,7 +20,7 @@ namespace NuGet.Insights.Worker.Workflow
             _options = options;
         }
 
-        public string Name => "Workflow";
+        public string Name => TimerName;
         public TimeSpan Frequency => _options.Value.WorkflowFrequency;
         public bool AutoStart => false;
         public bool IsEnabled => _service.HasRequiredConfiguration;

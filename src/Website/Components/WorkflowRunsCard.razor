@@ -1,0 +1,65 @@
+@using NuGet.Insights.Worker.Workflow;
+@{
+    string statusText = null;
+    string statusTitle = null;
+    var latestIsAborted = Model.FirstOrDefault()?.State == WorkflowRunState.Aborted;
+    var isRunning = Model.Any(x => !x.State.IsTerminal());
+    if (latestIsAborted)
+    {
+        statusText = "⚠️";
+        statusTitle = "The latest workflow run has been aborted.";
+    }
+    else if (isRunning)
+    {
+        statusText = "⌛";
+        statusTitle = "The workflow is running.";
+    }
+}
+<CollapseCard IdPrefix="WorkflowRuns" Title="Workflow runs" StatusText="@statusText" StatusTitle="@statusTitle">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Run ID</th>
+                <th>State</th>
+                <th>Attempt count</th>
+                <th>Runtime</th>
+            </tr>
+        </thead>
+        <tbody class="smaller-text">
+            @foreach (var run in Model)
+            {
+                <tr>
+                    <td>@run.GetRunId()</td>
+                    <td>@run.State</td>
+                    <td>@run.AttemptCount</td>
+                    <td>
+                        @if (run.State != WorkflowRunState.Created)
+                        {
+                            var runtime = run.Completed.GetValueOrDefault(DateTimeOffset.UtcNow) - run.Created;
+                            var runtimeStr = runtime.ToString("d\\.hh\\:mm\\:ss");
+                            if (runtimeStr.StartsWith("0."))
+                            {
+                                runtimeStr = runtimeStr.Substring(2);
+                            }
+                            <text>@runtimeStr</text>
+                        }
+                    </td>
+                </tr>
+            }
+
+            @if (Model.Count == 0)
+            {
+                <tr>
+                    <td colspan="4" class="text-center">
+                        <i>No workflow runs have been started.</i>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</CollapseCard>
+
+@code {
+    [Parameter]
+    public List<WorkflowRun> Model { get; set; }
+}

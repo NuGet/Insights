@@ -8,6 +8,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
 {
     public class KustoIngestionTimer : ITimer
     {
+        public static string TimerName => "KustoIngestion";
+
         private readonly KustoIngestionService _kustoIngestionService;
         private readonly KustoIngestionStorageService _kustoIngestionStorageService;
 
@@ -19,7 +21,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             _kustoIngestionStorageService = kustoIngestionStorageService;
         }
 
-        public string Name => "KustoIngestion";
+        public string Name => TimerName;
         public TimeSpan Frequency => TimeSpan.FromDays(1);
         public bool AutoStart => false;
         public bool IsEnabled => _kustoIngestionService.HasRequiredConfiguration;

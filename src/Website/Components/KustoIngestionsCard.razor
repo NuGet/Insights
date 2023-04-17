@@ -1,0 +1,65 @@
+@using NuGet.Insights.Worker.KustoIngestion;
+@{
+    string statusText = null;
+    string statusTitle = null;
+    var latestIsAborted = Model.FirstOrDefault()?.State == KustoIngestionState.Aborted;
+    var isRunning = Model.Any(x => !x.State.IsTerminal());
+    if (latestIsAborted)
+    {
+        statusText = "⚠️";
+        statusTitle = "The latest Kusto ingestion has been aborted.";
+    }
+    else if (isRunning)
+    {
+        statusText = "⌛";
+        statusTitle = "A Kusto ingestion is running.";
+    }
+}
+<CollapseCard IdPrefix="KustoIngestions" Title="Kusto ingestions" StatusText="@statusText" StatusTitle="@statusTitle">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Ingestion ID</th>
+                <th>State</th>
+                <th>Attempt count</th>
+                <th>Runtime</th>
+            </tr>
+        </thead>
+        <tbody class="smaller-text">
+            @foreach (var ingestion in Model)
+            {
+                <tr>
+                    <td>@ingestion.GetIngestionId()</td>
+                    <td>@ingestion.State</td>
+                    <td>@ingestion.AttemptCount</td>
+                    <td>
+                        @if (ingestion.Started.HasValue)
+                        {
+                            var runtime = ingestion.Completed.GetValueOrDefault(DateTimeOffset.UtcNow) - ingestion.Started.Value;
+                            var runtimeStr = runtime.ToString("d\\.hh\\:mm\\:ss");
+                            if (runtimeStr.StartsWith("0."))
+                            {
+                                runtimeStr = runtimeStr.Substring(2);
+                            }
+                            <text>@runtimeStr</text>
+                        }
+                    </td>
+                </tr>
+            }
+
+            @if (Model.Count == 0)
+            {
+                <tr>
+                    <td colspan="4" class="text-center">
+                        <i>No Kusto ingestions have been started.</i>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</CollapseCard>
+
+@code {
+    [Parameter]
+    public List<KustoIngestionEntity> Model { get; set; }
+}

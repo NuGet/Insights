@@ -67,6 +67,14 @@ namespace NuGet.Insights.Worker.Workflow
                 .ToListAsync();
         }
 
+        public async Task<IReadOnlyList<WorkflowRun>> GetLatestRunsAsync(int maxEntities)
+        {
+            return await (await GetTableAsync())
+                .QueryAsync<WorkflowRun>(x => x.PartitionKey == WorkflowRun.DefaultPartitionKey)
+                .Take(maxEntities)
+                .ToListAsync();
+        }
+
         public async Task DeleteOldRunsAsync(string currentRunId)
         {
             var table = await GetTableAsync();
