@@ -22,6 +22,7 @@ namespace NuGet.Insights.Worker.Workflow
         private readonly IReadOnlyList<ICleanupOrphanRecordsTimer> _cleanupOrphanRecordsTimers;
         private readonly IReadOnlyList<IAuxiliaryFileUpdaterTimer> _auxiliaryFileUpdaterTimers;
         private readonly KustoIngestionTimer _kustoIngestionTimer;
+        private readonly IReadOnlyList<ITimer> _allTimers;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly ILogger<WorkflowService> _logger;
 
@@ -43,6 +44,11 @@ namespace NuGet.Insights.Worker.Workflow
             _cleanupOrphanRecordsTimers = cleanupOrphanRecordsTimers.ToList();
             _auxiliaryFileUpdaterTimers = auxiliaryFileUpdaterTimers.ToList();
             _kustoIngestionTimer = kustoIngestionTimer;
+            var timers = new List<ITimer> { _catalogScanUpdateTimer };
+            timers.AddRange(_cleanupOrphanRecordsTimers);
+            timers.AddRange(_auxiliaryFileUpdaterTimers);
+            timers.Add(_kustoIngestionTimer);
+            _allTimers = timers;
             _messageEnqueuer = messageEnqueuer;
             _logger = logger;
         }
@@ -52,10 +58,7 @@ namespace NuGet.Insights.Worker.Workflow
             await _workflowStorageService.InitializeAsync();
             await _leaseService.InitializeAsync();
             await _messageEnqueuer.InitializeAsync();
-            await _timerExecutionService.InitializeAsync(Enumerable.Empty<ITimer>()
-                .Concat(new ITimer[] { _catalogScanUpdateTimer, _kustoIngestionTimer })
-                .Concat(_cleanupOrphanRecordsTimers)
-                .Concat(_auxiliaryFileUpdaterTimers));
+            await _timerExecutionService.InitializeAsync(_allTimers);
         }
 
         public async Task AbortAsync()
@@ -67,19 +70,19 @@ namespace NuGet.Insights.Worker.Workflow
                 return;
             }
 
-            await _catalogScanUpdateTimer.AbortAsync();
-            await _kustoIngestionTimer.AbortAsync();
+            foreach (var timer in _allTimers)
+            {
+                if (timer.CanAbort)
+                {
+                    await timer.AbortAsync();
+                }
+            }
 
             latestRun.ETag = ETag.All;
             latestRun.Completed = DateTimeOffset.UtcNow;
             latestRun.State = WorkflowRunState.Aborted;
             await _workflowStorageService.ReplaceRunAsync(latestRun);
         }
-
-        public bool HasRequiredConfiguration => _catalogScanUpdateTimer.IsEnabled
-            && _cleanupOrphanRecordsTimers.All(x => x.IsEnabled)
-            && _auxiliaryFileUpdaterTimers.All(x => x.IsEnabled)
-            && _kustoIngestionTimer.IsEnabled;
 
         public async Task<WorkflowRun> StartAsync()
         {
@@ -118,11 +121,20 @@ namespace NuGet.Insights.Worker.Workflow
 
         public async Task<bool> IsAnyWorkflowStepRunningAsync()
         {
-            return await IsWorkflowRunningAsync()
-                || await AreCatalogScansRunningAsync()
-                || await AreCleanupOrphanRecordsRunningAsync()
-                || await AreAuxiliaryFilesRunningAsync()
-                || await IsKustoIngestionRunningAsync();
+            return await IsWorkflowRunningAsync() || await IsAnyTimerRunningAsync();
+        }
+
+        private async Task<bool> IsAnyTimerRunningAsync()
+        {
+            foreach (var timer in _allTimers)
+            {
+                if (await timer.IsRunningAsync())
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         internal async Task StartCatalogScansAsync()
@@ -153,12 +165,19 @@ namespace NuGet.Insights.Worker.Workflow
 
         private async Task StartTimerAsync(ITimer timer)
         {
+            if (!timer.IsEnabled)
+            {
+                _logger.LogInformation("The {TimerName} timer does not have the required configuration and will be skipped.", timer.Name);
+                return;
+            }
+
             if (await timer.IsRunningAsync())
             {
                 _logger.LogInformation("The {TimerName} timer is already running.", timer.Name);
                 return;
             }
 
+            _logger.LogInformation("Starting the {TimerName} timer.", timer.Name);
             var started = await _timerExecutionService.ExecuteAsync(new[] { timer }, executeNow: true);
             if (!started)
             {

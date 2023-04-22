@@ -54,13 +54,13 @@ namespace NuGet.Insights.Worker.KustoIngestion
             return ingestions.Any(x => !x.State.IsTerminal());
         }
 
-        public async Task<KustoIngestionState> GetLatestStateAsync()
+        public async Task<KustoIngestionState?> GetLatestStateAsync()
         {
             var table = await GetKustoIngestionTableAsync();
             var ingestions = await table
                 .QueryAsync<KustoIngestionEntity>(x => x.PartitionKey == KustoIngestionEntity.DefaultPartitionKey)
                 .ToListAsync();
-            return ingestions.OrderByDescending(x => x.Created).First().State;
+            return ingestions.OrderByDescending(x => x.Created).FirstOrDefault()?.State;
         }
 
         public async Task DeleteOldIngestionsAsync(string currentIngestionId)

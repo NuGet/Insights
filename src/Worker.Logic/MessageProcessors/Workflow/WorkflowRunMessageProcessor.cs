@@ -20,7 +20,6 @@ namespace NuGet.Insights.Worker.Workflow
                 IsIncompleteAsync: self => Task.FromResult(false),
                 TransitionAsync: async (self, run) =>
                 {
-                    self._logger.LogInformation("Starting all catalog scans.");
                     await self._workflowService.StartCatalogScansAsync();
                     return WorkflowRunState.CatalogScanWorking;
                 }),
@@ -30,7 +29,6 @@ namespace NuGet.Insights.Worker.Workflow
                 IsIncompleteAsync: self => self._workflowService.AreCatalogScansRunningAsync(),
                 TransitionAsync: async (self, run) =>
                 {
-                    self._logger.LogInformation("Starting cleanup of orphan records.");
                     await self._workflowService.StartCleanupOrphanRecordsAsync();
                     return WorkflowRunState.CleanupOrphanRecordsWorking;
                 }),
@@ -40,7 +38,6 @@ namespace NuGet.Insights.Worker.Workflow
                 IsIncompleteAsync: self => self._workflowService.AreCleanupOrphanRecordsRunningAsync(),
                 TransitionAsync: async (self, run) =>
                 {
-                    self._logger.LogInformation("Starting auxiliary file processors.");
                     await self._workflowService.StartAuxiliaryFilesAsync();
                     return WorkflowRunState.AuxiliaryFilesWorking;
                 }),
@@ -50,7 +47,6 @@ namespace NuGet.Insights.Worker.Workflow
                 IsIncompleteAsync: self => self._workflowService.AreAuxiliaryFilesRunningAsync(),
                 TransitionAsync: async (self, run) =>
                 {
-                    self._logger.LogInformation("Starting Kusto ingestion.");
                     await self._workflowService.StartKustoIngestionAsync();
                     return WorkflowRunState.KustoIngestionWorking;
                 }),
@@ -61,20 +57,23 @@ namespace NuGet.Insights.Worker.Workflow
                 TransitionAsync: async (self, run) =>
                 {
                     var latestState = await self._kustoIngestionStorageService.GetLatestStateAsync();
-                    if (latestState == KustoIngestionState.FailedValidation)
+                    if (latestState.HasValue)
                     {
-                        if (run.AttemptCount >= self._options.Value.WorkflowMaxAttempts)
+                        if (latestState == KustoIngestionState.FailedValidation)
                         {
-                            throw new InvalidOperationException($"The workflow could not complete due to Kusto {latestState} state after {run.AttemptCount} attempts.");
-                        }
+                            if (run.AttemptCount >= self._options.Value.WorkflowMaxAttempts)
+                            {
+                                throw new InvalidOperationException($"The workflow could not complete due to Kusto {latestState} state after {run.AttemptCount} attempts.");
+                            }
 
-                        self._logger.LogWarning("Retrying the entire workflow due to Kusto {latestState} state.", latestState);
-                        run.AttemptCount++;
-                        return WorkflowRunState.Created;
-                    }
-                    else if (latestState != KustoIngestionState.Complete)
-                    {
-                        throw new InvalidOperationException("Unexpected workflow state: " + latestState);
+                            self._logger.LogWarning("Retrying the entire workflow due to Kusto {latestState} state.", latestState);
+                            run.AttemptCount++;
+                            return WorkflowRunState.Created;
+                        }
+                        else if (latestState != KustoIngestionState.Complete)
+                        {
+                            throw new InvalidOperationException("Unexpected workflow state: " + latestState);
+                        }
                     }
 
                     return WorkflowRunState.Finalizing;
