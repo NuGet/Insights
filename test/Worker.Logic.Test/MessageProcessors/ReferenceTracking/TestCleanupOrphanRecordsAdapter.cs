@@ -9,9 +9,18 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 {
     public class TestCleanupOrphanRecordsAdapter : ICleanupOrphanRecordsAdapter<TestSubjectRecord>
     {
+        private readonly CleanupOrphanRecordsServiceTest _test;
+
+        public TestCleanupOrphanRecordsAdapter(CleanupOrphanRecordsServiceTest test)
+        {
+            _test = test;
+        }
+
         public string OperationName => "CleanupTestSubjectRecords";
         public string OwnerType => "O";
         public string SubjectType => "S";
+        public string OwnerToSubjectTableName => _test.OwnerToSubjectTableName;
+        public string SubjectToOwnerTableName => _test.SubjectToOwnerTableName;
 
         public IReadOnlyList<ICsvRecordSet<TestSubjectRecord>> MapToOrphanRecords(IReadOnlyList<SubjectReference> subjects)
         {

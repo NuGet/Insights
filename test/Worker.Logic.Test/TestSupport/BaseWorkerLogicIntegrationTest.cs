@@ -153,6 +153,8 @@ namespace NuGet.Insights.Worker
             x.PackageVulnerabilityContainerName = $"{StoragePrefix}1pu1";
             x.PackageIconContainerName = $"{StoragePrefix}1pi1";
             x.PackageCompatibilityContainerName = $"{StoragePrefix}1pc1";
+            x.PackageToCertificateTableName = $"{StoragePrefix}1p2c1";
+            x.CertificateToPackageTableName = $"{StoragePrefix}1c2p1";
             x.PackageCertificateContainerName = $"{StoragePrefix}1pr1";
             x.CertificateContainerName = $"{StoragePrefix}1r1";
             x.PackageContentContainerName = $"{StoragePrefix}1pco1";
@@ -656,6 +658,7 @@ namespace NuGet.Insights.Worker
         }
 
         protected async Task AssertOwnerToSubjectAsync<T>(
+            string tableName,
             string testName,
             string stepName,
             Func<byte[], T> deserializeEntity,
@@ -664,7 +667,7 @@ namespace NuGet.Insights.Worker
             var dir = Path.Combine(testName, stepName);
 
             await AssertWideEntityOutputAsync(
-                Options.Value.OwnerToSubjectReferenceTableName,
+                tableName,
                 dir,
                 stream =>
                 {
@@ -688,12 +691,15 @@ namespace NuGet.Insights.Worker
                 fileName: fileName ?? "owner-to-subject.json");
         }
 
-        protected async Task AssertSubjectToOwnerAsync(string testName, string stepName, string fileName = null)
+        protected async Task AssertSubjectToOwnerAsync(
+            string tableName,
+            string testName,
+            string stepName,
+            string fileName = null)
         {
             var dir = Path.Combine(testName, stepName);
 
-            var table = (await ServiceClientFactory.GetTableServiceClientAsync())
-                .GetTableClient(Options.Value.SubjectToOwnerReferenceTableName);
+            var table = (await ServiceClientFactory.GetTableServiceClientAsync()).GetTableClient(tableName);
             await AssertEntityOutputAsync<TableEntity>(
                 table,
                 dir,

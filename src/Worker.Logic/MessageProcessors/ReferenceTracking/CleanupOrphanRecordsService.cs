@@ -38,7 +38,9 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             await _leaseService.InitializeAsync();
             await _messageEnqueuer.InitializeAsync();
             await _taskStateStorageService.InitializeAsync(StorageSuffix);
-            await _referenceTracker.InitializeAsync();
+            await _referenceTracker.InitializeAsync(
+                _adapter.OwnerToSubjectTableName,
+                _adapter.SubjectToOwnerTableName);
         }
 
         private string OperationName => $"CleanupOrphans-{_adapter.OwnerType}-{_adapter.SubjectType}";

@@ -300,8 +300,8 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             return base.GetExpectedTableNames().Concat(new[]
             {
                 Options.Value.PackageArchiveTableName,
-                Options.Value.OwnerToSubjectReferenceTableName,
-                Options.Value.SubjectToOwnerReferenceTableName,
+                Options.Value.PackageToCertificateTableName,
+                Options.Value.CertificateToPackageTableName,
             });
         }
 
@@ -314,6 +314,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         private async Task AssertOwnerToSubjectAsync(string testName, string stepName, string fileName = null)
         {
             await AssertOwnerToSubjectAsync(
+                Options.Value.PackageToCertificateTableName,
                 testName,
                 stepName,
                 bytes =>
@@ -328,6 +329,15 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
                         .Select(x => Enum.GetName(x))
                         .ToList();
                 },
+                fileName);
+        }
+
+        private async Task AssertSubjectToOwnerAsync(string testName, string stepName, string fileName = null)
+        {
+            await AssertSubjectToOwnerAsync(
+                Options.Value.CertificateToPackageTableName,
+                testName,
+                stepName,
                 fileName);
         }
     }

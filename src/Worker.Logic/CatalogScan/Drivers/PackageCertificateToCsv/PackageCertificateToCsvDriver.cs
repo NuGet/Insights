@@ -84,12 +84,16 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         public async Task InitializeAsync()
         {
             await _packageFileService.InitializeAsync();
-            await _referenceTracker.InitializeAsync();
+            await _referenceTracker.InitializeAsync(
+                _options.Value.PackageToCertificateTableName,
+                _options.Value.CertificateToPackageTableName);
         }
 
-        public Task DestroyAsync()
+        public async Task DestroyAsync()
         {
-            return Task.CompletedTask;
+            await _referenceTracker.DestroyAsync(
+                _options.Value.PackageToCertificateTableName,
+                _options.Value.CertificateToPackageTableName);
         }
 
         public bool SingleMessagePerId => false;
@@ -208,6 +212,8 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             }
 
             await _referenceTracker.SetReferencesAsync(
+                _options.Value.PackageToCertificateTableName,
+                _options.Value.CertificateToPackageTableName,
                 ReferenceTypes.Package,
                 ReferenceTypes.Certificate,
                 packageId,

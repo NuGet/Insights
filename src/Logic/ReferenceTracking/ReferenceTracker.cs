@@ -34,27 +34,35 @@ namespace NuGet.Insights.ReferenceTracking
             _options = options;
         }
 
-        public async Task InitializeAsync()
+        public async Task InitializeAsync(string ownerToSubjectTableName, string subjectToOwnerTableName)
         {
-            await (await GetOwnerToSubjectTableAsync()).CreateIfNotExistsAsync(retry: true);
-            await (await GetSubjectToOwnerTableAsync()).CreateIfNotExistsAsync(retry: true);
+            await (await GetOwnerToSubjectTableAsync(ownerToSubjectTableName)).CreateIfNotExistsAsync(retry: true);
+            await (await GetSubjectToOwnerTableAsync(subjectToOwnerTableName)).CreateIfNotExistsAsync(retry: true);
         }
 
-        private async Task<TableClient> GetOwnerToSubjectTableAsync()
+        public async Task DestroyAsync(string ownerToSubjectTableName, string subjectToOwnerTableName)
         {
-            return (await _clientFactory.GetTableServiceClientAsync())
-                .GetTableClient(_options.Value.OwnerToSubjectReferenceTableName);
+            await (await GetOwnerToSubjectTableAsync(ownerToSubjectTableName)).DeleteAsync();
+            await (await GetSubjectToOwnerTableAsync(subjectToOwnerTableName)).DeleteAsync();
         }
 
-        private async Task<TableClient> GetSubjectToOwnerTableAsync()
+        private async Task<TableClient> GetOwnerToSubjectTableAsync(string ownerToSubjectTableName)
         {
-            return (await _clientFactory.GetTableServiceClientAsync())
-                .GetTableClient(_options.Value.SubjectToOwnerReferenceTableName);
+            return (await _clientFactory.GetTableServiceClientAsync()).GetTableClient(ownerToSubjectTableName);
         }
 
-        public async Task<IReadOnlyList<OwnerReference>> GetOwnersOfSubjectAsync(string ownerType, string subjectType, SubjectReference subject)
+        private async Task<TableClient> GetSubjectToOwnerTableAsync(string subjectToOwnerTableName)
         {
-            (var entities, var prefix) = await GetSubjectToOwnerReferencesAsync(ownerType, subjectType, subject);
+            return (await _clientFactory.GetTableServiceClientAsync()).GetTableClient(subjectToOwnerTableName);
+        }
+
+        public async Task<IReadOnlyList<OwnerReference>> GetOwnersOfSubjectAsync(
+            string subjectToOwnerTableName,
+            string ownerType,
+            string subjectType,
+            SubjectReference subject)
+        {
+            (var entities, var prefix) = await GetSubjectToOwnerReferencesAsync(subjectToOwnerTableName, ownerType, subjectType, subject);
             var owners = new List<OwnerReference>();
             await foreach (var entity in entities)
             {
@@ -66,17 +74,25 @@ namespace NuGet.Insights.ReferenceTracking
             return owners;
         }
 
-        public async Task<IReadOnlyList<SubjectReference>> GetDeletedSubjectsAsync(string ownerType, string subjectType)
+        public async Task<IReadOnlyList<SubjectReference>> GetDeletedSubjectsAsync(
+            string subjectToOwnerTableName,
+            string ownerType,
+            string subjectType)
         {
-            return await GetDeletedSubjectsAsync(ownerType, subjectType, last: null, take: null);
+            return await GetDeletedSubjectsAsync(subjectToOwnerTableName, ownerType, subjectType, last: null, take: null);
         }
 
-        public async Task<IReadOnlyList<SubjectReference>> GetDeletedSubjectsAsync(string ownerType, string subjectType, SubjectReference last, int? take)
+        public async Task<IReadOnlyList<SubjectReference>> GetDeletedSubjectsAsync(
+            string subjectToOwnerTableName,
+            string ownerType,
+            string subjectType,
+            SubjectReference last,
+            int? take)
         {
             GuardNoSeparator(nameof(ownerType), ownerType);
             GuardNoSeparator(nameof(subjectType), subjectType);
 
-            var subjectToOwnerTable = await GetSubjectToOwnerTableAsync();
+            var subjectToOwnerTable = await GetSubjectToOwnerTableAsync(subjectToOwnerTableName);
             var partitionKey = GetDeletePartitionKey(ownerType, subjectType);
             IAsyncEnumerable<TableEntity> entities;
 
@@ -109,18 +125,26 @@ namespace NuGet.Insights.ReferenceTracking
             return deleted;
         }
 
-        public async Task<bool> DoesSubjectHaveOwnersAsync(string ownerType, string subjectType, SubjectReference subject)
+        public async Task<bool> DoesSubjectHaveOwnersAsync(
+            string subjectToOwnerTableName,
+            string ownerType,
+            string subjectType,
+            SubjectReference subject)
         {
-            (var entities, _) = await GetSubjectToOwnerReferencesAsync(ownerType, subjectType, subject, maxPerPage: 1);
+            (var entities, _) = await GetSubjectToOwnerReferencesAsync(subjectToOwnerTableName, ownerType, subjectType, subject, maxPerPage: 1);
             return await entities.AnyAsync();
         }
 
-        public async Task ClearDeletedSubjectsAsync(string ownerType, string subjectType, IReadOnlyList<SubjectReference> subjects)
+        public async Task ClearDeletedSubjectsAsync(
+            string subjectToOwnerTableName,
+            string ownerType,
+            string subjectType,
+            IReadOnlyList<SubjectReference> subjects)
         {
             GuardNoSeparator(nameof(ownerType), ownerType);
             GuardNoSeparator(nameof(subjectType), subjectType);
 
-            var subjectToOwnerTable = await GetSubjectToOwnerTableAsync();
+            var subjectToOwnerTable = await GetSubjectToOwnerTableAsync(subjectToOwnerTableName);
             var batch = new MutableTableTransactionalBatch(subjectToOwnerTable);
             var partitionKey = GetDeletePartitionKey(ownerType, subjectType);
             foreach (var subject in subjects)
@@ -138,6 +162,7 @@ namespace NuGet.Insights.ReferenceTracking
         }
 
         private async Task<(AsyncPageable<TableEntity> Entities, string Prefix)> GetSubjectToOwnerReferencesAsync(
+            string subjectToOwnerTableName,
             string ownerType,
             string subjectType,
             SubjectReference subject,
@@ -147,7 +172,7 @@ namespace NuGet.Insights.ReferenceTracking
             GuardNoSeparator(nameof(subjectType), subjectType);
 
             var prefix = GetSubjectToOwnerPartitionKeyPrefix(ownerType, subjectType, subject);
-            var subjectToOwnerTable = await GetSubjectToOwnerTableAsync();
+            var subjectToOwnerTable = await GetSubjectToOwnerTableAsync(subjectToOwnerTableName);
             var entities = subjectToOwnerTable.QueryAsync<TableEntity>(
                 filter: x => x.PartitionKey.CompareTo(prefix) >= 0 && x.PartitionKey.CompareTo(prefix + char.MaxValue) < 0,
                 select: new[] { StorageUtility.PartitionKey, StorageUtility.RowKey },
@@ -157,6 +182,8 @@ namespace NuGet.Insights.ReferenceTracking
         }
 
         public async Task SetReferencesAsync(
+            string ownerToSubjectTableName,
+            string subjectToOwnerTableName,
             string ownerType,
             string subjectType,
             string ownerPartitionKey,
@@ -175,8 +202,9 @@ namespace NuGet.Insights.ReferenceTracking
                 GuardNoSeparator("row keys in the " + nameof(ownerRowKeyToSubjects), pair.Key);
             }
 
-            var subjectToOwnerTable = await GetSubjectToOwnerTableAsync();
+            var subjectToOwnerTable = await GetSubjectToOwnerTableAsync(subjectToOwnerTableName);
             var context = new SetReferencesContext(
+                ownerToSubjectTableName,
                 subjectToOwnerTable,
                 ownerType,
                 subjectType,
@@ -198,7 +226,7 @@ namespace NuGet.Insights.ReferenceTracking
                 .ToList();
 
             var existingEntities = await _wideEntityService.RetrieveAsync(
-                _options.Value.OwnerToSubjectReferenceTableName,
+                context.OwnerToSubjectTableName,
                 context.OwnerToSubjectPartitionKey,
                 rowKeys.First(),
                 rowKeys.Last());
@@ -305,7 +333,7 @@ namespace NuGet.Insights.ReferenceTracking
 
             // Persistence step 1: update the owner-to-subject references to keep the current committed set but track
             // the uncommitted adds and deletes.
-            var result = await _wideEntityService.ExecuteBatchAsync(_options.Value.OwnerToSubjectReferenceTableName, batch, allowBatchSplits: true);
+            var result = await _wideEntityService.ExecuteBatchAsync(context.OwnerToSubjectTableName, batch, allowBatchSplits: true);
             foreach (var wideEntity in result)
             {
                 if (context.OwnerRowKeyToInfo.TryGetValue(wideEntity.RowKey, out var cleanupContext))
@@ -430,7 +458,7 @@ namespace NuGet.Insights.ReferenceTracking
                 }
             }
 
-            await _wideEntityService.ExecuteBatchAsync(_options.Value.OwnerToSubjectReferenceTableName, batch, allowBatchSplits: true);
+            await _wideEntityService.ExecuteBatchAsync(context.OwnerToSubjectTableName, batch, allowBatchSplits: true);
         }
 
         private static byte[] Serialize<T>(T data)
@@ -446,12 +474,14 @@ namespace NuGet.Insights.ReferenceTracking
         private class SetReferencesContext
         {
             public SetReferencesContext(
+                string ownerToSubjectTableName,
                 TableClient subjectToOwnerTable,
                 string ownerType,
                 string subjectType,
                 string ownerPartitionKey,
                 IReadOnlyDictionary<string, IReadOnlySet<SubjectEdge>> ownerRowKeyToSubjects)
             {
+                OwnerToSubjectTableName = ownerToSubjectTableName;
                 SubjectToOwnerTable = subjectToOwnerTable;
                 OwnerType = ownerType;
                 SubjectType = subjectType;
@@ -459,6 +489,7 @@ namespace NuGet.Insights.ReferenceTracking
                 OwnerRowKeyToSubjects = ownerRowKeyToSubjects;
             }
 
+            public string OwnerToSubjectTableName { get; }
             public TableClient SubjectToOwnerTable { get; }
             public string OwnerType { get; }
             public string SubjectType { get; }

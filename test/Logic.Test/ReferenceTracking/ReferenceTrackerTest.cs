@@ -205,7 +205,7 @@ namespace NuGet.Insights.ReferenceTracking
                     try
                     {
                         Output.WriteLine($"[{id}] [start]");
-                        await target.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, references);
+                        await target.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, references);
                         Output.WriteLine($"[{id}] [done ]");
                         output = null;
                     }
@@ -454,7 +454,7 @@ namespace NuGet.Insights.ReferenceTracking
                 // Set references with fault injection enabled.
                 try
                 {
-                    await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, references);
+                    await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, references);
                     Output.WriteLine($"No requests failed.");
                     HasFault = false;
                 }
@@ -521,7 +521,7 @@ namespace NuGet.Insights.ReferenceTracking
             [Fact]
             public async Task ReturnsNothingForNoSubjects()
             {
-                var result = await TargetA.GetOwnersOfSubjectAsync(OwnerType, SubjectType, new SubjectReference(SubjectPK0, SubjectRK0));
+                var result = await TargetA.GetOwnersOfSubjectAsync(_fixture.SubjectToOwnerTableName, OwnerType, SubjectType, new SubjectReference(SubjectPK0, SubjectRK0));
 
                 Assert.Empty(result);
             }
@@ -530,19 +530,19 @@ namespace NuGet.Insights.ReferenceTracking
             public async Task ReturnsSetReferences()
             {
                 // Arrange
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>()
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>()
                 {
                     { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK0, SubjectRK1), SE(SubjectPK1, SubjectRK6) } },
                     { OwnerRK1, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK1), SE(SubjectPK1, SubjectRK7) } }
                 });
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK1, new Dictionary<string, IReadOnlySet<SubjectEdge>>()
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK1, new Dictionary<string, IReadOnlySet<SubjectEdge>>()
                 {
                     { OwnerRK6, new HashSet<SubjectEdge> { SE(SubjectPK1, SubjectRK7) } },
                     { OwnerRK7, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK1) } }
                 });
 
                 // Act
-                var result = await TargetA.GetOwnersOfSubjectAsync(OwnerType, SubjectType, new SubjectReference(SubjectPK0, SubjectRK1));
+                var result = await TargetA.GetOwnersOfSubjectAsync(_fixture.SubjectToOwnerTableName, OwnerType, SubjectType, new SubjectReference(SubjectPK0, SubjectRK1));
 
                 // Assert
                 Assert.Equal(
@@ -554,28 +554,22 @@ namespace NuGet.Insights.ReferenceTracking
             public async Task MatchesBasedOnTypesAndSubjectIdentity()
             {
                 // Arrange
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>()
-                {
-                    { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } }, // match
-                    { OwnerRK0 + "-suffix", new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } }, // match
-                    { OwnerRK1, new HashSet<SubjectEdge> { SE(SubjectPK0 + "-suffix", SubjectRK0) } }, // mismatch: wrong subject PK
-                    { OwnerRK2, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0 + "-suffix") } }, // mismatch: wrong subject RK
-                });
-                await TargetA.SetReferencesAsync(OwnerType + "-suffix", SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>()
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>() { { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } }, { OwnerRK0 + "-suffix", new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } }, { OwnerRK1, new HashSet<SubjectEdge> { SE(SubjectPK0 + "-suffix", SubjectRK0) } }, { OwnerRK2, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0 + "-suffix") } }, });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType + "-suffix", SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>()
                 {
                     { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } }, // mismatch: wrong owner type
                 });
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType + "-suffix", OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>()
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType + "-suffix", OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>()
                 {
                     { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } }, // mismatch: wrong subject type
                 });
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0 + "-suffix", new Dictionary<string, IReadOnlySet<SubjectEdge>>()
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0 + "-suffix", new Dictionary<string, IReadOnlySet<SubjectEdge>>()
                 {
                     { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } }, // match
                 });
 
                 // Act
-                var result = await TargetA.GetOwnersOfSubjectAsync(OwnerType, SubjectType, new SubjectReference(SubjectPK0, SubjectRK0));
+                var result = await TargetA.GetOwnersOfSubjectAsync(_fixture.SubjectToOwnerTableName, OwnerType, SubjectType, new SubjectReference(SubjectPK0, SubjectRK0));
 
                 // Assert
                 Assert.Equal(
@@ -593,7 +587,7 @@ namespace NuGet.Insights.ReferenceTracking
             [Fact]
             public async Task ReturnsNothingForCleanTable()
             {
-                var result = await TargetA.GetDeletedSubjectsAsync(OwnerType, SubjectType);
+                var result = await TargetA.GetDeletedSubjectsAsync(_fixture.SubjectToOwnerTableName, OwnerType, SubjectType);
                 Assert.Empty(result);
             }
 
@@ -601,17 +595,11 @@ namespace NuGet.Insights.ReferenceTracking
             public async Task ReturnsNothingWhenThereHaveBeenNoDeletes()
             {
                 // Arrange
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } },
-                });
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK0, SubjectRK1) } },
-                });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } }, });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK0, SubjectRK1) } }, });
 
                 // Act
-                var result = await TargetA.GetDeletedSubjectsAsync(OwnerType, SubjectType);
+                var result = await TargetA.GetDeletedSubjectsAsync(_fixture.SubjectToOwnerTableName, OwnerType, SubjectType);
 
                 // Assert
                 Assert.Empty(result);
@@ -621,17 +609,11 @@ namespace NuGet.Insights.ReferenceTracking
             public async Task ReturnsDeleted()
             {
                 // Arrange
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK1, SubjectRK6) } },
-                });
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK1), SE(SubjectPK1, SubjectRK7) } },
-                });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK1, SubjectRK6) } }, });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK1), SE(SubjectPK1, SubjectRK7) } }, });
 
                 // Act
-                var result = await TargetA.GetDeletedSubjectsAsync(OwnerType, SubjectType);
+                var result = await TargetA.GetDeletedSubjectsAsync(_fixture.SubjectToOwnerTableName, OwnerType, SubjectType);
 
                 // Assert
                 Assert.Equal(
@@ -643,19 +625,13 @@ namespace NuGet.Insights.ReferenceTracking
             public async Task ObservesPagingTakeParameter()
             {
                 // Arrange
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK0, SubjectRK1), SE(SubjectPK0, SubjectRK2), SE(SubjectPK0, SubjectRK3) } },
-                });
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0, ReferenceTracker.EmptySet },
-                });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK0, SubjectRK1), SE(SubjectPK0, SubjectRK2), SE(SubjectPK0, SubjectRK3) } }, });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0, ReferenceTracker.EmptySet }, });
 
                 // Act
-                var resultA = await TargetA.GetDeletedSubjectsAsync(OwnerType, SubjectType, last: null, take: 1);
-                var resultB = await TargetA.GetDeletedSubjectsAsync(OwnerType, SubjectType, resultA.Last(), take: 1);
-                var resultC = await TargetA.GetDeletedSubjectsAsync(OwnerType, SubjectType, resultB.Last(), take: 3);
+                var resultA = await TargetA.GetDeletedSubjectsAsync(_fixture.SubjectToOwnerTableName, OwnerType, SubjectType, last: null, take: 1);
+                var resultB = await TargetA.GetDeletedSubjectsAsync(_fixture.SubjectToOwnerTableName, OwnerType, SubjectType, resultA.Last(), take: 1);
+                var resultC = await TargetA.GetDeletedSubjectsAsync(_fixture.SubjectToOwnerTableName, OwnerType, SubjectType, resultB.Last(), take: 3);
 
                 // Assert
                 Assert.Equal(
@@ -673,70 +649,45 @@ namespace NuGet.Insights.ReferenceTracking
             public async Task DoesNotReturnDeleteFromOneOwnerAndAddedToAnotherInSameOperation()
             {
                 // Arrange
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } },
-                });
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0, ReferenceTracker.EmptySet },
-                    { OwnerRK1, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } },
-                });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } }, });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0, ReferenceTracker.EmptySet }, { OwnerRK1, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } }, });
 
                 // Act
-                var result = await TargetA.GetDeletedSubjectsAsync(OwnerType, SubjectType);
+                var result = await TargetA.GetDeletedSubjectsAsync(_fixture.SubjectToOwnerTableName, OwnerType, SubjectType);
 
                 // Assert
                 Assert.Empty(result);
-                Assert.True(await TargetA.DoesSubjectHaveOwnersAsync(OwnerType, SubjectType, new(SubjectPK0, SubjectRK0)));
+                Assert.True(await TargetA.DoesSubjectHaveOwnersAsync(_fixture.SubjectToOwnerTableName, OwnerType, SubjectType, new(SubjectPK0, SubjectRK0)));
             }
 
             [Fact]
             public async Task ReturnsDeletedFromOneOwnerAndAddedToAnotherInDifferentOperation()
             {
                 // Arrange
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } },
-                });
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0, ReferenceTracker.EmptySet },
-                });
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK1, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } },
-                });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } }, });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0, ReferenceTracker.EmptySet }, });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK1, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } }, });
 
                 // Act
-                var result = await TargetA.GetDeletedSubjectsAsync(OwnerType, SubjectType);
+                var result = await TargetA.GetDeletedSubjectsAsync(_fixture.SubjectToOwnerTableName, OwnerType, SubjectType);
 
                 // Assert
                 Assert.Equal(
                     new SubjectReference[] { new(SubjectPK0, SubjectRK0) },
                     result);
-                Assert.True(await TargetA.DoesSubjectHaveOwnersAsync(OwnerType, SubjectType, new(SubjectPK0, SubjectRK0)));
+                Assert.True(await TargetA.DoesSubjectHaveOwnersAsync(_fixture.SubjectToOwnerTableName, OwnerType, SubjectType, new(SubjectPK0, SubjectRK0)));
             }
 
             [Fact]
             public async Task ReturnsDeletedThenAdded()
             {
                 // Arrange
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK1, SubjectRK6) } },
-                });
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK1), SE(SubjectPK1, SubjectRK7) } },
-                });
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK1, SubjectRK6) } },
-                });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK1, SubjectRK6) } }, });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK1), SE(SubjectPK1, SubjectRK7) } }, });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK1, SubjectRK6) } }, });
 
                 // Act
-                var result = await TargetA.GetDeletedSubjectsAsync(OwnerType, SubjectType);
+                var result = await TargetA.GetDeletedSubjectsAsync(_fixture.SubjectToOwnerTableName, OwnerType, SubjectType);
 
                 // Assert
                 Assert.Equal(
@@ -754,7 +705,7 @@ namespace NuGet.Insights.ReferenceTracking
             [Fact]
             public async Task ReturnsFalseForEmptyTable()
             {
-                var result = await TargetA.DoesSubjectHaveOwnersAsync(OwnerType, SubjectType, new SubjectReference(SubjectPK0, SubjectRK0));
+                var result = await TargetA.DoesSubjectHaveOwnersAsync(_fixture.SubjectToOwnerTableName, OwnerType, SubjectType, new SubjectReference(SubjectPK0, SubjectRK0));
 
                 Assert.False(result);
             }
@@ -770,23 +721,12 @@ namespace NuGet.Insights.ReferenceTracking
             public async Task ReturnsBasedOnLatestState(string pk, string rk, bool expected)
             {
                 // Arrange
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>()
-                {
-                    { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK0, SubjectRK1), SE(SubjectPK1, SubjectRK6) } },
-                    { OwnerRK1, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK1), SE(SubjectPK1, SubjectRK7) } },
-                });
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>()
-                {
-                    { OwnerRK1, ReferenceTracker.EmptySet },
-                    { OwnerRK2, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK2) } },
-                });
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK1, new Dictionary<string, IReadOnlySet<SubjectEdge>>()
-                {
-                    { OwnerRK6, new HashSet<SubjectEdge> { SE(SubjectPK1, SubjectRK8) } },
-                });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>() { { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK0, SubjectRK1), SE(SubjectPK1, SubjectRK6) } }, { OwnerRK1, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK1), SE(SubjectPK1, SubjectRK7) } }, });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>() { { OwnerRK1, ReferenceTracker.EmptySet }, { OwnerRK2, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK2) } }, });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK1, new Dictionary<string, IReadOnlySet<SubjectEdge>>() { { OwnerRK6, new HashSet<SubjectEdge> { SE(SubjectPK1, SubjectRK8) } }, });
 
                 // Act
-                var acutal = await TargetA.DoesSubjectHaveOwnersAsync(OwnerType, SubjectType, new SubjectReference(pk, rk));
+                var acutal = await TargetA.DoesSubjectHaveOwnersAsync(_fixture.SubjectToOwnerTableName, OwnerType, SubjectType, new SubjectReference(pk, rk));
 
                 // Assert
                 Assert.Equal(expected, acutal);
@@ -802,7 +742,7 @@ namespace NuGet.Insights.ReferenceTracking
             [Fact]
             public async Task FailsWithSingleNonExistentRecord()
             {
-                var ex = await Assert.ThrowsAsync<RequestFailedException>(() => TargetA.ClearDeletedSubjectsAsync(
+                var ex = await Assert.ThrowsAsync<RequestFailedException>(() => TargetA.ClearDeletedSubjectsAsync(_fixture.SubjectToOwnerTableName,
                     OwnerType,
                     SubjectType,
                     new[] { new SubjectReference(SubjectPK0, SubjectRK0) }));
@@ -812,7 +752,7 @@ namespace NuGet.Insights.ReferenceTracking
             [Fact]
             public async Task FailsWithMultipleNonExistentRecords()
             {
-                var ex = await Assert.ThrowsAsync<TableTransactionFailedException>(() => TargetA.ClearDeletedSubjectsAsync(
+                var ex = await Assert.ThrowsAsync<TableTransactionFailedException>(() => TargetA.ClearDeletedSubjectsAsync(_fixture.SubjectToOwnerTableName,
                     OwnerType,
                     SubjectType,
                     new[] { new SubjectReference(SubjectPK0, SubjectRK0), new SubjectReference(SubjectPK0, SubjectRK1) }));
@@ -823,20 +763,14 @@ namespace NuGet.Insights.ReferenceTracking
             public async Task DeletesOnlyProvided()
             {
                 // Arrange
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK1, SubjectRK6) } },
-                });
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK1), SE(SubjectPK1, SubjectRK7) } },
-                });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK1, SubjectRK6) } }, });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK1), SE(SubjectPK1, SubjectRK7) } }, });
 
                 // Act
-                await TargetA.ClearDeletedSubjectsAsync(OwnerType, SubjectType, new[] { new SubjectReference(SubjectPK0, SubjectRK0) });
+                await TargetA.ClearDeletedSubjectsAsync(_fixture.SubjectToOwnerTableName, OwnerType, SubjectType, new[] { new SubjectReference(SubjectPK0, SubjectRK0) });
 
                 // Assert
-                var remaining = await TargetA.GetDeletedSubjectsAsync(OwnerType, SubjectType);
+                var remaining = await TargetA.GetDeletedSubjectsAsync(_fixture.SubjectToOwnerTableName, OwnerType, SubjectType);
                 Assert.Equal(
                     new SubjectReference[] { new(SubjectPK1, SubjectRK6) },
                     remaining);
@@ -846,30 +780,21 @@ namespace NuGet.Insights.ReferenceTracking
             public async Task IntegrationTest()
             {
                 // Arrange
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK0, SubjectRK1), SE(SubjectPK1, SubjectRK6) } },
-                });
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK0, SubjectRK2), SE(SubjectPK1, SubjectRK7) } },
-                });
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK0, SubjectRK1), SE(SubjectPK1, SubjectRK8) } },
-                });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK0, SubjectRK1), SE(SubjectPK1, SubjectRK6) } }, });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK0, SubjectRK2), SE(SubjectPK1, SubjectRK7) } }, });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK0, SubjectRK1), SE(SubjectPK1, SubjectRK8) } }, });
 
                 // Act
-                var candidates = await TargetA.GetDeletedSubjectsAsync(OwnerType, SubjectType);
+                var candidates = await TargetA.GetDeletedSubjectsAsync(_fixture.SubjectToOwnerTableName, OwnerType, SubjectType);
                 var orphans = new List<SubjectReference>();
                 foreach (var candidate in candidates)
                 {
-                    if (!await TargetA.DoesSubjectHaveOwnersAsync(OwnerType, SubjectType, candidate))
+                    if (!await TargetA.DoesSubjectHaveOwnersAsync(_fixture.SubjectToOwnerTableName, OwnerType, SubjectType, candidate))
                     {
                         orphans.Add(candidate);
                     }
                 }
-                await TargetA.ClearDeletedSubjectsAsync(OwnerType, SubjectType, candidates);
+                await TargetA.ClearDeletedSubjectsAsync(_fixture.SubjectToOwnerTableName, OwnerType, SubjectType, candidates);
 
                 // Assert
                 Assert.Equal(
@@ -878,7 +803,7 @@ namespace NuGet.Insights.ReferenceTracking
                 Assert.Equal(
                     new SubjectReference[] { new(SubjectPK0, SubjectRK2), new(SubjectPK1, SubjectRK6), new(SubjectPK1, SubjectRK7) },
                     orphans);
-                Assert.Empty(await TargetA.GetDeletedSubjectsAsync(OwnerType, SubjectType));
+                Assert.Empty(await TargetA.GetDeletedSubjectsAsync(_fixture.SubjectToOwnerTableName, OwnerType, SubjectType));
             }
 
             public TheClearDeletedSubjectsAsyncMethod(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
@@ -892,13 +817,7 @@ namespace NuGet.Insights.ReferenceTracking
             public async Task CanDeleteAllReferences()
             {
                 // Arrange
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK0, SubjectRK1) } },
-                    { OwnerRK1, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK0, SubjectRK2) } },
-                    { OwnerRK2, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK1, SubjectRK6) } },
-                    { OwnerRK3, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK3), SE(SubjectPK1, SubjectRK7) } },
-                });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK0, SubjectRK1) } }, { OwnerRK1, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK0, SubjectRK2) } }, { OwnerRK2, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK1, SubjectRK6) } }, { OwnerRK3, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK3), SE(SubjectPK1, SubjectRK7) } }, });
                 var references = new Dictionary<string, IReadOnlySet<SubjectEdge>>
                 {
                     { OwnerRK0, ReferenceTracker.EmptySet },
@@ -918,13 +837,7 @@ namespace NuGet.Insights.ReferenceTracking
             public async Task ReplacesReferences()
             {
                 // Arrange
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK0, SubjectRK1) } },
-                    { OwnerRK1, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK0, SubjectRK2) } },
-                    { OwnerRK2, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK1, SubjectRK6) } },
-                    { OwnerRK3, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK3), SE(SubjectPK1, SubjectRK7) } },
-                });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK0, SubjectRK1) } }, { OwnerRK1, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK0, SubjectRK2) } }, { OwnerRK2, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0), SE(SubjectPK1, SubjectRK6) } }, { OwnerRK3, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK3), SE(SubjectPK1, SubjectRK7) } }, });
 
                 var references = new Dictionary<string, IReadOnlySet<SubjectEdge>>
                 {
@@ -981,10 +894,7 @@ namespace NuGet.Insights.ReferenceTracking
             public async Task CanUpdateJustData()
             {
                 // Arrange
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } },
-                });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } }, });
 
                 var references = new Dictionary<string, IReadOnlySet<SubjectEdge>>
                 {
@@ -1004,10 +914,7 @@ namespace NuGet.Insights.ReferenceTracking
             public async Task SkipsNoChangeInData()
             {
                 // Arrange
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0, new HashSet<SubjectEdge> { new(SubjectPK0, SubjectRK0, D(1)) } },
-                });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0, new HashSet<SubjectEdge> { new(SubjectPK0, SubjectRK0, D(1)) } }, });
 
                 var references = new Dictionary<string, IReadOnlySet<SubjectEdge>>
                 {
@@ -1027,13 +934,7 @@ namespace NuGet.Insights.ReferenceTracking
             public async Task CanUpdateRowKeyPrefixes()
             {
                 // Arrange
-                await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>>
-                {
-                    { OwnerRK0 + "a", new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } },
-                    { OwnerRK0 + "b-0", new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } },
-                    { OwnerRK0 + "b", new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } },
-                    { OwnerRK0 + "c", new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } },
-                });
+                await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, new Dictionary<string, IReadOnlySet<SubjectEdge>> { { OwnerRK0 + "a", new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } }, { OwnerRK0 + "b-0", new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } }, { OwnerRK0 + "b", new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } }, { OwnerRK0 + "c", new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } }, });
 
                 var references = new Dictionary<string, IReadOnlySet<SubjectEdge>>
                 {
@@ -1057,7 +958,7 @@ namespace NuGet.Insights.ReferenceTracking
 
         private async Task SetReferencesAsync(IReadOnlyDictionary<string, IReadOnlySet<SubjectEdge>> references)
         {
-            await TargetA.SetReferencesAsync(OwnerType, SubjectType, OwnerPK0, references);
+            await TargetA.SetReferencesAsync(_fixture.OwnerToSubjectTableName, _fixture.SubjectToOwnerTableName, OwnerType, SubjectType, OwnerPK0, references);
         }
 
         private async Task AssertExpectedAsync(IReadOnlyDictionary<string, IReadOnlySet<SubjectEdge>> references)
@@ -1229,9 +1130,10 @@ namespace NuGet.Insights.ReferenceTracking
                 Settings = new NuGetInsightsSettings
                 {
                     StorageConnectionString = TestSettings.StorageConnectionString,
-                    OwnerToSubjectReferenceTableName = TestSettings.NewStoragePrefix() + "1o2s1",
-                    SubjectToOwnerReferenceTableName = TestSettings.NewStoragePrefix() + "1s2o1",
                 };
+                var prefix = TestSettings.NewStoragePrefix();
+                OwnerToSubjectTableName = prefix + "1o2s1";
+                SubjectToOwnerTableName = prefix + "1s2o1";
                 Options.Setup(x => x.Value).Returns(() => Settings);
 
                 HttpClientHandler = new HttpClientHandler { AllowAutoRedirect = false };
@@ -1239,6 +1141,8 @@ namespace NuGet.Insights.ReferenceTracking
 
             public Mock<IOptions<NuGetInsightsSettings>> Options { get; }
             public NuGetInsightsSettings Settings { get; }
+            public string OwnerToSubjectTableName { get; }
+            public string SubjectToOwnerTableName { get; }
             public HttpClientHandler HttpClientHandler { get; }
 
             public async Task InitializeAsync()
@@ -1261,9 +1165,9 @@ namespace NuGet.Insights.ReferenceTracking
             public async Task<(TableClient OwnerToSubject, TableClient SubjectToOwner)> GetTablesAsync(ILogger<ServiceClientFactory> logger)
             {
                 var ownerToSubject = (await GetServiceClientFactory(logger).GetTableServiceClientAsync())
-                    .GetTableClient(Settings.OwnerToSubjectReferenceTableName);
+                    .GetTableClient(OwnerToSubjectTableName);
                 var subjectToOwner = (await GetServiceClientFactory(logger).GetTableServiceClientAsync())
-                    .GetTableClient(Settings.SubjectToOwnerReferenceTableName);
+                    .GetTableClient(SubjectToOwnerTableName);
 
                 if (!_created)
                 {

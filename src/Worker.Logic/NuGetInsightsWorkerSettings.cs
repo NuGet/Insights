@@ -75,6 +75,8 @@ namespace NuGet.Insights.Worker
             PackageVulnerabilityContainerName = "packagevulnerabilities";
             PackageIconContainerName = "packageicons";
             PackageCompatibilityContainerName = "packagecompatibilities";
+            PackageToCertificateTableName = "packagetocertificates";
+            CertificateToPackageTableName = "certificatetopackages";
             PackageCertificateContainerName = "packagecertificates";
             CertificateContainerName = "certificates";
             PackageContentContainerName = "packagecontents";
@@ -161,6 +163,8 @@ namespace NuGet.Insights.Worker
         public string PackageVulnerabilityContainerName { get; set; }
         public string PackageIconContainerName { get; set; }
         public string PackageCompatibilityContainerName { get; set; }
+        public string PackageToCertificateTableName { get; set; }
+        public string CertificateToPackageTableName { get; set; }
         public string PackageCertificateContainerName { get; set; }
         public string CertificateContainerName { get; set; }
         public string PackageContentContainerName { get; set; }

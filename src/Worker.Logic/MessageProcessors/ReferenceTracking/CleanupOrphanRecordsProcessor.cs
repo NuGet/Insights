@@ -62,6 +62,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
                     const int pageSize = 20;
                     var last = parameters.LastPartitionKey is null ? null : new SubjectReference(parameters.LastPartitionKey, parameters.LastRowKey);
                     var allDeleted = await _referenceTracker.GetDeletedSubjectsAsync(
+                        _adapter.SubjectToOwnerTableName,
                         _adapter.OwnerType,
                         _adapter.SubjectType,
                         last: last,
@@ -80,6 +81,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
                         foreach (var subject in allDeleted)
                         {
                             var hasOwners = await _referenceTracker.DoesSubjectHaveOwnersAsync(
+                                _adapter.SubjectToOwnerTableName,
                                 _adapter.OwnerType,
                                 _adapter.SubjectType,
                                 subject);
@@ -88,7 +90,11 @@ namespace NuGet.Insights.Worker.ReferenceTracking
                         }
 
                         // Immediately delete the non-orphan records.
-                        await _referenceTracker.ClearDeletedSubjectsAsync(_adapter.OwnerType, _adapter.SubjectType, nonOrphans);
+                        await _referenceTracker.ClearDeletedSubjectsAsync(
+                            _adapter.SubjectToOwnerTableName,
+                            _adapter.OwnerType,
+                            _adapter.SubjectType,
+                            nonOrphans);
 
                         // Map the orphan subjects to CSV records that can be merged into the the CSV file and used for deletion.
                         var orphanRecords = _adapter.MapToOrphanRecords(orphans);
@@ -156,7 +162,11 @@ namespace NuGet.Insights.Worker.ReferenceTracking
                         .Select(x => new SubjectReference(x[0], x[1]))
                         .ToList();
 
-                    await _referenceTracker.ClearDeletedSubjectsAsync(_adapter.OwnerType, _adapter.SubjectType, orphans);
+                    await _referenceTracker.ClearDeletedSubjectsAsync(
+                        _adapter.SubjectToOwnerTableName,
+                        _adapter.OwnerType,
+                        _adapter.SubjectType,
+                        orphans);
                     await _taskStateStorageService.DeleteAsync(orphanTaskStates);
 
                     parameters.State = CleanupOrphanRecordsState.Complete;

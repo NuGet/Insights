@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -182,10 +183,12 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 
         private async Task SetReferencesAsync(List<TestSubjectRecord> subjectRecords, Dictionary<string, List<int>> ownerPartitionKeyToSubjectIndex)
         {
-            await ReferenceTracker.InitializeAsync();
+            await ReferenceTracker.InitializeAsync(OwnerToSubjectTableName, SubjectToOwnerTableName);
             foreach ((var ownerPartitionKey, var subjectIndexes) in ownerPartitionKeyToSubjectIndex)
             {
                 await ReferenceTracker.SetReferencesAsync(
+                    OwnerToSubjectTableName,
+                    SubjectToOwnerTableName,
                     Adapter.OwnerType,
                     Adapter.SubjectType,
                     ownerPartitionKey,
@@ -224,6 +227,8 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             await AppendResultStorageService.DeleteAsync(Options.Value.CsvRecordTableName);
         }
 
+        public string OwnerToSubjectTableName { get; }
+        public string SubjectToOwnerTableName { get; }
         public ReferenceTracker ReferenceTracker => Host.Services.GetRequiredService<ReferenceTracker>();
         public CsvTemporaryStorageFactory CsvTemporaryStorageFactory => Host.Services.GetRequiredService<CsvTemporaryStorageFactory>();
         public ICsvResultStorage<TestSubjectRecord> CsvResultStorage => Host.Services.GetRequiredService<ICsvResultStorage<TestSubjectRecord>>();
@@ -237,6 +242,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 
             hostBuilder.ConfigureServices(serviceCollection =>
             {
+                serviceCollection.AddSingleton(this);
                 serviceCollection.AddSingleton(x => SchemaCollectionBuilder
                     .Default
                     .Add(new SchemaV1<CsvCompactMessage<TestSubjectRecord>>("cc.ts"))
@@ -248,8 +254,20 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             });
         }
 
+        private async Task AssertOwnerToSubjectAsync(string testName, string stepName, Func<byte[], string> deserializeEntity)
+        {
+            await AssertOwnerToSubjectAsync(OwnerToSubjectTableName, testName, stepName, deserializeEntity);
+        }
+
+        private async Task AssertSubjectToOwnerAsync(string testName, string stepName)
+        {
+            await AssertSubjectToOwnerAsync(SubjectToOwnerTableName, testName, stepName);
+        }
+
         public CleanupOrphanRecordsServiceTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
+            OwnerToSubjectTableName = StoragePrefix + "1o2s1";
+            SubjectToOwnerTableName = StoragePrefix + "1s2o1";
         }
     }
 }

@@ -8,6 +8,8 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 {
     public interface ICleanupOrphanRecordsAdapter<T> where T : ICsvRecord
     {
+        string OwnerToSubjectTableName { get; }
+        string SubjectToOwnerTableName { get; }
         string OperationName { get; }
         string OwnerType { get; }
         string SubjectType { get; }

@@ -259,8 +259,6 @@ namespace NuGet.Insights.Worker
                 tables.Remove(nameof(NuGetInsightsWorkerSettings.CatalogIndexScanTableName));
                 tables.Remove(nameof(NuGetInsightsWorkerSettings.CursorTableName));
                 tables.Remove(nameof(NuGetInsightsWorkerSettings.KustoIngestionTableName));
-                tables.Remove(nameof(NuGetInsightsWorkerSettings.OwnerToSubjectReferenceTableName));
-                tables.Remove(nameof(NuGetInsightsWorkerSettings.SubjectToOwnerReferenceTableName));
                 tables.Remove(nameof(NuGetInsightsWorkerSettings.TaskStateTableName));
                 tables.Remove(nameof(NuGetInsightsWorkerSettings.TimerTableName));
                 tables.Remove(nameof(NuGetInsightsWorkerSettings.WorkflowRunTableName));
