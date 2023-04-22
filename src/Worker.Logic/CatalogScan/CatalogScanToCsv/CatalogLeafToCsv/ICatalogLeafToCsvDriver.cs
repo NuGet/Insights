@@ -20,6 +20,11 @@ namespace NuGet.Insights.Worker
         /// Initialize storage containers and dependencies prior to processing package data.
         /// </summary>
         Task InitializeAsync();
+
+        /// <summary>
+        /// Delete additional output storage aside from the storage container referenced by <see cref="ICsvResultStorage{T}.ResultContainerName"/>.
+        /// </summary>
+        Task DestroyAsync();
     }
 
     public interface ICatalogLeafToCsvDriver<T> : ICatalogLeafToCsvDriver where T : class, ICsvRecord

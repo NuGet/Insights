@@ -89,5 +89,10 @@ namespace NuGet.Insights.Worker
         {
             throw new NotImplementedException();
         }
+
+        public async Task DestroyOutputAsync()
+        {
+            await _storageFactory.DestroyAsync();
+        }
     }
 }

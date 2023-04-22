@@ -44,6 +44,11 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             await (await GetContainerAsync()).CreateIfNotExistsAsync(retry: true);
         }
 
+        public async Task DestroyAsync()
+        {
+            await (await GetContainerAsync()).DeleteIfExistsAsync();
+        }
+
         public async Task<EntityHandle<IVersionSet>> GetAsync()
         {
             var versionSet = await GetOrNullAsync();

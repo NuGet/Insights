@@ -79,6 +79,7 @@ namespace NuGet.Insights
                         LastExecuted = entity?.LastExecuted,
                         Frequency = pair.Frequency,
                         CanAbort = pair.CanAbort,
+                        CanDestroy = pair.CanDestroy,
                     };
                 })
                 .ToList();

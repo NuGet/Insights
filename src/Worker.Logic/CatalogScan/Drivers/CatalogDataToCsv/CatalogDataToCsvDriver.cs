@@ -39,6 +39,11 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             return Task.CompletedTask;
         }
 
+        public Task DestroyAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         public async Task<DriverResult<CsvRecordSets<PackageDeprecationRecord, PackageVulnerabilityRecord, CatalogLeafItemRecord>>> ProcessLeafAsync(
             CatalogLeafScan leafScan)
         {

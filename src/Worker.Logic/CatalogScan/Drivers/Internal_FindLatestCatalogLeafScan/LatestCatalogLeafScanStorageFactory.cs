@@ -24,6 +24,11 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
             return Task.CompletedTask;
         }
 
+        public Task DestroyAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         public async Task<ILatestPackageLeafStorage<CatalogLeafScan>> CreateAsync(CatalogPageScan pageScan, IReadOnlyDictionary<ICatalogLeafItem, int> leafItemToRank)
         {
             var parameters = (CatalogIndexScanMessage)_serializer.Deserialize(pageScan.DriverParameters).Data;

@@ -101,6 +101,11 @@ namespace NuGet.Insights
             return output;
         }
 
+        public async Task DeleteTableAsync(string tableName)
+        {
+            await _wideEntityService.DeleteTableAsync(tableName);
+        }
+
         public async Task<TOutput> GetOrUpdateInfoAsync<TItem, TData, TOutput>(
             string tableName,
             TItem item,

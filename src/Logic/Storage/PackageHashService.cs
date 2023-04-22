@@ -30,6 +30,11 @@ namespace NuGet.Insights
             await (await GetTableAsync()).CreateIfNotExistsAsync(retry: true);
         }
 
+        public async Task DestroyAsync()
+        {
+            await (await GetTableAsync()).DeleteAsync();
+        }
+
         public async Task SetHashesAsync(ICatalogLeafItem item, HashOutput hashes)
         {
             var table = await GetTableAsync();

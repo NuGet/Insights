@@ -37,6 +37,11 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
             await _storageService.InitializeAsync();
         }
 
+        public Task DestroyAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         public async Task<DriverResult<CsvRecordSet<PackageVersionRecord>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             var records = await ProcessLeafInternalAsync(leafScan);

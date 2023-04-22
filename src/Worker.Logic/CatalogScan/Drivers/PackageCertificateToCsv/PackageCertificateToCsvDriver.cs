@@ -87,6 +87,11 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             await _referenceTracker.InitializeAsync();
         }
 
+        public Task DestroyAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         public bool SingleMessagePerId => false;
 
         string ICsvResultStorage<PackageCertificateRecord>.ResultContainerName => _options.Value.PackageCertificateContainerName;

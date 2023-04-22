@@ -195,6 +195,15 @@ namespace NuGet.Insights.Worker
             return scans;
         }
 
+        public async Task DestroyAllOutputAsync()
+        {
+            var scans = new List<CatalogIndexScan>();
+            foreach (var driverType in _cursorService.StartableDriverTypes)
+            {
+                await DestroyOutputAsync(driverType);
+            }
+        }
+
         public async Task<CatalogIndexScan> AbortAsync(CatalogScanDriverType driverType)
         {
             var cursor = await _cursorService.GetCursorAsync(driverType);
@@ -207,6 +216,12 @@ namespace NuGet.Insights.Worker
             await AbortAsync(scan, delete: false);
 
             return scan;
+        }
+
+        public async Task DestroyOutputAsync(CatalogScanDriverType driverType)
+        {
+            var driver = _driverFactory.Create(driverType);
+            await driver.DestroyOutputAsync();
         }
 
         private async Task AbortAsync(CatalogIndexScan scan, bool delete)

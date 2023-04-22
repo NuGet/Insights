@@ -106,5 +106,10 @@ namespace NuGet.Insights.Worker.BuildVersionSet
         {
             throw new NotImplementedException();
         }
+
+        public async Task DestroyOutputAsync()
+        {
+            await _versionSetService.DestroyAsync();
+        }
     }
 }

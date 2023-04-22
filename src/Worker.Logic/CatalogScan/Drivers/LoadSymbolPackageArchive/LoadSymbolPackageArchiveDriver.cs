@@ -81,5 +81,10 @@ namespace NuGet.Insights.Worker.LoadSymbolPackageArchive
         {
             throw new NotImplementedException();
         }
+
+        public async Task DestroyOutputAsync()
+        {
+            await _symbolPackageFileService.DestroyAsync();
+        }
     }
 }

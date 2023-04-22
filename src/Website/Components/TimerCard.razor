@@ -3,11 +3,13 @@
     var isEnabled = Model.IsEnabledInConfig && Model.IsEnabledInStorage != false;
 
     var error = TempData[Model.Name + ".Error"]?.ToString();
+    var success = TempData[Model.Name + ".Success"]?.ToString();
     var hasError = !string.IsNullOrEmpty(error);
-    var message = error;
-    var messageFontClass = hasError ? "text-white" : string.Empty;
-    var messageBgClass = hasError ? "bg-danger" : string.Empty;
-    var borderClass = hasError ? "border-danger" : string.Empty;
+    var hasSuccess = !hasError && !string.IsNullOrEmpty(success);
+    var message = error ?? success;
+    var messageFontClass = hasError || hasSuccess ? "text-white" : string.Empty;
+    var messageBgClass = hasError ? "bg-danger" : (hasSuccess ? "bg-success" : string.Empty);
+    var borderClass = hasError ? "border-danger" : (hasSuccess ? "border-success" : string.Empty);
 
     string statusText;
     string statusTitle;
@@ -101,6 +103,13 @@
             {
                 <button type="submit" class="btn btn-danger mr-1" name="abort" value="true"
                         data-message="Are you sure you want to abort this running timer? Note that blob and table storage is cleaned up in a best effort but some queue messages may still get processed. The timer will also be disabled in the process.">Abort</button>
+            }
+
+            @if (Model.CanDestroy)
+            {
+                <button type="submit" class="btn btn-danger mr-1" name="reset"
+                    data-message="Are you sure you want to reset the timer? This will delete the output. It's best to do this when the timer is not running."
+                    value="true">💣 Reset</button>
             }
 
             @if (!Model.IsEnabledInConfig)

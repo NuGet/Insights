@@ -13,6 +13,7 @@ namespace NuGet.Insights
         bool AutoStart { get; }
         bool IsEnabled { get; }
         bool CanAbort { get; }
+        bool CanDestroy { get; }
 
         /// <summary>
         /// Use to group timers that can be run in parallel. Return 0 (<c>default</c>) for simple, parallel execution.
@@ -21,6 +22,7 @@ namespace NuGet.Insights
 
         Task<bool> IsRunningAsync();
         Task InitializeAsync();
+        Task DestroyAsync();
 
         /// <summary>
         /// Returns true if the logic was completed or at least queued successfully. False, otherwise.

@@ -49,6 +49,11 @@ namespace NuGet.Insights
             await _wideEntityService.InitializeAsync(_options.Value.PackageReadmeTableName);
         }
 
+        public async Task DestroyAsync()
+        {
+            await _wideEntityService.DeleteTableAsync(_options.Value.PackageReadmeTableName);
+        }
+
         public async Task<IReadOnlyDictionary<ICatalogLeafItem, PackageReadmeInfoV1>> UpdateBatchFromLeafItemsAsync(
             string id,
             IReadOnlyCollection<ICatalogLeafItem> leafItems)

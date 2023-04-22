@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 using Azure.Storage.Queues.Models;
 using Kusto.Ingest;
@@ -176,6 +177,109 @@ namespace NuGet.Insights.Worker
                 await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 1);
                 await AssertBlobCountAsync(Options.Value.PackageOwnerContainerName, 1);
                 await AssertBlobCountAsync(Options.Value.VerifiedPackageContainerName, 1);
+            }
+        }
+
+        public class AllOutputCanBeReset : IntegrationTest
+        {
+            public AllOutputCanBeReset(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task Execute()
+            {
+                // Initialize all drivers and timers
+                var driverFactory = Host.Services.GetRequiredService<ICatalogScanDriverFactory>();
+                foreach (var driverType in CatalogScanCursorService.StartableDriverTypes)
+                {
+                    var driver = driverFactory.Create(driverType);
+                    var descendingId = StorageUtility.GenerateDescendingId();
+                    var catalogIndexScan = new CatalogIndexScan(
+                        CatalogScanCursorService.GetCursorName(driverType),
+                        descendingId.ToString(),
+                        descendingId.Unique);
+                    await driver.InitializeAsync(catalogIndexScan);
+                    await driver.FinalizeAsync(catalogIndexScan);
+                }
+
+                var timers = Host.Services.GetServices<ITimer>();
+                foreach (var timer in timers)
+                {
+                    await timer.InitializeAsync();
+                }
+
+                // Get all table names and blob storage container names in the configuration
+                var options = Options.Value;
+                var properties = options.GetType().GetProperties();
+                Dictionary<string, string> GetNames(IEnumerable<PropertyInfo> properties)
+                {
+                    return properties.ToDictionary(x => x.Name, x => (string)x.GetValue(options));
+                }
+                var tables = GetNames(properties.Where(x => x.Name.EndsWith("TableName")));
+                var blobContainers = GetNames(properties.Where(x => x.Name.EndsWith("ContainerName")));
+
+                // Remove transient tables
+                tables.Remove(nameof(NuGetInsightsWorkerSettings.CatalogLeafScanTableName));
+                tables.Remove(nameof(NuGetInsightsWorkerSettings.CatalogPageScanTableName));
+                tables.Remove(nameof(NuGetInsightsWorkerSettings.CsvRecordTableName));
+                tables.Remove(nameof(NuGetInsightsWorkerSettings.VersionSetAggregateTableName));
+
+                // Verify all table and blob storage container names are created
+                var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
+                foreach ((var key, var tableName) in tables)
+                {
+                    var table = tableServiceClient.GetTableClient(tableName);
+                    Assert.True(await table.ExistsAsync(), $"The table for {key} ('{tableName}') should have been created.");
+                }
+
+                var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
+                foreach ((var key, var containerName) in blobContainers)
+                {
+                    var container = blobServiceClient.GetBlobContainerClient(containerName);
+                    Assert.True(await container.ExistsAsync(), $"The blob container for {key} ('{containerName}') should have been created.");
+                }
+
+                // Destroy output for all drivers and timers
+                foreach (var driverType in CatalogScanCursorService.StartableDriverTypes)
+                {
+                    var driver = driverFactory.Create(driverType);
+                    await driver.DestroyOutputAsync();
+                }
+
+                foreach (var timer in timers)
+                {
+                    if (timer.CanDestroy)
+                    {
+                        await timer.DestroyAsync();
+                    }
+                }
+
+                // Remove non-output tables
+                tables.Remove(nameof(NuGetInsightsWorkerSettings.CatalogIndexScanTableName));
+                tables.Remove(nameof(NuGetInsightsWorkerSettings.CursorTableName));
+                tables.Remove(nameof(NuGetInsightsWorkerSettings.KustoIngestionTableName));
+                tables.Remove(nameof(NuGetInsightsWorkerSettings.OwnerToSubjectReferenceTableName));
+                tables.Remove(nameof(NuGetInsightsWorkerSettings.SubjectToOwnerReferenceTableName));
+                tables.Remove(nameof(NuGetInsightsWorkerSettings.TaskStateTableName));
+                tables.Remove(nameof(NuGetInsightsWorkerSettings.TimerTableName));
+                tables.Remove(nameof(NuGetInsightsWorkerSettings.WorkflowRunTableName));
+
+                // Remove non-output containers
+                blobContainers.Remove(nameof(NuGetInsightsWorkerSettings.LeaseContainerName));
+
+                // Verify all out table and blob storage containers are deleted
+                foreach ((var key, var tableName) in tables)
+                {
+                    var table = tableServiceClient.GetTableClient(tableName);
+                    Assert.False(await table.ExistsAsync(), $"The table for {key} ('{tableName}') should have been deleted.");
+                }
+
+                foreach ((var key, var containerName) in blobContainers)
+                {
+                    var container = blobServiceClient.GetBlobContainerClient(containerName);
+                    Assert.False(await container.ExistsAsync(), $"The blob container for {key} ('{containerName}') should have been deleted.");
+                }
             }
         }
 

@@ -12,6 +12,7 @@ namespace NuGet.Insights
         public bool IsEnabledInConfig { get; init; }
         public bool IsRunning { get; init; }
         public bool CanAbort { get; init; }
+        public bool CanDestroy { get; init; }
         public DateTimeOffset? LastExecuted { get; init; }
         public TimeSpan Frequency { get; init; }
     }

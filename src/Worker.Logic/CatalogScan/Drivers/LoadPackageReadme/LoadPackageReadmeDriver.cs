@@ -81,5 +81,10 @@ namespace NuGet.Insights.Worker.LoadPackageReadme
         {
             throw new NotImplementedException();
         }
+
+        public async Task DestroyOutputAsync()
+        {
+            await _packageReadmeService.DestroyAsync();
+        }
     }
 }

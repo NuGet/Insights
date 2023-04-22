@@ -44,6 +44,11 @@ namespace NuGet.Insights
             await _wideEntityService.InitializeAsync(_options.Value.PackageArchiveTableName);
         }
 
+        public async Task DestroyAsync()
+        {
+            await _wideEntityService.DeleteTableAsync(_options.Value.PackageArchiveTableName);
+        }
+
         public async Task<PrimarySignature?> GetPrimarySignatureAsync(ICatalogLeafItem leafItem)
         {
             var info = await GetOrUpdateInfoAsync(leafItem);

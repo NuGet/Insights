@@ -13,17 +13,23 @@ namespace NuGet.Insights.Worker
         private readonly CsvTemporaryStorageFactory _storageFactory;
         protected readonly IReadOnlyList<ICsvTemporaryStorage> _storage;
         private readonly ICatalogLeafToCsvDriver _driver;
+        private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly IReadOnlyList<string> _resultContainerNames;
 
         public BaseCatalogLeafScanToCsvAdapter(
             SchemaSerializer schemaSerializer,
             CsvTemporaryStorageFactory storageFactory,
             IReadOnlyList<ICsvTemporaryStorage> storage,
-            ICatalogLeafToCsvDriver driver)
+            ICatalogLeafToCsvDriver driver,
+            ServiceClientFactory serviceClientFactory,
+            IReadOnlyList<string> resultContainerNames)
         {
             _schemaSerializer = schemaSerializer;
             _storageFactory = storageFactory;
             _storage = storage;
             _driver = driver;
+            _serviceClientFactory = serviceClientFactory;
+            _resultContainerNames = resultContainerNames;
         }
 
         public async Task InitializeAsync(CatalogIndexScan indexScan)
@@ -124,6 +130,18 @@ namespace NuGet.Insights.Worker
             {
                 await storage.FinalizeAsync(indexScan.StorageSuffix);
             }
+        }
+
+        public async Task DestroyOutputAsync()
+        {
+            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
+            foreach (var container in _resultContainerNames)
+            {
+                var containerClient = serviceClient.GetBlobContainerClient(container);
+                await containerClient.DeleteIfExistsAsync();
+            }
+
+            await _driver.DestroyAsync();
         }
     }
 }

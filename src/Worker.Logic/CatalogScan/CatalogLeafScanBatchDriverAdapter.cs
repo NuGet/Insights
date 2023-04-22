@@ -89,5 +89,10 @@ namespace NuGet.Insights.Worker
         {
             return _inner.IsCustomExpandCompleteAsync(indexScan);
         }
+
+        public Task DestroyOutputAsync()
+        {
+            return _inner.DestroyOutputAsync();
+        }
     }
 }

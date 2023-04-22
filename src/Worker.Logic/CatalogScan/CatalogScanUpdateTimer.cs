@@ -34,10 +34,16 @@ namespace NuGet.Insights.Worker
         public bool IsEnabled => true;
         public int Order => 10;
         public bool CanAbort => true;
+        public bool CanDestroy => false;
 
         public async Task AbortAsync()
         {
             await _catalogScanService.AbortAllAsync();
+        }
+
+        public Task DestroyAsync()
+        {
+            throw new NotSupportedException();
         }
 
         public async Task<bool> ExecuteAsync()

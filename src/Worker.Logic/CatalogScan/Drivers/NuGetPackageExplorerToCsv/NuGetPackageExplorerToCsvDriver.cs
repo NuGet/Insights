@@ -57,6 +57,11 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             return Task.CompletedTask;
         }
 
+        public Task DestroyAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(NuGetPackageExplorerRecord record)
         {
             throw new NotImplementedException();

@@ -65,6 +65,11 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             await _packageFileService.InitializeAsync();
         }
 
+        public Task DestroyAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageContent record)
         {
             throw new NotImplementedException();

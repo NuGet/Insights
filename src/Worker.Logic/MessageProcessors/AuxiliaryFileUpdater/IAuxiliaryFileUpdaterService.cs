@@ -12,6 +12,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
     public interface IAuxiliaryFileUpdaterService
     {
         Task InitializeAsync();
+        Task DestroyAsync();
         Task<bool> StartAsync();
         Task<bool> IsRunningAsync();
         bool HasRequiredConfiguration { get; }

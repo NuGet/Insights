@@ -14,11 +14,14 @@ namespace NuGet.Insights.Worker
             SchemaSerializer schemaSerializer,
             CsvTemporaryStorageFactory intermediateStorageFactory,
             ICsvResultStorage<T> resultStorage,
-            ICatalogLeafToCsvDriver<T> driver) : base(
+            ICatalogLeafToCsvDriver<T> driver,
+            ServiceClientFactory serviceClientFactory) : base(
                 schemaSerializer,
                 intermediateStorageFactory,
                 intermediateStorageFactory.Create(resultStorage),
-                driver)
+                driver,
+                serviceClientFactory,
+                new[] { resultStorage.ResultContainerName })
         {
             _driver = driver;
         }
@@ -48,11 +51,14 @@ namespace NuGet.Insights.Worker
             CsvTemporaryStorageFactory intermediateStorageFactory,
             ICsvResultStorage<T1> resultStorage1,
             ICsvResultStorage<T2> resultStorage2,
-            ICatalogLeafToCsvDriver<T1, T2> driver) : base(
+            ICatalogLeafToCsvDriver<T1, T2> driver,
+            ServiceClientFactory serviceClientFactory) : base(
                 schemaSerializer,
                 intermediateStorageFactory,
                 intermediateStorageFactory.Create(resultStorage1, resultStorage2),
-                driver)
+                driver,
+                serviceClientFactory,
+                new[] { resultStorage1.ResultContainerName, resultStorage2.ResultContainerName })
         {
             _driver = driver;
         }
@@ -84,11 +90,14 @@ namespace NuGet.Insights.Worker
             ICsvResultStorage<T1> resultStorage1,
             ICsvResultStorage<T2> resultStorage2,
             ICsvResultStorage<T3> resultStorage3,
-            ICatalogLeafToCsvDriver<T1, T2, T3> driver) : base(
+            ICatalogLeafToCsvDriver<T1, T2, T3> driver,
+            ServiceClientFactory serviceClientFactory) : base(
                 schemaSerializer,
                 intermediateStorageFactory,
                 intermediateStorageFactory.Create(resultStorage1, resultStorage2, resultStorage3),
-                driver)
+                driver,
+                serviceClientFactory,
+                new[] { resultStorage1.ResultContainerName, resultStorage2.ResultContainerName, resultStorage3.ResultContainerName })
         {
             _driver = driver;
         }

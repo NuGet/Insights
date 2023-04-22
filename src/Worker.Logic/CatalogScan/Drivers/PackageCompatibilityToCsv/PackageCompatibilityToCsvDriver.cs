@@ -55,6 +55,11 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             await _packageManifestService.InitializeAsync();
         }
 
+        public Task DestroyAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         public async Task<DriverResult<CsvRecordSet<PackageCompatibility>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             var records = await ProcessLeafInternalAsync(leafScan);

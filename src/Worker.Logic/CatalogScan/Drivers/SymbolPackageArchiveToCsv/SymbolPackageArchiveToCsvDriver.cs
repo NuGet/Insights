@@ -60,6 +60,11 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             await _symbolPackageFileService.InitializeAsync();
         }
 
+        public Task DestroyAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         public async Task<DriverResult<CsvRecordSets<SymbolPackageArchiveRecord, SymbolPackageArchiveEntry>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             (var archive, var entries) = await ProcessLeafInternalAsync(leafScan);

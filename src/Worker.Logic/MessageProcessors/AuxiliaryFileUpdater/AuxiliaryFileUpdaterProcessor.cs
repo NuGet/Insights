@@ -48,8 +48,6 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 
         public async Task<TaskStateProcessResult> ProcessAsync(AuxiliaryFileUpdaterMessage<T> message, TaskState taskState, long dequeueCount)
         {
-            await InitializeAsync();
-
             await using var data = await _updater.GetDataAsync();
 
             var latestBlob = await GetBlobAsync(GetLatestBlobName(_updater.BlobName));
@@ -194,11 +192,6 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
                     asOfTimestamp.ToString("O")
                 },
             };
-        }
-
-        private async Task InitializeAsync()
-        {
-            await (await GetContainerAsync()).CreateIfNotExistsAsync(retry: true);
         }
 
         private async Task<BlobClient> GetBlobAsync(string blobName)

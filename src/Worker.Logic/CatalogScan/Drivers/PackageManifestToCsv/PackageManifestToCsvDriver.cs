@@ -43,6 +43,12 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         {
             await _packageManifestService.InitializeAsync();
         }
+
+        public Task DestroyAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         public async Task<DriverResult<CsvRecordSet<PackageManifestRecord>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             var records = await ProcessLeafInternalAsync(leafScan);

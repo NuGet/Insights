@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
 
 namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 {
@@ -13,24 +14,40 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly TaskStateStorageService _taskStateStorageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
+        private readonly ServiceClientFactory _serviceClientFactory;
 
         public AuxiliaryFileUpdaterService(
             IAuxiliaryFileUpdater<T> updater,
             IMessageEnqueuer messageEnqueuer,
             TaskStateStorageService taskStateStorageService,
-            AutoRenewingStorageLeaseService leaseService)
+            AutoRenewingStorageLeaseService leaseService,
+            ServiceClientFactory serviceClientFactory)
         {
             _updater = updater;
             _messageEnqueuer = messageEnqueuer;
             _taskStateStorageService = taskStateStorageService;
             _leaseService = leaseService;
+            _serviceClientFactory = serviceClientFactory;
         }
 
         public async Task InitializeAsync()
         {
             await _leaseService.InitializeAsync();
             await _messageEnqueuer.InitializeAsync();
+            await (await GetContainerAsync()).CreateIfNotExistsAsync(retry: true);
             await _taskStateStorageService.InitializeAsync(StorageSuffix);
+        }
+
+        public async Task DestroyAsync()
+        {
+            await (await GetContainerAsync()).DeleteIfExistsAsync();
+        }
+
+        private async Task<BlobContainerClient> GetContainerAsync()
+        {
+            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
+            var container = serviceClient.GetBlobContainerClient(_updater.ContainerName);
+            return container;
         }
 
         public bool HasRequiredConfiguration => _updater.HasRequiredConfiguration;

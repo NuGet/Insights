@@ -80,6 +80,12 @@ namespace NuGet.Insights
             return await _timerExecutionService.ExecuteAsync(timers, executeNow: true);
         }
 
+        public async Task DestroyOutputAsync(string timerName)
+        {
+            var timer = ValidateAndGetTimer(timerName);
+            await timer.DestroyAsync();
+        }
+
         public async Task ExecuteAsync()
         {
             await using (var lease = await _leaseService.TryAcquireAsync("TimerExecutionService"))

@@ -13,8 +13,10 @@ namespace NuGet.Insights.Worker
             SchemaSerializer schemaSerializer,
             CsvTemporaryStorageFactory storageFactory,
             IReadOnlyList<ICsvTemporaryStorage> storage,
-            ICatalogLeafToCsvDriver driver)
-            : base(schemaSerializer, storageFactory, storage, driver)
+            ICatalogLeafToCsvDriver driver,
+            ServiceClientFactory serviceClientFactory,
+            IReadOnlyList<string> resultContainerNames)
+            : base(schemaSerializer, storageFactory, storage, driver, serviceClientFactory, resultContainerNames)
         {
         }
 

@@ -42,6 +42,11 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             return Task.CompletedTask;
         }
 
+        public Task DestroyAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         public async Task<DriverResult<CsvRecordSet<PackageIcon>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             (var resultType, var records) = await ProcessLeafInternalAsync(leafScan);

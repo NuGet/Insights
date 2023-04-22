@@ -62,16 +62,16 @@
                     <input type="text" class="form-control" name="cursor" id="@Model.DriverType-cursor" value="@Model.DefaultMax.ToZulu()">
                 </div>
                 <div class="form-group">
-                    <button type="submit" class="btn btn-danger mr-1" name="overrideCursor" value="true" style="display: none"
-                            data-message="Are you sure you want to override the cursor value on the '@title' catalog scan driver? If the new cursor value is later than the current value, some packages will likely not get processed. If the new cursor value is earlier than the current value, some packages will be reprocessed, which is typically harmless.">
-                        Override cursor
-                    </button>
                     <button type="submit" class="btn btn-primary mr-1" name="start" disabled="@isRunning" value="true">
                         Start
                         @if (isRunning)
                         {
                             <text>(already running)</text>
                         }
+                    </button>
+                    <button type="submit" class="btn btn-danger mr-1" name="overrideCursor" value="true" style="display: none"
+                            data-message="Are you sure you want to override the cursor value on the '@title' catalog scan driver? If the new cursor value is later than the current value, some packages will likely not get processed. If the new cursor value is earlier than the current value, some packages will be reprocessed, which is typically harmless.">
+                        Override cursor
                     </button>
                     @if (Model.LatestScans.Any(x => !x.State.IsTerminal()))
                     {
@@ -80,6 +80,10 @@
                             Abort
                         </button>
                     }
+                    <button type="submit" class="btn btn-danger mr-1" name="reset" value="true"
+                            data-message="Are you sure you want to reset the driver? This will delete the output and reset the cursor to the beginning of time. It's best to do this when no catalog scan is running.">
+                        💣 Reset
+                    </button>
                     @if (!Model.IsEnabled)
                     {
                         <b>⚠️ This driver is disabled in configuration.</b>

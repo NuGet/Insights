@@ -39,6 +39,11 @@ namespace NuGet.Insights
             await _wideEntityService.InitializeAsync(_options.Value.SymbolPackageArchiveTableName);
         }
 
+        public async Task DestroyAsync()
+        {
+            await _wideEntityService.DeleteTableAsync(_options.Value.SymbolPackageArchiveTableName);
+        }
+
         public async Task<(ZipDirectory? directory, long size, ILookup<string, string>? headers)> GetZipDirectoryFromLeafItemAsync(ICatalogLeafItem leafItem)
         {
             var info = await GetOrUpdateInfoFromLeafItemAsync(leafItem);

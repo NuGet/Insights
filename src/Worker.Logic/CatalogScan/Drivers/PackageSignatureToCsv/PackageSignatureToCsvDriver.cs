@@ -40,6 +40,10 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
         {
             await _packageFileService.InitializeAsync();
         }
+        public Task DestroyAsync()
+        {
+            return Task.CompletedTask;
+        }
 
         public async Task<DriverResult<CsvRecordSet<PackageSignature>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {

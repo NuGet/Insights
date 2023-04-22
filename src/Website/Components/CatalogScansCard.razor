@@ -37,16 +37,20 @@
                     <input type="text" class="form-control" name="cursor" id="CatalogScans-cursor" value="@Model.DefaultMax.ToZulu()">
                 </div>
                 <div class="form-group mr-1">
+                    <button type="submit" class="btn btn-primary mr-1" name="start" value="true">
+                        Start all
+                    </button>
                     <button type="submit" class="btn btn-danger mr-1" name="overrideCursor" value="true" style="display: none"
                             data-message="Are you sure you want to override the cursor value on all catalog scan drivers? If the new cursor value is later than the current value, some packages will likely not get processed. If the new cursor value is earlier than the current value, some packages will be reprocessed, which is typically harmless.">
                         Override all cursors
                     </button>
-                    <button type="submit" class="btn btn-primary mr-1" name="start" value="true">
-                        Start all
-                    </button>
                     <button type="submit" class="btn btn-danger mr-1" name="abort" value="true"
                             data-message="Are you sure you want to abort all running catalog scans? Note that blob and table storage is cleaned up in a best effort but some queue messages may still get processed. The cursors will not move forward.">
                         Abort all
+                    </button>
+                    <button type="submit" class="btn btn-danger mr-1" name="reset" value="true"
+                            data-message="Are you sure you want to reset all of the drivers? This will delete the output and reset the cursors to the beginning of time. It's best to do this when no catalog scan is running.">
+                        💣 Reset all
                     </button>
                     @if (isDisabled)
                     {

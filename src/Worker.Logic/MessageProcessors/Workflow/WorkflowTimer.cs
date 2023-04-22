@@ -26,6 +26,7 @@ namespace NuGet.Insights.Worker.Workflow
         public bool IsEnabled => _service.HasRequiredConfiguration;
         public int Order => default;
         public bool CanAbort => true;
+        public bool CanDestroy => false;
 
         public async Task AbortAsync()
         {
@@ -46,6 +47,11 @@ namespace NuGet.Insights.Worker.Workflow
         public async Task<bool> IsRunningAsync()
         {
             return await _service.IsWorkflowRunningAsync();
+        }
+
+        public Task DestroyAsync()
+        {
+            throw new NotSupportedException();
         }
     }
 }

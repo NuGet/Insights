@@ -63,6 +63,11 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             await _packageHashService.InitializeAsync();
         }
 
+        public async Task DestroyAsync()
+        {
+            await _packageHashService.DestroyAsync();
+        }
+
         public async Task<DriverResult<CsvRecordSet<PackageAssembly>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();

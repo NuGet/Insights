@@ -9,6 +9,7 @@ namespace NuGet.Insights.Worker
     public interface ILatestPackageLeafStorageFactory<T> where T : ILatestPackageLeaf
     {
         Task InitializeAsync();
+        Task DestroyAsync();
 
         Task<ILatestPackageLeafStorage<T>> CreateAsync(
             CatalogPageScan pageScan,

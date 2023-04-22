@@ -51,6 +51,11 @@ namespace NuGet.Insights
             await _wideEntityService.InitializeAsync(_options.Value.PackageManifestTableName);
         }
 
+        public async Task DestroyAsync()
+        {
+            await _wideEntityService.DeleteTableAsync(_options.Value.PackageManifestTableName);
+        }
+
         public async Task<(NuspecReader NuspecReader, int ManifestLength)?> GetNuspecReaderAndSizeAsync(ICatalogLeafItem leafItem)
         {
             var result = await GetBytesAndNuspecReaderAsync(leafItem);

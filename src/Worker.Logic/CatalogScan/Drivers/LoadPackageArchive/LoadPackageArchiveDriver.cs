@@ -81,5 +81,10 @@ namespace NuGet.Insights.Worker.LoadPackageArchive
         {
             throw new NotImplementedException();
         }
+
+        public async Task DestroyOutputAsync()
+        {
+            await _packageFileService.DestroyAsync();
+        }
     }
 }

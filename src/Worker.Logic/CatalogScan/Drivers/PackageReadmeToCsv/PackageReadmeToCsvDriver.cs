@@ -41,6 +41,11 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
             await _packageReadmeService.InitializeAsync();
         }
 
+        public Task DestroyAsync()
+        {
+            return Task.CompletedTask;
+        }
+
         public async Task<DriverResult<CsvRecordSet<PackageReadme>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             var records = await ProcessLeafInternalAsync(leafScan);

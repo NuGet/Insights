@@ -86,5 +86,10 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
         {
             throw new NotImplementedException();
         }
+
+        public async Task DestroyOutputAsync()
+        {
+            await _storageService.DestroyAsync();
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
@@ -23,6 +23,11 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
         public async Task InitializeAsync()
         {
             await (await GetTableAsync()).CreateIfNotExistsAsync(retry: true);
+        }
+
+        public async Task DestroyAsync()
+        {
+            await (await GetTableAsync()).DeleteAsync();
         }
 
         public async Task<LatestPackageLeaf> GetOrNullAsync(string id, string version)

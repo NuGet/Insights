@@ -99,7 +99,8 @@ namespace NuGet.Insights.Website.Controllers
             string cursor,
             bool start,
             bool abort,
-            bool overrideCursor)
+            bool overrideCursor,
+            bool reset)
         {
             DateTimeOffset? parsedCursor = null;
             if (useCustomCursor)
@@ -133,6 +134,12 @@ namespace NuGet.Insights.Website.Controllers
                 await _catalogScanCursorService.SetAllCursorsAsync(parsedCursor.Value);
                 return Redirect(true, $"All catalog scan cursors have been set to <b>{parsedCursor.Value.ToZulu()}</b>.", CatalogScansFragment);
             }
+            else if (reset)
+            {
+                await _catalogScanCursorService.SetAllCursorsAsync(CursorTableEntity.Min);
+                await _catalogScanService.DestroyAllOutputAsync();
+                return Redirect(true, $"All driver cursors have been reset and their output has been destroyed.", CatalogScansFragment);
+            }
             else
             {
                 throw new NotImplementedException();
@@ -165,7 +172,8 @@ namespace NuGet.Insights.Website.Controllers
             string cursor,
             bool start,
             bool abort,
-            bool overrideCursor)
+            bool overrideCursor,
+            bool reset)
         {
             if (!_catalogScanService.GetOnlyLatestLeavesSupport(driverType).HasValue
                 && !onlyLatestLeaves.HasValue)
@@ -212,6 +220,12 @@ namespace NuGet.Insights.Website.Controllers
             {
                 await _catalogScanCursorService.SetCursorAsync(driverType, parsedCursor.Value);
                 return Redirect(true, $"The cursor has been set to <b>{parsedCursor.Value.ToZulu()}</b>.", fragment);
+            }
+            else if (reset)
+            {
+                await _catalogScanCursorService.SetCursorAsync(driverType, CursorTableEntity.Min);
+                await _catalogScanService.DestroyOutputAsync(driverType);
+                return Redirect(true, $"The driver's cursor has been reset and its output has been destroyed.", fragment);
             }
             else
             {
@@ -261,12 +275,13 @@ namespace NuGet.Insights.Website.Controllers
         [HttpPost]
         public async Task<RedirectToActionResult> UpdateTimer(
             string timerName,
-            bool? runNow,
-            bool? disable,
-            bool? enable,
-            bool? abort)
+            bool runNow,
+            bool disable,
+            bool enable,
+            bool abort,
+            bool reset)
         {
-            if (runNow == true)
+            if (runNow)
             {
                 var executed = await _timerExecutionService.ExecuteNowAsync(timerName);
                 if (!executed)
@@ -274,19 +289,24 @@ namespace NuGet.Insights.Website.Controllers
                     TempData[timerName + ".Error"] = "The timer could not be executed.";
                 }
             }
-            else if (disable == true)
+            else if (disable)
             {
                 await _timerExecutionService.SetIsEnabledAsync(timerName, isEnabled: false);
             }
-            else if (enable == true)
+            else if (enable)
             {
                 await _timerExecutionService.SetIsEnabledAsync(timerName, isEnabled: true);
             }
-            else if (abort == true)
+            else if (abort)
             {
                 await _timerExecutionService.SetIsEnabledAsync(timerName, isEnabled: false);
                 await _timerExecutionService.AbortAsync(timerName);
                 TempData[timerName + ".Success"] = "The timer has been disabled and aborted.";
+            }
+            else if (reset)
+            {
+                await _timerExecutionService.DestroyOutputAsync(timerName);
+                TempData[timerName + ".Success"] = "The output of the timer has been destroyed.";
             }
 
             return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment: timerName);

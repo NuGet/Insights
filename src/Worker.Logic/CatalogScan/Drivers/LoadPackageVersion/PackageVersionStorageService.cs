@@ -32,6 +32,11 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
             await (await GetTableAsync()).CreateIfNotExistsAsync(retry: true);
         }
 
+        public async Task DestroyAsync()
+        {
+            await (await GetTableAsync()).DeleteAsync();
+        }
+
         public async Task<PackageVersionStorage> GetLatestPackageLeafStorageAsync()
         {
             return new PackageVersionStorage(await GetTableAsync(), _catalogClient);

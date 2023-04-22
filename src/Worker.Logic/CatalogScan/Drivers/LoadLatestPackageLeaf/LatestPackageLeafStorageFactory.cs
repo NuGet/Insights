@@ -20,6 +20,11 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
             await _service.InitializeAsync();
         }
 
+        public async Task DestroyAsync()
+        {
+            await _service.DestroyAsync();
+        }
+
         public async Task<ILatestPackageLeafStorage<LatestPackageLeaf>> CreateAsync(CatalogPageScan pageScan, IReadOnlyDictionary<ICatalogLeafItem, int> leafItemToRank)
         {
             return new LatestPackageLeafStorage(
