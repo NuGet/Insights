@@ -201,13 +201,13 @@ foreach ($model in $models) {
         continue
     }
 
-    # Replace the table folder with the provided one
-    $escapedTableName = $TableName | ConvertTo-Json
-    $kustoDDL = $kustoDDL.Replace("folder = `"`"", "folder = " + $escapedTableName)
-
     # Create a temp table for the import.
     $tempTableName = "$($selectedTableName)_Temp"
-    $commands = [Regex]::Replace($kustoDDL, "([^\w])$foundTableName([^\w])", "`$1$tempTableName`$2")
+    $escapedTableFolder = $TableFolder | ConvertTo-Json
+    $commands = $kustoDDL
+    $commands = $commands.Replace("folder = `"`"", "folder = " + $escapedTableFolder)
+    $commands = [Regex]::Replace($commands, "([^\w])$foundTableName([^\w])", "`$1$tempTableName`$2")
+    $commands = $commands.Replace("/$tempTableName.md", "/$foundTableName.md")
     $commands = [Regex]::Split($commands, "; *`r?`n", [Text.RegularExpressions.RegexOptions]::Singleline) `
     | ForEach-Object { [Regex]::Replace($_.Trim(), "`r?`n", " &`r`n") }
     $commands = $commands -join "`r`n"
