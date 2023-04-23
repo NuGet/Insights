@@ -107,7 +107,7 @@
 
             @if (Model.CanDestroy)
             {
-                <button type="submit" class="btn btn-danger mr-1" name="reset"
+                <button type="submit" class="btn btn-danger mr-1" name="reset" disabled="@(!Model.IsEnabledInConfig)"
                     data-message="Are you sure you want to reset the timer? This will delete the output. It's best to do this when the timer is not running."
                     value="true">💣 Reset</button>
             }

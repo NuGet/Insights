@@ -33,12 +33,12 @@ namespace NuGet.Insights.Worker
         public bool AutoStart => _options.Value.AutoStartCatalogScanUpdate;
         public bool IsEnabled => true;
         public int Order => 10;
-        public bool CanAbort => true;
+        public bool CanAbort => false;
         public bool CanDestroy => false;
 
-        public async Task AbortAsync()
+        public Task AbortAsync()
         {
-            await _catalogScanService.AbortAllAsync();
+            throw new NotSupportedException();
         }
 
         public Task DestroyAsync()

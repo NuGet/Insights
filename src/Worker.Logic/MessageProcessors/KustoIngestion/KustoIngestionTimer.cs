@@ -27,7 +27,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public bool IsEnabled => _kustoIngestionService.HasRequiredConfiguration;
         public int Order => 40;
         public bool CanAbort => true;
-        public bool CanDestroy => false;
+        public bool CanDestroy => true;
 
         public async Task InitializeAsync()
         {
@@ -50,9 +50,9 @@ namespace NuGet.Insights.Worker.KustoIngestion
             await _kustoIngestionService.AbortAsync();
         }
 
-        public Task DestroyAsync()
+        public async Task DestroyAsync()
         {
-            throw new NotSupportedException();
+            await _kustoIngestionService.DestroyTablesAsync();
         }
     }
 }

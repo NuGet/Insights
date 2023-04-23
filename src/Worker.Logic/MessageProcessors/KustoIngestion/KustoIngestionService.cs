@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure;
+using Kusto.Data.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -15,6 +16,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
         private readonly KustoIngestionStorageService _storageService;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly AutoRenewingStorageLeaseService _leaseService;
+        private readonly CsvResultStorageContainers _csvRecordContainers;
+        private readonly ICslAdminProvider _kustoAdminClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<KustoIngestionService> _logger;
 
@@ -22,12 +25,16 @@ namespace NuGet.Insights.Worker.KustoIngestion
             KustoIngestionStorageService storageService,
             IMessageEnqueuer messageEnqueuer,
             AutoRenewingStorageLeaseService leaseService,
+            CsvResultStorageContainers csvRecordContainers,
+            ICslAdminProvider kustoAdminClient,
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<KustoIngestionService> logger)
         {
             _storageService = storageService;
             _messageEnqueuer = messageEnqueuer;
             _leaseService = leaseService;
+            _csvRecordContainers = csvRecordContainers;
+            _kustoAdminClient = kustoAdminClient;
             _options = options;
             _logger = logger;
         }
@@ -89,6 +96,30 @@ namespace NuGet.Insights.Worker.KustoIngestion
             latestIngestion.State = KustoIngestionState.Aborted;
             latestIngestion.Completed = DateTimeOffset.UtcNow;
             await _storageService.ReplaceIngestionAsync(latestIngestion);
+        }
+
+        public async Task DestroyTablesAsync()
+        {
+            var tableNames = _csvRecordContainers
+                .GetContainerNames()
+                .SelectMany(x => new[]
+                {
+                    _csvRecordContainers.GetOldKustoTableName(x),
+                    _csvRecordContainers.GetTempKustoTableName(x),
+                    _csvRecordContainers.GetKustoTableName(x),
+                })
+                .OrderBy(x => x)
+                .ToList();
+
+            await ExecuteKustoCommandAsync($".drop tables ({string.Join(", ", tableNames)}) ifexists");
+        }
+
+        private async Task ExecuteKustoCommandAsync(string command)
+        {
+            _logger.LogInformation("Executing Kusto command: {Command}", command);
+            using (await _kustoAdminClient.ExecuteControlCommandAsync(_options.Value.KustoDatabaseName, command))
+            {
+            }
         }
     }
 }
