@@ -44,7 +44,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         CustomAttributesFailedDecode: dynamic,
         CustomAttributesTotalCount: int,
         CustomAttributesTotalDataLength: int
-    );
+    ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/PackageAssemblies.md", folder = "");
 
     .alter-merge table PackageAssemblies policy retention softdelete = 30d;
 

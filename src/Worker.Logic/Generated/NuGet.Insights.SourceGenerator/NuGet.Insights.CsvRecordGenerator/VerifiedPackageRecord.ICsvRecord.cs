@@ -19,7 +19,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
         LowerId: string,
         Id: string,
         IsVerified: bool
-    );
+    ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/VerifiedPackages.md", folder = "");
 
     .alter-merge table VerifiedPackages policy retention softdelete = 30d;
 

@@ -86,6 +86,8 @@ namespace NuGet.Insights.Worker
             KustoUseUserManagedIdentity = true;
             KustoApplyPartitioningPolicy = true;
             KustoTableNameFormat = "{0}";
+            KustoTableFolder = string.Empty;
+            KustoTableDocstringFormat = "See https://github.com/NuGet/Insights/blob/main/docs/tables/{0}.md";
             OldKustoIngestionsToKeep = 9;
             KustoIngestionMaxAttempts = 10;
             KustoValidationMaxAttempts = 3;
@@ -181,6 +183,8 @@ namespace NuGet.Insights.Worker
 
         public bool KustoApplyPartitioningPolicy { get; set; }
         public string KustoTableNameFormat { get; set; }
+        public string KustoTableFolder { get; set; }
+        public string KustoTableDocstringFormat { get; set; }
         public int OldKustoIngestionsToKeep { get; set; }
         public int KustoIngestionMaxAttempts { get; set; }
         public int KustoValidationMaxAttempts { get; set; }

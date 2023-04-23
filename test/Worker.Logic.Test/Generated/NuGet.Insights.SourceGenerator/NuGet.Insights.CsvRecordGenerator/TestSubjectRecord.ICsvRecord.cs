@@ -19,7 +19,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
         BucketKey: string,
         Id: string,
         IsOrphan: bool
-    );
+    ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/TestSubjects.md", folder = "");
 
     .alter-merge table TestSubjects policy retention softdelete = 30d;
 

@@ -39,7 +39,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         FrameFormats: dynamic,
         FrameDimensions: dynamic,
         FrameAttributeNames: dynamic
-    );
+    ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/PackageIcons.md", folder = "");
 
     .alter-merge table PackageIcons policy retention softdelete = 30d;
 

@@ -34,7 +34,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         PackageHashAlgorithm: string,
         Deprecation: dynamic,
         Vulnerabilities: dynamic
-    );
+    ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/CatalogLeafItems.md", folder = "");
 
     .alter-merge table CatalogLeafItems policy retention softdelete = 30d;
 

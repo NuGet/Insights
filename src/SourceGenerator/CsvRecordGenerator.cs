@@ -44,7 +44,7 @@ namespace {0}
 
     .create table {1} (
 {2}
-    );
+    ) with (docstring = ""See https://github.com/NuGet/Insights/blob/main/docs/tables/{1}.md"", folder = """");
 
     .alter-merge table {1} policy retention softdelete = 30d;
 
@@ -108,7 +108,7 @@ namespace NuGet.Insights
 
             @"".create table __TABLENAME__ (
 {2}
-)"",
+) with (docstring = __DOCSTRING__, folder = __FOLDER__)"",
 
             "".alter-merge table __TABLENAME__ policy retention softdelete = 30d"",
 

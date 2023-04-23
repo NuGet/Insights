@@ -27,7 +27,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         Reasons: dynamic,
         AlternatePackageId: string,
         AlternateVersionRange: string
-    );
+    ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/PackageDeprecations.md", folder = "");
 
     .alter-merge table PackageDeprecations policy retention softdelete = 30d;
 

@@ -23,7 +23,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
         Version: string,
         Downloads: long,
         TotalDownloads: long
-    );
+    ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/PackageDownloadHistories.md", folder = "");
 
     .alter-merge table PackageDownloadHistories policy retention softdelete = 30d;
 

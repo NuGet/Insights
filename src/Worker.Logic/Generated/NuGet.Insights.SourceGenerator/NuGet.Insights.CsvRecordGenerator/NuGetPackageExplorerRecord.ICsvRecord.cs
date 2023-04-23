@@ -27,7 +27,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
         DeterministicResult: string,
         CompilerFlagsResult: string,
         IsSignedByAuthor: bool
-    );
+    ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/NuGetPackageExplorers.md", folder = "");
 
     .alter-merge table NuGetPackageExplorers policy retention softdelete = 30d;
 

@@ -44,7 +44,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         TimestampingStatusFlags: string,
         TimestampingStatusUpdateTime: datetime,
         TimestampingRevocationTime: datetime
-    );
+    ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/Certificates.md", folder = "");
 
     .alter-merge table Certificates policy retention softdelete = 30d;
 

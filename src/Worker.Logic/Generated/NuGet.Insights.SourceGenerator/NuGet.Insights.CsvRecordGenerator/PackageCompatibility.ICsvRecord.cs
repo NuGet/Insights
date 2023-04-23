@@ -35,7 +35,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         NuGetGalleryEscaped: dynamic,
         NuGetGallerySupported: dynamic,
         NuGetGalleryBadges: dynamic
-    );
+    ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/PackageCompatibilities.md", folder = "");
 
     .alter-merge table PackageCompatibilities policy retention softdelete = 30d;
 

@@ -54,7 +54,7 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
         RepositoryTimestampValue: datetime,
         RepositoryTimestampHasASN1Error: bool,
         PackageOwners: dynamic
-    );
+    ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/PackageSignatures.md", folder = "");
 
     .alter-merge table PackageSignatures policy retention softdelete = 30d;
 

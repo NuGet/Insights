@@ -41,7 +41,7 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
         IsLatestStable: bool,
         IsLatestSemVer2: bool,
         IsLatestStableSemVer2: bool
-    );
+    ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/PackageVersions.md", folder = "");
 
     .alter-merge table PackageVersions policy retention softdelete = 30d;
 

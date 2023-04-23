@@ -42,7 +42,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
         FrameworkProfile: string,
         PlatformName: string,
         PlatformVersion: string
-    );
+    ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/PackageAssets.md", folder = "");
 
     .alter-merge table PackageAssets policy retention softdelete = 30d;
 

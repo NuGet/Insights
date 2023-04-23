@@ -35,7 +35,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         SHA1: string,
         SHA256: string,
         SHA512: string
-    );
+    ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/PackageArchives.md", folder = "");
 
     .alter-merge table PackageArchives policy retention softdelete = 30d;
 

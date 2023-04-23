@@ -19,7 +19,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
         LowerId: string,
         Id: string,
         Owners: dynamic
-    );
+    ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/PackageOwners.md", folder = "");
 
     .alter-merge table PackageOwners policy retention softdelete = 30d;
 

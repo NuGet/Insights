@@ -54,7 +54,7 @@ namespace NuGet.Insights
     RepositoryTimestampValue: datetime,
     RepositoryTimestampHasASN1Error: bool,
     PackageOwners: dynamic
-)",
+) with (docstring = __DOCSTRING__, folder = __FOLDER__)",
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
 

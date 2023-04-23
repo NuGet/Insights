@@ -31,7 +31,7 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
         Comment: string,
         HeaderMD5: string,
         HeaderSHA512: string
-    );
+    ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/SymbolPackageArchives.md", folder = "");
 
     .alter-merge table SymbolPackageArchives policy retention softdelete = 30d;
 

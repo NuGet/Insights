@@ -25,7 +25,7 @@ namespace NuGet.Insights
     ResultType: string,
     Fingerprint: string,
     RelationshipTypes: string
-)",
+) with (docstring = __DOCSTRING__, folder = __FOLDER__)",
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
 

@@ -31,7 +31,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
         CompilerFlags: dynamic,
         SourceUrlRepoInfo: dynamic,
         PdbType: string
-    );
+    ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/NuGetPackageExplorerFiles.md", folder = "");
 
     .alter-merge table NuGetPackageExplorerFiles policy retention softdelete = 30d;
 

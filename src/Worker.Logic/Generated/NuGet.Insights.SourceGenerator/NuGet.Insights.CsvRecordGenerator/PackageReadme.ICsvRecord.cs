@@ -27,7 +27,7 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
         LastModified: datetime,
         SHA256: string,
         Content: string
-    );
+    ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/PackageReadmes.md", folder = "");
 
     .alter-merge table PackageReadmes policy retention softdelete = 30d;
 

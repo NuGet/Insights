@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Kusto.Data.Common;
 using Microsoft.Extensions.Logging;
@@ -76,16 +77,18 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     return;
                 }
 
-                foreach (var commandTemplate in GetDDL(container.GetContainerName()))
+                var containerName = container.GetContainerName();
+
+                foreach (var commandTemplate in GetDDL(containerName))
                 {
-                    var command = FormatCommand(tempTableName, commandTemplate);
+                    var command = FormatCommand(containerName, tempTableName, commandTemplate);
                     await ExecuteKustoCommandAsync(container, command);
                 }
 
                 if (_options.Value.KustoApplyPartitioningPolicy)
                 {
-                    var commandTemplate = GetPartitioningStrategy(container.GetContainerName());
-                    var command = FormatCommand(tempTableName, commandTemplate);
+                    var commandTemplate = GetPartitioningStrategy(containerName);
+                    var command = FormatCommand(containerName, tempTableName, commandTemplate);
                     await ExecuteKustoCommandAsync(container, command);
                 }
 
@@ -214,9 +217,16 @@ namespace NuGet.Insights.Worker.KustoIngestion
             return KustoDDL.TypeToPartitioningPolicy[recordType];
         }
 
-        private string FormatCommand(string tableName, string commandTemplate)
+        private string FormatCommand(string containerName, string tableName, string commandTemplate)
         {
-            return commandTemplate.Replace("__TABLENAME__", tableName);
+            var originalTableName = _csvRecordContainers.GetDefaultKustoTableName(containerName);
+            var docstring = JsonSerializer.Serialize(string.Format(_options.Value.KustoTableDocstringFormat, originalTableName));
+            var folder = JsonSerializer.Serialize(_options.Value.KustoTableFolder);
+
+            return commandTemplate
+                .Replace("__TABLENAME__", tableName)
+                .Replace("__DOCSTRING__", docstring)
+                .Replace("__FOLDER__", folder);
         }
     }
 }

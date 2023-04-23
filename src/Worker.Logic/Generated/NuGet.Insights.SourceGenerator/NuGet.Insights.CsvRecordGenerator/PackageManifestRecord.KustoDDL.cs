@@ -55,7 +55,7 @@ namespace NuGet.Insights
     ContentFilesHasFormatException: bool,
     DependencyGroupsHasMissingId: bool,
     SplitTags: dynamic
-)",
+) with (docstring = __DOCSTRING__, folder = __FOLDER__)",
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
 

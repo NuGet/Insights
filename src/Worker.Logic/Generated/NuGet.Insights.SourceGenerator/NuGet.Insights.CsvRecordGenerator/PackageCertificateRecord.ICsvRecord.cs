@@ -25,7 +25,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         ResultType: string,
         Fingerprint: string,
         RelationshipTypes: string
-    );
+    ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/PackageCertificates.md", folder = "");
 
     .alter-merge table PackageCertificates policy retention softdelete = 30d;
 

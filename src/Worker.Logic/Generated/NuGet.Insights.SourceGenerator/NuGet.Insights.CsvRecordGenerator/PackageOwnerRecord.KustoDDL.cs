@@ -19,7 +19,7 @@ namespace NuGet.Insights
     LowerId: string,
     Id: string,
     Owners: dynamic
-)",
+) with (docstring = __DOCSTRING__, folder = __FOLDER__)",
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
 

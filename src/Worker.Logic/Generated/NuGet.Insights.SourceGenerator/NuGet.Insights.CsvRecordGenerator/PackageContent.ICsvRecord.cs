@@ -32,7 +32,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
         SHA256: string,
         Content: string,
         DuplicateContent: bool
-    );
+    ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/PackageContents.md", folder = "");
 
     .alter-merge table PackageContents policy retention softdelete = 30d;
 

@@ -22,7 +22,7 @@ namespace NuGet.Insights
     Version: string,
     Downloads: long,
     TotalDownloads: long
-)",
+) with (docstring = __DOCSTRING__, folder = __FOLDER__)",
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
 

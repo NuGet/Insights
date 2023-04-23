@@ -55,7 +55,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         ContentFilesHasFormatException: bool,
         DependencyGroupsHasMissingId: bool,
         SplitTags: dynamic
-    );
+    ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/PackageManifests.md", folder = "");
 
     .alter-merge table PackageManifests policy retention softdelete = 30d;
 
