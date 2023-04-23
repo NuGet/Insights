@@ -50,6 +50,9 @@ param (
     [string]$TableNameSuffix,
 
     [Parameter(Mandatory = $false)]
+    [string]$TableFolder,
+
+    [Parameter(Mandatory = $false)]
     [string]$WorkingDirectory,
 
     [Parameter(Mandatory = $false)]
@@ -128,7 +131,7 @@ if ($Parallel) {
         Start-Job `
             -Name $_ `
             -FilePath $PSCommandPath `
-            -ArgumentList $KustoClusterName, $KustoDatabaseName, $StorageAccountName, $StorageSas, $ModelsPath, $_, $TableNamePrefix, $TableNameSuffix, $WorkingDirectory
+            -ArgumentList $KustoClusterName, $KustoDatabaseName, $StorageAccountName, $StorageSas, $ModelsPath, $_, $TableNamePrefix, $TableNameSuffix, $TableFolder, $WorkingDirectory
     }
 
     Write-Host ""
@@ -197,6 +200,10 @@ foreach ($model in $models) {
         Write-Warning "Skipping missing storage container $containerName in storage account $StorageAccountName."
         continue
     }
+
+    # Replace the table folder with the provided one
+    $escapedTableName = $TableName | ConvertTo-Json
+    $kustoDDL = $kustoDDL.Replace("folder = `"`"", "folder = " + $escapedTableName)
 
     # Create a temp table for the import.
     $tempTableName = "$($selectedTableName)_Temp"
