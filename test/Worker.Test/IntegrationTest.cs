@@ -226,6 +226,19 @@ namespace NuGet.Insights.Worker
                 tables.Remove(nameof(NuGetInsightsWorkerSettings.CsvRecordTableName));
                 tables.Remove(nameof(NuGetInsightsWorkerSettings.VersionSetAggregateTableName));
 
+                // Remove tables and containers for unsupported drivers
+#if !ENABLE_CRYPTOAPI
+                tables.Remove(nameof(NuGetInsightsWorkerSettings.CertificateToPackageTableName));
+                tables.Remove(nameof(NuGetInsightsWorkerSettings.PackageToCertificateTableName));
+                blobContainers.Remove(nameof(NuGetInsightsWorkerSettings.CertificateContainerName));
+                blobContainers.Remove(nameof(NuGetInsightsWorkerSettings.PackageCertificateContainerName));
+#endif
+
+#if !ENABLE_NPE
+                blobContainers.Remove(nameof(NuGetInsightsWorkerSettings.NuGetPackageExplorerContainerName));
+                blobContainers.Remove(nameof(NuGetInsightsWorkerSettings.NuGetPackageExplorerFileContainerName));
+#endif
+
                 // Verify all table and blob storage container names are created
                 var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
                 foreach ((var key, var tableName) in tables)
