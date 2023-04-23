@@ -52,7 +52,10 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
         public async Task DestroyAsync()
         {
-            await _kustoIngestionService.DestroyTablesAsync();
+            if (IsEnabled)
+            {
+                await _kustoIngestionService.DestroyTablesAsync();
+            }
         }
     }
 }
