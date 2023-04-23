@@ -46,6 +46,9 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
         public async Task DestroyAsync()
         {
             await (await GetContainerAsync()).DeleteIfExistsAsync();
+
+            var taskStates = await _taskStateStorageService.GetByRowKeyPrefixAsync(StorageSuffix, _updater.OperationName, string.Empty);
+            await _taskStateStorageService.DeleteAsync(taskStates);
         }
 
         private async Task<BlobContainerClient> GetContainerAsync()
