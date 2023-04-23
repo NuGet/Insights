@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -212,9 +213,9 @@ namespace NuGet.Insights.Worker
                 // Get all table names and blob storage container names in the configuration
                 var options = Options.Value;
                 var properties = options.GetType().GetProperties();
-                Dictionary<string, string> GetNames(IEnumerable<PropertyInfo> properties)
+                SortedDictionary<string, string> GetNames(IEnumerable<PropertyInfo> properties)
                 {
-                    return properties.ToDictionary(x => x.Name, x => (string)x.GetValue(options));
+                    return new SortedDictionary<string, string>(properties.ToDictionary(x => x.Name, x => (string)x.GetValue(options)));
                 }
                 var tables = GetNames(properties.Where(x => x.Name.EndsWith("TableName")));
                 var blobContainers = GetNames(properties.Where(x => x.Name.EndsWith("ContainerName")));
@@ -270,14 +271,26 @@ namespace NuGet.Insights.Worker
                 foreach ((var key, var tableName) in tables)
                 {
                     var table = tableServiceClient.GetTableClient(tableName);
-                    Assert.False(await table.ExistsAsync(), $"The table for {key} ('{tableName}') should have been deleted.");
+                    Assert.True(await WaitForAsync(async () => !await table.ExistsAsync()), $"The table for {key} ('{tableName}') should have been deleted.");
                 }
 
                 foreach ((var key, var containerName) in blobContainers)
                 {
                     var container = blobServiceClient.GetBlobContainerClient(containerName);
-                    Assert.False(await container.ExistsAsync(), $"The blob container for {key} ('{containerName}') should have been deleted.");
+                    Assert.True(await WaitForAsync(async () => !await container.ExistsAsync()), $"The blob container for {key} ('{containerName}') should have been deleted.");
                 }
+            }
+
+            private static async Task<bool> WaitForAsync(Func<Task<bool>> isCompleteAsync)
+            {
+                var sw = Stopwatch.StartNew();
+                bool complete;
+                while (!(complete = await isCompleteAsync()) && sw.Elapsed < TimeSpan.FromMinutes(5))
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                }
+
+                return complete;
             }
         }
 
