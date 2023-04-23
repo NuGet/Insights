@@ -34,8 +34,13 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
         {
             await _leaseService.InitializeAsync();
             await _messageEnqueuer.InitializeAsync();
-            await (await GetContainerAsync()).CreateIfNotExistsAsync(retry: true);
             await _taskStateStorageService.InitializeAsync(StorageSuffix);
+            await CreateContainerAsync();
+        }
+
+        private async Task CreateContainerAsync()
+        {
+            await (await GetContainerAsync()).CreateIfNotExistsAsync(retry: true);
         }
 
         public async Task DestroyAsync()
@@ -60,6 +65,8 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
                 {
                     return false;
                 }
+
+                await CreateContainerAsync();
 
                 var taskStateKey = new TaskStateKey(
                     StorageSuffix,
