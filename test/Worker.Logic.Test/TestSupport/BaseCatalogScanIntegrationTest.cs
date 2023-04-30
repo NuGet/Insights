@@ -95,7 +95,7 @@ namespace NuGet.Insights.Worker
                 .ToListAsync();
             Assert.Equal(
                 GetExpectedCursorNames().OrderBy(x => x).ToArray(),
-                cursors.Select(x => x.GetName()).ToArray());
+                cursors.Select(x => x.Name).ToArray());
 
             var catalogIndexScans = await tableServiceClient
                 .GetTableClient(Options.Value.CatalogIndexScanTableName)
@@ -113,13 +113,13 @@ namespace NuGet.Insights.Worker
 
         protected virtual IEnumerable<string> GetExpectedLeaseNames()
         {
-            yield return $"Start-CatalogScan-{DriverType}";
+            yield return $"Start-{DriverType}";
 
             foreach (var type in LatestLeavesTypes)
             {
                 foreach (var scan in ExpectedCatalogIndexScans.Where(x => x.DriverType == type))
                 {
-                    yield return $"Start-CatalogScan-{CatalogScanDriverType.Internal_FindLatestCatalogLeafScan}-{scan.GetScanId()}-fl";
+                    yield return $"Start-{CatalogScanDriverType.Internal_FindLatestCatalogLeafScan}-{scan.ScanId}-fl";
                 }
             }
 
@@ -127,7 +127,7 @@ namespace NuGet.Insights.Worker
             {
                 foreach (var scan in ExpectedCatalogIndexScans.Where(x => x.DriverType == type))
                 {
-                    yield return $"Start-CatalogScan-{CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId}-{scan.GetScanId()}-fl";
+                    yield return $"Start-{CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId}-{scan.ScanId}-fl";
                 }
             }
         }

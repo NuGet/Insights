@@ -164,8 +164,8 @@ namespace NuGet.Insights.Website
 
         private async Task<CatalogScanViewModel> GetCatalogScanAsync(CatalogScanDriverType driverType)
         {
+            var latestScans = await _catalogScanStorageService.GetLatestIndexScansAsync(driverType, HistoryCount);
             var cursor = await _catalogScanCursorService.GetCursorAsync(driverType);
-            var latestScans = await _catalogScanStorageService.GetLatestIndexScansAsync(cursor.GetName(), HistoryCount);
             var nextCommitTimestamp = await _catalogCommitTimestampProvider.GetNextAsync(cursor.Value);
 
             return new CatalogScanViewModel

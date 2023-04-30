@@ -162,7 +162,7 @@ namespace NuGet.Insights.Worker.Workflow
                 var workflow = await WorkflowService.StartAsync();
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => UpdateAsync(workflow));
                 Assert.Equal("The workflow could not complete due to Kusto FailedValidation state after 3 attempts.", ex.Message);
-                workflow = await WorkflowStorageService.GetRunAsync(workflow.GetRunId());
+                workflow = await WorkflowStorageService.GetRunAsync(workflow.RunId);
                 Assert.Equal(WorkflowRunState.KustoIngestionWorking, workflow.State);
                 Assert.Equal(3, workflow.AttemptCount);
             }
@@ -227,13 +227,13 @@ namespace NuGet.Insights.Worker.Workflow
                 var workflow = await WorkflowService.StartAsync();
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => UpdateAsync(workflow));
                 Assert.Equal("The CatalogScanUpdate timer could not be started.", ex.Message);
-                workflow = await WorkflowStorageService.GetRunAsync(workflow.GetRunId());
+                workflow = await WorkflowStorageService.GetRunAsync(workflow.RunId);
                 Assert.Equal(WorkflowRunState.Created, workflow.State);
                 Assert.Equal(1, workflow.AttemptCount);
                 var scans = await CatalogScanStorageService.GetIndexScansAsync();
                 var onlyScan = Assert.Single(scans);
                 Assert.Equal(CatalogIndexScanState.Aborted, onlyScan.State);
-                Assert.Equal(catalogScanResult.Scan.GetScanId(), onlyScan.GetScanId());
+                Assert.Equal(catalogScanResult.Scan.ScanId, onlyScan.ScanId);
             }
 
             public Workflow_FailsWithAbortedCatalogScan(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

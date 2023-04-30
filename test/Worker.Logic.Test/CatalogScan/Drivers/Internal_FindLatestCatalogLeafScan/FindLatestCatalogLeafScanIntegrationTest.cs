@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -87,17 +87,17 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
 
         protected override IEnumerable<string> GetExpectedLeaseNames()
         {
-            yield return $"Start-CatalogScan-{DriverType}-{ExpectedCatalogIndexScans.First().GetScanId()}";
+            yield return $"Start-{DriverType}-{ExpectedCatalogIndexScans.First().ScanId}";
         }
 
         private async Task UpdateAsync(DateTimeOffset min0, DateTimeOffset max1)
         {
             // Arrange
-            var parentScan = new CatalogIndexScan("parent-cursor", "parent-scan-id", ParentStorageSuffix)
+            var parentScan = new CatalogIndexScan(CatalogScanDriverType.PackageAssetToCsv, "parent-scan-id", ParentStorageSuffix)
             {
-                DriverType = CatalogScanDriverType.PackageAssetToCsv,
                 DriverParameters = "parent-parameters",
                 State = CatalogIndexScanState.Created,
+                CursorName = "parent-cursor",
                 Min = DateTimeOffset.Parse("2020-01-01T00:00:00Z"),
                 Max = DateTimeOffset.Parse("2020-01-02T00:00:00Z"),
             };
@@ -112,8 +112,8 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
                 storageSuffix: "flclsstoragesuffix",
                 parentScanMessage: new CatalogIndexScanMessage
                 {
-                    CursorName = parentScan.GetCursorName(),
-                    ScanId = parentScan.GetScanId(),
+                    DriverType = parentScan.DriverType,
+                    ScanId = parentScan.ScanId,
                 },
                 min0,
                 max1);

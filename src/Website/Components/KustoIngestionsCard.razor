@@ -29,7 +29,7 @@
             @foreach (var ingestion in Model)
             {
                 <tr>
-                    <td>@ingestion.GetIngestionId()</td>
+                    <td>@ingestion.IngestionId</td>
                     <td>@ingestion.State</td>
                     <td>@ingestion.AttemptCount</td>
                     <td>

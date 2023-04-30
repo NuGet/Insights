@@ -137,7 +137,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         {
             _logger.LogInformation(
                 "Updating Kusto ingestion {IngestionId} with state {State}.",
-                ingestion.GetIngestionId(),
+                ingestion.IngestionId,
                 ingestion.State);
 
             var table = await GetKustoIngestionTableAsync();
@@ -150,7 +150,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             _logger.LogInformation(
                 "Updating Kusto ingestion {IngestionId} for container {ContainerName} with state {State}.",
                 container.IngestionId,
-                container.GetContainerName(),
+                container.ContainerName,
                 container.State);
 
             var table = await GetKustoIngestionTableAsync(container.StorageSuffix);
@@ -177,8 +177,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
             _logger.LogInformation(
                 "Updating Kusto ingestion {IngestionId} for blob {ContainerName}/{BlobName} with state {State}.",
                 blob.IngestionId,
-                blob.GetContainerName(),
-                blob.GetBlobName(),
+                blob.ContainerName,
+                blob.BlobName,
                 blob.State);
 
             var table = await GetKustoIngestionTableAsync(blob.StorageSuffix);
@@ -191,7 +191,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             _logger.LogInformation(
                 "Deleting Kusto ingestion {IngestionId} for container {ContainerName}.",
                 container.IngestionId,
-                container.GetContainerName());
+                container.ContainerName);
 
             var table = await GetKustoIngestionTableAsync(container.StorageSuffix);
             await table.DeleteEntityAsync(container, container.ETag);
@@ -202,8 +202,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
             _logger.LogInformation(
                 "Deleting Kusto ingestion {IngestionId} for blob {ContainerName}/{BlobName}.",
                 blob.IngestionId,
-                blob.GetContainerName(),
-                blob.GetBlobName());
+                blob.ContainerName,
+                blob.BlobName);
 
             var table = await GetKustoIngestionTableAsync(blob.StorageSuffix);
             await table.DeleteEntityAsync(blob, blob.ETag);
@@ -234,15 +234,15 @@ namespace NuGet.Insights.Worker.KustoIngestion
             var table = await GetKustoIngestionTableAsync(container.StorageSuffix);
             var existingBlobs = await GetBlobsAsync(table, container);
 
-            var existingBlobNames = existingBlobs.Select(x => x.GetBlobName()).ToList();
-            var missingBlobNames = blobs.Select(x => x.GetBlobName()).Except(existingBlobNames).ToHashSet();
-            var newBlobNames = blobs.Where(x => missingBlobNames.Contains(x.GetBlobName())).ToList();
+            var existingBlobNames = existingBlobs.Select(x => x.BlobName).ToList();
+            var missingBlobNames = blobs.Select(x => x.BlobName).Except(existingBlobNames).ToHashSet();
+            var newBlobNames = blobs.Where(x => missingBlobNames.Contains(x.BlobName)).ToList();
 
             _logger.LogInformation(
                 "Expanding {Count} blobs in Kusto ingestion {IngestionId} for container {ContainerName}.",
                 newBlobNames.Count,
                 container.IngestionId,
-                container.GetContainerName());
+                container.ContainerName);
 
             var batch = new MutableTableTransactionalBatch(table);
             foreach (var blob in newBlobNames)
@@ -274,24 +274,24 @@ namespace NuGet.Insights.Worker.KustoIngestion
             var table = await GetKustoIngestionTableAsync(ingestion.StorageSuffix);
             var containers = await GetContainersAsync(table, ingestion);
 
-            var existingContainerNames = containers.Select(x => x.GetContainerName()).ToList();
+            var existingContainerNames = containers.Select(x => x.ContainerName).ToList();
             var missingContainerNames = allContainerNames.Except(existingContainerNames).ToList();
             if (existingContainerNames.Except(allContainerNames).Any())
             {
-                throw new InvalidOperationException($"There are extra container names for ingestion '{ingestion.GetIngestionId()}'.");
+                throw new InvalidOperationException($"There are extra container names for ingestion '{ingestion.IngestionId}'.");
             }
 
             _logger.LogInformation(
                 "Expanding {Count} containers in Kusto ingestion {IngestionId}.",
                 missingContainerNames.Count,
-                ingestion.GetIngestionId());
+                ingestion.IngestionId);
 
             if (missingContainerNames.Any())
             {
                 var newContainers = missingContainerNames
                     .Select(x => new KustoContainerIngestion(x)
                     {
-                        IngestionId = ingestion.GetIngestionId(),
+                        IngestionId = ingestion.IngestionId,
                         StorageSuffix = ingestion.StorageSuffix,
                         State = KustoContainerIngestionState.Created,
                     })

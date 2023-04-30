@@ -57,7 +57,7 @@ namespace NuGet.Insights.Worker
 
         public string GenerateFindLatestScanId(CatalogIndexScan scan)
         {
-            return scan.GetScanId() + "-fl";
+            return scan.ScanId + "-fl";
         }
 
         public string GenerateFindLatestStorageSuffix(CatalogIndexScan scan)
@@ -108,7 +108,7 @@ namespace NuGet.Insights.Worker
                 }
                 else
                 {
-                    return new Dictionary<string, CatalogLeafScan> { { leafScan.GetLeafId(), leafScan } };
+                    return new Dictionary<string, CatalogLeafScan> { { leafScan.LeafId, leafScan } };
                 }
             }
 
@@ -118,8 +118,8 @@ namespace NuGet.Insights.Worker
                 .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
             var uniqueLeafIds = sortedLeafIds.ToHashSet();
             return leafScans
-                .Where(x => uniqueLeafIds.Contains(x.GetLeafId()))
-                .ToDictionary(x => x.GetLeafId());
+                .Where(x => uniqueLeafIds.Contains(x.LeafId))
+                .ToDictionary(x => x.LeafId);
         }
 
         public async Task InsertAsync(IReadOnlyList<CatalogPageScan> pageScans)
@@ -202,19 +202,19 @@ namespace NuGet.Insights.Worker
                 .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
         }
 
-        public async Task<IReadOnlyList<CatalogIndexScan>> GetLatestIndexScansAsync(string cursorName, int maxEntities)
+        public async Task<IReadOnlyList<CatalogIndexScan>> GetLatestIndexScansAsync(CatalogScanDriverType driverType, int maxEntities)
         {
             return await (await GetIndexScanTableAsync())
-                .QueryAsync<CatalogIndexScan>(x => x.PartitionKey == cursorName)
+                .QueryAsync<CatalogIndexScan>(x => x.PartitionKey == driverType.ToString())
                 .Take(maxEntities)
                 .ToListAsync();
         }
 
-        public async Task DeleteOldIndexScansAsync(string cursorName, string currentScanId)
+        public async Task DeleteOldIndexScansAsync(CatalogScanDriverType driverType, string currentScanId)
         {
             var table = await GetIndexScanTableAsync();
             var oldScans = await table
-                .QueryAsync<CatalogIndexScan>(x => x.PartitionKey == cursorName
+                .QueryAsync<CatalogIndexScan>(x => x.PartitionKey == driverType.ToString()
                                                 && x.RowKey.CompareTo(currentScanId) > 0)
                 .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
 
@@ -241,10 +241,10 @@ namespace NuGet.Insights.Worker
             await batch.SubmitBatchIfNotEmptyAsync();
         }
 
-        public async Task<CatalogIndexScan> GetIndexScanAsync(string cursorName, string scanId)
+        public async Task<CatalogIndexScan> GetIndexScanAsync(CatalogScanDriverType driverType, string scanId)
         {
             return await (await GetIndexScanTableAsync())
-                .GetEntityOrNullAsync<CatalogIndexScan>(cursorName, scanId);
+                .GetEntityOrNullAsync<CatalogIndexScan>(driverType.ToString(), scanId);
         }
 
         public async Task<CatalogPageScan> GetPageScanAsync(string storageSuffix, string scanId, string pageId)
@@ -261,14 +261,14 @@ namespace NuGet.Insights.Worker
 
         public async Task ReplaceAsync(CatalogIndexScan indexScan)
         {
-            _logger.LogInformation("Replacing catalog index scan {ScanId}, state: {State}.", indexScan.GetScanId(), indexScan.State);
+            _logger.LogInformation("Replacing catalog index scan {ScanId}, state: {State}.", indexScan.ScanId, indexScan.State);
             var response = await (await GetIndexScanTableAsync()).UpdateEntityAsync(indexScan, indexScan.ETag);
             indexScan.UpdateETag(response);
         }
 
         public async Task ReplaceAsync(CatalogPageScan pageScan)
         {
-            _logger.LogInformation("Replacing catalog page scan {ScanId}, page {PageId}, state: {State}.", pageScan.GetScanId(), pageScan.GetPageId(), pageScan.State);
+            _logger.LogInformation("Replacing catalog page scan {ScanId}, page {PageId}, state: {State}.", pageScan.ScanId, pageScan.PageId, pageScan.State);
             var response = await (await GetPageScanTableAsync(pageScan.StorageSuffix)).UpdateEntityAsync(pageScan, pageScan.ETag);
             pageScan.UpdateETag(response);
         }

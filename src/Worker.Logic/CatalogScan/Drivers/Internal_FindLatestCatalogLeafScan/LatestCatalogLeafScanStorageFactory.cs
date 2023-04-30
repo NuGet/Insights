@@ -32,7 +32,7 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
         public async Task<ILatestPackageLeafStorage<CatalogLeafScan>> CreateAsync(CatalogPageScan pageScan, IReadOnlyDictionary<ICatalogLeafItem, int> leafItemToRank)
         {
             var parameters = (CatalogIndexScanMessage)_serializer.Deserialize(pageScan.DriverParameters).Data;
-            var indexScan = await _storageService.GetIndexScanAsync(parameters.CursorName, parameters.ScanId);
+            var indexScan = await _storageService.GetIndexScanAsync(parameters.DriverType, parameters.ScanId);
             var table = await _storageService.GetLeafScanTableAsync(indexScan.StorageSuffix);
             return new LatestCatalogLeafScanStorage(table, indexScan, pageScan.Url);
         }

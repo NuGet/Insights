@@ -7,8 +7,8 @@ namespace NuGet.Insights.Worker
 {
     public class CatalogIndexScanMessage
     {
-        [JsonPropertyName("c")]
-        public string CursorName { get; set; }
+        [JsonPropertyName("t")]
+        public CatalogScanDriverType DriverType { get; set; }
 
         [JsonPropertyName("i")]
         public string ScanId { get; set; }

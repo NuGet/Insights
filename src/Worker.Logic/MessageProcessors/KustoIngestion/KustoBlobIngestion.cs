@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.Serialization;
 using Azure;
 using Azure.Data.Tables;
 
@@ -19,6 +20,13 @@ namespace NuGet.Insights.Worker.KustoIngestion
             RowKey = blobName;
         }
 
+
+        [IgnoreDataMember]
+        public string ContainerName => PartitionKey;
+
+        [IgnoreDataMember]
+        public string BlobName => RowKey;
+
         public string PartitionKey { get; set; }
         public string RowKey { get; set; }
         public DateTimeOffset? Timestamp { get; set; }
@@ -31,15 +39,5 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public long RawSizeBytes { get; set; }
         public string StatusUrl { get; set; }
         public Guid SourceId { get; set; }
-
-        public string GetContainerName()
-        {
-            return PartitionKey;
-        }
-
-        public string GetBlobName()
-        {
-            return RowKey;
-        }
     }
 }

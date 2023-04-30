@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.Serialization;
 using Azure;
 using Azure.Data.Tables;
 
@@ -13,43 +14,29 @@ namespace NuGet.Insights.Worker
         {
         }
 
-        public CatalogIndexScan(string cursorName, string scanId, string storageSuffix)
+        public CatalogIndexScan(CatalogScanDriverType driverType, string scanId, string storageSuffix)
         {
-            PartitionKey = cursorName ?? throw new ArgumentNullException(nameof(cursorName)); // empty string is allowed
+            PartitionKey = driverType.ToString();
             RowKey = scanId;
             StorageSuffix = storageSuffix;
             Created = DateTimeOffset.UtcNow;
         }
 
-        public string GetCursorName()
-        {
-            return PartitionKey;
-        }
+        [IgnoreDataMember]
+        public CatalogScanDriverType DriverType => Enum.Parse<CatalogScanDriverType>(PartitionKey);
 
-        public string GetScanId()
-        {
-            return RowKey;
-        }
-
-        public CatalogIndexScanResult? GetResult()
-        {
-            return Result != null ? Enum.Parse<CatalogIndexScanResult>(Result) : null;
-        }
-
-        public void SetResult(CatalogIndexScanResult result)
-        {
-            Result = result.ToString();
-        }
+        [IgnoreDataMember]
+        public string ScanId => RowKey;
 
         public string StorageSuffix { get; set; }
         public DateTimeOffset Created { get; set; }
         public CatalogIndexScanState State { get; set; }
-        public CatalogScanDriverType DriverType { get; set; }
         public string DriverParameters { get; set; }
+        public string CursorName { get; set; }
         public DateTimeOffset? Min { get; set; }
         public DateTimeOffset? Max { get; set; }
         public DateTimeOffset? Started { get; set; }
-        public string Result { get; set; }
+        public CatalogIndexScanResult? Result { get; set; }
         public DateTimeOffset? Completed { get; set; }
         public bool ContinueUpdate { get; set; }
 

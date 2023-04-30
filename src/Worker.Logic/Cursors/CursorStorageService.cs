@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
@@ -50,7 +50,7 @@ namespace NuGet.Insights.Worker
         public async Task UpdateAsync(CursorTableEntity cursor)
         {
             var table = await GetTableAsync();
-            _logger.LogInformation("Updating cursor {Name} to timestamp {NewValue:O}.", cursor.GetName(), cursor.Value);
+            _logger.LogInformation("Updating cursor {Name} to timestamp {NewValue:O}.", cursor.Name, cursor.Value);
             var response = await table.UpdateEntityAsync(cursor, cursor.ETag);
             cursor.UpdateETag(response);
         }

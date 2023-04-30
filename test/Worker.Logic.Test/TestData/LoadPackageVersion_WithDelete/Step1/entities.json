@@ -1,5 +1,7 @@
 [
   {
+    "LowerId": "amazonks3",
+    "LowerVersion": "1.5.0",
     "Prefix": null,
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.20.02.39.20/amazonks3.1.5.0.json",
     "LeafType": "PackageDetails",
@@ -17,6 +19,8 @@
     "ETag": null
   },
   {
+    "LowerId": "behaviorsample",
+    "LowerVersion": "1.0.0",
     "Prefix": null,
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.20.02.39.03/behaviorsample.1.0.0.json",
     "LeafType": "PackageDetails",
@@ -34,6 +38,8 @@
     "ETag": null
   },
   {
+    "LowerId": "lunabot.commands.public",
+    "LowerVersion": "1.2.0",
     "Prefix": null,
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.20.03.01.57/lunabot.commands.public.1.2.0.json",
     "LeafType": "PackageDetails",
@@ -51,6 +57,8 @@
     "ETag": null
   },
   {
+    "LowerId": "lunabot.core",
+    "LowerVersion": "1.0.4",
     "Prefix": null,
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.20.02.39.20/lunabot.core.1.0.4.json",
     "LeafType": "PackageDetails",
@@ -68,6 +76,8 @@
     "ETag": null
   },
   {
+    "LowerId": "nut.mediatr.behaviors",
+    "LowerVersion": "0.0.0-preview.0.44",
     "Prefix": null,
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.20.02.37.52/nut.mediatr.behaviors.0.0.0-preview.0.44.json",
     "LeafType": "PackageDetails",
@@ -85,6 +95,8 @@
     "ETag": null
   },
   {
+    "LowerId": "nut.mediatr.behaviors.fluentvalidation",
+    "LowerVersion": "0.0.0-preview.0.44",
     "Prefix": null,
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.20.02.37.52/nut.mediatr.behaviors.fluentvalidation.0.0.0-preview.0.44.json",
     "LeafType": "PackageDetails",
@@ -102,6 +114,8 @@
     "ETag": null
   },
   {
+    "LowerId": "nut.mediatr.servicelike.dependencyinjection",
+    "LowerVersion": "0.0.0-preview.0.44",
     "Prefix": null,
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.20.02.37.52/nut.mediatr.servicelike.dependencyinjection.0.0.0-preview.0.44.json",
     "LeafType": "PackageDetails",
@@ -119,6 +133,8 @@
     "ETag": null
   },
   {
+    "LowerId": "servicelikesample",
+    "LowerVersion": "1.0.0",
     "Prefix": null,
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.20.02.39.37/servicelikesample.1.0.0.json",
     "LeafType": "PackageDetails",

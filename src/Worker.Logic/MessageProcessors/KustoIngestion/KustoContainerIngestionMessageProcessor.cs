@@ -52,13 +52,13 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 return;
             }
 
-            var finalTableName = _csvRecordContainers.GetKustoTableName(container.GetContainerName());
+            var finalTableName = _csvRecordContainers.GetKustoTableName(container.ContainerName);
             if (container.State == KustoContainerIngestionState.Created)
             {
-                var blobs = await _csvRecordContainers.GetBlobsAsync(container.GetContainerName());
+                var blobs = await _csvRecordContainers.GetBlobsAsync(container.ContainerName);
                 if (blobs.Count == 0)
                 {
-                    _logger.LogInformation("Container {ContainerName} has no blobs so no import will occur.", container.GetContainerName());
+                    _logger.LogInformation("Container {ContainerName} has no blobs so no import will occur.", container.ContainerName);
                     await _storageService.DeleteContainerAsync(container);
                     return;
                 }
@@ -68,7 +68,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 await _storageService.ReplaceContainerAsync(container);
             }
 
-            var tempTableName = _csvRecordContainers.GetTempKustoTableName(container.GetContainerName());
+            var tempTableName = _csvRecordContainers.GetTempKustoTableName(container.ContainerName);
             if (container.State == KustoContainerIngestionState.CreatingTable)
             {
                 await using var lease = await LeaseOrNullAsync(message, container, finalTableName);
@@ -77,7 +77,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     return;
                 }
 
-                var containerName = container.GetContainerName();
+                var containerName = container.ContainerName;
 
                 foreach (var commandTemplate in GetDDL(containerName))
                 {
@@ -98,11 +98,11 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
             if (container.State == KustoContainerIngestionState.Expanding)
             {
-                var blobs = await _csvRecordContainers.GetBlobsAsync(container.GetContainerName());
+                var blobs = await _csvRecordContainers.GetBlobsAsync(container.ContainerName);
                 var nameToEntity = new Dictionary<string, KustoBlobIngestion>();
                 foreach (var blob in blobs)
                 {
-                    nameToEntity.Add(blob.Name, new KustoBlobIngestion(container.GetContainerName(), blob.Name)
+                    nameToEntity.Add(blob.Name, new KustoBlobIngestion(container.ContainerName, blob.Name)
                     {
                         IngestionId = container.IngestionId,
                         StorageSuffix = container.StorageSuffix,
@@ -124,8 +124,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 await _messageEnqueuer.EnqueueAsync(blobs.Select(x => new KustoBlobIngestionMessage
                 {
                     StorageSuffix = x.StorageSuffix,
-                    ContainerName = x.GetContainerName(),
-                    BlobName = x.GetBlobName(),
+                    ContainerName = x.ContainerName,
+                    BlobName = x.BlobName,
                 }).ToList());
 
                 container.State = KustoContainerIngestionState.Working;
@@ -142,7 +142,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     _logger.LogInformation(
                         "There are {Count} blobs in container {ContainerName} still being ingested into Kusto.",
                         pendingCount,
-                        container.GetContainerName());
+                        container.ContainerName);
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
                     return;
@@ -158,12 +158,12 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     _telemetryClient.TrackMetric(
                         nameof(KustoContainerIngestionMessageProcessor) + ".Failed.ElapsedMs",
                         (DateTimeOffset.UtcNow - container.Started.Value).TotalMilliseconds,
-                        new Dictionary<string, string> { { "ContainerName", container.GetContainerName() } });
+                        new Dictionary<string, string> { { "ContainerName", container.ContainerName } });
 
                     _logger.LogWarning(
                         "There are {Count} blobs in container {ContainerName} that were not ingested properly. The states were: {StateSummary}",
                         failedCount,
-                        container.GetContainerName(),
+                        container.ContainerName,
                         stateSummary);
 
                     container.State = KustoContainerIngestionState.Failed;
@@ -174,7 +174,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     _telemetryClient.TrackMetric(
                         nameof(KustoContainerIngestionMessageProcessor) + ".Complete.ElapsedMs",
                         (DateTimeOffset.UtcNow - container.Started.Value).TotalMilliseconds,
-                        new Dictionary<string, string> { { "ContainerName", container.GetContainerName() } });
+                        new Dictionary<string, string> { { "ContainerName", container.ContainerName } });
 
                     container.State = KustoContainerIngestionState.Complete;
                     await _storageService.ReplaceContainerAsync(container);
@@ -188,7 +188,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             var lease = await _leaseService.TryAcquireAsync($"KustoContainerIngestion-{finalTableName}");
             if (!lease.Acquired)
             {
-                _logger.LogTransientWarning("Container {ContainerName} lease is not available.", container.GetContainerName());
+                _logger.LogTransientWarning("Container {ContainerName} lease is not available.", container.ContainerName);
                 message.AttemptCount++;
                 await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
                 return null;
@@ -199,7 +199,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
         private async Task ExecuteKustoCommandAsync(KustoContainerIngestion container, string command)
         {
-            _logger.LogInformation("Executing Kusto command for container {ContainerName}: {Command}", container.GetContainerName(), command);
+            _logger.LogInformation("Executing Kusto command for container {ContainerName}: {Command}", container.ContainerName, command);
             using (await _kustoAdminClient.ExecuteControlCommandAsync(_options.Value.KustoDatabaseName, command))
             {
             }

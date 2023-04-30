@@ -118,8 +118,8 @@ namespace NuGet.Insights.Worker
                 .OrderBy(x => leafItemToRank[x])
                 .Select(x => new CatalogLeafScan(
                     scan.StorageSuffix,
-                    scan.GetScanId(),
-                    scan.GetPageId(),
+                    scan.ScanId,
+                    scan.PageId,
                     "L" + leafItemToRank[x].ToString(CultureInfo.InvariantCulture).PadLeft(10, '0'))
                 {
                     DriverType = scan.DriverType,

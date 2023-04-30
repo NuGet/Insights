@@ -151,8 +151,8 @@ namespace NuGet.Insights.Worker
                 var messages = buckets
                     .Select(b => new CsvExpandReprocessMessage<T>
                     {
-                        CursorName = indexScan.GetCursorName(),
-                        ScanId = indexScan.GetScanId(),
+                        DriverType = indexScan.DriverType,
+                        ScanId = indexScan.ScanId,
                         Bucket = b,
                         TaskStateKey = new TaskStateKey(
                             indexScan.StorageSuffix,
@@ -174,7 +174,7 @@ namespace NuGet.Insights.Worker
 
             private string GetCustomExpandPartitionKey(CatalogIndexScan indexScan)
             {
-                return $"{indexScan.GetScanId()}-{nameof(CatalogScanToCsvStorage<T>)}-custom-expand-{_setIndex}";
+                return $"{indexScan.ScanId}-{nameof(CatalogScanToCsvStorage<T>)}-custom-expand-{_setIndex}";
             }
 
             private string GetAggregateTasksPartitionKey(string aggregatePartitionKeyPrefix)

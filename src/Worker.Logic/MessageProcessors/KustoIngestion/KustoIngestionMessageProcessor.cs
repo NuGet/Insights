@@ -96,7 +96,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     _telemetryClient.TrackMetric(
                         nameof(KustoIngestionMessageProcessor) + ".RetryingContainer.ElapsedMs",
                         (DateTimeOffset.UtcNow - container.Started.Value).TotalMilliseconds,
-                        new Dictionary<string, string> { { "ContainerName", container.GetContainerName() } });
+                        new Dictionary<string, string> { { "ContainerName", container.ContainerName } });
 
                     container.State = KustoContainerIngestionState.Created;
 
@@ -116,7 +116,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 await _messageEnqueuer.EnqueueAsync(createdContainers.Select(x => new KustoContainerIngestionMessage
                 {
                     StorageSuffix = x.StorageSuffix,
-                    ContainerName = x.GetContainerName(),
+                    ContainerName = x.ContainerName,
                 }).ToList());
 
                 ingestion.State = KustoIngestionState.Working;
@@ -238,7 +238,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         private async Task CleanUpAndSetTerminalStateAsync(KustoIngestionEntity ingestion, KustoIngestionState terminalState)
         {
             await _storageService.DeleteChildTableAsync(ingestion.StorageSuffix);
-            await _storageService.DeleteOldIngestionsAsync(ingestion.GetIngestionId());
+            await _storageService.DeleteOldIngestionsAsync(ingestion.IngestionId);
 
             ingestion.Completed = DateTimeOffset.UtcNow;
             ingestion.State = terminalState;
@@ -251,7 +251,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             var swaps = new List<string>();
             foreach (var container in ingestedContainers)
             {
-                var containerName = container.GetContainerName();
+                var containerName = container.ContainerName;
                 var old = _csvRecordContainers.GetOldKustoTableName(containerName);
                 var final = _csvRecordContainers.GetKustoTableName(containerName);
                 var temp = _csvRecordContainers.GetTempKustoTableName(containerName);
@@ -267,7 +267,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         private async Task DropOldTablesAsync(KustoIngestionEntity ingestion)
         {
             var ingestedContainers = await _storageService.GetContainersAsync(ingestion);
-            var allOld = ingestedContainers.Select(x => _csvRecordContainers.GetOldKustoTableName(x.GetContainerName()));
+            var allOld = ingestedContainers.Select(x => _csvRecordContainers.GetOldKustoTableName(x.ContainerName));
             var dropOldCommand = $".drop tables ({string.Join(", ", allOld)}) ifexists";
             await ExecuteKustoCommandAsync(dropOldCommand);
         }

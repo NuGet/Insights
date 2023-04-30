@@ -58,9 +58,9 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
             if (blob.State == KustoBlobIngestionState.Created)
             {
-                var blobUrlWithSas = await _serviceClientFactory.GetBlobReadUrlAsync(blob.GetContainerName(), blob.GetBlobName());
+                var blobUrlWithSas = await _serviceClientFactory.GetBlobReadUrlAsync(blob.ContainerName, blob.BlobName);
 
-                var tempTableName = _csvRecordContainers.GetTempKustoTableName(blob.GetContainerName());
+                var tempTableName = _csvRecordContainers.GetTempKustoTableName(blob.ContainerName);
                 var ingestionProperties = new KustoQueuedIngestionProperties(_options.Value.KustoDatabaseName, tempTableName)
                 {
                     IgnoreFirstRecord = true,
@@ -79,13 +79,13 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     Size = blob.RawSizeBytes,
                 };
 
-                await using var lease = await _leaseService.TryAcquireAsync($"KustoBlobIngestion-{blob.GetContainerName()}-{blob.GetBlobName()}");
+                await using var lease = await _leaseService.TryAcquireAsync($"KustoBlobIngestion-{blob.ContainerName}-{blob.BlobName}");
                 if (!lease.Acquired)
                 {
                     _logger.LogTransientWarning(
                         "Kusto blob ingestion lease for blob {ContainerName}/{BlobName} is not available.",
-                        blob.GetContainerName(),
-                        blob.GetBlobName());
+                        blob.ContainerName,
+                        blob.BlobName);
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount, factor: 10));
                     return;
@@ -93,8 +93,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
                 _logger.LogInformation(
                     "Starting ingestion of blob {ContainerName}/{BlobName} into Kusto table {KustoTable}.",
-                    blob.GetContainerName(),
-                    blob.GetBlobName(),
+                    blob.ContainerName,
+                    blob.BlobName,
                     tempTableName);
                 var result = await _kustoQueuedIngestClient.IngestFromStorageAsync(
                     blobUrlWithSas.AbsoluteUri,
@@ -134,15 +134,15 @@ namespace NuGet.Insights.Worker.KustoIngestion
                         duration.TotalMilliseconds,
                         new Dictionary<string, string>
                         {
-                            { "ContainerName", blob.GetContainerName() },
-                            { "BlobName", blob.GetBlobName() },
+                            { "ContainerName", blob.ContainerName },
+                            { "BlobName", blob.BlobName },
                             { "SourceId", blob.SourceId.ToString() },
                         });
 
                     _logger.LogWarning(
                         "The ingestion of blob {ContainerName}{BlobName} timed out after {Duration}.",
-                        blob.GetContainerName(),
-                        blob.GetBlobName(),
+                        blob.ContainerName,
+                        blob.BlobName,
                         duration);
 
                     blob.State = KustoBlobIngestionState.TimedOut;
@@ -161,16 +161,16 @@ namespace NuGet.Insights.Worker.KustoIngestion
                         duration.TotalMilliseconds,
                         new Dictionary<string, string>
                         {
-                            { "ContainerName", blob.GetContainerName() },
-                            { "BlobName", blob.GetBlobName() },
+                            { "ContainerName", blob.ContainerName },
+                            { "BlobName", blob.BlobName },
                             { "SourceId", blob.SourceId.ToString() },
                             { "StatusSummary", string.Join(", ", statusSummary) },
                         });
 
                     _logger.LogWarning(
                         "The ingestion of blob {ContainerName}{BlobName} did not succeed. The statuses were: {StatusSummary}",
-                        blob.GetContainerName(),
-                        blob.GetBlobName(),
+                        blob.ContainerName,
+                        blob.BlobName,
                         statusSummary);
 
                     blob.State = KustoBlobIngestionState.Failed;
@@ -184,8 +184,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
                     _logger.LogInformation(
                         "The ingestion of blob {ContainerName}{BlobName} is complete.",
-                        blob.GetContainerName(),
-                        blob.GetBlobName());
+                        blob.ContainerName,
+                        blob.BlobName);
                     await _storageService.DeleteBlobAsync(blob);
                 }
             }
@@ -199,8 +199,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
             var statusTable = new TableClient(tableUrl);
             _logger.LogInformation(
                 "Checking ingestion status of blob {ContainerName}/{BlobName} in status table {StatusTable}.",
-                blob.GetContainerName(),
-                blob.GetBlobName(),
+                blob.ContainerName,
+                blob.BlobName,
                 tableUrl.GetLeftPart(UriPartial.Path));
 
             var partitionKey = blob.SourceId.ToString();

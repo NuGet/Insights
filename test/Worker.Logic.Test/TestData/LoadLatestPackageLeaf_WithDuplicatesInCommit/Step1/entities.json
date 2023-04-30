@@ -1,5 +1,7 @@
 [
   {
+    "LowerId": "bridgearduinoserialtomqttsplitcsv",
+    "LowerVersion": "1.0.0.25",
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/bridgearduinoserialtomqttsplitcsv.1.0.0.25.json",
     "LeafType": "PackageDetails",
     "CommitId": "9c4b76be-7efd-4be0-86a0-3e6854f7b127",
@@ -15,6 +17,8 @@
     "ETag": null
   },
   {
+    "LowerId": "swiftprotocol",
+    "LowerVersion": "1.0.1-alpha1",
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/swiftprotocol.1.0.1-alpha1.json",
     "LeafType": "PackageDetails",
     "CommitId": "9c4b76be-7efd-4be0-86a0-3e6854f7b127",
@@ -30,6 +34,8 @@
     "ETag": null
   },
   {
+    "LowerId": "syncfusion.themes.office2016colorful.wpf46",
+    "LowerVersion": "15.4.0.17",
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office2016colorful.wpf46.15.4.0.17.json",
     "LeafType": "PackageDetails",
     "CommitId": "9c4b76be-7efd-4be0-86a0-3e6854f7b127",
@@ -45,6 +51,8 @@
     "ETag": null
   },
   {
+    "LowerId": "syncfusion.themes.office2016colorful.wpf46",
+    "LowerVersion": "15.4.0.20",
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office2016colorful.wpf46.15.4.0.20.json",
     "LeafType": "PackageDetails",
     "CommitId": "9c4b76be-7efd-4be0-86a0-3e6854f7b127",
@@ -60,6 +68,8 @@
     "ETag": null
   },
   {
+    "LowerId": "syncfusion.themes.office2016colorful.wpf46",
+    "LowerVersion": "16.1.0.24",
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office2016colorful.wpf46.16.1.0.24.json",
     "LeafType": "PackageDetails",
     "CommitId": "9c4b76be-7efd-4be0-86a0-3e6854f7b127",
@@ -75,6 +85,8 @@
     "ETag": null
   },
   {
+    "LowerId": "syncfusion.themes.office2016darkgray.wpf46",
+    "LowerVersion": "15.4.0.17",
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office2016darkgray.wpf46.15.4.0.17.json",
     "LeafType": "PackageDetails",
     "CommitId": "9c4b76be-7efd-4be0-86a0-3e6854f7b127",
@@ -90,6 +102,8 @@
     "ETag": null
   },
   {
+    "LowerId": "syncfusion.themes.office2016darkgray.wpf46",
+    "LowerVersion": "15.4.0.20",
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office2016darkgray.wpf46.15.4.0.20.json",
     "LeafType": "PackageDetails",
     "CommitId": "9c4b76be-7efd-4be0-86a0-3e6854f7b127",
@@ -105,6 +119,8 @@
     "ETag": null
   },
   {
+    "LowerId": "syncfusion.themes.office2016darkgray.wpf46",
+    "LowerVersion": "16.1.0.24",
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office2016darkgray.wpf46.16.1.0.24.json",
     "LeafType": "PackageDetails",
     "CommitId": "9c4b76be-7efd-4be0-86a0-3e6854f7b127",
@@ -120,6 +136,8 @@
     "ETag": null
   },
   {
+    "LowerId": "syncfusion.themes.office2016white.wpf46",
+    "LowerVersion": "15.4.0.17",
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office2016white.wpf46.15.4.0.17.json",
     "LeafType": "PackageDetails",
     "CommitId": "9c4b76be-7efd-4be0-86a0-3e6854f7b127",
@@ -135,6 +153,8 @@
     "ETag": null
   },
   {
+    "LowerId": "syncfusion.themes.office2016white.wpf46",
+    "LowerVersion": "15.4.0.20",
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office2016white.wpf46.15.4.0.20.json",
     "LeafType": "PackageDetails",
     "CommitId": "9c4b76be-7efd-4be0-86a0-3e6854f7b127",
@@ -150,6 +170,8 @@
     "ETag": null
   },
   {
+    "LowerId": "syncfusion.themes.office2016white.wpf46",
+    "LowerVersion": "16.1.0.24",
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office2016white.wpf46.16.1.0.24.json",
     "LeafType": "PackageDetails",
     "CommitId": "9c4b76be-7efd-4be0-86a0-3e6854f7b127",
@@ -165,6 +187,8 @@
     "ETag": null
   },
   {
+    "LowerId": "syncfusion.themes.office365.wpf46",
+    "LowerVersion": "15.4.0.17",
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office365.wpf46.15.4.0.17.json",
     "LeafType": "PackageDetails",
     "CommitId": "9c4b76be-7efd-4be0-86a0-3e6854f7b127",
@@ -180,6 +204,8 @@
     "ETag": null
   },
   {
+    "LowerId": "syncfusion.themes.office365.wpf46",
+    "LowerVersion": "15.4.0.20",
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office365.wpf46.15.4.0.20.json",
     "LeafType": "PackageDetails",
     "CommitId": "9c4b76be-7efd-4be0-86a0-3e6854f7b127",
@@ -195,6 +221,8 @@
     "ETag": null
   },
   {
+    "LowerId": "syncfusion.themes.office365.wpf46",
+    "LowerVersion": "16.1.0.24",
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.office365.wpf46.16.1.0.24.json",
     "LeafType": "PackageDetails",
     "CommitId": "9c4b76be-7efd-4be0-86a0-3e6854f7b127",
@@ -210,6 +238,8 @@
     "ETag": null
   },
   {
+    "LowerId": "syncfusion.themes.saffron.wpf46",
+    "LowerVersion": "15.4.0.17",
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.saffron.wpf46.15.4.0.17.json",
     "LeafType": "PackageDetails",
     "CommitId": "9c4b76be-7efd-4be0-86a0-3e6854f7b127",
@@ -225,6 +255,8 @@
     "ETag": null
   },
   {
+    "LowerId": "syncfusion.themes.saffron.wpf46",
+    "LowerVersion": "15.4.0.20",
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.saffron.wpf46.15.4.0.20.json",
     "LeafType": "PackageDetails",
     "CommitId": "9c4b76be-7efd-4be0-86a0-3e6854f7b127",
@@ -240,6 +272,8 @@
     "ETag": null
   },
   {
+    "LowerId": "syncfusion.themes.saffron.wpf46",
+    "LowerVersion": "16.1.0.24",
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.saffron.wpf46.16.1.0.24.json",
     "LeafType": "PackageDetails",
     "CommitId": "9c4b76be-7efd-4be0-86a0-3e6854f7b127",
@@ -255,6 +289,8 @@
     "ETag": null
   },
   {
+    "LowerId": "syncfusion.themes.visualstudio2013.wpf46",
+    "LowerVersion": "15.4.0.17",
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.visualstudio2013.wpf46.15.4.0.17.json",
     "LeafType": "PackageDetails",
     "CommitId": "9c4b76be-7efd-4be0-86a0-3e6854f7b127",
@@ -270,6 +306,8 @@
     "ETag": null
   },
   {
+    "LowerId": "syncfusion.themes.visualstudio2013.wpf46",
+    "LowerVersion": "15.4.0.20",
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.visualstudio2013.wpf46.15.4.0.20.json",
     "LeafType": "PackageDetails",
     "CommitId": "9c4b76be-7efd-4be0-86a0-3e6854f7b127",
@@ -285,6 +323,8 @@
     "ETag": null
   },
   {
+    "LowerId": "syncfusion.themes.visualstudio2013.wpf46",
+    "LowerVersion": "16.1.0.24",
     "Url": "https://api.nuget.org/v3/catalog0/data/2018.03.23.08.55.20/syncfusion.themes.visualstudio2013.wpf46.16.1.0.24.json",
     "LeafType": "PackageDetails",
     "CommitId": "9c4b76be-7efd-4be0-86a0-3e6854f7b127",

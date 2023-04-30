@@ -47,7 +47,7 @@ namespace NuGet.Insights.Worker
                 Assert.Equal(cursor.Value, entity.Value);
                 Assert.Equal(cursor.PartitionKey, entity.PartitionKey);
                 Assert.Equal(cursor.RowKey, entity.RowKey);
-                Assert.Equal(CursorName, entity.GetName());
+                Assert.Equal(CursorName, entity.Name);
                 Assert.Equal(cursor.ETag, entity.ETag);
             }
 

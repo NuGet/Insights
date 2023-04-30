@@ -25,7 +25,7 @@ namespace NuGet.Insights.Worker.Workflow
             Assert.NotNull(run);
             var runs = await WorkflowStorageService.GetRunsAsync();
             var actualRun = Assert.Single(runs);
-            Assert.Equal(run.GetRunId(), actualRun.GetRunId());
+            Assert.Equal(run.RunId, actualRun.RunId);
         }
 
         [Fact]

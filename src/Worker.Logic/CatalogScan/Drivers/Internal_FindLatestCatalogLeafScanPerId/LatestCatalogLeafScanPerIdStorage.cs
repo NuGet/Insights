@@ -25,7 +25,7 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId
 
         public string GetPartitionKey(ICatalogLeafItem item)
         {
-            return CatalogLeafScan.GetPartitionKey(_indexScan.GetScanId(), GetPageId(item.PackageId));
+            return CatalogLeafScan.GetPartitionKey(_indexScan.ScanId, GetPageId(item.PackageId));
         }
 
         public string GetRowKey(ICatalogLeafItem item)
@@ -35,7 +35,7 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId
 
         public Task<CatalogLeafScanPerId> MapAsync(ICatalogLeafItem item)
         {
-            return Task.FromResult(new CatalogLeafScanPerId(_indexScan.StorageSuffix, _indexScan.GetScanId(), GetPageId(item.PackageId), LeafId)
+            return Task.FromResult(new CatalogLeafScanPerId(_indexScan.StorageSuffix, _indexScan.ScanId, GetPageId(item.PackageId), LeafId)
             {
                 DriverType = _indexScan.DriverType,
                 DriverParameters = _indexScan.DriverParameters,

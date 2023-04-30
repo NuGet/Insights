@@ -197,7 +197,7 @@ namespace NuGet.Insights.Worker
                     var driver = driverFactory.Create(driverType);
                     var descendingId = StorageUtility.GenerateDescendingId();
                     var catalogIndexScan = new CatalogIndexScan(
-                        CatalogScanCursorService.GetCursorName(driverType),
+                        driverType,
                         descendingId.ToString(),
                         descendingId.Unique);
                     await driver.InitializeAsync(catalogIndexScan);

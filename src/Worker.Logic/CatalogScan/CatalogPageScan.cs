@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.Serialization;
 using Azure;
 using Azure.Data.Tables;
 
@@ -21,15 +22,11 @@ namespace NuGet.Insights.Worker
             Created = DateTimeOffset.UtcNow;
         }
 
-        public string GetScanId()
-        {
-            return PartitionKey;
-        }
+        [IgnoreDataMember]
+        public string ScanId => PartitionKey;
 
-        public string GetPageId()
-        {
-            return RowKey;
-        }
+        [IgnoreDataMember]
+        public string PageId => RowKey;
 
         public string StorageSuffix { get; set; }
         public DateTimeOffset Created { get; set; }

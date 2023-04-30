@@ -208,7 +208,7 @@ namespace NuGet.Insights.Worker
             Assert.NotNull(run);
             await ProcessQueueAsync(async () =>
             {
-                run = await WorkflowStorageService.GetRunAsync(run.GetRunId());
+                run = await WorkflowStorageService.GetRunAsync(run.RunId);
 
                 if (!run.State.IsTerminal())
                 {
@@ -229,7 +229,7 @@ namespace NuGet.Insights.Worker
             Assert.NotNull(ingestion);
             await ProcessQueueAsync(async () =>
             {
-                ingestion = await KustoIngestionStorageService.GetIngestionAsync(ingestion.GetIngestionId());
+                ingestion = await KustoIngestionStorageService.GetIngestionAsync(ingestion.IngestionId);
 
                 if (ingestion.State != KustoIngestionState.Complete && ingestion.State != KustoIngestionState.FailedValidation)
                 {
@@ -248,7 +248,7 @@ namespace NuGet.Insights.Worker
             Assert.NotNull(indexScan);
             await ProcessQueueAsync(async () =>
             {
-                indexScan = await CatalogScanStorageService.GetIndexScanAsync(indexScan.GetCursorName(), indexScan.GetScanId());
+                indexScan = await CatalogScanStorageService.GetIndexScanAsync(indexScan.DriverType, indexScan.ScanId);
 
                 if (!indexScan.State.IsTerminal())
                 {

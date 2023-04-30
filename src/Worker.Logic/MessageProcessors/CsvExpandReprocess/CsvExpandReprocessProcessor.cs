@@ -40,7 +40,7 @@ namespace NuGet.Insights.Worker
                 return;
             }
 
-            var indexScan = await _catalogScanStorageService.GetIndexScanAsync(message.CursorName, message.ScanId);
+            var indexScan = await _catalogScanStorageService.GetIndexScanAsync(message.DriverType, message.ScanId);
             if (indexScan == null)
             {
                 _logger.LogTransientWarning("No matching index scan was found.");
@@ -60,7 +60,7 @@ namespace NuGet.Insights.Worker
             }
 
             var reprocessLeaves = items
-                .Select(x => new CatalogLeafScan(indexScan.StorageSuffix, indexScan.GetScanId(), GetPageId(x.LeafItem.PackageId), GetLeafId(x.LeafItem.PackageVersion))
+                .Select(x => new CatalogLeafScan(indexScan.StorageSuffix, indexScan.ScanId, GetPageId(x.LeafItem.PackageId), GetLeafId(x.LeafItem.PackageVersion))
                 {
                     DriverType = indexScan.DriverType,
                     DriverParameters = indexScan.DriverParameters,

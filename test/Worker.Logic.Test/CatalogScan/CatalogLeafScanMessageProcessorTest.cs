@@ -204,7 +204,7 @@ namespace NuGet.Insights.Worker
                 {
                     batchCount++;
                     MockBatchDriver.Verify(
-                        x => x.ProcessLeavesAsync(It.Is<IReadOnlyList<CatalogLeafScan>>(y => y.Select(z => z.GetLeafId()).SequenceEqual(batch.Select(z => z.GetLeafId())))),
+                        x => x.ProcessLeavesAsync(It.Is<IReadOnlyList<CatalogLeafScan>>(y => y.Select(z => z.LeafId).SequenceEqual(batch.Select(z => z.LeafId)))),
                         Times.Once);
                 }
 
@@ -253,7 +253,7 @@ namespace NuGet.Insights.Worker
                 var messages = MakeMessages(scans);
 
                 MockNonBatchDriver
-                    .Setup(x => x.ProcessLeafAsync(It.Is<CatalogLeafScan>(l => l.GetLeafId() == scans[0].GetLeafId())))
+                    .Setup(x => x.ProcessLeafAsync(It.Is<CatalogLeafScan>(l => l.LeafId == scans[0].LeafId)))
                     .ReturnsAsync(DriverResult.TryAgainLater());
 
                 // Act
@@ -279,7 +279,7 @@ namespace NuGet.Insights.Worker
                 var messages = MakeMessages(scans);
 
                 MockNonBatchDriver
-                    .Setup(x => x.ProcessLeafAsync(It.Is<CatalogLeafScan>(l => l.GetLeafId() == scans[0].GetLeafId())))
+                    .Setup(x => x.ProcessLeafAsync(It.Is<CatalogLeafScan>(l => l.LeafId == scans[0].LeafId)))
                     .ThrowsAsync(new InvalidOperationException("Oops, this scan failed for some reason."));
 
                 // Act
@@ -360,7 +360,7 @@ namespace NuGet.Insights.Worker
             {
                 foreach (var scan in scans)
                 {
-                    MockNonBatchDriver.Verify(x => x.ProcessLeafAsync(It.Is<CatalogLeafScan>(l => l.GetLeafId() == scan.GetLeafId())), Times.Once);
+                    MockNonBatchDriver.Verify(x => x.ProcessLeafAsync(It.Is<CatalogLeafScan>(l => l.LeafId == scan.LeafId)), Times.Once);
                 }
 
                 MockNonBatchDriver.Verify(x => x.ProcessLeafAsync(It.IsAny<CatalogLeafScan>()), Times.Exactly(scans.Count));
@@ -412,12 +412,12 @@ namespace NuGet.Insights.Worker
             Assert.Empty(MockMessageEnqueuer.Invocations);
             Assert.Empty(result.Failed);
             (var actualNotBefore, var tryAgainLater) = Assert.Single(result.TryAgainLater);
-            Assert.Equal(scan.GetLeafId(), Assert.Single(tryAgainLater).LeafId);
+            Assert.Equal(scan.LeafId, Assert.Single(tryAgainLater).LeafId);
             Assert.Equal(expectedNotBefore, actualNotBefore);
             Assert.Equal(1, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixA, ScanId));
             Assert.Equal(0, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixB, ScanId));
             var remaining = Assert.Single(await CatalogScanStorageService.GetLeafScansAsync(StorageSuffixA, ScanId, PageId));
-            Assert.Equal(scan.GetLeafId(), remaining.GetLeafId());
+            Assert.Equal(scan.LeafId, remaining.LeafId);
             Assert.Equal(0, remaining.AttemptCount);
             Assert.True(remaining.NextAttempt.Value < DateTimeOffset.UtcNow);
         }
@@ -425,12 +425,12 @@ namespace NuGet.Insights.Worker
         private async Task AssertFailureAsync(BatchMessageProcessorResult<CatalogLeafScanMessage> result, CatalogLeafScan scan)
         {
             Assert.Empty(MockMessageEnqueuer.Invocations);
-            Assert.Equal(scan.GetLeafId(), Assert.Single(result.Failed).LeafId);
+            Assert.Equal(scan.LeafId, Assert.Single(result.Failed).LeafId);
             Assert.Empty(result.TryAgainLater);
             Assert.Equal(1, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixA, ScanId));
             Assert.Equal(0, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixB, ScanId));
             var remaining = Assert.Single(await CatalogScanStorageService.GetLeafScansAsync(StorageSuffixA, ScanId, PageId));
-            Assert.Equal(scan.GetLeafId(), remaining.GetLeafId());
+            Assert.Equal(scan.LeafId, remaining.LeafId);
             Assert.Equal(1, remaining.AttemptCount);
             Assert.True(remaining.NextAttempt.Value > DateTimeOffset.UtcNow);
         }
@@ -464,12 +464,12 @@ namespace NuGet.Insights.Worker
             Assert.Empty(MockMessageEnqueuer.Invocations);
             Assert.Empty(result.Failed);
             (var actualNotBefore, var tryAgainLater) = Assert.Single(result.TryAgainLater);
-            Assert.Equal(scan.GetLeafId(), Assert.Single(tryAgainLater).LeafId);
+            Assert.Equal(scan.LeafId, Assert.Single(tryAgainLater).LeafId);
             Assert.Equal(TimeSpan.FromMinutes(5), actualNotBefore);
             Assert.Equal(1, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixA, ScanId));
             Assert.Equal(0, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixB, ScanId));
             var remaining = Assert.Single(await CatalogScanStorageService.GetLeafScansAsync(StorageSuffixA, ScanId, PageId));
-            Assert.Equal(scan.GetLeafId(), remaining.GetLeafId());
+            Assert.Equal(scan.LeafId, remaining.LeafId);
             Assert.Equal(0, remaining.AttemptCount);
             Assert.Equal(scan.NextAttempt, remaining.NextAttempt);
         }
@@ -491,7 +491,7 @@ namespace NuGet.Insights.Worker
                 StorageSuffix = x.StorageSuffix,
                 ScanId = x.ScanId,
                 PageId = x.PageId,
-                LeafId = x.GetLeafId(),
+                LeafId = x.LeafId,
             }).ToList();
         }
 

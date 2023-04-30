@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
@@ -20,16 +20,16 @@ namespace NuGet.Insights.Worker
                 await Target.InitializeAsync();
                 var scans = Enumerable
                     .Range(0, 10)
-                    .Select(x => new CatalogIndexScan(CursorName, StorageUtility.GenerateDescendingId().ToString(), StorageSuffix)
+                    .Select(x => new CatalogIndexScan(DriverType, StorageUtility.GenerateDescendingId().ToString(), StorageSuffix)
                     {
                         State = CatalogIndexScanState.Complete,
                     })
-                    .OrderBy(x => x.GetScanId())
+                    .OrderBy(x => x.ScanId)
                     .ToList();
                 await Task.WhenAll(scans.Select(x => Target.InsertAsync(x)));
-                var currentScanId = scans.Skip(3).First().GetScanId();
+                var currentScanId = scans.Skip(3).First().ScanId;
 
-                await Target.DeleteOldIndexScansAsync(CursorName, currentScanId);
+                await Target.DeleteOldIndexScansAsync(DriverType, currentScanId);
 
                 var remainingScans = await (await ServiceClientFactory.GetTableServiceClientAsync())
                     .GetTableClient(Options.Value.CatalogIndexScanTableName)
@@ -46,16 +46,16 @@ namespace NuGet.Insights.Worker
                 await Target.InitializeAsync();
                 var scans = Enumerable
                     .Range(0, 3)
-                    .Select(x => new CatalogIndexScan(CursorName, StorageUtility.GenerateDescendingId().ToString(), StorageSuffix)
+                    .Select(x => new CatalogIndexScan(DriverType, StorageUtility.GenerateDescendingId().ToString(), StorageSuffix)
                     {
                         State = CatalogIndexScanState.Created,
                     })
-                    .OrderBy(x => x.GetScanId())
+                    .OrderBy(x => x.ScanId)
                     .ToList();
                 await Task.WhenAll(scans.Select(x => Target.InsertAsync(x)));
-                var currentScanId = scans.First().GetScanId();
+                var currentScanId = scans.First().ScanId;
 
-                await Target.DeleteOldIndexScansAsync(CursorName, currentScanId);
+                await Target.DeleteOldIndexScansAsync(DriverType, currentScanId);
 
                 var remainingScans = await (await ServiceClientFactory.GetTableServiceClientAsync())
                     .GetTableClient(Options.Value.CatalogIndexScanTableName)
@@ -71,12 +71,12 @@ namespace NuGet.Insights.Worker
 
         public CatalogScanStorageServiceIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
-            CursorName = "foo";
+            DriverType = CatalogScanDriverType.PackageAssetToCsv;
             StorageSuffix = "bar";
         }
 
         public CatalogScanStorageService Target => CatalogScanStorageService;
-        public string CursorName { get; }
+        public CatalogScanDriverType DriverType { get; }
         public string StorageSuffix { get; }
     }
 }

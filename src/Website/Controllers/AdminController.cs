@@ -209,7 +209,7 @@ namespace NuGet.Insights.Website.Controllers
                 var aborted = await _catalogScanService.AbortAsync(driverType);
                 if (aborted is not null)
                 {
-                    return Redirect(true, $"Catalog scan <b>{aborted.GetScanId()}</b> has been aborted.", fragment);
+                    return Redirect(true, $"Catalog scan <b>{aborted.ScanId}</b> has been aborted.", fragment);
                 }
                 else
                 {
@@ -252,7 +252,7 @@ namespace NuGet.Insights.Website.Controllers
             switch (result.Type)
             {
                 case CatalogScanServiceResultType.AlreadyRunning:
-                    return (false, $"Scan <b>{result.Scan.GetScanId()}</b> is already running.");
+                    return (false, $"Scan <b>{result.Scan.ScanId}</b> is already running.");
                 case CatalogScanServiceResultType.BlockedByDependency:
                     return (false, $"The scan can't use that max because it's beyond the <b>{result.DependencyName}</b> cursor.");
                 case CatalogScanServiceResultType.FullyCaughtUpWithDependency:
@@ -314,7 +314,7 @@ namespace NuGet.Insights.Website.Controllers
 
         private static string GetNewStartedMessage(CatalogScanServiceResult result)
         {
-            return $"Catalog scan <b>{result.Scan.GetScanId()}</b> has been started.";
+            return $"Catalog scan <b>{result.Scan.ScanId}</b> has been started.";
         }
 
         private static string GetFragment(QueueType source)

@@ -46,25 +46,25 @@ namespace NuGet.Insights.Worker
 
         public async Task ProcessAsync(CatalogIndexScanMessage message, long dequeueCount)
         {
-            var scan = await _storageService.GetIndexScanAsync(message.CursorName, message.ScanId);
+            var scan = await _storageService.GetIndexScanAsync(message.DriverType, message.ScanId);
             if (scan == null)
             {
                 if (message.AttemptCount < 10)
                 {
-                    _logger.LogTransientWarning("After {AttemptCount} attempts, the catalog index scan '{ScanId}' with cursor '{CursorName}' should have already been created. Trying again.",
+                    _logger.LogTransientWarning("After {AttemptCount} attempts, the '{DriverType}' catalog index scan '{ScanId}' should have already been created. Trying again.",
                         message.AttemptCount,
-                        message.ScanId,
-                        message.CursorName);
+                        message.DriverType,
+                        message.ScanId);
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
                     return;
                 }
                 else
                 {
-                    _logger.LogError("After {AttemptCount} attempts, the catalog index scan '{ScanId}' with cursor '{CursorName}' should have already been created. Giving up.",
+                    _logger.LogError("After {AttemptCount} attempts, the '{DriverType}' catalog index scan '{ScanId}' should have already been created. Giving up.",
                         message.AttemptCount,
-                        message.ScanId,
-                        message.CursorName);
+                        message.DriverType,
+                        message.ScanId);
                     return;
                 }
             }
@@ -87,11 +87,11 @@ namespace NuGet.Insights.Worker
             }
 
             // Created with null result: determine the index scan result, i.e. the mode and initialize the child tables
-            if (scan.State == CatalogIndexScanState.Initialized && !scan.GetResult().HasValue)
+            if (scan.State == CatalogIndexScanState.Initialized && !scan.Result.HasValue)
             {
-                scan.SetResult(await driver.ProcessIndexAsync(scan));
+                scan.Result = await driver.ProcessIndexAsync(scan);
 
-                switch (scan.GetResult().Value)
+                switch (scan.Result.Value)
                 {
                     case CatalogIndexScanResult.ExpandAllLeaves:
                         await _storageService.InitializePageScanTableAsync(scan.StorageSuffix);
@@ -105,13 +105,13 @@ namespace NuGet.Insights.Worker
                     case CatalogIndexScanResult.Processed:
                         break;
                     default:
-                        throw new NotSupportedException($"Catalog index scan result '{scan.GetResult()}' is not supported.");
+                        throw new NotSupportedException($"Catalog index scan result '{scan.Result}' is not supported.");
                 }
 
                 await _storageService.ReplaceAsync(scan);
             }
 
-            switch (scan.GetResult().Value)
+            switch (scan.Result.Value)
             {
                 case CatalogIndexScanResult.ExpandAllLeaves:
                     await ExpandAllLeavesAsync(message, scan, driver);
@@ -129,7 +129,7 @@ namespace NuGet.Insights.Worker
                     await CompleteAsync(scan);
                     break;
                 default:
-                    throw new NotSupportedException($"Catalog index scan result '{scan.GetResult()}' is not supported.");
+                    throw new NotSupportedException($"Catalog index scan result '{scan.Result}' is not supported.");
             }
         }
 
@@ -182,7 +182,7 @@ namespace NuGet.Insights.Worker
         private async Task ExpandLatestLeavesAsync(CatalogIndexScanMessage message, CatalogIndexScan scan, ICatalogScanDriver driver, bool perId)
         {
             var findLatestLeafScanId = _storageService.GenerateFindLatestScanId(scan);
-            var taskStateKey = new TaskStateKey(scan.StorageSuffix, $"{scan.GetScanId()}-{TableScanDriverType.EnqueueCatalogLeafScans}", "start");
+            var taskStateKey = new TaskStateKey(scan.StorageSuffix, $"{scan.ScanId}-{TableScanDriverType.EnqueueCatalogLeafScans}", "start");
 
             await HandleInitializedStateAsync(scan, nextState: CatalogIndexScanState.FindingLatest);
 
@@ -235,7 +235,9 @@ namespace NuGet.Insights.Worker
             if (scan.State == CatalogIndexScanState.Expanding)
             {
                 // Since the find latest leaves catalog scan is complete, delete the record.
-                var findLatestLeavesScan = await _storageService.GetIndexScanAsync(cursorName: string.Empty, findLatestLeafScanId);
+                var findLatestLeavesScan = await _storageService.GetIndexScanAsync(
+                    perId ? CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId : CatalogScanDriverType.Internal_FindLatestCatalogLeafScan,
+                    findLatestLeafScanId);
                 if (findLatestLeavesScan != null)
                 {
                     await _storageService.DeleteAsync(findLatestLeavesScan);
@@ -260,7 +262,7 @@ namespace NuGet.Insights.Worker
 
         private async Task CustomExpandAsync(CatalogIndexScanMessage message, CatalogIndexScan scan, ICatalogScanDriver driver)
         {
-            var taskStateKey = new TaskStateKey(scan.StorageSuffix, $"{scan.GetScanId()}-{TableScanDriverType.EnqueueCatalogLeafScans}", "start");
+            var taskStateKey = new TaskStateKey(scan.StorageSuffix, $"{scan.ScanId}-{TableScanDriverType.EnqueueCatalogLeafScans}", "start");
 
             await HandleInitializedStateAsync(scan, nextState: CatalogIndexScanState.StartingExpand);
 
@@ -300,7 +302,7 @@ namespace NuGet.Insights.Worker
 
         private async Task<bool> ArePageScansCompleteAsync(CatalogIndexScan scan)
         {
-            var countLowerBound = await _storageService.GetPageScanCountLowerBoundAsync(scan.StorageSuffix, scan.GetScanId());
+            var countLowerBound = await _storageService.GetPageScanCountLowerBoundAsync(scan.StorageSuffix, scan.ScanId);
             if (countLowerBound > 0)
             {
                 _logger.LogInformation("There are at least {Count} page scans pending.", countLowerBound);
@@ -328,7 +330,7 @@ namespace NuGet.Insights.Worker
         {
             var countLowerBound = await _storageService.GetLeafScanCountLowerBoundAsync(
                 scan.StorageSuffix,
-                scan.GetScanId());
+                scan.ScanId);
             if (countLowerBound > 0)
             {
                 _logger.LogInformation("There are at least {Count} leaf scans pending.", countLowerBound);
@@ -448,9 +450,9 @@ namespace NuGet.Insights.Worker
                 }
 
                 // Update the cursor, now that the work is done.
-                if (scan.GetCursorName() != CatalogScanService.NoCursor)
+                if (scan.CursorName != CatalogScanService.NoCursor)
                 {
-                    var cursor = await _cursorStorageService.GetOrCreateAsync(scan.GetCursorName());
+                    var cursor = await _cursorStorageService.GetOrCreateAsync(scan.CursorName);
                     if (cursor.Value <= scan.Max.Value)
                     {
                         cursor.Value = scan.Max.Value;
@@ -465,7 +467,7 @@ namespace NuGet.Insights.Worker
                 }
 
                 // Delete old scans
-                await _storageService.DeleteOldIndexScansAsync(scan.GetCursorName(), scan.GetScanId());
+                await _storageService.DeleteOldIndexScansAsync(scan.DriverType, scan.ScanId);
 
                 _logger.LogInformation("The catalog scan is complete.");
                 await CompleteAsync(scan);
@@ -509,7 +511,7 @@ namespace NuGet.Insights.Worker
         {
             return new CatalogPageScan(
                 scan.StorageSuffix,
-                scan.GetScanId(),
+                scan.ScanId,
                 "P" + rank.ToString(CultureInfo.InvariantCulture).PadLeft(10, '0'))
             {
                 DriverType = scan.DriverType,
@@ -524,7 +526,7 @@ namespace NuGet.Insights.Worker
 
         private async Task ExpandAsync(CatalogIndexScan scan, List<CatalogPageScan> allPageScans)
         {
-            var createdPageScans = await _storageService.GetPageScansAsync(scan.StorageSuffix, scan.GetScanId());
+            var createdPageScans = await _storageService.GetPageScansAsync(scan.StorageSuffix, scan.ScanId);
             var allUrls = allPageScans.Select(x => x.Url).ToHashSet();
             var createdUrls = createdPageScans.Select(x => x.Url).ToHashSet();
             var uncreatedUrls = allUrls.Except(createdUrls).ToHashSet();
@@ -548,8 +550,8 @@ namespace NuGet.Insights.Worker
                     .Select(x => new CatalogPageScanMessage
                     {
                         StorageSuffix = x.StorageSuffix,
-                        ScanId = x.GetScanId(),
-                        PageId = x.GetPageId(),
+                        ScanId = x.ScanId,
+                        PageId = x.PageId,
                     })
                     .ToList());
         }

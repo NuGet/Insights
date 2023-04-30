@@ -123,7 +123,7 @@
             @foreach (var scan in Model.LatestScans)
             {
                 <tr>
-                    <td>@scan.GetScanId()</td>
+                    <td>@scan.ScanId</td>
                     <td>@scan.State</td>
                     <td>@scan.Min?.ToZulu()</td>
                     <td>@scan.Max?.ToZulu()</td>

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.Serialization;
 using Azure;
 using NuGet.Versioning;
 
@@ -28,6 +29,12 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
             PageUrl = pageUrl;
         }
 
+        [IgnoreDataMember]
+        public string LowerId => PartitionKey;
+
+        [IgnoreDataMember]
+        public string LowerVersion => RowKey;
+
         public string Url { get; set; }
         public CatalogLeafType LeafType { get; set; }
         public string CommitId { get; set; }
@@ -45,16 +52,6 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
 
         CatalogLeafType ICatalogLeafItem.Type => LeafType;
         DateTimeOffset? IPackageIdentityCommit.CommitTimestamp => CommitTimestamp;
-
-        public string GetLowerId()
-        {
-            return PartitionKey;
-        }
-
-        public string GetLowerVersion()
-        {
-            return RowKey;
-        }
 
         public static string GetPartitionKey(string id)
         {

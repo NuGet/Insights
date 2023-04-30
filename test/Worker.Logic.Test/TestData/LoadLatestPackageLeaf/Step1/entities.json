@@ -1,5 +1,7 @@
 [
   {
+    "LowerId": "aiwins.blogging.admin.application.contracts",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.blogging.admin.application.contracts.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
@@ -15,6 +17,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.clientsimulation.web",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.clientsimulation.web.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
@@ -30,6 +34,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.docs.admin.httpapi.client",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.docs.admin.httpapi.client.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
@@ -45,6 +51,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.docs.domain.shared",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.docs.domain.shared.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
@@ -60,6 +68,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.rocket.featuremanagement.application.contracts",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.rocket.featuremanagement.application.contracts.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
@@ -75,6 +85,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.rocket.identity.application.contracts",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.rocket.identity.application.contracts.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
@@ -90,6 +102,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.rocket.identityserver.application",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.rocket.identityserver.application.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
@@ -105,6 +119,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.rocket.identityserver.domain",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.rocket.identityserver.domain.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
@@ -120,6 +136,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.rocket.permissionmanagement.domain.shared",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.rocket.permissionmanagement.domain.shared.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
@@ -135,6 +153,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.rocket.permissionmanagement.entityframeworkcore",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.rocket.permissionmanagement.entityframeworkcore.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
@@ -150,6 +170,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.rocket.permissionmanagement.httpapi.client",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.rocket.permissionmanagement.httpapi.client.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
@@ -165,6 +187,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.rocket.settingmanagement.domain.shared",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.rocket.settingmanagement.domain.shared.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
@@ -180,6 +204,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.rocket.storage.database.domain",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.rocket.storage.database.domain.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
@@ -195,6 +221,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.rocket.storage.database.mongodb",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.rocket.storage.database.mongodb.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
@@ -210,6 +238,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.rocket.tenantmanagement.application",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.rocket.tenantmanagement.application.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
@@ -225,6 +255,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.rocket.tenantmanagement.application.contracts",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.rocket.tenantmanagement.application.contracts.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
@@ -240,6 +272,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.rocket.tenantmanagement.domain",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.rocket.tenantmanagement.domain.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
@@ -255,6 +289,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.rocket.tenantmanagement.entityframeworkcore",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.rocket.tenantmanagement.entityframeworkcore.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
@@ -270,6 +306,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.rocket.tenantmanagement.httpapi.client",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.rocket.tenantmanagement.httpapi.client.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
@@ -285,6 +323,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.rocket.tenantmanagement.web",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.rocket.tenantmanagement.web.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
@@ -300,6 +340,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.rocket.users.abstractions",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.rocket.users.abstractions.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
@@ -315,6 +357,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.rocket.users.domain",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.rocket.users.domain.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
@@ -330,6 +374,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.rocket.users.domain.shared",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.rocket.users.domain.shared.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
@@ -345,6 +391,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.rocket.users.mongodb",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.06.57/aiwins.rocket.users.mongodb.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "b596b286-a7fb-49eb-aad7-b5f59b6aad8d",
@@ -360,6 +408,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.rocket.virtualfileexplorer.web",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.rocket.virtualfileexplorer.web.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
@@ -375,6 +425,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.saas.domain",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.saas.domain.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
@@ -390,6 +442,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.saas.host.httpapi",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.saas.host.httpapi.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
@@ -405,6 +459,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.saas.tenant.application",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.saas.tenant.application.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
@@ -420,6 +476,8 @@
     "ETag": null
   },
   {
+    "LowerId": "aiwins.saas.tenant.httpapi.client",
+    "LowerVersion": "4.9.9",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/aiwins.saas.tenant.httpapi.client.4.9.9.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",
@@ -435,6 +493,8 @@
     "ETag": null
   },
   {
+    "LowerId": "cloudmersive.apiclient.netcore.documentanddataconvert",
+    "LowerVersion": "2.1.8",
     "Url": "https://api.nuget.org/v3/catalog0/data/2020.12.27.05.07.21/cloudmersive.apiclient.netcore.documentanddataconvert.2.1.8.json",
     "LeafType": "PackageDetails",
     "CommitId": "8f4404c1-19e4-4524-8763-9cde324f6208",

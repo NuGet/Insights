@@ -29,7 +29,7 @@ namespace NuGet.Insights.Worker
 
             // Assert
             Assert.Equal(CatalogScanServiceResultType.AlreadyRunning, result.Type);
-            Assert.Equal(first.Scan.GetScanId(), result.Scan.GetScanId());
+            Assert.Equal(first.Scan.ScanId, result.Scan.ScanId);
         }
 
         [Fact]
@@ -45,7 +45,7 @@ namespace NuGet.Insights.Worker
             await ProcessQueueAsync(
                 async _ =>
                 {
-                    scan = await CatalogScanStorageService.GetIndexScanAsync(scan.GetCursorName(), scan.GetScanId());
+                    scan = await CatalogScanStorageService.GetIndexScanAsync(DriverType, scan.ScanId);
                     var anyFindLatest = (await CatalogScanStorageService.GetIndexScansAsync())
                         .Any(x => x.DriverType == CatalogScanDriverType.Internal_FindLatestCatalogLeafScan);
                     isComplete = scan.State == CatalogIndexScanState.FindingLatest && anyFindLatest;
@@ -58,15 +58,15 @@ namespace NuGet.Insights.Worker
             var aborted = await CatalogScanService.AbortAsync(DriverType);
 
             // Assert
-            Assert.Equal(scan.GetScanId(), aborted.GetScanId());
+            Assert.Equal(scan.ScanId, aborted.ScanId);
 
             Assert.Equal(2, scansBefore.Count);
-            Assert.Contains(scan.GetScanId(), scansBefore.Select(x => x.GetScanId()));
+            Assert.Contains(scan.ScanId, scansBefore.Select(x => x.ScanId));
             Assert.Contains(CatalogScanDriverType.Internal_FindLatestCatalogLeafScan, scansBefore.Select(x => x.DriverType));
 
             var scansAfter = await CatalogScanStorageService.GetIndexScansAsync();
             Assert.Single(scansAfter);
-            Assert.Contains(scan.GetScanId(), scansAfter.Select(x => x.GetScanId()));
+            Assert.Contains(scan.ScanId, scansAfter.Select(x => x.ScanId));
             Assert.DoesNotContain(CatalogScanDriverType.Internal_FindLatestCatalogLeafScan, scansAfter.Select(x => x.DriverType));
         }
 
@@ -83,7 +83,7 @@ namespace NuGet.Insights.Worker
             await ProcessQueueAsync(
                 async _ =>
                 {
-                    scan = await CatalogScanStorageService.GetIndexScanAsync(scan.GetCursorName(), scan.GetScanId());
+                    scan = await CatalogScanStorageService.GetIndexScanAsync(DriverType, scan.ScanId);
                     isComplete = scan.State == CatalogIndexScanState.Working;
                     return !isComplete;
                 },
@@ -94,7 +94,7 @@ namespace NuGet.Insights.Worker
             var aborted = await CatalogScanService.AbortAsync(DriverType);
 
             // Assert
-            Assert.Equal(scan.GetScanId(), aborted.GetScanId());
+            Assert.Equal(scan.ScanId, aborted.ScanId);
 
             Assert.Contains(Options.Value.CursorTableName, tablesBefore);
             Assert.Contains(Options.Value.CatalogIndexScanTableName, tablesBefore);
@@ -127,7 +127,7 @@ namespace NuGet.Insights.Worker
             var aborted = await CatalogScanService.AbortAsync(DriverType);
 
             // Assert
-            Assert.Equal(scan.GetScanId(), aborted.GetScanId());
+            Assert.Equal(scan.ScanId, aborted.ScanId);
 
             Assert.Contains(Options.Value.CursorTableName, tablesBefore);
             Assert.Contains(Options.Value.CatalogIndexScanTableName, tablesBefore);

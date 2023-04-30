@@ -84,7 +84,7 @@ namespace NuGet.Insights.Worker.Workflow
                 IsIncompleteAsync: self => Task.FromResult(false),
                 TransitionAsync: async (self, run) =>
                 {
-                    await self._storageService.DeleteOldRunsAsync(run.GetRunId());
+                    await self._storageService.DeleteOldRunsAsync(run.RunId);
                     self._logger.LogInformation("The workflow is complete.");
                     run.Completed = DateTimeOffset.UtcNow;
                     return WorkflowRunState.Complete;
@@ -138,7 +138,7 @@ namespace NuGet.Insights.Worker.Workflow
                 return;
             }
 
-            _logger.LogInformation("Processing workflow run {RunId}.", run.GetRunId());
+            _logger.LogInformation("Processing workflow run {RunId}.", run.RunId);
 
             while (!run.State.IsTerminal())
             {

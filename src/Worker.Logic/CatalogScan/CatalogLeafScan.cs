@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.Serialization;
 using Azure;
 
 namespace NuGet.Insights.Worker
@@ -22,10 +23,8 @@ namespace NuGet.Insights.Worker
             Created = DateTimeOffset.UtcNow;
         }
 
-        public string GetLeafId()
-        {
-            return RowKey;
-        }
+        [IgnoreDataMember]
+        public string LeafId => RowKey;
 
         public string StorageSuffix { get; set; }
         public DateTimeOffset Created { get; set; }

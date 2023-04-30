@@ -51,7 +51,7 @@ namespace NuGet.Insights.Worker.Workflow
         {
             _logger.LogInformation(
                 "Updating workflow run {WorkflowRunId} with state {State}.",
-                run.GetRunId(),
+                run.RunId,
                 run.State);
 
             var table = await GetTableAsync();

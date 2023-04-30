@@ -106,7 +106,7 @@ namespace NuGet.Insights.Worker
         {
             foreach (var storage in _storage)
             {
-                await storage.StartAggregateAsync(indexScan.GetScanId(), indexScan.StorageSuffix);
+                await storage.StartAggregateAsync(indexScan.ScanId, indexScan.StorageSuffix);
             }
         }
 
@@ -114,7 +114,7 @@ namespace NuGet.Insights.Worker
         {
             foreach (var storage in _storage)
             {
-                if (!await storage.IsAggregateCompleteAsync(indexScan.GetScanId(), indexScan.StorageSuffix))
+                if (!await storage.IsAggregateCompleteAsync(indexScan.ScanId, indexScan.StorageSuffix))
                 {
                     return false;
                 }

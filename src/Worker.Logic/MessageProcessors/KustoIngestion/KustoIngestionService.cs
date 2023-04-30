@@ -69,12 +69,12 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 {
                     new KustoIngestionMessage
                     {
-                        IngestionId = ingestion.GetIngestionId(),
+                        IngestionId = ingestion.IngestionId,
                     },
                 });
 
                 await _storageService.AddIngestionAsync(ingestion);
-                _logger.LogInformation("Started Kusto ingestion {IngestionId}.", ingestion.GetIngestionId());
+                _logger.LogInformation("Started Kusto ingestion {IngestionId}.", ingestion.IngestionId);
                 return ingestion;
             }
         }
