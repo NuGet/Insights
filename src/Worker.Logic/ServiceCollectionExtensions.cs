@@ -8,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using Azure.Data.Tables;
 using Kusto.Cloud.Platform.Utils;
 using Kusto.Data;
+using Kusto.Data.Common;
 using Kusto.Data.Net.Client;
 using Kusto.Ingest;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,6 +43,11 @@ namespace NuGet.Insights.Worker
 
         public static KustoConnectionStringBuilder GetKustoConnectionStringBuilder(NuGetInsightsWorkerSettings settings)
         {
+            if (string.IsNullOrEmpty(settings.KustoConnectionString))
+            {
+                return new KustoConnectionStringBuilder("https://localhost:8080");
+            }
+
             var builder = new KustoConnectionStringBuilder(settings.KustoConnectionString);
 
             if (settings.UserManagedIdentityClientId != null && settings.KustoUseUserManagedIdentity)
@@ -144,12 +150,22 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddSingleton(x =>
             {
                 var connectionStringBuilder = x.GetRequiredService<KustoConnectionStringBuilder>();
-                return KustoClientFactory.CreateCslAdminProvider(connectionStringBuilder);
+                var adminProvider = KustoClientFactory.CreateCslAdminProvider(connectionStringBuilder);
+                if (adminProvider is null)
+                {
+                    throw new InvalidOperationException($"The {nameof(ICslAdminProvider)} instance must not be null, even if there is no Kusto configuration.");
+                }
+                return adminProvider;
             });
             serviceCollection.AddSingleton(x =>
             {
                 var connectionStringBuilder = x.GetRequiredService<KustoConnectionStringBuilder>();
-                return KustoClientFactory.CreateCslQueryProvider(connectionStringBuilder);
+                var queryProvider = KustoClientFactory.CreateCslQueryProvider(connectionStringBuilder);
+                if (queryProvider is null)
+                {
+                    throw new InvalidOperationException($"The {nameof(ICslQueryProvider)} instance must not be null, even if there is no Kusto configuration.");
+                }
+                return queryProvider;
             });
             serviceCollection.AddSingleton(x =>
             {
@@ -162,7 +178,12 @@ namespace NuGet.Insights.Worker
                 }
                 connectionStringBuilder.DataSource = prefix + "ingest-" + connectionStringBuilder.DataSource.Substring(prefix.Length);
 
-                return KustoIngestFactory.CreateQueuedIngestClient(connectionStringBuilder);
+                var ingestClient = KustoIngestFactory.CreateQueuedIngestClient(connectionStringBuilder);
+                if (ingestClient is null)
+                {
+                    throw new InvalidOperationException($"The {nameof(IKustoQueuedIngestClient)} instance must not be null, even if there is no Kusto configuration.");
+                }
+                return ingestClient;
             });
 
             serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<CatalogLeafScan>, LatestCatalogLeafScanStorageFactory>();

@@ -11,8 +11,8 @@ namespace NuGet.Insights.Worker
     public class Functions
     {
         private const string ConnectionName = "QueueTriggerConnection";
-        private static bool _isMetricsFunctionInitialized = false;
-        private static bool _isTimerFunctionInitialized = false;
+        private static bool IsMetricsFunctionInitialized = false;
+        private static bool IsTimerFunctionInitialized = false;
         private readonly MetricsTimer _metricsTimer;
         private readonly TempStreamLeaseScope _tempStreamLeaseScope;
         private readonly TimerExecutionService _timerExecutionService;
@@ -34,10 +34,10 @@ namespace NuGet.Insights.Worker
         public async Task MetricsFunction(
             [TimerTrigger("*/10 * * * * *")] TimerInfo timerInfo)
         {
-            if (!_isMetricsFunctionInitialized)
+            if (!IsMetricsFunctionInitialized)
             {
                 await _metricsTimer.InitializeAsync();
-                _isMetricsFunctionInitialized = true;
+                IsMetricsFunctionInitialized = true;
             }
             await _metricsTimer.ExecuteAsync();
         }
@@ -47,10 +47,10 @@ namespace NuGet.Insights.Worker
             [TimerTrigger("0 * * * * *")] TimerInfo timerInfo)
         {
             await using var scopeOwnership = _tempStreamLeaseScope.TakeOwnership();
-            if (!_isTimerFunctionInitialized)
+            if (!IsTimerFunctionInitialized)
             {
                 await _timerExecutionService.InitializeAsync();
-                _isTimerFunctionInitialized = true;
+                IsTimerFunctionInitialized = true;
             }
             await _timerExecutionService.ExecuteAsync();
         }
