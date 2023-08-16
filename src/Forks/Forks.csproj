@@ -7,7 +7,7 @@
     <LangVersion>10.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NuGet.Commands" Version="6.5.0" />
+    <PackageReference Include="NuGet.Commands" Version="6.5.1" />
   </ItemGroup>
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
