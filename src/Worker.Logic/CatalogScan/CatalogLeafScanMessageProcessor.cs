@@ -18,17 +18,20 @@ namespace NuGet.Insights.Worker
         private readonly ICatalogScanDriverFactory _driverFactory;
         private readonly CatalogScanStorageService _storageService;
         private readonly IMessageEnqueuer _messageEnqueuer;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<CatalogLeafScanMessageProcessor> _logger;
 
         public CatalogLeafScanMessageProcessor(
             ICatalogScanDriverFactory driverFactory,
             CatalogScanStorageService storageService,
             IMessageEnqueuer messageEnqueuer,
+            ITelemetryClient telemetryClient,
             ILogger<CatalogLeafScanMessageProcessor> logger)
         {
             _driverFactory = driverFactory;
             _storageService = storageService;
             _messageEnqueuer = messageEnqueuer;
+            _telemetryClient = telemetryClient;
             _logger = logger;
         }
 
@@ -175,6 +178,14 @@ namespace NuGet.Insights.Worker
                 }
 
                 toProcess.Add((message, scan));
+
+                _telemetryClient.TrackMetric($"{nameof(CatalogLeafScanMessageProcessor)}.ToProcess.{nameof(CatalogLeafScan)}", 1, new Dictionary<string, string>
+                {
+                    { nameof(CatalogLeafScanMessage.StorageSuffix), scan.StorageSuffix },
+                    { nameof(CatalogLeafScanMessage.ScanId), scan.ScanId },
+                    { nameof(CatalogLeafScanMessage.PageId), scan.PageId },
+                    { nameof(CatalogLeafScanMessage.LeafId), scan.LeafId },
+                });
             }
         }
 

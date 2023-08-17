@@ -152,6 +152,17 @@ namespace NuGet.Insights.Worker
                     .ToList();
 
                 await SubmitBatchesAsync(group.Key.StorageSuffix, table, uncreatedLeafScans, (b, i) => b.AddEntity(i));
+
+                foreach (var scan in uncreatedLeafScans)
+                {
+                    _telemetryClient.TrackMetric($"{nameof(CatalogScanStorageService)}.{nameof(InsertMissingAsync)}.{nameof(CatalogLeafScan)}", 1, new Dictionary<string, string>
+                    {
+                        { nameof(CatalogLeafScanMessage.StorageSuffix), scan.StorageSuffix },
+                        { nameof(CatalogLeafScanMessage.ScanId), scan.ScanId },
+                        { nameof(CatalogLeafScanMessage.PageId), scan.PageId },
+                        { nameof(CatalogLeafScanMessage.LeafId), scan.LeafId },
+                    });
+                }
             }
         }
 
@@ -296,6 +307,17 @@ namespace NuGet.Insights.Worker
             try
             {
                 await SubmitLeafBatchesAsync(leafScansList, (b, i) => b.DeleteEntity(i.PartitionKey, i.RowKey, i.ETag));
+
+                foreach (var leafScan in leafScansList)
+                {
+                    _telemetryClient.TrackMetric($"{nameof(CatalogScanStorageService)}.{nameof(DeleteAsync)}.Batch.{nameof(CatalogLeafScan)}", 1, new Dictionary<string, string>
+                    {
+                        { nameof(CatalogLeafScanMessage.StorageSuffix), leafScan.StorageSuffix },
+                        { nameof(CatalogLeafScanMessage.ScanId), leafScan.ScanId },
+                        { nameof(CatalogLeafScanMessage.PageId), leafScan.PageId },
+                        { nameof(CatalogLeafScanMessage.LeafId), leafScan.LeafId },
+                    });
+                }
             }
             catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
             {
@@ -365,6 +387,14 @@ namespace NuGet.Insights.Worker
                     leafScan.PartitionKey,
                     leafScan.RowKey);
             }
+
+            _telemetryClient.TrackMetric($"{nameof(CatalogScanStorageService)}.{nameof(DeleteAsync)}.Single.{nameof(CatalogLeafScan)}", 1, new Dictionary<string, string>
+            {
+                { nameof(CatalogLeafScanMessage.StorageSuffix), leafScan.StorageSuffix },
+                { nameof(CatalogLeafScanMessage.ScanId), leafScan.ScanId },
+                { nameof(CatalogLeafScanMessage.PageId), leafScan.PageId },
+                { nameof(CatalogLeafScanMessage.LeafId), leafScan.LeafId },
+            });
         }
 
         private async Task<TableClient> GetIndexScanTableAsync()
