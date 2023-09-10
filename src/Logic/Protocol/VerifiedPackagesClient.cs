@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -28,15 +27,14 @@ namespace NuGet.Insights
 
         public async Task<AsOfData<VerifiedPackage>> GetAsync()
         {
-            if (_options.Value.VerifiedPackagesV1Url == null)
-            {
-                throw new InvalidOperationException("The verifiedPackages.json URL is required.");
-            }
-
-            return await _storageClient.DownloadAsync(_options.Value.VerifiedPackagesV1Url, DownloadAsync);
+            return await _storageClient.DownloadNewestAsync(
+                _options.Value.VerifiedPackagesV1Urls,
+                _options.Value.VerifiedPackagesV1AgeLimit,
+                "verifiedPackages.json",
+                DeserializeAsync);
         }
 
-        private IAsyncEnumerable<VerifiedPackage> DownloadAsync(Stream stream)
+        private IAsyncEnumerable<VerifiedPackage> DeserializeAsync(Stream stream)
         {
             return JsonSerializer
                 .DeserializeAsyncEnumerable<string>(stream)

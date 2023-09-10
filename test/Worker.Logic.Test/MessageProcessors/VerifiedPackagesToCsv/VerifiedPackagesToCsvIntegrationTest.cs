@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -260,7 +261,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
 
         private void ConfigureAndSetLastModified()
         {
-            ConfigureSettings = x => x.VerifiedPackagesV1Url = $"http://localhost/{TestData}/{VerifiedPackagesToCsvDir}/verifiedPackages.json";
+            ConfigureSettings = x => x.VerifiedPackagesV1Urls = new List<string> { $"http://localhost/{TestData}/{VerifiedPackagesToCsvDir}/verifiedPackages.json" };
 
             // Set the Last-Modified date
             var fileA = new FileInfo(Path.Combine(TestData, VerifiedPackagesToCsvDir, Step1, "verifiedPackages.json"))

@@ -24,7 +24,7 @@ namespace NuGet.Insights
         {
             // Arrange
             var url = $"http://localhost/{TestData}/{OwnersToCsvDir}/{Step1}/owners.v2.json";
-            ConfigureSettings = x => x.OwnersV2Url = url;
+            ConfigureSettings = x => x.OwnersV2Urls = new List<string> { url };
             HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
             {
                 if (req.RequestUri.AbsolutePath.EndsWith("/owners.v2.json"))

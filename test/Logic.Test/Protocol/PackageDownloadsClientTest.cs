@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -12,12 +13,128 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
+using Xunit.Abstractions;
 using static NuGet.Insights.BaseLogicIntegrationTest;
 
 namespace NuGet.Insights
 {
     public class PackageDownloadsClientTest
     {
+        [Fact]
+        public async Task RejectsOldData()
+        {
+            var lastModified = DateTimeOffset.Parse("2022-01-23T16:15:00Z");
+            Settings.DownloadsV1AgeLimit = TimeSpan.FromHours(1);
+
+            HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
+            {
+                await Task.Yield();
+
+                if (Settings.DownloadsV1Urls.Contains(r.RequestUri.AbsoluteUri))
+                {
+                    var json = JsonSerializer.Serialize(Array.Empty<object[]>());
+
+                    return new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Headers = { ETag = new EntityTagHeaderValue("\"my-etag\"", isWeak: true) },
+                        Content = new StringContent(json)
+                        {
+                            Headers = { LastModified = lastModified },
+                        },
+                    };
+                }
+
+                return new HttpResponseMessage(HttpStatusCode.NotFound) { Content = new StringContent(string.Empty) };
+            };
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => Target.GetAsync());
+            Assert.Equal(
+                $"The last modified downloads.v1.json URL is {Settings.DownloadsV1Urls.Single()} " +
+                $"(modified on {lastModified:O}) " +
+                $"but this is older than the age limit of 01:00:00. " +
+                $"Check for stale data or bad configuration.", ex.Message);
+        }
+
+        [Fact]
+        public async Task ReturnsNewestData()
+        {
+            Settings.DownloadsV1Urls = new List<string>
+            {
+                "https://api.example.com/a/downloads.v1.json",
+                "https://api.example.com/b/downloads.v1.json",
+                "https://api.example.com/c/downloads.v1.json",
+            };
+
+            HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
+            {
+                await Task.Yield();
+
+                if (r.RequestUri.AbsoluteUri == "https://api.example.com/a/downloads.v1.json")
+                {
+                    var json = JsonSerializer.Serialize(new object[][]
+                    {
+                        new object[] { "Newtonsoft.Json", new object[] { "10.0.1", 100 } },
+                    });
+
+                    return new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Headers = { ETag = new EntityTagHeaderValue("\"my-etag\"", isWeak: true) },
+                        Content = new StringContent(json)
+                        {
+                            Headers = { LastModified = DateTimeOffset.Parse("2022-01-23T16:15:00Z") },
+                        },
+                    };
+                }
+
+                if (r.RequestUri.AbsoluteUri == "https://api.example.com/b/downloads.v1.json")
+                {
+                    var json = JsonSerializer.Serialize(new object[][]
+                    {
+                        new object[] { "Newtonsoft.Json", new object[] { "10.0.1", 101 } },
+                    });
+
+                    return new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Headers = { ETag = new EntityTagHeaderValue("\"my-etag\"", isWeak: true) },
+                        Content = new StringContent(json)
+                        {
+                            Headers = { LastModified = DateTimeOffset.Parse("2022-01-25T16:15:00Z") },
+                        },
+                    };
+                }
+
+                if (r.RequestUri.AbsoluteUri == "https://api.example.com/c/downloads.v1.json")
+                {
+                    var json = JsonSerializer.Serialize(new object[][]
+                    {
+                        new object[] { "Newtonsoft.Json", new object[] { "10.0.1", 102 } },
+                    });
+
+                    return new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Headers = { ETag = new EntityTagHeaderValue("\"my-etag\"", isWeak: true) },
+                        Content = new StringContent(json)
+                        {
+                            Headers = { LastModified = DateTimeOffset.Parse("2022-01-24T16:15:00Z") },
+                        },
+                    };
+                }
+
+                return new HttpResponseMessage(HttpStatusCode.NotFound) { Content = new StringContent(string.Empty) };
+            };
+
+            await using var data = await Target.GetAsync();
+
+            var entries = await data.Entries.ToArrayAsync();
+            Assert.Equal("https://api.example.com/b/downloads.v1.json", data.Url);
+            Assert.Equal(
+                new[]
+                {
+                    new PackageDownloads("Newtonsoft.Json", "10.0.1", 101),
+                },
+                entries);
+        }
+
         [Fact]
         public async Task HandlesIdWithNoVersion()
         {
@@ -26,7 +143,7 @@ namespace NuGet.Insights
             {
                 await Task.Yield();
 
-                if (r.RequestUri.AbsoluteUri == Settings.DownloadsV1Url)
+                if (Settings.DownloadsV1Urls.Contains(r.RequestUri.AbsoluteUri))
                 {
                     var json = JsonSerializer.Serialize(new object[][]
                     {
@@ -68,7 +185,7 @@ namespace NuGet.Insights
             {
                 await Task.Yield();
 
-                if (r.RequestUri.AbsoluteUri == Settings.DownloadsV1Url)
+                if (Settings.DownloadsV1Urls.Contains(r.RequestUri.AbsoluteUri))
                 {
                     var json = JsonSerializer.Serialize(Array.Empty<object>());
 
@@ -98,7 +215,7 @@ namespace NuGet.Insights
             {
                 await Task.Yield();
 
-                if (r.RequestUri.AbsoluteUri == Settings.DownloadsV1Url)
+                if (Settings.DownloadsV1Urls.Contains(r.RequestUri.AbsoluteUri))
                 {
                     var json = JsonSerializer.Serialize(new object[][]
                     {
@@ -144,7 +261,7 @@ namespace NuGet.Insights
 
             Assert.Equal("W/\"my-etag\"", data.ETag);
             Assert.Equal(lastModified, data.AsOfTimestamp);
-            Assert.Equal(Settings.DownloadsV1Url, data.Url);
+            Assert.Equal(Settings.DownloadsV1Urls.Single(), data.Url);
             var entries = await data.Entries.ToArrayAsync();
             Assert.Equal(
                 new[]
@@ -161,18 +278,20 @@ namespace NuGet.Insights
             Assert.Equal(1, Throttle.CurrentCount);
         }
 
-        public PackageDownloadsClientTest()
+        public PackageDownloadsClientTest(ITestOutputHelper output)
         {
             Settings = new NuGetInsightsSettings
             {
-                DownloadsV1Url = "https://api.example.com/downloads.v1.json",
+                DownloadsV1Urls = new List<string> { "https://api.example.com/downloads.v1.json" },
+                DownloadsV1AgeLimit = TimeSpan.MaxValue,
             };
             Options = new Mock<IOptions<NuGetInsightsSettings>>();
             Options.Setup(x => x.Value).Returns(() => Settings);
             HttpMessageHandlerFactory = new TestHttpMessageHandlerFactory();
             HttpClient = new HttpClient(HttpMessageHandlerFactory.Create());
             Throttle = new SemaphoreSlimThrottle(new SemaphoreSlim(1));
-            StorageClient = new BlobStorageJsonClient(HttpClient, Throttle);
+            TelemetryClient = output.GetTelemetryClient();
+            StorageClient = new BlobStorageJsonClient(HttpClient, Throttle, TelemetryClient);
             Target = new PackageDownloadsClient(StorageClient, Options.Object);
         }
 
@@ -181,6 +300,7 @@ namespace NuGet.Insights
         public TestHttpMessageHandlerFactory HttpMessageHandlerFactory { get; }
         public HttpClient HttpClient { get; }
         public SemaphoreSlimThrottle Throttle { get; }
+        public ITelemetryClient TelemetryClient { get; }
         public BlobStorageJsonClient StorageClient { get; }
         public PackageDownloadsClient Target { get; }
     }

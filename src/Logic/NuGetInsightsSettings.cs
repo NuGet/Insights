@@ -19,9 +19,12 @@ namespace NuGet.Insights
             V2BaseUrl = "https://www.nuget.org/api/v2";
             V3ServiceIndex = "https://api.nuget.org/v3/index.json";
             FlatContainerBaseUrlOverride = null;
-            DownloadsV1Url = null;
-            OwnersV2Url = null;
-            VerifiedPackagesV1Url = null;
+            DownloadsV1Urls = new List<string>();
+            DownloadsV1AgeLimit = TimeSpan.FromDays(7);
+            OwnersV2Urls = new List<string>();
+            OwnersV2AgeLimit = TimeSpan.FromDays(1);
+            VerifiedPackagesV1Urls = new List<string>();
+            VerifiedPackagesV1AgeLimit = TimeSpan.FromDays(7);
             LegacyReadmeUrlPattern = null;
             StorageAccountName = null;
             StorageBlobReadSharedAccessSignature = null;
@@ -49,9 +52,12 @@ namespace NuGet.Insights
         public string V2BaseUrl { get; set; }
         public string V3ServiceIndex { get; set; }
         public string FlatContainerBaseUrlOverride { get; set; }
-        public string DownloadsV1Url { get; set; }
-        public string OwnersV2Url { get; set; }
-        public string VerifiedPackagesV1Url { get; set; }
+        public List<string> DownloadsV1Urls { get; set; }
+        public TimeSpan DownloadsV1AgeLimit { get; set; }
+        public List<string> OwnersV2Urls { get; set; }
+        public TimeSpan OwnersV2AgeLimit { get; set; }
+        public List<string> VerifiedPackagesV1Urls { get; set; }
+        public TimeSpan VerifiedPackagesV1AgeLimit { get; set; }
         public string LegacyReadmeUrlPattern { get; set; }
 
         public string StorageAccountName { get; set; }

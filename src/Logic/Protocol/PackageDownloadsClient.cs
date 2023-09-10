@@ -31,12 +31,11 @@ namespace NuGet.Insights
 
         public async Task<AsOfData<PackageDownloads>> GetAsync()
         {
-            if (_options.Value.DownloadsV1Url == null)
-            {
-                throw new InvalidOperationException("The downloads.v1.json URL is required.");
-            }
-
-            return await _storageClient.DownloadAsync(_options.Value.DownloadsV1Url, DeserializeAsync);
+            return await _storageClient.DownloadNewestAsync(
+                _options.Value.DownloadsV1Urls,
+                _options.Value.DownloadsV1AgeLimit,
+                "downloads.v1.json",
+                DeserializeAsync);
         }
 
         public static async IAsyncEnumerable<PackageDownloads> DeserializeAsync(Stream stream)

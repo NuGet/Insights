@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -336,7 +337,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
 
         private void ConfigureAndSetLastModified(string dirName = DownloadsToCsvDir)
         {
-            ConfigureSettings = x => x.DownloadsV1Url = $"http://localhost/{TestData}/{dirName}/downloads.v1.json";
+            ConfigureSettings = x => x.DownloadsV1Urls = new List<string> { $"http://localhost/{TestData}/{dirName}/downloads.v1.json" };
 
             // Set the Last-Modified date
             var fileA = new FileInfo(Path.Combine(TestData, dirName, Step1, "downloads.v1.json"))

@@ -122,6 +122,10 @@ namespace NuGet.Insights
             x.StorageConnectionString = TestSettings.StorageConnectionString;
             x.StorageBlobReadSharedAccessSignature = TestSettings.StorageBlobReadSharedAccessSignature;
 
+            x.DownloadsV1AgeLimit = TimeSpan.MaxValue;
+            x.OwnersV2AgeLimit = TimeSpan.MaxValue;
+            x.VerifiedPackagesV1AgeLimit = TimeSpan.MaxValue;
+
             x.LeaseContainerName = $"{StoragePrefix}1l1";
             x.PackageArchiveTableName = $"{StoragePrefix}1pa1";
             x.SymbolPackageArchiveTableName = $"{StoragePrefix}1sa1";

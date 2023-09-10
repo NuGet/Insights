@@ -28,7 +28,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
         public string BlobName => "verified_packages";
         public string ContainerName => _options.Value.VerifiedPackageContainerName;
         public TimeSpan Frequency => _options.Value.VerifiedPackagesToCsvFrequency;
-        public bool HasRequiredConfiguration => _options.Value.VerifiedPackagesV1Url != null;
+        public bool HasRequiredConfiguration => _options.Value.VerifiedPackagesV1Urls is not null && _options.Value.VerifiedPackagesV1Urls.Count > 0;
         public bool AutoStart => _options.Value.AutoStartVerifiedPackagesToCsv;
         public Type RecordType => typeof(VerifiedPackageRecord);
 

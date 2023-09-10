@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -27,12 +26,11 @@ namespace NuGet.Insights
 
         public async Task<AsOfData<PackageOwner>> GetAsync()
         {
-            if (_options.Value.OwnersV2Url == null)
-            {
-                throw new InvalidOperationException("The owners.v2.json URL is required.");
-            }
-
-            return await _storageClient.DownloadAsync(_options.Value.OwnersV2Url, DeserializeAsync);
+            return await _storageClient.DownloadNewestAsync(
+                _options.Value.OwnersV2Urls,
+                _options.Value.OwnersV2AgeLimit,
+                "owners.v2.json",
+                DeserializeAsync);
         }
 
         private async IAsyncEnumerable<PackageOwner> DeserializeAsync(Stream stream)

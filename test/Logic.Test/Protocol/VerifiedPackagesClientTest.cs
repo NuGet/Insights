@@ -24,7 +24,7 @@ namespace NuGet.Insights
         {
             // Arrange
             var url = $"http://localhost/{TestData}/{VerifiedPackagesToCsvDir}/{Step1}/verifiedPackages.json";
-            ConfigureSettings = x => x.VerifiedPackagesV1Url = url;
+            ConfigureSettings = x => x.VerifiedPackagesV1Urls = new List<string> { url };
             HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
             {
                 if (req.RequestUri.AbsolutePath.EndsWith("/verifiedPackages.json"))

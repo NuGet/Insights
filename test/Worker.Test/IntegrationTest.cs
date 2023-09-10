@@ -136,9 +136,9 @@ namespace NuGet.Insights.Worker
             {
                 ConfigureSettings = x =>
                 {
-                    x.DownloadsV1Url = $"http://localhost/{TestData}/DownloadsToCsv/{Step1}/downloads.v1.json";
-                    x.OwnersV2Url = $"http://localhost/{TestData}/OwnersToCsv/{Step1}/owners.v2.json";
-                    x.VerifiedPackagesV1Url = $"http://localhost/{TestData}/VerifiedPackagesToCsv/{Step1}/verifiedPackages.json";
+                    x.DownloadsV1Urls = new List<string> { $"http://localhost/{TestData}/DownloadsToCsv/{Step1}/downloads.v1.json" };
+                    x.OwnersV2Urls = new List<string> { $"http://localhost/{TestData}/OwnersToCsv/{Step1}/owners.v2.json" };
+                    x.VerifiedPackagesV1Urls = new List<string> { $"http://localhost/{TestData}/VerifiedPackagesToCsv/{Step1}/verifiedPackages.json" };
                 };
                 ConfigureWorkerSettings = x =>
                 {
@@ -150,9 +150,9 @@ namespace NuGet.Insights.Worker
                 // Arrange
                 HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
                 {
-                    if (req.RequestUri.AbsoluteUri == Options.Value.DownloadsV1Url
-                     || req.RequestUri.AbsoluteUri == Options.Value.OwnersV2Url
-                     || req.RequestUri.AbsoluteUri == Options.Value.VerifiedPackagesV1Url)
+                    if (Options.Value.DownloadsV1Urls.Contains(req.RequestUri.AbsoluteUri)
+                        || Options.Value.OwnersV2Urls.Contains(req.RequestUri.AbsoluteUri)
+                        || Options.Value.VerifiedPackagesV1Urls.Contains(req.RequestUri.AbsoluteUri))
                     {
                         return await TestDataHttpClient.SendAsync(Clone(req));
                     }
@@ -332,9 +332,9 @@ namespace NuGet.Insights.Worker
                 {
                     x.MaxTempMemoryStreamSize = 0;
                     x.TempDirectories[0].MaxConcurrentWriters = 1;
-                    x.DownloadsV1Url = $"http://localhost/{TestData}/DownloadsToCsv/downloads.v1.json";
-                    x.OwnersV2Url = $"http://localhost/{TestData}/OwnersToCsv/owners.v2.json";
-                    x.VerifiedPackagesV1Url = $"http://localhost/{TestData}/VerifiedPackagesToCsv/verifiedPackages.json";
+                    x.DownloadsV1Urls = new List<string> { $"http://localhost/{TestData}/DownloadsToCsv/downloads.v1.json" };
+                    x.OwnersV2Urls = new List<string> { $"http://localhost/{TestData}/OwnersToCsv/owners.v2.json" };
+                    x.VerifiedPackagesV1Urls = new List<string> { $"http://localhost/{TestData}/VerifiedPackagesToCsv/verifiedPackages.json" };
                 };
                 ConfigureWorkerSettings = x =>
                 {
