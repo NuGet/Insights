@@ -6,10 +6,10 @@
     <UserSecretsId>fc241d56-9e3d-46f4-8c4b-40209befb209</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Humanizer.Core" Version="2.14.1" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
-    <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="2.7.0" />
-    <PackageReference Include="Microsoft.Identity.Web.UI" Version="2.7.0" />
+    <PackageReference Include="Humanizer.Core" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" />
+    <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" />
+    <PackageReference Include="Microsoft.Identity.Web.UI" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Worker.Logic\Worker.Logic.csproj" />
