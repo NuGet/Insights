@@ -15,8 +15,7 @@
       "pattern": "^https://aka\\.ms/opensource/"
     },
     {
-      "@comment": "The SSL certificate is currently expired.",
-      "pattern": "^https://dotnetfoundation\\.org/"
+      "pattern": "^https://azure\\.microsoft\\.com/"
     }
   ]
 }

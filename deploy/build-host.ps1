@@ -70,6 +70,7 @@ Write-Host "Resetting repository level settings"
 
 "<Project></Project>" | Out-File (Join-Path $artifactsDir ".\Directory.Build.props") -Encoding UTF8
 "<Project></Project>" | Out-File (Join-Path $artifactsDir ".\Directory.Build.targets") -Encoding UTF8
+"<Project></Project>" | Out-File (Join-Path $artifactsDir ".\Directory.Packages.props") -Encoding UTF8
 
 Write-Host "Publishing host"
 dotnet publish $hostProjectPath -c Release --output $hostBinDir --runtime $RuntimeIdentifier --self-contained false
