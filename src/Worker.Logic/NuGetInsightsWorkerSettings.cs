@@ -36,6 +36,8 @@ namespace NuGet.Insights.Worker
             WorkflowFrequency = TimeSpan.FromDays(1);
             KustoBlobIngestionTimeout = TimeSpan.FromHours(6);
 
+            LeafLevelTelemetryThreshold = CatalogScanUpdateFrequency * 2;
+
             PackageContentFileExtensions = new List<string>();
             PackageContentMaxSizePerPackage = 1024 * 16;
             PackageContentMaxSizePerFile = 1024 * 16;
@@ -120,6 +122,16 @@ namespace NuGet.Insights.Worker
         public TimeSpan VerifiedPackagesToCsvFrequency { get; set; }
         public TimeSpan WorkflowFrequency { get; set; }
         public TimeSpan KustoBlobIngestionTimeout { get; set; }
+
+        /// <summary>
+        /// If the duration that the catalog scan covers (max cursor minus min cursor) is less than or equal to this
+        /// threshold, telemetry events for each catalog leaf will be emitted at various stages of processing. Note that
+        /// leaf level telemetry can be a lot of data, so this threshold should be relatively low, e.g. a bit longer
+        /// than the normal catalog scan update cadence. The goal of this configuration value is to prevent leaf-level
+        /// telemetry when you are reprocessing the entire catalog. Set this to "00:00:00" if you want to disable this
+        /// kind of telemetry. If you are not sure, set it to twice the value of <see cref="CatalogScanUpdateFrequency"/>.
+        /// </summary>
+        public TimeSpan LeafLevelTelemetryThreshold { get; set; }
 
         /// <summary>
         /// The types of package content to index in <see cref="PackageContentToCsv.PackageContentToCsvDriver"/>. The

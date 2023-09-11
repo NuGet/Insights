@@ -38,6 +38,8 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
             {
                 DriverType = _indexScan.DriverType,
                 DriverParameters = _indexScan.DriverParameters,
+                Min = _indexScan.Min.Value,
+                Max = _indexScan.Max.Value,
                 Url = item.Url,
                 PageUrl = _pageUrl,
                 LeafType = item.Type,

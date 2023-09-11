@@ -155,13 +155,16 @@ namespace NuGet.Insights.Worker
 
                 foreach (var scan in uncreatedLeafScans)
                 {
-                    _telemetryClient.TrackMetric($"{nameof(CatalogScanStorageService)}.{nameof(InsertMissingAsync)}.{nameof(CatalogLeafScan)}", 1, new Dictionary<string, string>
+                    if (scan.Max - scan.Min <= _options.Value.LeafLevelTelemetryThreshold)
                     {
-                        { nameof(CatalogLeafScanMessage.StorageSuffix), scan.StorageSuffix },
-                        { nameof(CatalogLeafScanMessage.ScanId), scan.ScanId },
-                        { nameof(CatalogLeafScanMessage.PageId), scan.PageId },
-                        { nameof(CatalogLeafScanMessage.LeafId), scan.LeafId },
-                    });
+                        _telemetryClient.TrackMetric($"{nameof(CatalogScanStorageService)}.{nameof(InsertMissingAsync)}.{nameof(CatalogLeafScan)}", 1, new Dictionary<string, string>
+                        {
+                            { nameof(CatalogLeafScanMessage.StorageSuffix), scan.StorageSuffix },
+                            { nameof(CatalogLeafScanMessage.ScanId), scan.ScanId },
+                            { nameof(CatalogLeafScanMessage.PageId), scan.PageId },
+                            { nameof(CatalogLeafScanMessage.LeafId), scan.LeafId },
+                        });
+                    }
                 }
             }
         }
@@ -197,7 +200,7 @@ namespace NuGet.Insights.Worker
             {
                 _logger.LogWarning(
                     ex,
-                    "Batch failed to due to HTTP {Status}, with storage suffix '{StorageSuffix}', first partition key '{PartitionKey}', first row key '{RowKey}'.",
+                    "Batch failed due to HTTP {Status}, with storage suffix '{StorageSuffix}', first partition key '{PartitionKey}', first row key '{RowKey}'.",
                     ex.Status,
                     storageSuffix,
                     firstEntity.PartitionKey,
@@ -310,13 +313,16 @@ namespace NuGet.Insights.Worker
 
                 foreach (var leafScan in leafScansList)
                 {
-                    _telemetryClient.TrackMetric($"{nameof(CatalogScanStorageService)}.{nameof(DeleteAsync)}.Batch.{nameof(CatalogLeafScan)}", 1, new Dictionary<string, string>
+                    if (leafScan.Max - leafScan.Min <= _options.Value.LeafLevelTelemetryThreshold)
                     {
-                        { nameof(CatalogLeafScanMessage.StorageSuffix), leafScan.StorageSuffix },
-                        { nameof(CatalogLeafScanMessage.ScanId), leafScan.ScanId },
-                        { nameof(CatalogLeafScanMessage.PageId), leafScan.PageId },
-                        { nameof(CatalogLeafScanMessage.LeafId), leafScan.LeafId },
-                    });
+                        _telemetryClient.TrackMetric($"{nameof(CatalogScanStorageService)}.{nameof(DeleteAsync)}.Batch.{nameof(CatalogLeafScan)}", 1, new Dictionary<string, string>
+                        {
+                            { nameof(CatalogLeafScanMessage.StorageSuffix), leafScan.StorageSuffix },
+                            { nameof(CatalogLeafScanMessage.ScanId), leafScan.ScanId },
+                            { nameof(CatalogLeafScanMessage.PageId), leafScan.PageId },
+                            { nameof(CatalogLeafScanMessage.LeafId), leafScan.LeafId },
+                        });
+                    }
                 }
             }
             catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
@@ -388,13 +394,16 @@ namespace NuGet.Insights.Worker
                     leafScan.RowKey);
             }
 
-            _telemetryClient.TrackMetric($"{nameof(CatalogScanStorageService)}.{nameof(DeleteAsync)}.Single.{nameof(CatalogLeafScan)}", 1, new Dictionary<string, string>
+            if (leafScan.Max - leafScan.Min <= _options.Value.LeafLevelTelemetryThreshold)
             {
-                { nameof(CatalogLeafScanMessage.StorageSuffix), leafScan.StorageSuffix },
-                { nameof(CatalogLeafScanMessage.ScanId), leafScan.ScanId },
-                { nameof(CatalogLeafScanMessage.PageId), leafScan.PageId },
-                { nameof(CatalogLeafScanMessage.LeafId), leafScan.LeafId },
-            });
+                _telemetryClient.TrackMetric($"{nameof(CatalogScanStorageService)}.{nameof(DeleteAsync)}.Single.{nameof(CatalogLeafScan)}", 1, new Dictionary<string, string>
+                {
+                    { nameof(CatalogLeafScanMessage.StorageSuffix), leafScan.StorageSuffix },
+                    { nameof(CatalogLeafScanMessage.ScanId), leafScan.ScanId },
+                    { nameof(CatalogLeafScanMessage.PageId), leafScan.PageId },
+                    { nameof(CatalogLeafScanMessage.LeafId), leafScan.LeafId },
+                });
+            }
         }
 
         private async Task<TableClient> GetIndexScanTableAsync()

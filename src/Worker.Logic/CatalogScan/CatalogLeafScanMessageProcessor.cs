@@ -8,6 +8,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Azure;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace NuGet.Insights.Worker
 {
@@ -19,6 +20,7 @@ namespace NuGet.Insights.Worker
         private readonly CatalogScanStorageService _storageService;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly ITelemetryClient _telemetryClient;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<CatalogLeafScanMessageProcessor> _logger;
 
         public CatalogLeafScanMessageProcessor(
@@ -26,12 +28,14 @@ namespace NuGet.Insights.Worker
             CatalogScanStorageService storageService,
             IMessageEnqueuer messageEnqueuer,
             ITelemetryClient telemetryClient,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<CatalogLeafScanMessageProcessor> logger)
         {
             _driverFactory = driverFactory;
             _storageService = storageService;
             _messageEnqueuer = messageEnqueuer;
             _telemetryClient = telemetryClient;
+            _options = options;
             _logger = logger;
         }
 
@@ -179,13 +183,16 @@ namespace NuGet.Insights.Worker
 
                 toProcess.Add((message, scan));
 
-                _telemetryClient.TrackMetric($"{nameof(CatalogLeafScanMessageProcessor)}.ToProcess.{nameof(CatalogLeafScan)}", 1, new Dictionary<string, string>
+                if (scan.Max - scan.Min <= _options.Value.LeafLevelTelemetryThreshold)
                 {
-                    { nameof(CatalogLeafScanMessage.StorageSuffix), scan.StorageSuffix },
-                    { nameof(CatalogLeafScanMessage.ScanId), scan.ScanId },
-                    { nameof(CatalogLeafScanMessage.PageId), scan.PageId },
-                    { nameof(CatalogLeafScanMessage.LeafId), scan.LeafId },
-                });
+                    _telemetryClient.TrackMetric($"{nameof(CatalogLeafScanMessageProcessor)}.ToProcess.{nameof(CatalogLeafScan)}", 1, new Dictionary<string, string>
+                    {
+                        { nameof(CatalogLeafScanMessage.StorageSuffix), scan.StorageSuffix },
+                        { nameof(CatalogLeafScanMessage.ScanId), scan.ScanId },
+                        { nameof(CatalogLeafScanMessage.PageId), scan.PageId },
+                        { nameof(CatalogLeafScanMessage.LeafId), scan.LeafId },
+                    });
+                }
             }
         }
 

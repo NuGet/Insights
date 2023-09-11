@@ -64,6 +64,8 @@ namespace NuGet.Insights.Worker
                 {
                     DriverType = indexScan.DriverType,
                     DriverParameters = indexScan.DriverParameters,
+                    Min = indexScan.Min.Value,
+                    Max = indexScan.Max.Value,
                     Url = x.LeafItem.Url,
                     PageUrl = x.PageUrl,
                     LeafType = x.LeafItem.Type,

@@ -30,6 +30,8 @@ namespace NuGet.Insights.Worker
         public DateTimeOffset Created { get; set; }
         public CatalogScanDriverType DriverType { get; set; }
         public string DriverParameters { get; set; }
+        public DateTimeOffset Min { get; set; }
+        public DateTimeOffset Max { get; set; }
         public string ScanId { get; set; }
         public string PageId { get; set; }
         public string Url { get; set; }

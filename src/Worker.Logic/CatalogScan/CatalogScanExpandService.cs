@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace NuGet.Insights.Worker
 {
@@ -12,15 +13,18 @@ namespace NuGet.Insights.Worker
     {
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly ITelemetryClient _telemetryClient;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<CatalogScanExpandService> _logger;
 
         public CatalogScanExpandService(
             IMessageEnqueuer messageEnqueuer,
             ITelemetryClient telemetryClient,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<CatalogScanExpandService> logger)
         {
             _messageEnqueuer = messageEnqueuer;
             _telemetryClient = telemetryClient;
+            _options = options;
             _logger = logger;
         }
 
@@ -40,13 +44,16 @@ namespace NuGet.Insights.Worker
 
             foreach (var leafScan in leafScans)
             {
-                _telemetryClient.TrackMetric($"{nameof(CatalogScanExpandService)}.{nameof(EnqueueLeafScansAsync)}.{nameof(CatalogLeafScanMessage)}", 1, new Dictionary<string, string>
+                if (leafScan.Max - leafScan.Min <= _options.Value.LeafLevelTelemetryThreshold)
                 {
-                    { nameof(CatalogLeafScanMessage.StorageSuffix), leafScan.StorageSuffix },
-                    { nameof(CatalogLeafScanMessage.ScanId), leafScan.ScanId },
-                    { nameof(CatalogLeafScanMessage.PageId), leafScan.PageId },
-                    { nameof(CatalogLeafScanMessage.LeafId), leafScan.LeafId },
-                });
+                    _telemetryClient.TrackMetric($"{nameof(CatalogScanExpandService)}.{nameof(EnqueueLeafScansAsync)}.{nameof(CatalogLeafScan)}", 1, new Dictionary<string, string>
+                    {
+                        { nameof(CatalogLeafScanMessage.StorageSuffix), leafScan.StorageSuffix },
+                        { nameof(CatalogLeafScanMessage.ScanId), leafScan.ScanId },
+                        { nameof(CatalogLeafScanMessage.PageId), leafScan.PageId },
+                        { nameof(CatalogLeafScanMessage.LeafId), leafScan.LeafId },
+                    });
+                }
             }
         }
     }
