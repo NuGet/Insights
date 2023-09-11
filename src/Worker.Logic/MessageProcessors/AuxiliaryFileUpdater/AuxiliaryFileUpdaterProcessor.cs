@@ -103,7 +103,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
                     latestRequestConditions);
             }
 
-            return TaskStateProcessResult.Delay;
+            return TaskStateProcessResult.Complete;
         }
 
         private async Task<(long uncompressedLength, ETag etag)> WriteDataAsync(IVersionSet versionSet, T data, BlobClient destBlob)
