@@ -23,6 +23,12 @@ namespace NuGet.Insights
         public const string SHA512Header = "x-ms-meta-SHA512";
 
         /// <summary>
+        /// The minimum value for a timetamp in Azure Table Storage.
+        /// Source: https://learn.microsoft.com/en-us/rest/api/storageservices/Understanding-the-Table-Service-Data-Model#property-types
+        /// </summary>
+        public static readonly DateTimeOffset MinTimestamp = new DateTimeOffset(1601, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+        /// <summary>
         /// See: https://docs.microsoft.com/en-us/azure/data-explorer/lightingest#recommendations
         /// </summary>
         public const string RawSizeBytesMetadata = "rawSizeBytes";
