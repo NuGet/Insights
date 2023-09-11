@@ -1,0 +1,28 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Url,Expression,File,GeneratedUrl,ExpressionParsed,ExpressionLicenses,ExpressionExceptions,ExpressionNonStandardLicenses,ExpressionHasDeprecatedIdentifier,FileSize,FileSHA256,FileContent
+,,blauhaus.deviceservices,blauhaus.deviceservices/1.2.20,Blauhaus.DeviceServices,1.2.20,2023-08-15T13:49:55.9593851Z,2023-08-15T13:46:56.42Z,None,,,,,,,,,,,,
+,,dinet.consolemouseinput,dinet.consolemouseinput/1.0.0,DiNet.ConsoleMouseInput,1.0.0,2023-08-15T13:49:55.9593851Z,2023-08-15T13:45:40.78Z,None,,,,,,,,,,,,
+,,genexus.securityapi.common,genexus.securityapi.common/1.25.0,GeneXus.SecurityApi.Common,1.25.0,2023-08-15T13:49:55.9593851Z,2023-08-15T13:44:46.43Z,None,,,,,,,,,,,,
+,,genexus.securityapi.sftp,genexus.securityapi.sftp/1.25.0,GeneXus.SecurityApi.Sftp,1.25.0,2023-08-15T13:49:55.9593851Z,2023-08-15T13:44:40.777Z,None,,,,,,,,,,,,
+,,netimobiledevice,netimobiledevice/0.7.0,Netimobiledevice,0.7.0,2023-08-15T13:49:55.9593851Z,2023-08-15T13:45:01.047Z,File,https://aka.ms/deprecateLicenseUrl,,LICENSE,https://aka.ms/deprecateLicenseUrl,,,,,,1084,W0pMRNezJKOqL8lBSjQpWpZXjEB2VKdtG2uGhIv7bMQ=,"MIT License
+
+Copyright (c) 2023 artehe
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the ""Software""), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED ""AS IS"", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"
+,,trquery,trquery/0.21.1,trquery,0.21.1,2023-08-15T13:49:55.9593851Z,2023-08-15T13:40:55.507Z,None,,,,,,,,,,,,

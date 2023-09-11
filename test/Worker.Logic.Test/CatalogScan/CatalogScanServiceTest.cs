@@ -344,6 +344,7 @@ namespace NuGet.Insights.Worker
 #endif
                     CatalogScanDriverType.PackageAssemblyToCsv,
                     CatalogScanDriverType.PackageIconToCsv,
+                    CatalogScanDriverType.PackageLicenseToCsv,
                 },
                 results
                     .Where(x => x.Value.Type == CatalogScanServiceResultType.NewStarted)
@@ -607,6 +608,19 @@ namespace NuGet.Insights.Worker
                     SetDependencyCursorAsync = async (self, x) =>
                     {
                         await self.SetCursorAsync(CatalogScanDriverType.LoadPackageReadme, x);
+                    },
+                }
+            },
+
+            {
+                CatalogScanDriverType.PackageLicenseToCsv,
+                new DriverInfo
+                {
+                    DefaultMin = CatalogClient.NuGetOrgMinDeleted,
+                    SetDependencyCursorAsync = (self, x) =>
+                    {
+                        self.FlatContainerCursor = x;
+                        return Task.CompletedTask;
                     },
                 }
             },

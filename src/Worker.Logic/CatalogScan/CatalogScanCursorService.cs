@@ -95,6 +95,10 @@ namespace NuGet.Insights.Worker
                 new[] { CatalogScanDriverType.LoadPackageReadme }
             },
             {
+                CatalogScanDriverType.PackageLicenseToCsv,
+                new[] { FlatContainer }
+            },
+            {
                 CatalogScanDriverType.PackageVersionToCsv,
                 new[] { CatalogScanDriverType.LoadPackageVersion }
             },

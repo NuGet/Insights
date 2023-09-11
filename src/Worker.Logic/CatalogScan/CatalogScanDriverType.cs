@@ -113,9 +113,15 @@ namespace NuGet.Insights.Worker
 
         /// <summary>
         /// Implemented by <see cref="PackageReadmeToCsv.PackageReadmeToCsvDriver"/>. This driver reads all package
-        /// readmes and dumps the content and some metadata  to CSV.
+        /// readmes and dumps the content and some metadata to CSV.
         /// </summary>
         PackageReadmeToCsv,
+
+        /// <summary>
+        /// Implemented by <see cref="PackageLicenseToCsv.PackageLicenseToCsvDriver"/>. This driver reads license
+        /// expressions and license files and dumps the content and some metadata to CSV.
+        /// </summary>
+        PackageLicenseToCsv,
 
         /// <summary>
         /// Implemented by <see cref="PackageVersionToCsv.PackageVersionToCsvDriver"/>. This driver determines the

@@ -33,6 +33,12 @@ namespace NuGet.Insights
         [JsonPropertyName("language")]
         public string Language { get; set; }
 
+        [JsonPropertyName("licenseExpression")]
+        public string LicenseExpression { get; set; }
+
+        [JsonPropertyName("licenseFile")]
+        public string LicenseFile { get; set; }
+
         [JsonPropertyName("licenseUrl")]
         public string LicenseUrl { get; set; }
 

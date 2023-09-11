@@ -30,7 +30,7 @@ This table contains metadata and full content of NuGet package README files. The
 | ResultType             | enum      | Yes                         | Type of record (e.g. Deleted, None, Legacy, Embedded)                  |
 | Size                   | int       | Yes, for Legacy or Embedded | Size in bytes of the README file                                       |
 | LastModified           | timestamp | Yes, for Legacy or Embedded | Last modified header found on the README file                          |
-| SHA256                 | string    | Yes, for Legacy or Embedded | SHA-256 of the README bytes                                            |
+| SHA256                 | string    | Yes, for Legacy or Embedded | Base64 encoded SHA-256 of the README bytes                             |
 | Content                | string    | Yes, for Legacy or Embedded | Full string content of the README                                      |
 
 ## ResultType schema

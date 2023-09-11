@@ -19,6 +19,7 @@ using NuGet.Insights.Worker.PackageCertificateToCsv;
 using NuGet.Insights.Worker.PackageCompatibilityToCsv;
 using NuGet.Insights.Worker.PackageContentToCsv;
 using NuGet.Insights.Worker.PackageIconToCsv;
+using NuGet.Insights.Worker.PackageLicenseToCsv;
 using NuGet.Insights.Worker.PackageManifestToCsv;
 using NuGet.Insights.Worker.PackageReadmeToCsv;
 using NuGet.Insights.Worker.PackageSignatureToCsv;
@@ -57,6 +58,7 @@ namespace NuGet.Insights.Worker
             new SchemaV1<CsvCompactMessage<PackageAssembly>>("cc.fpi"),
             new SchemaV1<CsvCompactMessage<PackageManifestRecord>>("cc.pm2c"),
             new SchemaV1<CsvCompactMessage<PackageReadme>>("cc.pmd2c"),
+            new SchemaV1<CsvCompactMessage<PackageLicense>>("cc.pl2c"),
             new SchemaV1<CsvCompactMessage<PackageSignature>>("cc.fps"),
             new SchemaV1<CsvCompactMessage<PackageVersionRecord>>("cc.pv2c"),
             new SchemaV1<CsvCompactMessage<PackageDeprecationRecord>>("cc.pd2c"),

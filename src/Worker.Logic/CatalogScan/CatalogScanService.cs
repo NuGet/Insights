@@ -99,6 +99,7 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.PackageSignatureToCsv:
                 case CatalogScanDriverType.PackageManifestToCsv:
                 case CatalogScanDriverType.PackageReadmeToCsv:
+                case CatalogScanDriverType.PackageLicenseToCsv:
                 case CatalogScanDriverType.PackageVersionToCsv:
 #if ENABLE_NPE
                 case CatalogScanDriverType.NuGetPackageExplorerToCsv:
@@ -302,6 +303,7 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.PackageSignatureToCsv:
                 case CatalogScanDriverType.PackageManifestToCsv:
                 case CatalogScanDriverType.PackageReadmeToCsv:
+                case CatalogScanDriverType.PackageLicenseToCsv:
                 case CatalogScanDriverType.PackageVersionToCsv:
 #if ENABLE_NPE
                 case CatalogScanDriverType.NuGetPackageExplorerToCsv:

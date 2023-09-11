@@ -138,6 +138,7 @@ namespace NuGet.Insights.Worker
             x.PackageAssemblyContainerName = $"{StoragePrefix}1fpi1";
             x.PackageManifestContainerName = $"{StoragePrefix}1pm2c1";
             x.PackageReadmeContainerName = $"{StoragePrefix}1pmd2c1";
+            x.PackageLicenseContainerName = $"{StoragePrefix}1pl2c1";
             x.PackageSignatureContainerName = $"{StoragePrefix}1fps1";
             x.CatalogLeafItemContainerName = $"{StoragePrefix}1fcli1";
             x.PackageDownloadContainerName = $"{StoragePrefix}1pd1";

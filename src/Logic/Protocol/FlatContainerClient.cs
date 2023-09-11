@@ -130,6 +130,32 @@ namespace NuGet.Insights
             return url;
         }
 
+        public async Task<string> GetPackageLicenseUrlAsync(string id, string version)
+        {
+            var baseUrl = await GetBaseUrlAsync();
+            return GetPackageLicenseUrl(baseUrl, id, version);
+        }
+
+        public string GetPackageLicenseUrl(string baseUrl, string id, string version)
+        {
+            var lowerId = id.ToLowerInvariant();
+            var lowerVersion = NuGetVersion.Parse(version).ToNormalizedString().ToLowerInvariant();
+            var url = $"{baseUrl.TrimEnd('/')}/{lowerId}/{lowerVersion}/license";
+            return url;
+        }
+
+        public async Task<TempStreamResult?> DownloadPackageLicenseToFileAsync(string id, string version, CancellationToken token)
+        {
+            var url = await GetPackageLicenseUrlAsync(id, version);
+            var result = await _fileDownloader.DownloadUrlToFileAsync(url, token);
+            if (result is null)
+            {
+                return null;
+            }
+
+            return result.Value.Body;
+        }
+
         public async Task<bool> HasPackageManifestAsync(string baseUrl, string id, string version)
         {
             var url = GetPackageManifestUrl(baseUrl, id, version);

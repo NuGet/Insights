@@ -60,6 +60,7 @@ namespace NuGet.Insights.Worker
             PackageAssemblyContainerName = "packageassemblies";
             PackageManifestContainerName = "packagemanifests";
             PackageReadmeContainerName = "packagereadmes";
+            PackageLicenseContainerName = "packagelicense";
             PackageSignatureContainerName = "packagesignatures";
             CatalogLeafItemContainerName = "catalogleafitems";
             PackageDownloadContainerName = "packagedownloads";
@@ -160,6 +161,7 @@ namespace NuGet.Insights.Worker
         public string PackageAssemblyContainerName { get; set; }
         public string PackageManifestContainerName { get; set; }
         public string PackageReadmeContainerName { get; set; }
+        public string PackageLicenseContainerName { get; set; }
         public string PackageSignatureContainerName { get; set; }
         public string CatalogLeafItemContainerName { get; set; }
         public string PackageDownloadContainerName { get; set; }

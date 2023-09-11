@@ -31,6 +31,7 @@ using NuGet.Insights.Worker.PackageReadmeToCsv;
 using NuGet.Insights.Worker.LoadSymbolPackageArchive;
 using NuGet.Insights.Worker.SymbolPackageArchiveToCsv;
 using NuGet.Insights.Worker.PackageContentToCsv;
+using NuGet.Insights.Worker.PackageLicenseToCsv;
 
 namespace NuGet.Insights.Worker
 {
@@ -107,6 +108,8 @@ namespace NuGet.Insights.Worker
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageManifestRecord>>();
                 case CatalogScanDriverType.PackageReadmeToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageReadme>>();
+                case CatalogScanDriverType.PackageLicenseToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageLicense>>();
                 case CatalogScanDriverType.PackageVersionToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageVersionRecord>>();
 #if ENABLE_NPE
