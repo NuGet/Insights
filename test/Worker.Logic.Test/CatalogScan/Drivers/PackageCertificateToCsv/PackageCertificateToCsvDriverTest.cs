@@ -1,10 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -63,6 +66,34 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             Assert.Single(output.Result.Sets1
                 .SelectMany(x => x.Records)
                 .Where(x => x.RelationshipTypes.HasFlag(CertificateRelationshipTypes.IsRepositoryTimestampedBy)));
+        }
+
+        [Fact]
+        public async Task HandlesEVCodeSigning()
+        {
+            await Target.InitializeAsync();
+            var leaf = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2022.01.25.12.39.12/codesign.0.0.1.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "CodeSign",
+                PackageVersion = "0.0.1",
+            };
+
+            var output = await Target.ProcessLeavesAsync(new[] { leaf });
+
+            var certificates = output.Result.Sets2.SelectMany(x => x.Records).ToList();
+            Assert.NotEmpty(certificates);
+            var certificate = Assert.Single(certificates, x => x.FingerprintSHA256Hex == "FB32E016FD317DB68C0B2B5B6E33231EE932B4B21E27F32B51654A483A10ADFB");
+            Assert.NotNull(certificate.Policies);
+            Assert.Contains("https://www.digicert.com/CPS", certificate.Policies);
+            var genericPolicies = JsonConvert.DeserializeObject<List<X509PolicyInfo>>(certificate.Policies);
+            Assert.Equal(2, genericPolicies.Count);
+            Assert.Equal("2.16.840.1.114412.3.2", genericPolicies[0].PolicyIdentifier);
+            Assert.Equal(1, genericPolicies[0].PolicyQualifiers.Count);
+            Assert.Equal(Oids.IdQtCps.Value, genericPolicies[0].PolicyQualifiers[0].PolicyQualifierId);
+            Assert.Equal("2.23.140.1.3", genericPolicies[1].PolicyIdentifier);
+            Assert.Empty(genericPolicies[1].PolicyQualifiers);
         }
 
         [Fact]

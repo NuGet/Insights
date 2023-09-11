@@ -43,7 +43,8 @@ namespace NuGet.Insights
     TimestampingStatus: string,
     TimestampingStatusFlags: string,
     TimestampingStatusUpdateTime: datetime,
-    TimestampingRevocationTime: datetime
+    TimestampingRevocationTime: datetime,
+    Policies: dynamic
 ) with (docstring = __DOCSTRING__, folder = __FOLDER__)",
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
@@ -77,7 +78,8 @@ namespace NuGet.Insights
     '{""Column"":""TimestampingStatus"",""DataType"":""string"",""Properties"":{""Ordinal"":26}},'
     '{""Column"":""TimestampingStatusFlags"",""DataType"":""string"",""Properties"":{""Ordinal"":27}},'
     '{""Column"":""TimestampingStatusUpdateTime"",""DataType"":""datetime"",""Properties"":{""Ordinal"":28}},'
-    '{""Column"":""TimestampingRevocationTime"",""DataType"":""datetime"",""Properties"":{""Ordinal"":29}}'
+    '{""Column"":""TimestampingRevocationTime"",""DataType"":""datetime"",""Properties"":{""Ordinal"":29}},'
+    '{""Column"":""Policies"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":30}}'
 ']'",
         };
 

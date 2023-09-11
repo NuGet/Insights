@@ -1,0 +1,586 @@
+[
+  {
+    "PartitionKey": "P$codesign$C",
+    "RowKey": "0.0.1",
+    "Entity": {
+      "Committed": [
+        {
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "dDHl9MPBzkaQd08LYeBUQIg7qaAe0Aumq9eAbtOxGM8",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorTimestampSignedCmsContains",
+            "AuthorTimestampingChainContains",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "sxCQBrwK2YMHkVcp4EQDQVyD4ykrYU8mlkyNNXHs9ak",
+          "RowKey": "",
+          "Data": [
+            "AuthorTimestampSignedCmsContains",
+            "IsAuthorTimestampedBy",
+            "AuthorTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "WikB1q2j0YJgucbf4hM8lddLnu9q4OXcM0yEVNFHffQ",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "IsRepositoryCodeSignedBy",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "x0YLDt2htEyOIWSyNOvsw5YqajepNrdKbn1GaCk48IQ",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "IsRepositoryTimestampedBy",
+            "RepositoryTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "yo0PRzZFSuy-xd7sgJmMnr9B0Gxyjzx2zKJBUbxi1GM",
+          "RowKey": "",
+          "Data": [
+            "AuthorTimestampSignedCmsContains",
+            "AuthorTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "-zLgFv0xfbaMCytbbjMjHukytLIeJ_MrUWVKSDoQrfs",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "IsAuthorCodeSignedBy",
+            "AuthorCodeSigningChainContains"
+          ]
+        }
+      ],
+      "ToAdd": [],
+      "ToDelete": []
+    }
+  },
+  {
+    "PartitionKey": "P$golden-hoyeah-slots-casino-hack-generator-no-human-verification-free$C",
+    "RowKey": "1.3.1",
+    "Entity": {
+      "Committed": [
+        {
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "WikB1q2j0YJgucbf4hM8lddLnu9q4OXcM0yEVNFHffQ",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "IsRepositoryCodeSignedBy",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "IsRepositoryTimestampedBy",
+            "RepositoryTimestampingChainContains"
+          ]
+        }
+      ],
+      "ToAdd": [],
+      "ToDelete": []
+    }
+  },
+  {
+    "PartitionKey": "P$gta-5-cheats-money-easy-27-1-2022$C",
+    "RowKey": "4.4.1",
+    "Entity": {
+      "Committed": [
+        {
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "WikB1q2j0YJgucbf4hM8lddLnu9q4OXcM0yEVNFHffQ",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "IsRepositoryCodeSignedBy",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "IsRepositoryTimestampedBy",
+            "RepositoryTimestampingChainContains"
+          ]
+        }
+      ],
+      "ToAdd": [],
+      "ToDelete": []
+    }
+  },
+  {
+    "PartitionKey": "P$gta-5-cheats-money-easy-27-1-2022$C",
+    "RowKey": "5.4.1",
+    "Entity": {
+      "Committed": [
+        {
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "WikB1q2j0YJgucbf4hM8lddLnu9q4OXcM0yEVNFHffQ",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "IsRepositoryCodeSignedBy",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "IsRepositoryTimestampedBy",
+            "RepositoryTimestampingChainContains"
+          ]
+        }
+      ],
+      "ToAdd": [],
+      "ToDelete": []
+    }
+  },
+  {
+    "PartitionKey": "P$rrqmsocket$C",
+    "RowKey": "4.0.15",
+    "Entity": {
+      "Committed": [
+        {
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "WikB1q2j0YJgucbf4hM8lddLnu9q4OXcM0yEVNFHffQ",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "IsRepositoryCodeSignedBy",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "IsRepositoryTimestampedBy",
+            "RepositoryTimestampingChainContains"
+          ]
+        }
+      ],
+      "ToAdd": [],
+      "ToDelete": []
+    }
+  },
+  {
+    "PartitionKey": "P$rrqmsocket$C",
+    "RowKey": "4.0.16",
+    "Entity": {
+      "Committed": [
+        {
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "WikB1q2j0YJgucbf4hM8lddLnu9q4OXcM0yEVNFHffQ",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "IsRepositoryCodeSignedBy",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "IsRepositoryTimestampedBy",
+            "RepositoryTimestampingChainContains"
+          ]
+        }
+      ],
+      "ToAdd": [],
+      "ToDelete": []
+    }
+  },
+  {
+    "PartitionKey": "P$rrqmsocket$C",
+    "RowKey": "4.0.17",
+    "Entity": {
+      "Committed": [
+        {
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "WikB1q2j0YJgucbf4hM8lddLnu9q4OXcM0yEVNFHffQ",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "IsRepositoryCodeSignedBy",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "IsRepositoryTimestampedBy",
+            "RepositoryTimestampingChainContains"
+          ]
+        }
+      ],
+      "ToAdd": [],
+      "ToDelete": []
+    }
+  },
+  {
+    "PartitionKey": "P$rrqmsocket$C",
+    "RowKey": "4.0.18",
+    "Entity": {
+      "Committed": [
+        {
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "WikB1q2j0YJgucbf4hM8lddLnu9q4OXcM0yEVNFHffQ",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "IsRepositoryCodeSignedBy",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "IsRepositoryTimestampedBy",
+            "RepositoryTimestampingChainContains"
+          ]
+        }
+      ],
+      "ToAdd": [],
+      "ToDelete": []
+    }
+  },
+  {
+    "PartitionKey": "P$rrqmsocket$C",
+    "RowKey": "4.0.19",
+    "Entity": {
+      "Committed": [
+        {
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "WikB1q2j0YJgucbf4hM8lddLnu9q4OXcM0yEVNFHffQ",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "IsRepositoryCodeSignedBy",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": "",
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "IsRepositoryTimestampedBy",
+            "RepositoryTimestampingChainContains"
+          ]
+        }
+      ],
+      "ToAdd": [],
+      "ToDelete": []
+    }
+  }
+]

@@ -8,6 +8,8 @@ using System.Text.RegularExpressions;
 using Microsoft.IdentityModel.Tokens;
 using NuGet.Packaging.Signing;
 
+#nullable enable
+
 namespace NuGet.Insights.Worker
 {
     public static class X509Certificate2Extensions
@@ -33,12 +35,12 @@ namespace NuGet.Insights.Worker
             return certificate.Thumbprint;
         }
 
-        public static string GetSubjectXplat(this X509Certificate2 certificate)
+        public static string? GetSubjectXplat(this X509Certificate2 certificate)
         {
             return FixDistinguishedName(certificate.Subject);
         }
 
-        public static string GetIssuerXplat(this X509Certificate2 certificate)
+        public static string? GetIssuerXplat(this X509Certificate2 certificate)
         {
             return FixDistinguishedName(certificate.Issuer);
         }
@@ -51,14 +53,14 @@ namespace NuGet.Insights.Worker
         private static readonly IReadOnlyDictionary<Regex, string> OidReplacements = new Dictionary<string, string>
         {
             // Source: https://github.com/openssl/openssl/blob/7303c5821779613e9a7fe239990662f80284a693/crypto/objects/objects.txt
-            { "2.5.4.15", "businessCategory" },
-            { "2.5.4.97", "organizationIdentifier" },
-            { "1.3.6.1.4.1.311.60.2.1.1", "jurisdictionLocalityName" },
-            { "1.3.6.1.4.1.311.60.2.1.2", "jurisdictionStateOrProvinceName" },
-            { "1.3.6.1.4.1.311.60.2.1.3", "jurisdictionCountryName" },
+            { Oids.DottedDecimals.BusinessCategory, "businessCategory" },
+            { Oids.DottedDecimals.OrganizationIdentifier, "organizationIdentifier" },
+            { Oids.DottedDecimals.JurisdictionLocalityName, "jurisdictionLocalityName" },
+            { Oids.DottedDecimals.JurisdictionStateOrProvinceName, "jurisdictionStateOrProvinceName" },
+            { Oids.DottedDecimals.JurisdictionCountryName, "jurisdictionCountryName" },
         }.ToDictionary(x => new Regex(@$"(^|, )OID\.{Regex.Escape(x.Key)}="), x => @$"$1{x.Value}=");
 
-        private static string FixDistinguishedName(string name)
+        private static string? FixDistinguishedName(string name)
         {
             if (name is null)
             {

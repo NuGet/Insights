@@ -43,7 +43,8 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         TimestampingStatus: string,
         TimestampingStatusFlags: string,
         TimestampingStatusUpdateTime: datetime,
-        TimestampingRevocationTime: datetime
+        TimestampingRevocationTime: datetime,
+        Policies: dynamic
     ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/Certificates.md", folder = "");
 
     .alter-merge table Certificates policy retention softdelete = 30d;
@@ -90,17 +91,18 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         '{"Column":"TimestampingStatus","DataType":"string","Properties":{"Ordinal":26}},'
         '{"Column":"TimestampingStatusFlags","DataType":"string","Properties":{"Ordinal":27}},'
         '{"Column":"TimestampingStatusUpdateTime","DataType":"datetime","Properties":{"Ordinal":28}},'
-        '{"Column":"TimestampingRevocationTime","DataType":"datetime","Properties":{"Ordinal":29}}'
+        '{"Column":"TimestampingRevocationTime","DataType":"datetime","Properties":{"Ordinal":29}},'
+        '{"Column":"Policies","DataType":"dynamic","Properties":{"Ordinal":30}}'
     ']'
 
     */
     partial record CertificateRecord
     {
-        public int FieldCount => 30;
+        public int FieldCount => 31;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,ResultType,Fingerprint,FingerprintSHA256Hex,FingerprintSHA1Hex,Subject,Issuer,NotBefore,NotAfter,SerialNumber,SignatureAlgorithmOid,Version,Extensions,PublicKeyOid,RawDataLength,RawData,IssuerFingerprint,RootFingerprint,ChainLength,CodeSigningCommitTimestamp,CodeSigningStatus,CodeSigningStatusFlags,CodeSigningStatusUpdateTime,CodeSigningRevocationTime,TimestampingCommitTimestamp,TimestampingStatus,TimestampingStatusFlags,TimestampingStatusUpdateTime,TimestampingRevocationTime");
+            writer.WriteLine("ScanId,ScanTimestamp,ResultType,Fingerprint,FingerprintSHA256Hex,FingerprintSHA1Hex,Subject,Issuer,NotBefore,NotAfter,SerialNumber,SignatureAlgorithmOid,Version,Extensions,PublicKeyOid,RawDataLength,RawData,IssuerFingerprint,RootFingerprint,ChainLength,CodeSigningCommitTimestamp,CodeSigningStatus,CodeSigningStatusFlags,CodeSigningStatusUpdateTime,CodeSigningRevocationTime,TimestampingCommitTimestamp,TimestampingStatus,TimestampingStatusFlags,TimestampingStatusUpdateTime,TimestampingRevocationTime,Policies");
         }
 
         public void Write(List<string> fields)
@@ -135,6 +137,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             fields.Add(TimestampingStatusFlags.ToString());
             fields.Add(CsvUtility.FormatDateTimeOffset(TimestampingStatusUpdateTime));
             fields.Add(CsvUtility.FormatDateTimeOffset(TimestampingRevocationTime));
+            fields.Add(Policies);
         }
 
         public void Write(TextWriter writer)
@@ -198,6 +201,8 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             writer.Write(CsvUtility.FormatDateTimeOffset(TimestampingStatusUpdateTime));
             writer.Write(',');
             writer.Write(CsvUtility.FormatDateTimeOffset(TimestampingRevocationTime));
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, Policies);
             writer.WriteLine();
         }
 
@@ -262,6 +267,8 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(TimestampingStatusUpdateTime));
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(TimestampingRevocationTime));
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, Policies);
             await writer.WriteLineAsync();
         }
 
@@ -299,6 +306,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
                 TimestampingStatusFlags = CsvUtility.ParseNullable(getNextField(), Enum.Parse<System.Security.Cryptography.X509Certificates.X509ChainStatusFlags>),
                 TimestampingStatusUpdateTime = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 TimestampingRevocationTime = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
+                Policies = getNextField(),
             };
         }
     }

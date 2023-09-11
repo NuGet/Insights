@@ -24,6 +24,11 @@ namespace NuGet.Insights
             return Convert.ToBase64String(bytes);
         }
 
+        public static string ToBase64(this ReadOnlySpan<byte> bytes)
+        {
+            return Convert.ToBase64String(bytes);
+        }
+
         public static string ToTrimmedBase32(this byte[] bytes)
         {
             return Base32.ToBase32(bytes).TrimEnd('=').ToLowerInvariant();

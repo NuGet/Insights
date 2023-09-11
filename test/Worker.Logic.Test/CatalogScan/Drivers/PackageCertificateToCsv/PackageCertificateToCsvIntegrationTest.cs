@@ -18,6 +18,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
     {
         public const string PackageCertificateToCsvDir = nameof(PackageCertificateToCsv);
         public const string PackageCertificateToCsv_WithManyCertificatesDir = nameof(PackageCertificateToCsv_WithManyCertificates);
+        public const string PackageCertificateToCsv_WithEVCodeSigningCertificateDir = nameof(PackageCertificateToCsv_WithEVCodeSigningCertificate);
         public const string PackageCertificateToCsv_WithDeleteDir = nameof(PackageCertificateToCsv_WithDelete);
         public const string PackageCertificateToCsv_WithSingleDeleteDir = nameof(PackageCertificateToCsv_WithSingleDelete);
         public const string PackageCertificateToCsv_WithDollarSignIdDir = nameof(PackageCertificateToCsv_WithDollarSignId);
@@ -96,6 +97,38 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
                 await AssertOutputT2Async(PackageCertificateToCsv_WithManyCertificatesDir, Step1, 0);
                 await AssertOutputT2Async(PackageCertificateToCsv_WithManyCertificatesDir, Step1, 1);
                 await AssertOutputT2Async(PackageCertificateToCsv_WithManyCertificatesDir, Step1, 2);
+            }
+        }
+
+        public class PackageCertificateToCsv_WithEVCodeSigningCertificate : PackageCertificateToCsvIntegrationTest
+        {
+            public PackageCertificateToCsv_WithEVCodeSigningCertificate(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task Execute()
+            {
+                // Arrange
+                var min0 = DateTimeOffset.Parse("2022-01-25T12:38:47.2179093Z");
+                var max1 = DateTimeOffset.Parse("2022-01-25T12:39:12.000987Z");
+
+                await CatalogScanService.InitializeAsync();
+                await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
+                await SetCursorAsync(min0);
+
+                // Act
+                await UpdateAsync(max1);
+
+                // Assert
+                await AssertTableOutputAsync(PackageCertificateToCsv_WithEVCodeSigningCertificateDir, Step1);
+                await AssertOutputT1Async(PackageCertificateToCsv_WithEVCodeSigningCertificateDir, Step1, 0);
+                await AssertOutputT1Async(PackageCertificateToCsv_WithEVCodeSigningCertificateDir, Step1, 1);
+                await AssertOutputT1Async(PackageCertificateToCsv_WithEVCodeSigningCertificateDir, Step1, 2);
+                await AssertOutputT2Async(PackageCertificateToCsv_WithEVCodeSigningCertificateDir, Step1, 0);
+                await AssertOutputT2Async(PackageCertificateToCsv_WithEVCodeSigningCertificateDir, Step1, 1);
+                await AssertOutputT2Async(PackageCertificateToCsv_WithEVCodeSigningCertificateDir, Step1, 2);
             }
         }
 

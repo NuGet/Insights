@@ -48,6 +48,7 @@ repository signature.
 | TimestampingStatusFlags      | flags enum       | No       | Flattened flags for chain found by timestamping verification                                                             |
 | TimestampingStatusUpdateTime | timestamp        | No       | The time that the end certificate's status was last updated, according to the CA, found during timestamping verification |
 | TimestampingRevocationTime   | timestamp        | No       | The time at which the end certificate was revoked, found during to timestamping verification                             |
+| Policies                     | array of objects | No       | Certificate policies, per RFC 5280, section 4.2.1.4                                                                      |
 
 ## ResultType schema
 
@@ -131,3 +132,30 @@ Same as the [CodeSigningStatus schema](#codesigningstatus-schema).
 Same as the [CodeSigningStatusFlags schema](#codesigningstatusflags-schema).
 
 <!-- NO TABLE -->
+
+## Policies schema
+
+Each item in the certificate policies array has these properties. This aligns with the schema defined in
+[RFC 5280, section 4.2.1.4](https://www.rfc-editor.org/rfc/rfc5280.html#section-4.2.1.4).
+
+| Property name    | Data type        | Required | Description                                        |
+| ---------------- | ---------------- | -------- | -------------------------------------------------- |
+| PolicyIdentifier | string           | true     | An OID (object identifier) for this type of policy |
+| PolicyQualifiers | array of objects | true     | Zero or more qualifiers for the policy             |
+
+## PolicyQualifiers schema
+
+Each item in the certificate policy qualifiers array has these properties. This aligns with the schema defined in
+[RFC 5280, section 4.2.1.4](https://www.rfc-editor.org/rfc/rfc5280.html#section-4.2.1.4).
+
+| Property name     | Data type | Required | Description                                                  |
+| ----------------- | --------- | -------- | ------------------------------------------------------------ |
+| PolicyQualifierId | string    | true     | An OID (object identifier) for this type of policy qualifier |
+| Qualifier         | string    | true     | A base64 encoded string of the qualifier data                |
+
+When the PolicyQualifierId property is `1.3.6.1.5.5.7.2.1` (CPS qualifier), the object has the following additional
+properties. 
+
+| Property name | Data type | Required | Description                                                               |
+| ------------- | --------- | -------- | ------------------------------------------------------------------------- |
+| CpsUri        | string    | true     | A pointer to a Certification Practice Statement (CPS) published by the CA |

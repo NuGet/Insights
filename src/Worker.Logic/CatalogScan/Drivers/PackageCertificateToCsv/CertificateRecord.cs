@@ -32,14 +32,16 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             SerialNumber = info.Certificate.SerialNumber;
             SignatureAlgorithmOid = info.Certificate.SignatureAlgorithm.Value;
             Version = info.Certificate.Version;
-            Extensions = JsonConvert.SerializeObject(info
-                .Certificate
-                .Extensions
-                .Cast<X509Extension>()
-                .Select(x => X509ExtensionInfoFactory.Create(x)));
+            Extensions = JsonConvert.SerializeObject(info.Certificate.GetExtensions());
             PublicKeyOid = info.Certificate.PublicKey.Oid.Value;
             RawDataLength = info.Certificate.RawData.Length;
             RawData = info.Certificate.RawData.ToBase64();
+
+            var policies = info.Certificate.GetPolicies();
+            if (policies is not null)
+            {
+                Policies = JsonConvert.SerializeObject(policies);
+            }
 
             if (info.Issuer is not null)
             {
@@ -126,5 +128,8 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         public X509ChainStatusFlags? TimestampingStatusFlags { get; set; }
         public DateTimeOffset? TimestampingStatusUpdateTime { get; set; }
         public DateTimeOffset? TimestampingRevocationTime { get; set; }
+
+        [KustoType("dynamic")]
+        public string Policies { get; set; }
     }
 }
