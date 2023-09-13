@@ -20,28 +20,31 @@ Licenses are optional so some packages have none of these types.
 
 ## Table schema
 
-| Column name                   | Data type        | Required                     | Description                                                            |
-| ----------------------------- | ---------------- | ---------------------------- | ---------------------------------------------------------------------- |
-| ScanId                        | string           | No                           | Unused, always empty                                                   |
-| ScanTimestamp                 | timestamp        | No                           | Unused, always empty                                                   |
-| LowerId                       | string           | Yes                          | Lowercase package ID. Good for joins                                   |
-| Identity                      | string           | Yes                          | Lowercase package ID and lowercase, normalized version. Good for joins |
-| Id                            | string           | Yes                          | Original case package ID                                               |
-| Version                       | string           | Yes                          | Original case, normalized package version                              |
-| CatalogCommitTimestamp        | timestamp        | Yes                          | Latest catalog commit timestamp for the package                        |
-| Created                       | timestamp        | Yes, for non-Deleted         | When the package version was created                                   |
-| ResultType                    | enum             | Yes                          | Type of record (e.g. Deleted, None, Url, Expression, File)             |
-| Url                           | string           | No                           | The license URL. Present for Expression and File result types          |
-| Expression                    | string           | No                           | The license expression string                                          |
-| File                          | string           | No                           | The author-provided license file name                                  |
-| GeneratedUrl                  | string           | Yes, for Expression and File | The expected license URL for Expression and File licenses              |
-| ExpressionParsed              | object           | Yes, for Expression          | JSON serialized license expression tree                                |
-| ExpressionLicenses            | array of strings | Yes, for Expression          | Array of license identifiers (no duplicates)                           |
-| ExpressionExceptions          | array of strings | Yes, for Expression          | Array of license exception identifiers (no duplicates)                 |
-| ExpressionNonStandardLicenses | array of strings | Yes, for Expression          | Array of non-standard license identifiers (no duplicates)              |
-| FileSize                      | long             | Yes, for File                | Size of the license file in bytes                                      |
-| FileSHA256                    | string           | Yes, for File                | Base64 encoded SHA-256 of the license file                             |
-| FileContent                   | string           | Yes, for File                | The full license file content                                          |
+| Column name                       | Data type        | Required                     | Description                                                            |
+| --------------------------------- | ---------------- | ---------------------------- | ---------------------------------------------------------------------- |
+| ScanId                            | string           | No                           | Unused, always empty                                                   |
+| ScanTimestamp                     | timestamp        | No                           | Unused, always empty                                                   |
+| LowerId                           | string           | Yes                          | Lowercase package ID. Good for joins                                   |
+| Identity                          | string           | Yes                          | Lowercase package ID and lowercase, normalized version. Good for joins |
+| Id                                | string           | Yes                          | Original case package ID                                               |
+| Version                           | string           | Yes                          | Original case, normalized package version                              |
+| CatalogCommitTimestamp            | timestamp        | Yes                          | Latest catalog commit timestamp for the package                        |
+| Created                           | timestamp        | Yes, for non-Deleted         | When the package version was created                                   |
+| ResultType                        | enum             | Yes                          | Type of record (e.g. Deleted, None, Url, Expression, File)             |
+| Url                               | string           | No                           | The license URL. Present for Expression and File result types          |
+| Expression                        | string           | No                           | The license expression string                                          |
+| File                              | string           | No                           | The author-provided license file name                                  |
+| GeneratedUrl                      | string           | Yes, for Expression and File | The expected license URL for Expression and File licenses              |
+| ExpressionParsed                  | object           | Yes, for valid expression    | JSON serialized license expression tree                                |
+| ExpressionLicenses                | array of strings | Yes, for valid expression    | Array of license identifiers (no duplicates)                           |
+| ExpressionExceptions              | array of strings | Yes, for valid expression    | Array of license exception identifiers (no duplicates)                 |
+| ExpressionNonStandardLicenses     | array of strings | Yes, for valid expression    | Array of non-standard license identifiers (no duplicates)              |
+| ExpressionHasDeprecatedIdentifier | bool             | Yes, for Expression          | Array of non-standard license identifiers (no duplicates)              |
+| FileSize                          | long             | Yes, for File                | Size of the license file in bytes                                      |
+| FileSHA256                        | string           | Yes, for File                | Base64 encoded SHA-256 of the license file                             |
+| FileContent                       | string           | Yes, for File                | The full license file content                                          |
+
+A license expression is available if the package has a license expression metadata field and the license does not contain any deprecated license identifiers. This is called a "valid expression" in the document above.
 
 ## ResultType schema
 
