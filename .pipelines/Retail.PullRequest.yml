@@ -74,6 +74,7 @@ jobs:
           testResultsFormat: VSTest
           testResultsFiles: "$(OutputDirectory)/TestResults/**/*.trx"
           failTaskOnFailedTests: false
+        condition: succeededOrFailed()
 
       - task: PowerShell@2
         displayName: "Checking for Forks changes"
@@ -90,6 +91,7 @@ jobs:
           targetType: 'inline'
           script: 'Get-ChildItem $(Build.SourcesDirectory)/*.md -Recurse | % { markdown-link-check $_ --config $(Build.SourcesDirectory)/markdown-link-check.config.json }'
           failOnStderr: true
+        retryCountOnTaskFailure: 3
 
       - script: dotnet publish $(Build.SourcesDirectory)/src/Website/Website.csproj --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false
         displayName: "Publish Website to ZIP"
