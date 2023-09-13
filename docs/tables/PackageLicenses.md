@@ -14,7 +14,7 @@ Licenses are optional so some packages have none of these types.
 | Child tables                 |                                                                                                                            |
 | Parent tables                |                                                                                                                            |
 | Column used for partitioning | Identity                                                                                                                   |
-| Data file container name     | packagelicense                                                                                                             |
+| Data file container name     | packagelicenses                                                                                                             |
 | Driver implementation        | [`PackageLicenseToCsvDriver`](../../src/Worker.Logic/CatalogScan/Drivers/PackageLicenseToCsv/PackageLicenseToCsvDriver.cs) |
 | Record type                  | [`PackageLicense`](../../src/Worker.Logic/CatalogScan/Drivers/PackageLicenseToCsv/PackageLicense.cs)                       |
 
