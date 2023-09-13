@@ -6,7 +6,7 @@ If you are using NuGet.Insights in Azure and want to use Azure Data Explorer, th
 
 Each data table is represented by a set of CSV files. The data table is split (i.e. partitioned) across multiple files so that processing the data files in memory feasible. Also, many data import systems can operate in parallel across many files. Therefore, having more files that are smaller is often better than having fewer large files.
 
-The CSV file format itself is loosely defined across the industry but NuGet.Insights adheres to [RFC 4180](https://datatracker.ietf.org/doc/html/rfc4180). Notably, strings containing certain characters (e.g. line breaks, double quotes, commas) are enclosed in double quotes. All CSV files are UTF-8 encoded without a byte order mark (BOM).
+The CSV file format itself is loosely defined across the industry but NuGet.Insights adheres to [RFC 4180](https://www.rfc-editor.org/rfc/rfc4180). Notably, strings containing certain characters (e.g. line breaks, double quotes, commas) are enclosed in double quotes. All CSV files are UTF-8 encoded without a byte order mark (BOM).
 
 ## Tables
 
