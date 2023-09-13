@@ -44,21 +44,11 @@ jobs:
       - task: NuGetAuthenticate@0
         displayName: "NuGet authenticate"
 
-      - task: DotNetCoreCLI@2
+      - script: dotnet restore $(BuildSolution)
         displayName: "Restore"
-        inputs:
-          command: "restore"
-          feedsToUse: "config"
-          nugetConfigPath: "$(Build.SourcesDirectory)/NuGet.config"
-          projects: $(BuildSolution)
 
-      - task: DotNetCoreCLI@2
+      - script: dotnet build $(BuildSolution) --no-restore --configuration $(BuildConfiguration)
         displayName: "Build"
-        inputs:
-          command: "custom"
-          projects: $(BuildSolution)
-          custom: "build"
-          arguments: "--no-restore --configuration $(BuildConfiguration)"
 
       - pwsh: |
           $rawCertBase64 = "$(nugetinsightstests-KustoClientCertificate)"
@@ -68,13 +58,8 @@ jobs:
           echo "##vso[task.setvariable variable=NUGETINSIGHTS_KUSTOCLIENTCERTIFICATE;]$certFile"
         displayName: "Save Kusto client certificate"
 
-      - task: DotNetCoreCLI@2
+      - script: dotnet test $(BuildSolution) --no-build --no-restore --configuration $(BuildConfiguration) --logger trx --blame-hang-timeout 30m --collect "Code coverage" --results-directory $(OutputDirectory)/TestResults/
         displayName: "Run tests"
-        inputs:
-          command: "test"
-          projects: $(BuildSolution)
-          arguments: '--no-build --no-restore --configuration $(BuildConfiguration) --logger trx --blame-hang-timeout 30m --collect "Code coverage" --results-directory $(OutputDirectory)/TestResults/'
-          publishTestResults: false
         env:
           NUGETINSIGHTS_STORAGEACCOUNTNAME: $(nugetinsightstests-StorageAccountName)
           NUGETINSIGHTS_STORAGESAS: $(nugetinsightstests-BlobQueueTableFullAccessSas)
@@ -106,16 +91,11 @@ jobs:
           script: 'Get-ChildItem $(Build.SourcesDirectory)/*.md -Recurse | % { markdown-link-check $_ --config $(Build.SourcesDirectory)/markdown-link-check.config.json }'
           failOnStderr: true
 
-      - task: DotNetCoreCLI@2
-        displayName: "Publish projects to ZIP"
-        inputs:
-          command: publish
-          publishWebProjects: false
-          projects: |
-            $(Build.SourcesDirectory)/src/Website/Website.csproj
-            $(Build.SourcesDirectory)/src/Worker/Worker.csproj
-          arguments: "--configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false"
-          zipAfterPublish: false
+      - script: dotnet publish $(Build.SourcesDirectory)/src/Website/Website.csproj --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false
+        displayName: "Publish Website to ZIP"
+
+      - script: dotnet publish $(Build.SourcesDirectory)/src/Worker/Worker.csproj --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false
+        displayName: "Publish Worker to ZIP"
 
       - task: PowerShell@2
         displayName: "Publish Azure Functions host"
