@@ -19,6 +19,8 @@ namespace NuGet.Insights.Worker.EnqueueCatalogLeafScan
             nameof(CatalogLeafScan.ScanId),
             nameof(CatalogLeafScan.PageId),
             nameof(CatalogLeafScan.PackageId),
+            nameof(CatalogLeafScan.Min),
+            nameof(CatalogLeafScan.Max),
         };
 
         private readonly SchemaSerializer _serializer;

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -83,6 +84,60 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
                 await AssertOutputAsync(PackageAssetToCsvDir, Step1, 1);
                 await AssertOutputAsync(PackageAssetToCsvDir, Step1, 2);
             }
+        }
+
+        public class PackageAssetToCsv_LeafLevelTelemetry : PackageAssetToCsvIntegrationTest
+        {
+            public PackageAssetToCsv_LeafLevelTelemetry(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
+                : base(output, factory)
+            {
+            }
+
+            [Theory]
+            [InlineData("00:01:00", true, false)]
+            [InlineData("00:01:00", false, false)]
+            [InlineData("00:02:00", true, true)]
+            [InlineData("00:02:00", false, true)]
+            public async Task Execute(string threshold, bool onlyLatestLeaves, bool expectLogs)
+            {
+                // Arrange
+                var min0 = DateTimeOffset.Parse("2016-07-28T16:12:06.0020479Z");
+                var max1 = DateTimeOffset.Parse("2016-07-28T16:13:37.3231638Z");
+
+                ConfigureWorkerSettings = x =>
+                {
+                    x.AllowBatching = false;
+                    x.LeafLevelTelemetryThreshold = TimeSpan.Parse(threshold);
+                };
+
+                if (onlyLatestLeaves)
+                {
+                    _latestLeavesTypes.Add(DriverType);
+                }
+
+                await CatalogScanService.InitializeAsync();
+                await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
+                await SetCursorAsync(min0);
+
+                // Act
+                await UpdateAsync(DriverType, onlyLatestLeaves, max1);
+
+                // Assert
+                if (expectLogs)
+                {
+                    Assert.Contains(LogMessages, x => x.Contains("Metric emitted: CatalogScanExpandService.EnqueueLeafScansAsync.CatalogLeafScan = 1"));
+                    Assert.Contains(LogMessages, x => x.Contains("Metric emitted: CatalogLeafScanMessageProcessor.ToProcess.CatalogLeafScan = 1"));
+                    Assert.Contains(LogMessages, x => x.Contains("Metric emitted: CatalogScanStorageService.DeleteAsync.Single.CatalogLeafScan = 1"));
+                }
+                else
+                {
+                    Assert.DoesNotContain(LogMessages, x => new Regex("Metric emitted: (.+?)\\.CatalogLeafScan = ").IsMatch(x));
+                }
+            }
+
+            private readonly List<CatalogScanDriverType> _latestLeavesTypes = new();
+
+            public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => _latestLeavesTypes;
         }
 
         public class PackageAssetToCsv_WithDelete : PackageAssetToCsvIntegrationTest
