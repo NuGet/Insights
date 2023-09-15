@@ -90,6 +90,7 @@ jobs:
         inputs:
           targetType: "filePath"
           filePath: $(Build.SourcesDirectory)/scripts/Invoke-MarkdownValidation.ps1
+          pwsh: true
         retryCountOnTaskFailure: 1
 
       - script: dotnet publish $(Build.SourcesDirectory)/src/Website/Website.csproj --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false
