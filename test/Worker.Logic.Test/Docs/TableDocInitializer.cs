@@ -30,7 +30,7 @@ namespace NuGet.Insights.Worker
             builder.AppendLine($"| Parent tables                | TODO |");
             builder.AppendLine($"| Column used for partitioning | TODO |");
             builder.AppendLine($"| Data file container name     | {_info.DefaultContainerName} |");
-            builder.AppendLine($"| Driver implementation        | [`TODO`](../../src/Worker.Logic/CatalogScan/Drivers/TODO/TODO.cs) |");
+            builder.AppendLine($"| Driver                       | [`TODO`](../drivers/TODO.md) |");
             builder.AppendLine($"| Record type                  | [`{_info.RecordType.Name}`](../../src/Worker.Logic/CatalogScan/Drivers/TODO/{_info.RecordType.Name}.cs) |");
             builder.AppendLine($"");
 

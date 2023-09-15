@@ -3,7 +3,7 @@
 Aside from the drivers in this project which are tightly coupled with NuGet or NuGet.org, there are several classes
 that provide useful infrastructure or are interesting for other one-off experiments.
 
-These "reusable classess" are not written to be perfectly abstracted and are not ready to drop in to another as is, but
+These "reusable classes" are not written to be perfectly abstracted and are not ready to drop in to another as is, but
 should be relatively easy to refactor a bit and copy to your own projects (observing licensing rules of course).
 
 - [`AppendResultStorageService`](../src/Worker.Logic/AppendResults/AppendResultStorageService.cs) - Azure Function result aggregation using Tables or append blobs

@@ -5,15 +5,15 @@ a specific purpose according to NuGet's [restore command](https://docs.microsoft
 If a file within a NuGet package follows certain conventions, it can be recognized by NuGet restore and is usable by
 package consumers.
 
-|                              |                                                                                                                      |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Cardinality                  | One or more rows per package, more than one if the package has multiple recognized assets                            |
-| Child tables                 |                                                                                                                      |
-| Parent tables                |                                                                                                                      |
-| Column used for partitioning | Identity                                                                                                             |
-| Data file container name     | packageassets                                                                                                        |
-| Driver implementation        | [`PackageAssetToCsvDriver`](../../src/Worker.Logic/CatalogScan/Drivers/PackageAssetToCsv/PackageAssetToCsvDriver.cs) |
-| Record type                  | [`PackageAsset`](../../src/Worker.Logic/CatalogScan/Drivers/PackageAssetToCsv/PackageAsset.cs)                       |
+|                              |                                                                                                |
+| ---------------------------- | ---------------------------------------------------------------------------------------------- |
+| Cardinality                  | One or more rows per package, more than one if the package has multiple recognized assets      |
+| Child tables                 |                                                                                                |
+| Parent tables                |                                                                                                |
+| Column used for partitioning | Identity                                                                                       |
+| Data file container name     | packageassets                                                                                  |
+| Driver                       | [`PackageAssetToCsv`](../drivers/PackageAssetToCsv.md)                                         |
+| Record type                  | [`PackageAsset`](../../src/Worker.Logic/CatalogScan/Drivers/PackageAssetToCsv/PackageAsset.cs) |
 
 ## Table schema
 

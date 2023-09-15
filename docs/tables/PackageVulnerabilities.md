@@ -11,7 +11,7 @@ Package vulnerability information on NuGet.org is sourced from GitHub's security
 | Parent tables                |                                                                                                                           |
 | Column used for partitioning | Identity                                                                                                                  |
 | Data file container name     | packagevulnerabilities                                                                                                    |
-| Driver implementation        | [`CatalogDataToCsvDriver`](../../src/Worker.Logic/CatalogScan/Drivers/CatalogDataToCsv/CatalogDataToCsvDriver.cs)         |
+| Driver                       | [`CatalogDataToCsv`](../drivers/CatalogDataToCsv.md)                                                                      |
 | Record type                  | [`PackageVulnerabilityRecord`](../../src/Worker.Logic/CatalogScan/Drivers/CatalogDataToCsv/PackageVulnerabilityRecord.cs) |
 
 ## Table schema

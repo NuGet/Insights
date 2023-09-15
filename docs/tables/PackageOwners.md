@@ -11,7 +11,7 @@ The owners are represented by their username. A package owner can either be an i
 | Parent tables                |                                                                                                    |
 | Column used for partitioning | LowerId                                                                                            |
 | Data file container name     | packageowners                                                                                      |
-| Driver implementation        | [`OwnersToCsvUpdater`](../../src/Worker.Logic/MessageProcessors/OwnersToCsv/OwnersToCsvUpdater.cs) |
+| Driver                       | [`OwnersToCsvUpdater`](../../src/Worker.Logic/MessageProcessors/OwnersToCsv/OwnersToCsvUpdater.cs) |
 | Record type                  | [`PackageOwnerRecord`](../../src/Worker.Logic/MessageProcessors/OwnersToCsv/PackageOwnerRecord.cs) |
 
 ## Table schema

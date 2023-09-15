@@ -8,15 +8,15 @@ implementation of NuGet client's
 [`NuspecReader`](https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Packaging/NuspecReader.cs)
 class, some fields may be manipulated or parsed projections of the original XML string.
 
-|                              |                                                                                                                               |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Cardinality                  | Exactly one per package on NuGet.org                                                                                          |
-| Child tables                 |                                                                                                                               |
-| Parent tables                |                                                                                                                               |
-| Column used for partitioning | Identity                                                                                                                      |
-| Data file container name     | packagemanifests                                                                                                              |
-| Driver implementation        | [`PackageManifestToCsvDriver`](../../src/Worker.Logic/CatalogScan/Drivers/PackageManifestToCsv/PackageManifestToCsvDriver.cs) |
-| Record type                  | [`PackageManifestRecord`](../../src/Worker.Logic/CatalogScan/Drivers/PackageManifestToCsv/PackageManifestRecord.cs)           |
+|                              |                                                                                                                     |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Cardinality                  | Exactly one per package on NuGet.org                                                                                |
+| Child tables                 |                                                                                                                     |
+| Parent tables                |                                                                                                                     |
+| Column used for partitioning | Identity                                                                                                            |
+| Data file container name     | packagemanifests                                                                                                    |
+| Driver                       | [`PackageManifestToCsv`](../drivers/PackageManifestToCsv.md)                                                        |
+| Record type                  | [`PackageManifestRecord`](../../src/Worker.Logic/CatalogScan/Drivers/PackageManifestToCsv/PackageManifestRecord.cs) |
 
 ## Table schema
 

@@ -287,7 +287,7 @@ namespace NuGet.Insights.Worker
             await ProcessQueueAsync(_ => Task.FromResult(true), isCompleteAsync, workerCount);
         }
 
-        protected async Task ProcessQueueAsync(Func<QueueMessage, Task<bool>> shouldProcessAsync, Func<Task<bool>> isCompleteAsync, int workerCount = 1)
+        public async Task ProcessQueueAsync(Func<QueueMessage, Task<bool>> shouldProcessAsync, Func<Task<bool>> isCompleteAsync, int workerCount = 1)
         {
             var expandQueue = await WorkerQueueFactory.GetQueueAsync(QueueType.Expand);
             var workerQueue = await WorkerQueueFactory.GetQueueAsync(QueueType.Work);

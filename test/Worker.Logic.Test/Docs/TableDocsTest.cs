@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 
 namespace NuGet.Insights.Worker
 {
-    public class DocsTest
+    public class TableDocsTest
     {
         [DocsFact]
         public void AllTablesAreListedInREADME()
@@ -33,12 +33,11 @@ namespace NuGet.Insights.Worker
 
             // Verify we have the right number of rows
             var rows = table.Skip(1).ToList();
-            Assert.Equal(rows.Count, TableNames.Count);
 
             // Verify table rows
-            var index = 0;
-            foreach (var rowObj in rows)
+            for (var i = 0; i < rows.Count; i++)
             {
+                Block rowObj = rows[i];
                 _output.WriteLine("Testing row: " + info.GetMarkdown(rowObj));
                 var row = Assert.IsType<TableRow>(rowObj);
                 Assert.False(row.IsHeader);
@@ -46,14 +45,14 @@ namespace NuGet.Insights.Worker
                 // Verify the column name exists and is in the proper order in the table
                 var tableName = info.ToPlainText(row[0]);
                 Assert.Contains(tableName, TableNames);
-                Assert.Equal(tableName, TableNames[index]);
+                Assert.Equal(tableName, TableNames[i]);
 
                 // Verify the data type
                 var description = info.ToPlainText(row[1]);
                 Assert.NotEmpty(description);
-
-                index++;
             }
+
+            Assert.Equal(rows.Count, TableNames.Count);
         }
 
         [DocsTheory]
@@ -114,7 +113,7 @@ namespace NuGet.Insights.Worker
             Assert.Equal(info.DefaultContainerName, containerName);
 
             i++;
-            Assert.Equal("Driver implementation", info.ToPlainText(rows[i][0]));
+            Assert.Equal("Driver", info.ToPlainText(rows[i][0]));
 
             i++;
             Assert.Equal("Record type", info.ToPlainText(rows[i][0]));
@@ -285,7 +284,7 @@ namespace NuGet.Insights.Worker
 
         private readonly ITestOutputHelper _output;
 
-        public DocsTest(ITestOutputHelper output)
+        public TableDocsTest(ITestOutputHelper output)
         {
             _output = output;
         }

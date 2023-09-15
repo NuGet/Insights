@@ -1,4 +1,4 @@
-# NuGet.Insights
+# NuGet Insights
 
 **Analyze NuGet.org packages 📦 using Azure Functions ⚡.**
 
@@ -16,7 +16,7 @@ The data sets are great for:
 - 📈 Check the trends over time on NuGet.org
 - 📊 Look at adoption of various NuGet or .NET features
 
-The data sets currently produced by NuGet.Insights are listed in
+The data sets currently produced by NuGet Insights are listed in
 [`docs/tables/README.md`](docs/tables/README.md#tables).
 
 ## Quickstart
@@ -86,7 +86,7 @@ deploy several resources into it including:
 
 When the deployment completes successfully, a "website URL" will be reporting in
 the console as part of a warm-up. You can use this to access the admin panel.
-The end of the output
+The end of the output looks like this:
 
 <pre>
 ...
@@ -95,7 +95,7 @@ Warming up the website and workers...
 https://nugetinsights-joel-worker-0.azurewebsites.net/ - 200 OK
 </pre>
 
-You can go the first URL which is the website URL. in your web browser click on
+You can go the first URL which is the website URL in your web browser and click on
 the **Admin** link in the nav bar. Then, you can start a short run using the
 "All catalog scans" section, "Use custom cursor" checkbox, and "Start all" button.
 
@@ -163,17 +163,17 @@ Proceed to the [Starting a catalog scan](#starting-a-catalog-scan) section.
 
 A **catalog scan** is a unit of work for Insights which runs analysis against
 all of the packages published during some time range. The time range for a
-catalog scan is bounded by the previous NuGet V3 catalog commit timestamp used
+catalog scan is bounded by the a previous catalog stamp used
 (as an exclusive minimum) and an arbitrary timestamp to process up to (as an
 inclusive maximum). For more information, see the [architecture
 section](#architecture).
 
-Once you have opened the website URL in your web browser of choice, follow these
+Once you have opened the localhost website URL mentioned in the section above, follow these
 steps to start your first catalog scan from the Insights admin panel.
 
 1. In your web browser, viewing the website URL, click on the "Admin" link in
    the navigation bar.
-2. Start some catalog scans.
+2. Start one or more catalog scans.
    - For your first try, run a single driver against a single [NuGet V3
      catalog](https://docs.microsoft.com/en-us/nuget/api/catalog-resource)
      commit.
@@ -196,14 +196,14 @@ steps to start your first catalog scan from the Insights admin panel.
 If you ran a driver like **Load package archive**, data will be populated into
 your Azure Table Storage emulator in the `packagearchives` table. If you ran a
 driver like **Package asset to CSV**, CSV files will be populated into your
-Azure Blob Storage emulator in the `packageassets` container.
+Azure Blob Storage emulator in the `packageassets` container. For more information on what each driver does, see the [drivers list](docs/drivers/README.md).
 
 You can use the [Azure Storage
 Explorer](https://azure.microsoft.com/en-us/products/storage/storage-explorer/)
 to interact with your Azure Storage endpoints (either the storage emulator
 running locally or in Azure).
 
-When running locally, uou can check the application logs shown in the Tye
+When running locally, you can check the application logs shown in the Tye
 dashboard or terminal stdout. When running in Azure, you can use Application
 Insights (note the default logging is Warning or higher to reduce cost). You can
 also look at the Azure Queue Storage queues to understand what sort of work the
@@ -215,33 +215,13 @@ Worker has left.
   produced by this project**
 - **[Adding a new driver](docs/new-driver.md) - a guide to help you enhance
   Insights to suit your needs**
+- [Drivers](docs/drivers/README.md) - the list of existing drivers
 - [Reusable classes](docs/reusable-classes.md) - interesting or useful classes
   or concepts supporting this project
 - [Blog posts](docs/blog-posts.md) - blog posts about lessons learned from this
   project
 - [Cost](docs/cost.md) - approximately how much it costs to run several of the
   implemented catalog scans
-
-## Projects
-
-Here's a high-level description of main projects in this repository:
-
-- [`Worker`](src/Worker) - the Azure Function itself, a thin adapter between
-  core logic and Azure Functions
-- [`Website`](src/Website) - a website for an admin panel to managed scans
-- [`Worker.Logic`](src/Worker.Logic) - all of the catalog scan and driver logic,
-  this is the most interesting project
-- [`Logic`](src/Logic) - contains more generic logic related to NuGet.org
-  protocol and is not directly related to distributed processing
-
-Other projects are:
-
-- [`Forks`](src/Forks) - download, patch, and list code from other open source
-  projects
-- [`SourceGenerator`](src/SourceGenerator) - AOT source generation logic for
-  reading and writing CSVs
-- [`Tool`](src/Tool) - a command-line app used for pretty much just prototyping
-  code
 
 ## Architecture
 
@@ -306,55 +286,11 @@ daily). The workflow performs these step for each iteration:
 If any of these steps does not complete, the workflow hangs and no further
 worflows can start.
 
-## Drivers
+## Main components
 
-The current drivers for analyzing NuGet.org packages are:
+The main working components of NuGet Insights are **drivers** (process catalog leaves), other **message processors** (process queue messages), and the **admin panel**. The admin panel is the main purpose of the Website project ("the front end"). The drivers, other message processors, and timers for recurring workflows and metrics all run inside the Worker project ("the back end").
 
-- [`CatalogDataToCsv`](src/Worker.Logic/CatalogScan/Drivers/CatalogDataToCsv/CatalogDataToCsvDriver.cs):
-  extract data found in the catalog to CSV, e.g. deprecation and vulnerability
-- [`NuGetPackageExplorerToCsv`](src/Worker.Logic/CatalogScan/Drivers/NuGetPackageExplorerToCsv/NuGetPackageExplorerToCsvDriver.cs):
-  run NuGet Package Explore APIs to determine reproducibility
-- [`PackageArchiveToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageArchiveToCsv/PackageArchiveToCsvDriver.cs):
-  find info about all ZIP entries in the .nupkg
-- [`PackageAssemblyToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageAssemblyToCsv/PackageAssemblyToCsvDriver.cs):
-  find stuff like public key tokens in assemblies using
-  `System.Reflection.Metadata`
-- [`PackageAssetToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageAssetToCsv/PackageAssetToCsvDriver.cs):
-  find assets recognized by NuGet restore
-- [`PackageCertificateToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageCertificateToCsv/PackageCertificateToCsvDriver.cs):
-  determine relationships between packages and certificates
-- [`PackageCompatibilityToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageCompatibilityToCsv/PackageCompatibilityToCsvDriver.cs):
-  determine package compatibility with several algorithms
-- [`PackageIconToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageIconToCsv/PackageIconToCsvDriver.cs):
-  get image metadata for embedded icons and icons from URLs 
-- [`PackageManifestToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageManifestToCsv/PackageManifestToCsvDriver.cs):
-  extract known data from the .nuspec
-- [`PackageReadmeToCsvDriver`](src/Worker.Logic/CatalogScan/Drivers/PackageReadmeToCsv/PackageReadmeToCsvDriver.cs):
-  extract package README metadata and content
-- [`PackageSignatureToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageSignatureToCsv/PackageSignatureToCsvDriver.cs):
-  parse the NuGet package signature
-- [`PackageVersionToCsv`](src/Worker.Logic/CatalogScan/Drivers/PackageVersionToCsv/PackageVersionToCsvDriver.cs):
-  determine latest version per package ID
-- [`SymbolPackageArchiveToCsv`](src/Worker.Logic/CatalogScan/Drivers/SymbolPackageArchiveToCsv/SymbolPackageArchiveToCsvDriver.cs):
-  find info about all ZIP entries in the .snupkg
-
-Several other supporting drivers exist to populate storage with intermediate
-results:
-
-- [`BuildVersionSet`](src/Worker.Logic/CatalogScan/Drivers/BuildVersionSet/BuildVersionSetDriver.cs):
-  serializes all IDs and versions into a `Dictionary`, useful for fast checks
-- [`LoadLatestPackageLeaf`](src/Worker.Logic/CatalogScan/Drivers/LoadLatestPackageLeaf):
-  write the latest catalog leaf to Table Storage
-- [`LoadPackageArchive`](src/Worker.Logic/CatalogScan/Drivers/LoadPackageArchive/LoadPackageArchiveDriver.cs):
-  fetch information from the .nupkg and put it in Table Storage
-- [`LoadPackageManifest`](src/Worker.Logic/CatalogScan/Drivers/LoadPackageManifest/LoadPackageManifestDriver.cs):
-  fetch the .nuspec and put it in Table Storage
-- [`LoadPackageReadmeDriver`](src/Worker.Logic/CatalogScan/Drivers/LoadPackageReadme/LoadPackageReadmeDriver.cs):
-  download package READMEs and put them in Table Storage
-- [`LoadPackageVersion`](src/Worker.Logic/CatalogScan/Drivers/LoadPackageVersion/LoadPackageVersionDriver.cs):
-  determine listed and SemVer status and put it in Table Storage
-- [`LoadSymbolPackageArchive`](src/Worker.Logic/CatalogScan/Drivers/LoadSymbolPackageArchive/LoadSymbolPackageArchiveDriver.cs):
-  fetch information from the .snupkg and put it in Table Storage
+The current drivers for analyzing NuGet.org packages are documented in the [Drivers list](docs/drivers/README.md).
 
 Several message processors exist to emit other useful data:
 
@@ -378,6 +314,27 @@ processes:
 - [`Workflow`](src/Worker.Logic/MessageProcessors/Workflow/WorkflowRunMessageProcessor.cs):
   orchestrates the entire workflow (as mentioned in the **Architecture** section
   above)
+
+## Projects
+
+Here's a high-level description of main projects in this repository:
+
+- [`Worker`](src/Worker) - the Azure Function itself, a thin adapter between
+  core logic and Azure Functions
+- [`Website`](src/Website) - a website for an admin panel to managed scans
+- [`Worker.Logic`](src/Worker.Logic) - all of the catalog scan and driver logic,
+  this is the most interesting project
+- [`Logic`](src/Logic) - contains more generic logic related to NuGet.org
+  protocol and is mostly not directly related to distributed processing
+
+Other projects are:
+
+- [`Forks`](src/Forks) - download, patch, and list code from other open source
+  projects
+- [`SourceGenerator`](src/SourceGenerator) - AOT source generation logic for
+  reading and writing CSVs
+- [`Tool`](src/Tool) - a command-line app used for pretty much just prototyping
+  code
 
 ## Screenshots
 

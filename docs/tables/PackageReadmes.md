@@ -5,15 +5,15 @@ This table contains metadata and full content of NuGet package README files. The
 1. Embedded README files, which are packed into the NuGet package and are immutable per version
 1. Legacy README files, which are mutable per package version and are uploaded to NuGet.org separately from the package
 
-|                              |                                                                                                                         |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Cardinality                  | Exactly one per package on NuGet.org                                                                                    |
-| Child tables                 |                                                                                                                         |
-| Parent tables                |                                                                                                                         |
-| Column used for partitioning | Identity                                                                                                                |
-| Data file container name     | packagereadmes                                                                                                          |
-| Driver implementation        | [`PackageReadmeToCsvDriver`](../../src/Worker.Logic/CatalogScan/Drivers/PackageReadmeToCsv/PackageReadmeToCsvDriver.cs) |
-| Record type                  | [`PackageReadme`](../../src/Worker.Logic/CatalogScan/Drivers/PackageReadmeToCsv/PackageReadme.cs)                       |
+|                              |                                                                                                   |
+| ---------------------------- | ------------------------------------------------------------------------------------------------- |
+| Cardinality                  | Exactly one per package on NuGet.org                                                              |
+| Child tables                 |                                                                                                   |
+| Parent tables                |                                                                                                   |
+| Column used for partitioning | Identity                                                                                          |
+| Data file container name     | packagereadmes                                                                                    |
+| Driver                       | [`PackageReadmeToCsv`](../drivers/PackageReadmeToCsv.md)                                          |
+| Record type                  | [`PackageReadme`](../../src/Worker.Logic/CatalogScan/Drivers/PackageReadmeToCsv/PackageReadme.cs) |
 
 ## Table schema
 

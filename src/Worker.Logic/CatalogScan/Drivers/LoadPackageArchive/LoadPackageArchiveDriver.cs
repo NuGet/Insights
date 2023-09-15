@@ -27,7 +27,6 @@ namespace NuGet.Insights.Worker.LoadPackageArchive
 
         public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
         {
-
             return Task.FromResult(CatalogIndexScanResult.ExpandLatestLeaves);
         }
 

@@ -114,7 +114,7 @@ cover at least two cases:
 1. **"Happy path"** - process two short time ranges in the catalog and assert the output in storage.
 1. **"Delete path"** - process two short time ranges, the first of which adds a package and the second of which deletes
    the package. This is an important test case because when a package is deleted from NuGet.org, the data related to this
-   package in NuGet.Insights should be set to some "deleted" or "cleared" state. This enables reproducibility (deleted
+   package in NuGet Insights should be set to some "deleted" or "cleared" state. This enables reproducibility (deleted
    data is no longer available on NuGet.org and therefore data produced prior to the delete cannot be reproduced) and
    respects the privacy of the package owner.
 
@@ -135,10 +135,11 @@ You've now locked your test results into static files in the Git repository so f
 
 ### Document your driver
 
-Update the [drivers list](../README.md#drivers) to mention your driver.
+
+When you run the [`DriverDocTest`](../test/Worker.Logic.Test/Docs/DriverDocsTest.cs) suite, it will generate a baseline driver document in the [`docs/drivers`](drivers) directory. If this doesn't happen, the actual code of your driver probably isn't done. Make sure all of the above steps are done. You'll need to fill in some placeholder TODOs for the generated driver document. It can help to look at the driver document of a similar driver. The [`PackageArchiveToCsv`](drivers/PackageArchiveToCsv.md) document is good to mimic for a driver that generates CSV records. The [`LoadPackageArchive`](drivers/LoadPackageArchive.md) document is good to mimic if your driver just loads data into Azure Table Storage for other drivers to use. Finally, update the [drivers list](drivers/README.md) to mention your driver.
 
 If your driver produces a CSV, the CSV schema must be documented similar to the existing CSV tables, in
-[`docs/tables`](../docs/tables). The easiest way to get started is to run the `AllTablesAreListedInREADME` test in
-[`DocsTest`](../test/Worker.Logic.Test/Docs/DocsTest.cs) to write out an initial version of the document matching the patterns
-of the existing documents. Just fill in the TODOs and make sure all of the tests in 
-[`DocsTest`](../test/Worker.Logic.Test/Docs/DocsTest.cs) after you are done with your document.
+[`docs/tables`](tables). The easiest way to get started is to run the `AllTablesAreListedInREADME` test in
+[`TableDocsTest`](../test/Worker.Logic.Test/Docs/TableDocsTest.cs) suite to write out an initial version of the document
+matching the patterns of the existing documents. Just fill in the TODOs and make sure all of the tests in
+[`TableDocsTest`](../test/Worker.Logic.Test/Docs/TableDocsTest.cs) suite pass after you are done with your document. Finally, update the [tables list](tables/README.md) to mention your table.

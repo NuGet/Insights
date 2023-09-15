@@ -4,15 +4,15 @@ This table contains the framework compatibility information for packages, using 
 Package compatibility is a relatively deep subject with a lot of different approaches, caveats, and exceptions. This table
 can help illustrate the differences between several approaches.
 
-|                              |                                                                                                                                              |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Cardinality                  | Exactly one per package on NuGet.                                                                                                            |
-| Child tables                 |                                                                                                                                              |
-| Parent tables                |                                                                                                                                              |
-| Column used for partitioning | Identity                                                                                                                                     |
-| Data file container name     | packagecompatibilities                                                                                                                       |
-| Driver implementation        | [`PackageCompatibilityToCsvDriver`](../../src/Worker.Logic/CatalogScan/Drivers/PackageCompatibilityToCsv/PackageCompatibilityToCsvDriver.cs) |
-| Record type                  | [`PackageCompatibility`](../../src/Worker.Logic/CatalogScan/Drivers/PackageCompatibilityToCsv/PackageCompatibility.cs)                       |
+|                              |                                                                                                                        |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Cardinality                  | Exactly one per package on NuGet.                                                                                      |
+| Child tables                 |                                                                                                                        |
+| Parent tables                |                                                                                                                        |
+| Column used for partitioning | Identity                                                                                                               |
+| Data file container name     | packagecompatibilities                                                                                                 |
+| Driver                       | [`PackageCompatibilityToCsv`](../drivers/PackageCompatibilityToCsv.md)                                                 |
+| Record type                  | [`PackageCompatibility`](../../src/Worker.Logic/CatalogScan/Drivers/PackageCompatibilityToCsv/PackageCompatibility.cs) |
 
 ## Table schema
 

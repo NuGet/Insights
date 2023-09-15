@@ -4,15 +4,15 @@ This table contains certificate metadata and validation results (for end certifi
 in any package signature. This includes code signing and timestamp certificate chains as well as the author and
 repository signature.
 
-|                              |                                                                                                                                        |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Cardinality                  | One row per certificate used in a package signature chain                                                                              |
-| Child tables                 |                                                                                                                                        |
-| Parent tables                | [PackageCertificates](PackageCertificates.md) joined on Fingerprint                                                                    |
-| Column used for partitioning | Fingerprint                                                                                                                            |
-| Data file container name     | certificates                                                                                                                           |
-| Driver implementation        | [`PackageCertificateToCsvDriver`](../../src/Worker.Logic/CatalogScan/Drivers/PackageCertificateToCsv/PackageCertificateToCsvDriver.cs) |
-| Record type                  | [`CertificateRecord`](../../src/Worker.Logic/CatalogScan/Drivers/PackageCertificateToCsv/CertificateRecord.cs)                         |
+|                              |                                                                                                                |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Cardinality                  | One row per certificate used in a package signature chain                                                      |
+| Child tables                 |                                                                                                                |
+| Parent tables                | [PackageCertificates](PackageCertificates.md) joined on Fingerprint                                            |
+| Column used for partitioning | Fingerprint                                                                                                    |
+| Data file container name     | certificates                                                                                                   |
+| Driver                       | [`PackageCertificateToCsv`](../drivers/PackageCertificateToCsv.md)                                             |
+| Record type                  | [`CertificateRecord`](../../src/Worker.Logic/CatalogScan/Drivers/PackageCertificateToCsv/CertificateRecord.cs) |
 
 ## Table schema
 

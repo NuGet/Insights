@@ -8,15 +8,15 @@ This table contains metadata about package licenses and full content of NuGet pa
 
 Licenses are optional so some packages have none of these types.
 
-|                              |                                                                                                                            |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Cardinality                  | Exactly one per package on NuGet.org                                                                                       |
-| Child tables                 |                                                                                                                            |
-| Parent tables                |                                                                                                                            |
-| Column used for partitioning | Identity                                                                                                                   |
-| Data file container name     | packagelicenses                                                                                                            |
-| Driver implementation        | [`PackageLicenseToCsvDriver`](../../src/Worker.Logic/CatalogScan/Drivers/PackageLicenseToCsv/PackageLicenseToCsvDriver.cs) |
-| Record type                  | [`PackageLicense`](../../src/Worker.Logic/CatalogScan/Drivers/PackageLicenseToCsv/PackageLicense.cs)                       |
+|                              |                                                                                                      |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Cardinality                  | Exactly one per package on NuGet.org                                                                 |
+| Child tables                 |                                                                                                      |
+| Parent tables                |                                                                                                      |
+| Column used for partitioning | Identity                                                                                             |
+| Data file container name     | packagelicenses                                                                                      |
+| Driver                       | [`PackageLicenseToCsv`](../drivers/PackageLicenseToCsv.md)                                           |
+| Record type                  | [`PackageLicense`](../../src/Worker.Logic/CatalogScan/Drivers/PackageLicenseToCsv/PackageLicense.cs) |
 
 ## Table schema
 

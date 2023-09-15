@@ -27,7 +27,10 @@ namespace NuGet.Insights.Worker
         public virtual void ReadMarkdown()
         {
             UnparsedMarkdown = File.ReadAllText(DocPath);
-            Pipeline = new MarkdownPipelineBuilder().UsePipeTables().Build();
+            Pipeline = new MarkdownPipelineBuilder()
+                .UsePipeTables()
+                .EnableTrackTrivia()
+                .Build();
             MarkdownDocument = Markdown.Parse(UnparsedMarkdown, Pipeline);
         }
 
@@ -47,6 +50,11 @@ namespace NuGet.Insights.Worker
         public Table GetTableAfterHeading(string heading)
         {
             return Assert.IsType<Table>(GetNextObject(heading));
+        }
+
+        public FencedCodeBlock GetFencedCodeBlockAfterHeading(string heading)
+        {
+            return Assert.IsType<FencedCodeBlock>(GetNextObject(heading));
         }
 
         public Block GetNextObject(string heading)

@@ -3,15 +3,15 @@
 This table contains metadata about all assemblies files on NuGet.org. The analysis and produced columns are focused on .NET assembly metadata.
 For simplicity, only files with the `.dll` or `.exe` file extension are analyzed.
 
-|                              |                                                                                                                               |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Cardinality                  | One or more rows per package, more than one if the package has multiple assemblies                                            |
-| Child tables                 |                                                                                                                               |
-| Parent tables                |                                                                                                                               |
-| Column used for partitioning | Identity                                                                                                                      |
-| Data file container name     | packageassemblies                                                                                                             |
-| Driver implementation        | [`PackageAssemblyToCsvDriver`](../../src/Worker.Logic/CatalogScan/Drivers/PackageAssemblyToCsv/PackageAssemblyToCsvDriver.cs) |
-| Record type                  | [`PackageAssembly`](../../src/Worker.Logic/CatalogScan/Drivers/PackageAssemblyToCsv/PackageAssembly.cs)                       |
+|                              |                                                                                                         |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Cardinality                  | One or more rows per package, more than one if the package has multiple assemblies                      |
+| Child tables                 |                                                                                                         |
+| Parent tables                |                                                                                                         |
+| Column used for partitioning | Identity                                                                                                |
+| Data file container name     | packageassemblies                                                                                       |
+| Driver                       | [`PackageAssemblyToCsv`](../drivers/PackageAssemblyToCsv.md)                                            |
+| Record type                  | [`PackageAssembly`](../../src/Worker.Logic/CatalogScan/Drivers/PackageAssemblyToCsv/PackageAssembly.cs) |
 
 ## Table schema
 

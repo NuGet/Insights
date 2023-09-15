@@ -3,15 +3,15 @@
 This table contains a subset of package content within each .nupkg on NuGet.org. The content included in the table is
 configurable by file extension and maximum cumulative file size per package.
 
-|                              |                                                                                                                             |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Cardinality                  | One or more rows per package, more than one if the package has multiple recognized assets                                   |
-| Child tables                 |                                                                                                                             |
-| Parent tables                |                                                                                                                             |
-| Column used for partitioning | Identity                                                                                                                    |
-| Data file container name     | packagecontents                                                                                                             |
-| Driver implementation        | [`PackageContentToCsvDriver`](../../src/Worker.Logic/CatalogScan/Drivers/PackageContentToCsv/PackageContentToCsvDriver.cs ) |
-| Record type                  | [`PackageContent`](../../src/Worker.Logic/CatalogScan/Drivers/PackageContentToCsv/PackageContent.cs)                        |
+|                              |                                                                                                      |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Cardinality                  | One or more rows per package, more than one if the package has multiple recognized assets            |
+| Child tables                 |                                                                                                      |
+| Parent tables                |                                                                                                      |
+| Column used for partitioning | Identity                                                                                             |
+| Data file container name     | packagecontents                                                                                      |
+| Driver                       | [`PackageContentToCsv`](../drivers/PackageContentToCsv.md)                                           |
+| Record type                  | [`PackageContent`](../../src/Worker.Logic/CatalogScan/Drivers/PackageContentToCsv/PackageContent.cs) |
 
 ## Table schema
 

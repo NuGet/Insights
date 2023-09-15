@@ -2,7 +2,7 @@
 
 This is a log of dollar and time cost for running the [drivers](../README.md#Drivers) in this project.
 
-*As of February 2021*
+*As of February 2021. No guarantees are made and we accept no responsibility for your Azure bill!*
 
 Tested timestamp range:
 - Min: `2015-02-01T06:22:45.8488496Z`

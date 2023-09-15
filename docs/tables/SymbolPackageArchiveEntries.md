@@ -4,15 +4,15 @@ This table contains metadata about the ZIP archive entries in the .snupkg (symbo
 metadata minimal special knowledge of NuGet-specific interpretation of the ZIP file entries. Note that not all
 packages have symbol packages.
 
-|                              |                                                                                                                                              |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Cardinality                  | One or more rows per package, more than one if the symbol package has multiple files in the ZIP (most do)                                    |
-| Child tables                 |                                                                                                                                              |
-| Parent tables                | [SymbolPackageArchives](SymbolPackageArchives.md) joined on Identity                                                                         |
-| Column used for partitioning | Identity                                                                                                                                     |
-| Data file container name     | symbolpackagearchiveentries                                                                                                                  |
-| Driver implementation        | [`SymbolPackageArchiveToCsvDriver`](../../src/Worker.Logic/CatalogScan/Drivers/SymbolPackageArchiveToCsv/SymbolPackageArchiveToCsvDriver.cs) |
-| Record type                  | [`SymbolPackageArchiveEntry`](../../src/Worker.Logic/CatalogScan/Drivers/SymbolPackageArchiveToCsv/SymbolPackageArchiveEntry.cs)             |
+|                              |                                                                                                                                  |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Cardinality                  | One or more rows per package, more than one if the symbol package has multiple files in the ZIP (most do)                        |
+| Child tables                 |                                                                                                                                  |
+| Parent tables                | [SymbolPackageArchives](SymbolPackageArchives.md) joined on Identity                                                             |
+| Column used for partitioning | Identity                                                                                                                         |
+| Data file container name     | symbolpackagearchiveentries                                                                                                      |
+| Driver                       | [`SymbolPackageArchiveToCsv`](../drivers/SymbolPackageArchiveToCsv.md)                                                           |
+| Record type                  | [`SymbolPackageArchiveEntry`](../../src/Worker.Logic/CatalogScan/Drivers/SymbolPackageArchiveToCsv/SymbolPackageArchiveEntry.cs) |
 
 ## Table schema
 

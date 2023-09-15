@@ -15,7 +15,7 @@ A verified package is one that has the blue checkmark icon on nuget.org and Visu
 | Parent tables                |                                                                                                                                  |
 | Column used for partitioning | LowerId                                                                                                                          |
 | Data file container name     | verifiedpackages                                                                                                                 |
-| Driver implementation        | [`VerifiedPackagesToCsvUpdater`](../../src/Worker.Logic/MessageProcessors/VerifiedPackagesToCsv/VerifiedPackagesToCsvUpdater.cs) |
+| Driver                       | [`VerifiedPackagesToCsvUpdater`](../../src/Worker.Logic/MessageProcessors/VerifiedPackagesToCsv/VerifiedPackagesToCsvUpdater.cs) |
 | Record type                  | [`VerifiedPackageRecord`](../../src/Worker.Logic/MessageProcessors/VerifiedPackagesToCsv/VerifiedPackageRecord.cs)               |
 
 ## Table schema

@@ -138,7 +138,7 @@ namespace NuGet.Insights.Worker
         public async Task<List<CatalogIndexScan>> AbortAllAsync()
         {
             var scans = new List<CatalogIndexScan>();
-            foreach (var driverType in _cursorService.StartableDriverTypes)
+            foreach (var driverType in CatalogScanCursorService.StartableDriverTypes)
             {
                 var scan = await AbortAsync(driverType);
                 if (scan is not null)
@@ -153,7 +153,7 @@ namespace NuGet.Insights.Worker
         public async Task DestroyAllOutputAsync()
         {
             var scans = new List<CatalogIndexScan>();
-            foreach (var driverType in _cursorService.StartableDriverTypes)
+            foreach (var driverType in CatalogScanCursorService.StartableDriverTypes)
             {
                 await DestroyOutputAsync(driverType);
             }
@@ -224,7 +224,7 @@ namespace NuGet.Insights.Worker
             }
 
             var results = new Dictionary<CatalogScanDriverType, CatalogScanServiceResult>();
-            foreach (var driverType in _cursorService.StartableDriverTypes)
+            foreach (var driverType in CatalogScanCursorService.StartableDriverTypes)
             {
                 var result = await UpdateAsync(driverType, max, onlyLatestLeaves: null, continueWithDependents: true);
                 results.Add(driverType, result);

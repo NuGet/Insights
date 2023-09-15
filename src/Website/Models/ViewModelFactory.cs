@@ -57,7 +57,7 @@ namespace NuGet.Insights.Website
             var workQueueTask = GetQueueAsync(QueueType.Work);
             var expandQueueTask = GetQueueAsync(QueueType.Expand);
 
-            var catalogScanTasks = _catalogScanCursorService
+            var catalogScanTasks = CatalogScanCursorService
                 .StartableDriverTypes
                 .Select(GetCatalogScanAsync)
                 .ToList();

@@ -151,7 +151,7 @@ namespace NuGet.Insights.Worker
             await _cursorStorageService.InitializeAsync();
         }
 
-        public IReadOnlyList<CatalogScanDriverType> StartableDriverTypes => SortedDriverTypes;
+        public static IReadOnlyList<CatalogScanDriverType> StartableDriverTypes => SortedDriverTypes;
 
         public string GetCursorName(CatalogScanDriverType driverType)
         {
@@ -213,15 +213,29 @@ namespace NuGet.Insights.Worker
             return KeyValuePair.Create(dependencyName, max);
         }
 
-        public IReadOnlyList<CatalogScanDriverType> GetDependencies(CatalogScanDriverType driverType, bool onlyDrivers)
+        public static IReadOnlyList<CatalogScanDriverType> GetDependencies(CatalogScanDriverType driverType)
         {
             var edges = GetEdges(driverType, Dependencies);
-            return onlyDrivers ? edges.Intersect(ValidDriverTypes).ToList() : edges;
+            return edges.Intersect(ValidDriverTypes).ToList();
         }
 
-        public IReadOnlyList<CatalogScanDriverType> GetDependents(CatalogScanDriverType driverType)
+        public static IReadOnlyList<CatalogScanDriverType> GetDependents(CatalogScanDriverType driverType)
         {
             return GetEdges(driverType, Dependents);
+        }
+
+        public static IReadOnlyList<CatalogScanDriverType> GetFlatContainerDependents()
+        {
+            var dependents = new List<CatalogScanDriverType>();
+            foreach ((var driverType, var dependencies) in Dependencies)
+            {
+                if (dependencies.Contains(FlatContainer))
+                {
+                    dependents.Add(driverType);
+                }
+            }
+
+            return dependents;
         }
 
         private static IReadOnlyList<CatalogScanDriverType> GetEdges(

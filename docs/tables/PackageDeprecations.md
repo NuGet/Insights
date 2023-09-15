@@ -9,7 +9,7 @@ This table has the latest deprecation status for every package. Package deprecat
 | Parent tables                |                                                                                                                       |
 | Column used for partitioning | Identity                                                                                                              |
 | Data file container name     | packagedeprecations                                                                                                   |
-| Driver implementation        | [`CatalogDataToCsvDriver`](../../src/Worker.Logic/CatalogScan/Drivers/CatalogDataToCsv/CatalogDataToCsvDriver.cs)     |
+| Driver                       | [`CatalogDataToCsv`](../drivers/CatalogDataToCsv.md)                                                                  |
 | Record type                  | [`PackageDeprecationRecord`](../../src/Worker.Logic/CatalogScan/Drivers/CatalogDataToCsv/PackageDeprecationRecord.cs) |
 
 ## Table schema

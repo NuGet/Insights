@@ -3,15 +3,15 @@
 This table contains metadata about the ZIP archive that is the package .nupkg. This is low level ZIP metadata without
 any special knowledge of NuGet-specific interpretation of the ZIP file.
 
-|                              |                                                                                                                            |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Cardinality                  | Exactly one per package on NuGet.org                                                                                       |
-| Child tables                 | [PackageArchiveEntries](PackageArchiveEntries.md) joined on Identity                                                       |
-| Parent tables                |                                                                                                                            |
-| Column used for partitioning | Identity                                                                                                                   |
-| Data file container name     | packagearchives                                                                                                            |
-| Driver implementation        | [`PackageArchiveToCsvDriver`](../../src/Worker.Logic/CatalogScan/Drivers/PackageArchiveToCsv/PackageArchiveToCsvDriver.cs) |
-| Record type                  | [`PackageArchiveRecord`](../../src/Worker.Logic/CatalogScan/Drivers/PackageArchiveToCsv/PackageArchiveRecord.cs)           |
+|                              |                                                                                                                  |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Cardinality                  | Exactly one per package on NuGet.org                                                                             |
+| Child tables                 | [PackageArchiveEntries](PackageArchiveEntries.md) joined on Identity                                             |
+| Parent tables                |                                                                                                                  |
+| Column used for partitioning | Identity                                                                                                         |
+| Data file container name     | packagearchives                                                                                                  |
+| Driver                       | [`PackageArchiveToCsv`](../drivers/PackageArchiveToCsv.md)                                                       |
+| Record type                  | [`PackageArchiveRecord`](../../src/Worker.Logic/CatalogScan/Drivers/PackageArchiveToCsv/PackageArchiveRecord.cs) |
 
 ## Table schema
 

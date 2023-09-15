@@ -1,6 +1,6 @@
 # Blog posts
 
-I've written several blog posts based on findings in this project:
+Joel Verhagen (original author of NuGet Insights) has written several blog posts based on findings in this project:
 
 - [Disk write performance on Azure Functions](https://www.joelverhagen.com/blog/2021/02/azure-function-disk-performance) - use the Azure File Share efficiently in Consumption plan
   - Recommendations are implemented in [`TempStreamWriter.cs`](../src/Logic/TempStream/TempStreamWriter.cs).

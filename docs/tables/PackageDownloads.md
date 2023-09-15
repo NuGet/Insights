@@ -9,7 +9,7 @@ This table contains the current total download count for packages. This table co
 | Parent tables                |                                                                                                             |
 | Column used for partitioning | Identity                                                                                                    |
 | Data file container name     | packagedownloads                                                                                            |
-| Driver implementation        | [`DownloadsToCsvUpdater`](../../src/Worker.Logic/MessageProcessors/DownloadsToCsv/DownloadsToCsvUpdater.cs) |
+| Driver                       | [`DownloadsToCsvUpdater`](../../src/Worker.Logic/MessageProcessors/DownloadsToCsv/DownloadsToCsvUpdater.cs) |
 | Record type                  | [`PackageDownloadRecord`](../../src/Worker.Logic/MessageProcessors/DownloadsToCsv/PackageDownloadRecord.cs) |
 
 ## Table schema

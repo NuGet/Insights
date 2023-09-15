@@ -24,6 +24,7 @@ namespace NuGet.Insights.Worker
         public void IsNotOverwritingTestData()
         {
             Assert.False(OverwriteTestData);
+            Assert.False(DriverDocsTest.OverwriteDriverDocs);
         }
 
         [Fact]

@@ -147,7 +147,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             {
                 if (commitTimestamp < data.V1.CommitTimestamp)
                 {
-                    _logger.LogInformation("The version set in storage is new than the provided data. No update will be done.");
+                    _logger.LogInformation("The version set in storage is newer than the provided data. No update will be done.");
                     return;
                 }
 

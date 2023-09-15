@@ -2,15 +2,15 @@
 
 This table has parsed information about each package version, as well as it's "latest" status within each respective package ID. This table allows you to reason about SemVer order of package versions without having native SemVer ordering or parsing support in your data or query system.
 
-|                              |                                                                                                                            |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Cardinality                  | Exactly one per package on NuGet.org                                                                                       |
-| Child tables                 |                                                                                                                            |
-| Parent tables                |                                                                                                                            |
-| Column used for partitioning | LowerId                                                                                                                    |
-| Data file container name     | packageversions                                                                                                            |
-| Driver implementation        | [`PackageVersionToCsvDriver`](../../src/Worker.Logic/CatalogScan/Drivers/PackageVersionToCsv/PackageVersionToCsvDriver.cs) |
-| Record type                  | [`PackageVersionRecord`](../../src/Worker.Logic/CatalogScan/Drivers/PackageVersionToCsv/PackageVersionRecord.cs)           |
+|                              |                                                                                                                  |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Cardinality                  | Exactly one per package on NuGet.org                                                                             |
+| Child tables                 |                                                                                                                  |
+| Parent tables                |                                                                                                                  |
+| Column used for partitioning | LowerId                                                                                                          |
+| Data file container name     | packageversions                                                                                                  |
+| Driver                       | [`PackageVersionToCsv`](../drivers/PackageVersionToCsv.md)                                                       |
+| Record type                  | [`PackageVersionRecord`](../../src/Worker.Logic/CatalogScan/Drivers/PackageVersionToCsv/PackageVersionRecord.cs) |
 
 ## Table schema
 
