@@ -2,7 +2,7 @@
 
 [CmdletBinding()]
 param (
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [ValidateSet("win-x64", "linux-x64", "osx-x64")]
     [string]$RuntimeIdentifier,
 
@@ -38,6 +38,20 @@ begin {
 }
 
 process {
+    if (!$RuntimeIdentifier) {
+        if ($IsLinux) {
+            $RuntimeIdentifier = "linux-x64"
+        }
+        elseif ($IsMacOS) {
+            $RuntimeIdentifier = "osx-x64"
+        }
+        else {
+            $RuntimeIdentifier = "win-x64"
+        }
+
+        Write-Host "The -RuntimeIdentifier parameter has been given a default value of '$RuntimeIdentifier'."
+    }
+    
     Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1")
 
     $resourceSettings = Get-ResourceSettings $ConfigName $StampName
