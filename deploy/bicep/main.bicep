@@ -49,10 +49,6 @@ param spotWorkerAdminPassword string = ''
 param spotWorkerSpecs array = []
 
 // Shared resources
-resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' existing = {
-  name: storageAccountName
-}
-
 resource userManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: userManagedIdentityName
   location: location

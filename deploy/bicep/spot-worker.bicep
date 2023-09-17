@@ -289,135 +289,135 @@ resource autoscale 'Microsoft.Insights/autoscalesettings@2015-04-01' = {
 // Calculated using this resource: https://github.com/joelverhagen/data-azure-spot-vms/blob/main/vm-skus.csv
 // If a SKU has both a CacheDisk and a ResourceDisk with a capacity of a least 30 GB, the larger is selected.
 var skuInfo = {
-  'Standard_D2a_v4': {
+  Standard_D2a_v4: {
     diskSizeGB: 50
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_D2ads_v5': {
+  Standard_D2ads_v5: {
     diskSizeGB: 75
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_D2as_v4': {
+  Standard_D2as_v4: {
     diskSizeGB: 50
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_D2d_v4': {
+  Standard_D2d_v4: {
     diskSizeGB: 75
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_D2d_v5': {
+  Standard_D2d_v5: {
     diskSizeGB: 75
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_D2ds_v4': {
+  Standard_D2ds_v4: {
     diskSizeGB: 75
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_D2ds_v5': {
+  Standard_D2ds_v5: {
     diskSizeGB: 75
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_D2s_v3': {
+  Standard_D2s_v3: {
     diskSizeGB: 50
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_D4a_v4': {
+  Standard_D4a_v4: {
     diskSizeGB: 100
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_D4ads_v5': {
+  Standard_D4ads_v5: {
     diskSizeGB: 150
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_D4as_v4': {
+  Standard_D4as_v4: {
     diskSizeGB: 100
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_D4d_v4': {
+  Standard_D4d_v4: {
     diskSizeGB: 150
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_D4d_v5': {
+  Standard_D4d_v5: {
     diskSizeGB: 150
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_D4ds_v4': {
+  Standard_D4ds_v4: {
     diskSizeGB: 150
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_D4ds_v5': {
+  Standard_D4ds_v5: {
     diskSizeGB: 150
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_D4s_v3': {
+  Standard_D4s_v3: {
     diskSizeGB: 100
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_D8a_v4': {
+  Standard_D8a_v4: {
     diskSizeGB: 200
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_D8ads_v5': {
+  Standard_D8ads_v5: {
     diskSizeGB: 300
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_D8as_v4': {
-    diskSizeGB: 200
-    diffDiskPlacement: 'CacheDisk'
-  }
-  'Standard_D8d_v4': {
-    diskSizeGB: 300
-    diffDiskPlacement: 'ResourceDisk'
-  }
-  'Standard_D8d_v5': {
-    diskSizeGB: 300
-    diffDiskPlacement: 'ResourceDisk'
-  }
-  'Standard_D8ds_v4': {
-    diskSizeGB: 300
-    diffDiskPlacement: 'ResourceDisk'
-  }
-  'Standard_D8ds_v5': {
-    diskSizeGB: 300
-    diffDiskPlacement: 'ResourceDisk'
-  }
-  'Standard_D8s_v3': {
+  Standard_D8as_v4: {
     diskSizeGB: 200
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_DC2ads_v5': {
+  Standard_D8d_v4: {
+    diskSizeGB: 300
+    diffDiskPlacement: 'ResourceDisk'
+  }
+  Standard_D8d_v5: {
+    diskSizeGB: 300
+    diffDiskPlacement: 'ResourceDisk'
+  }
+  Standard_D8ds_v4: {
+    diskSizeGB: 300
+    diffDiskPlacement: 'ResourceDisk'
+  }
+  Standard_D8ds_v5: {
+    diskSizeGB: 300
+    diffDiskPlacement: 'ResourceDisk'
+  }
+  Standard_D8s_v3: {
+    diskSizeGB: 200
+    diffDiskPlacement: 'CacheDisk'
+  }
+  Standard_DC2ads_v5: {
     diskSizeGB: 75
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_DC2ds_v3': {
+  Standard_DC2ds_v3: {
     diskSizeGB: 150
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_DC2s_v2': {
+  Standard_DC2s_v2: {
     diskSizeGB: 100
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_DC4ads_v5': {
+  Standard_DC4ads_v5: {
     diskSizeGB: 150
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_DC4ds_v3': {
+  Standard_DC4ds_v3: {
     diskSizeGB: 300
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_DC4s_v2': {
+  Standard_DC4s_v2: {
     diskSizeGB: 200
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_DC8_v2': {
+  Standard_DC8_v2: {
     diskSizeGB: 400
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_DC8ads_v5': {
+  Standard_DC8ads_v5: {
     diskSizeGB: 300
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_DS11_v2': {
+  Standard_DS11_v2: {
     diskSizeGB: 72
     diffDiskPlacement: 'CacheDisk'
   }
@@ -425,11 +425,11 @@ var skuInfo = {
     diskSizeGB: 72
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_DS11': {
+  Standard_DS11: {
     diskSizeGB: 72
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_DS12_v2': {
+  Standard_DS12_v2: {
     diskSizeGB: 144
     diffDiskPlacement: 'CacheDisk'
   }
@@ -441,63 +441,63 @@ var skuInfo = {
     diskSizeGB: 144
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_DS12': {
+  Standard_DS12: {
     diskSizeGB: 144
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_DS2_v2': {
+  Standard_DS2_v2: {
     diskSizeGB: 86
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_DS2': {
+  Standard_DS2: {
     diskSizeGB: 86
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_DS3_v2': {
+  Standard_DS3_v2: {
     diskSizeGB: 172
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_DS3': {
+  Standard_DS3: {
     diskSizeGB: 172
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_DS4_v2': {
+  Standard_DS4_v2: {
     diskSizeGB: 344
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_DS4': {
+  Standard_DS4: {
     diskSizeGB: 344
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_E2a_v4': {
+  Standard_E2a_v4: {
     diskSizeGB: 50
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_E2ads_v5': {
+  Standard_E2ads_v5: {
     diskSizeGB: 75
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_E2as_v4': {
+  Standard_E2as_v4: {
     diskSizeGB: 50
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_E2bds_v5': {
+  Standard_E2bds_v5: {
     diskSizeGB: 75
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_E2d_v5': {
+  Standard_E2d_v5: {
     diskSizeGB: 75
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_E2ds_v4': {
+  Standard_E2ds_v4: {
     diskSizeGB: 75
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_E2ds_v5': {
+  Standard_E2ds_v5: {
     diskSizeGB: 75
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_E2s_v3': {
+  Standard_E2s_v3: {
     diskSizeGB: 50
     diffDiskPlacement: 'CacheDisk'
   }
@@ -521,91 +521,91 @@ var skuInfo = {
     diskSizeGB: 100
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_E4a_v4': {
+  Standard_E4a_v4: {
     diskSizeGB: 100
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_E4ads_v5': {
+  Standard_E4ads_v5: {
     diskSizeGB: 150
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_E4as_v4': {
-    diskSizeGB: 100
-    diffDiskPlacement: 'CacheDisk'
-  }
-  'Standard_E4bds_v5': {
-    diskSizeGB: 150
-    diffDiskPlacement: 'ResourceDisk'
-  }
-  'Standard_E4d_v5': {
-    diskSizeGB: 150
-    diffDiskPlacement: 'ResourceDisk'
-  }
-  'Standard_E4ds_v4': {
-    diskSizeGB: 150
-    diffDiskPlacement: 'ResourceDisk'
-  }
-  'Standard_E4ds_v5': {
-    diskSizeGB: 150
-    diffDiskPlacement: 'ResourceDisk'
-  }
-  'Standard_E4s_v3': {
+  Standard_E4as_v4: {
     diskSizeGB: 100
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_EC2ads_v5': {
+  Standard_E4bds_v5: {
+    diskSizeGB: 150
+    diffDiskPlacement: 'ResourceDisk'
+  }
+  Standard_E4d_v5: {
+    diskSizeGB: 150
+    diffDiskPlacement: 'ResourceDisk'
+  }
+  Standard_E4ds_v4: {
+    diskSizeGB: 150
+    diffDiskPlacement: 'ResourceDisk'
+  }
+  Standard_E4ds_v5: {
+    diskSizeGB: 150
+    diffDiskPlacement: 'ResourceDisk'
+  }
+  Standard_E4s_v3: {
+    diskSizeGB: 100
+    diffDiskPlacement: 'CacheDisk'
+  }
+  Standard_EC2ads_v5: {
     diskSizeGB: 75
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_EC4ads_v5': {
+  Standard_EC4ads_v5: {
     diskSizeGB: 150
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_F16s_v2': {
+  Standard_F16s_v2: {
     diskSizeGB: 256
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_F16s': {
+  Standard_F16s: {
     diskSizeGB: 192
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_F2s_v2': {
+  Standard_F2s_v2: {
     diskSizeGB: 32
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_F4s_v2': {
+  Standard_F4s_v2: {
     diskSizeGB: 64
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_F4s': {
+  Standard_F4s: {
     diskSizeGB: 48
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_F8s_v2': {
+  Standard_F8s_v2: {
     diskSizeGB: 128
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_F8s': {
+  Standard_F8s: {
     diskSizeGB: 96
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_GS1': {
+  Standard_GS1: {
     diskSizeGB: 264
     diffDiskPlacement: 'CacheDisk'
   }
-  'Standard_L4s': {
+  Standard_L4s: {
     diskSizeGB: 678
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_NC4as_T4_v3': {
+  Standard_NC4as_T4_v3: {
     diskSizeGB: 176
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_NV4as_v4': {
+  Standard_NV4as_v4: {
     diskSizeGB: 88
     diffDiskPlacement: 'ResourceDisk'
   }
-  'Standard_NV8as_v4': {
+  Standard_NV8as_v4: {
     diskSizeGB: 176
     diffDiskPlacement: 'ResourceDisk'
   }

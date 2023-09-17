@@ -25,7 +25,7 @@ resource userManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2
   name: userManagedIdentityName
 }
 
-var sakConnectionString = 'AccountName=${storageAccountName};AccountKey=${listkeys(storageAccount.id, storageAccount.apiVersion).keys[0].value};DefaultEndpointsProtocol=https;EndpointSuffix=${environment().suffixes.storage}'
+var sakConnectionString = 'AccountName=${storageAccountName};AccountKey=${storageAccount.listkeys().keys[0].value};DefaultEndpointsProtocol=https;EndpointSuffix=${environment().suffixes.storage}'
 var isConsumptionPlan = sku == 'Y1'
 
 resource workerPlan 'Microsoft.Web/serverfarms@2020-09-01' = {
