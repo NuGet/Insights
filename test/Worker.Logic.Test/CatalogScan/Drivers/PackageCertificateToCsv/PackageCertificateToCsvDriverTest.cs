@@ -89,7 +89,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             var genericPolicies = JsonConvert.DeserializeObject<List<X509PolicyInfo>>(certificate.Policies);
             Assert.Equal(2, genericPolicies.Count);
             Assert.Equal("2.16.840.1.114412.3.2", genericPolicies[0].PolicyIdentifier);
-            Assert.Equal(1, genericPolicies[0].PolicyQualifiers.Count);
+            Assert.Single(genericPolicies[0].PolicyQualifiers);
             Assert.Equal(Oids.IdQtCps.Value, genericPolicies[0].PolicyQualifiers[0].PolicyQualifierId);
             Assert.Equal("2.23.140.1.3", genericPolicies[1].PolicyIdentifier);
             Assert.Empty(genericPolicies[1].PolicyQualifiers);

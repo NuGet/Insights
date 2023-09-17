@@ -199,7 +199,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             return validations;
         }
 
-        private Validation GetLeftRightValidation(string leftTable, string rightTable, string column, string comparisonType, string joinQuery)
+        private static Validation GetLeftRightValidation(string leftTable, string rightTable, string column, string comparisonType, string joinQuery)
         {
             var query = $@"{joinQuery} on {column}
 | where isempty({column}) or isempty({column}1)

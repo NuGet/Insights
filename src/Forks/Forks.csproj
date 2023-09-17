@@ -4,7 +4,6 @@
     <AssemblyName>NuGet.Insights.Forks</AssemblyName>
     <RootNamespace>NuGet.Insights</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <LangVersion>10.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="NuGet.Commands" />

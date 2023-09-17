@@ -11,12 +11,12 @@ namespace NuGet.Insights
     {
         public static string ToUpperHex(this byte[] bytes)
         {
-            return BitConverter.ToString(bytes).Replace("-", string.Empty).ToUpperInvariant();
+            return Convert.ToHexString(bytes);
         }
 
         public static string ToLowerHex(this byte[] bytes)
         {
-            return BitConverter.ToString(bytes).Replace("-", string.Empty).ToLowerInvariant();
+            return Convert.ToHexString(bytes).ToLowerInvariant();
         }
 
         public static string ToBase64(this byte[] bytes)

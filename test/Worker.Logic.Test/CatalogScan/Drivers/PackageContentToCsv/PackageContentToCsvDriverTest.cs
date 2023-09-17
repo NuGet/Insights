@@ -546,7 +546,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var records = output.Value.Records;
-            Assert.Equal(1, records.Count);
+            Assert.Single(records);
             Assert.All(records, r => Assert.Equal(PackageContentResultType.AllLoaded, r.ResultType));
             Assert.All(records, r => Assert.Equal(".txt", r.FileExtension));
 
@@ -578,7 +578,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var records = output.Value.Records;
-            Assert.Equal(1, records.Count);
+            Assert.Single(records);
             Assert.All(records, r => Assert.Equal(PackageContentResultType.AllLoaded, r.ResultType));
             Assert.All(records, r => Assert.Equal("cense", r.FileExtension));
 
@@ -608,7 +608,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var records = output.Value.Records;
-            Assert.Equal(1, records.Count);
+            Assert.Single(records);
             Assert.All(records, r => Assert.Equal(PackageContentResultType.AllLoaded, r.ResultType));
             Assert.All(records, r => Assert.Equal(".txt", r.FileExtension));
 

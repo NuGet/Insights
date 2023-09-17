@@ -20,7 +20,7 @@ namespace NuGet.Insights
     {
         private const int DefaultMaxTries = 3;
 
-        internal static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
+        internal static readonly JsonSerializerOptions JsonSerializerOptions = new()
         {
             Converters =
             {
@@ -193,7 +193,7 @@ namespace NuGet.Insights
                         nuGetLogger,
                         token);
                 }
-                catch (Exception ex) when (ShouldRetryStreamException(attempt, fetchedHeaders, token, ex))
+                catch (Exception ex) when (ShouldRetryStreamException(attempt, fetchedHeaders, ex, token))
                 {
                     logger.LogTransientWarning(ex, "On attempt {Attempt}, processing the stream response body failed. Trying again.", attempt);
                 }
@@ -227,14 +227,14 @@ namespace NuGet.Insights
                         nuGetLogger,
                         token);
                 }
-                catch (Exception ex) when (ShouldRetryStreamException(attempt, fetchedHeaders, token, ex))
+                catch (Exception ex) when (ShouldRetryStreamException(attempt, fetchedHeaders, ex, token))
                 {
                     logger.LogTransientWarning(ex, "On attempt {Attempt}, processing the response body for {Url} failed. Trying again.", attempt, url);
                 }
             }
         }
 
-        private static bool ShouldRetryStreamException(int attempt, bool fetchedHeaders, CancellationToken token, Exception ex)
+        private static bool ShouldRetryStreamException(int attempt, bool fetchedHeaders, Exception ex, CancellationToken token)
         {
             return attempt < 3
                 && fetchedHeaders
@@ -294,24 +294,22 @@ namespace NuGet.Insights
                 async stream =>
                 {
                     var buffer = new byte[16 * 1024];
-                    using (var md5 = MD5.Create())
+                    using var md5 = MD5.Create();
+                    int read;
+                    do
                     {
-                        int read;
-                        do
-                        {
-                            read = await stream.ReadAsync(buffer, 0, buffer.Length);
-                            md5.TransformBlock(buffer, 0, read, buffer, 0);
-                        }
-                        while (read > 0);
-
-                        md5.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
-                        var contentMD5 = md5.Hash!.ToLowerHex();
-
-                        return new BlobMetadata(
-                            exists: true,
-                            hasContentMD5Header: false,
-                            contentMD5: contentMD5);
+                        read = await stream.ReadAsync(buffer);
+                        md5.TransformBlock(buffer, 0, read, buffer, 0);
                     }
+                    while (read > 0);
+
+                    md5.TransformFinalBlock(Array.Empty<byte>(), 0, 0);
+                    var contentMD5 = md5.Hash!.ToLowerHex();
+
+                    return new BlobMetadata(
+                        exists: true,
+                        hasContentMD5Header: false,
+                        contentMD5: contentMD5);
                 },
                 logger,
                 token);

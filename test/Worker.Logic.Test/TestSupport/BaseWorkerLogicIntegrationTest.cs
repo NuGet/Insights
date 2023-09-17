@@ -530,8 +530,7 @@ namespace NuGet.Insights.Worker
 
                     if (entity.V1.Available)
                     {
-                        using var algorithm = SHA256.Create();
-                        mzipHash = algorithm.ComputeHash(entity.V1.MZipBytes.ToArray()).ToLowerHex();
+                        mzipHash = SHA256.HashData(entity.V1.MZipBytes.Span).ToLowerHex();
                         httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders, ignore: Enumerable.Empty<string>());
                     }
 
@@ -618,7 +617,7 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        private void SetBlobResponseHeaders(HttpResponseMessage response, string sourcePath)
+        private static void SetBlobResponseHeaders(HttpResponseMessage response, string sourcePath)
         {
             using (var fileStream = File.OpenRead(sourcePath))
             {
@@ -707,7 +706,7 @@ namespace NuGet.Insights.Worker
                 fileName: fileName ?? "subject-to-owner.json");
         }
 
-        private ICslAdminProvider GetKustoAdminClient()
+        private static ICslAdminProvider GetKustoAdminClient()
         {
             var connectionStringBuilder = ServiceCollectionExtensions.GetKustoConnectionStringBuilder(new NuGetInsightsWorkerSettings
             {
