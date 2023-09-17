@@ -638,6 +638,26 @@ function Approve-SubscriptionId($configuredSubscriptionId) {
     Write-Status "Using subscription: $($context.Subscription.Id)"
 }
 
+function Get-ConfigNameDynamicParameter($type, $name) {
+    $parameterAttribute = [System.Management.Automation.ParameterAttribute]@{
+        Mandatory = $true
+    }
+
+    $configNames = Get-ChildItem -Path (Join-Path $PSScriptRoot "../config/*.json") | Select-Object -ExpandProperty BaseName
+    $validateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($configNames)
+
+    $attributeCollection = [System.Collections.ObjectModel.Collection[System.Attribute]]::new()
+    $attributeCollection.Add($parameterAttribute)
+    $attributeCollection.Add($validateSetAttribute)
+    
+    
+    $parameter = [System.Management.Automation.RuntimeDefinedParameter]::new(
+        $name, $type, $attributeCollection
+    )
+
+    return $parameter
+}
+
 function Get-DeploymentLocals($DeploymentLabel, $DeploymentDir) {
     if (!$DeploymentLabel) {
         $DeploymentLabel = (Get-Date).ToUniversalTime().ToString("yyyyMMddHHmmss")
