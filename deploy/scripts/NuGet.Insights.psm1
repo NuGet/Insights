@@ -106,6 +106,9 @@ class ResourceSettings {
     
     [ValidateNotNullOrEmpty()]
     [bool]$UseSpotWorkers
+
+    [ValidateNotNullOrEmpty()]
+    [string]$RuntimeIdentifier
     
     [string]$SpotWorkerAdminUsername
     [string]$SpotWorkerAdminPassword
@@ -125,13 +128,15 @@ class ResourceSettings {
         [string]$StampName,
         [Hashtable]$DeploymentConfig,
         [Hashtable]$WebsiteConfig,
-        [Hashtable]$WorkerConfig) {
+        [Hashtable]$WorkerConfig,
+        [string]$RuntimeIdentifier) {
 
         # Required settings
         $this.ConfigName = $ConfigName
         $this.StampName = $StampName
         $this.WebsiteConfig = $WebsiteConfig
         $this.WorkerConfig = $WorkerConfig
+        $this.RuntimeIdentifier = $RuntimeIdentifier
 
         $defaults = New-Object System.Collections.ArrayList
         function Set-OrDefault($key, $default, $target, $keyPrefix) {
@@ -230,7 +235,7 @@ class ResourceSettings {
         $this.LeaseContainerName = "leases"
         $this.RegenerationPeriod = New-TimeSpan -Days 14
 
-        $isNuGetPackageExplorerToCsvEnabled = "NuGetPackageExplorerToCsv" -notin $this.WorkerConfig["NuGet.Insights"].DisabledDrivers
+        $isNuGetPackageExplorerToCsvEnabled = "NuGetPackageExplorerToCsv" -notin $this.WorkerConfig["NuGetInsights"].DisabledDrivers
         $isConsumptionPlan = $this.WorkerSku -eq "Y1"
         
         if ($isNuGetPackageExplorerToCsvEnabled) {
@@ -239,8 +244,8 @@ class ResourceSettings {
                 # Package Explorer symbol validation APIs are hard-coded to use TEMP and can quickly fill up the small TEMP
                 # capacity on consumption plan (~500 MiB). Therefore, we move TEMP to HOME at the start of the process. HOME
                 # points to a Azure Storage File share which has no capacity issues.
-                if ($null -eq $this.WorkerConfig["NuGet.Insights"].MoveTempToHome) {
-                    $this.WorkerConfig["NuGet.Insights"].MoveTempToHome = $true
+                if ($null -eq $this.WorkerConfig["NuGetInsights"].MoveTempToHome) {
+                    $this.WorkerConfig["NuGetInsights"].MoveTempToHome = $true
                 }
     
                 # Default the maximum number of workers per Function App plan to 16 when NuGetPackageExplorerToCsv is enabled.
@@ -356,7 +361,7 @@ function ConvertTo-FlatConfig {
     process {
         function MakeKeys($output, $prefix, $current) {
             if ($prefix) {
-                $nextPrefix = $prefix + ":"
+                $nextPrefix = $prefix + "__"
             }
             else {
                 $nextPrefix = ""
@@ -402,17 +407,17 @@ function ConvertTo-NameValuePairs {
 }
 
 function Get-ConfigPath($ConfigName) {
-    Join-Path $PSScriptRoot "../config/$ConfigName.json"
+    return [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../config/$ConfigName.json"))
 }
 
-function Get-ResourceSettings($ConfigName, $StampName) {
+function Get-ResourceSettings($ConfigName, $StampName, $RuntimeIdentifier) {
     $configPath = Get-ConfigPath $ConfigName
     Write-Status "Using config path: $configPath"
     $StampName = if (!$StampName) { $ConfigName } else { $StampName }
     Write-Status "Using stamp name: $StampName"
 
     function Get-Config() { Get-Content $configPath | ConvertFrom-Json | ConvertTo-Hashtable }
-    function Get-AppConfig() { @{ "NuGet.Insights" = @{} } }
+    function Get-AppConfig() { @{ "NuGetInsights" = @{} } }
 
     # Prepare the website config
     $websiteConfig = Get-Config
@@ -430,7 +435,8 @@ function Get-ResourceSettings($ConfigName, $StampName) {
         $StampName,
         $deploymentConfig,
         $WebsiteConfig,
-        $WorkerConfig)
+        $WorkerConfig,
+        $RuntimeIdentifier)
 }
 
 function New-WorkerStandaloneEnv($ResourceSettings) {
@@ -448,9 +454,9 @@ function New-WorkerStandaloneEnv($ResourceSettings) {
     $config["AzureWebJobsStorage__accountName"] = $ResourceSettings.StorageAccountName;
     $config["AzureWebJobsStorage__clientId"] = "PLACEHOLDER";
     $config["AzureWebJobsStorage__credential"] = "managedidentity";
-    $config["NuGet.Insights:LeaseContainerName"] = $ResourceSettings.LeaseContainerName;
-    $config["NuGet.Insights:StorageAccountName"] = $ResourceSettings.StorageAccountName;
-    $config["NuGet.Insights:UserManagedIdentityClientId"] = "PLACEHOLDER";
+    $config["NuGetInsights__LeaseContainerName"] = $ResourceSettings.LeaseContainerName;
+    $config["NuGetInsights__StorageAccountName"] = $ResourceSettings.StorageAccountName;
+    $config["NuGetInsights__UserManagedIdentityClientId"] = "PLACEHOLDER";
     $config["QueueTriggerConnection__clientId"] = "PLACEHOLDER";
     $config["QueueTriggerConnection__credential"] = "managedidentity";
     $config["QueueTriggerConnection__queueServiceUri"] = "https://$($ResourceSettings.StorageAccountName).queue.$($ResourceSettings.StorageEndpointSuffix)/";
@@ -488,6 +494,16 @@ function New-MainParameters(
     $InstallWorkerStandaloneUrl,
     $DeploymentLabel) {
 
+    if ($ResourceSettings.RuntimeIdentifier -eq "linux-x64") {
+        $isDeploymentLinux = $true
+    }
+    elseif ($ResourceSettings.RuntimeIdentifier -eq "win-x64") {
+        $isDeploymentLinux = $false
+    }
+    else {
+        throw "Unexpected runtime identifier '$($ResourceSettings.RuntimeIdentifier)' for deployment. Only 'win-x64' and 'linux-64' are supported. macOS app services are not supported by Azure."
+    }
+
     $parameters = @{
         actionGroupName           = $ResourceSettings.ActionGroupName;
         actionGroupShortName      = $ResourceSettings.ActionGroupShortName;
@@ -504,6 +520,7 @@ function New-MainParameters(
         userManagedIdentityName   = $ResourceSettings.UserManagedIdentityName;
         websiteAadClientId        = $ResourceSettings.WebsiteAadAppClientId;
         websiteConfig             = @($ResourceSettings.WebsiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
+        websiteIsLinux            = $isDeploymentLinux;
         websiteName               = $ResourceSettings.WebsiteName;
         websiteZipUrl             = $websiteZipUrl;
         workerAutoscaleNamePrefix = $ResourceSettings.WorkerAutoscaleNamePrefix;
@@ -518,6 +535,7 @@ function New-MainParameters(
         workerPlanLocations       = $ResourceSettings.WorkerPlanLocations;
         workerPlanNamePrefix      = $ResourceSettings.WorkerPlanNamePrefix;
         workerSku                 = $ResourceSettings.WorkerSku;
+        workerIsLinux             = $isDeploymentLinux;
         workerZipUrl              = $workerZipUrl
     }
 
@@ -665,11 +683,28 @@ function Get-DeploymentLocals($DeploymentLabel, $DeploymentDir) {
     }
 
     if (!$DeploymentDir) {
-        $DeploymentDir = Join-Path $PSScriptRoot "../../artifacts/deploy"
+        $DeploymentDir = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../../artifacts/deploy"))
         Write-Status "Using deployment directory: $DeploymentDir"
     }
 
     return $DeploymentLabel, $DeploymentDir
+}
+
+function Get-DefaultRuntimeIdentifier($RuntimeIdentifier, $WriteDefault = $true) {
+    if (!$RuntimeIdentifier) {
+        if ($IsLinux -or $IsMacOs) {
+            $RuntimeIdentifier = "linux-x64"
+        }
+        else {
+            $RuntimeIdentifier = "win-x64"
+        }
+
+        if ($WriteDefault) {
+            Write-Host "The -RuntimeIdentifier parameter has been given a default value of '$RuntimeIdentifier'." -ForegroundColor Green
+        }
+    }
+
+    return $RuntimeIdentifier
 }
 
 # Source: https://stackoverflow.com/a/57599481

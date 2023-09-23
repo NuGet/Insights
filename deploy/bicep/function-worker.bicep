@@ -5,6 +5,7 @@ param location string
 
 param planName string
 param sku string
+param isLinux bool
 
 param autoscaleName string
 param minInstances int
@@ -28,11 +29,19 @@ resource userManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2
 var sakConnectionString = 'AccountName=${storageAccountName};AccountKey=${storageAccount.listkeys().keys[0].value};DefaultEndpointsProtocol=https;EndpointSuffix=${environment().suffixes.storage}'
 var isConsumptionPlan = sku == 'Y1'
 
+// See: https://learn.microsoft.com/en-us/azure/azure-functions/run-functions-from-deployment-package#using-website_run_from_package--url
+// Also, I've see weird deployment timeouts or "Central directory corrupt" errors when using ZipDeploy on Linux.
+var runFromZipUrl = isLinux
+
 resource workerPlan 'Microsoft.Web/serverfarms@2020-09-01' = {
   name: planName
   location: location
+  kind: 'functionapp'
   sku: {
     name: sku
+  }
+  properties: {
+    reserved: isLinux
   }
 }
 
@@ -96,17 +105,17 @@ resource workerPlanAutoScale 'Microsoft.Insights/autoscalesettings@2015-04-01' =
 }
 
 var workerConfigWithStorage = concat(isConsumptionPlan ? [
-  {
-    name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-    // SAS-based connection strings don't work for this property
-    value: sakConnectionString
-  }
-] : [], config)
+    {
+      name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
+      // SAS-based connection strings don't work for this property
+      value: sakConnectionString
+    }
+  ] : [], config)
 
-resource worker 'Microsoft.Web/sites@2020-09-01' = {
+resource worker 'Microsoft.Web/sites@2022-09-01' = {
   name: name
   location: location
-  kind: 'FunctionApp'
+  kind: isLinux ? 'functionapp,linux' : 'functionapp'
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
@@ -117,61 +126,79 @@ resource worker 'Microsoft.Web/sites@2020-09-01' = {
     serverFarmId: workerPlan.id
     clientAffinityEnabled: false
     httpsOnly: true
-    siteConfig: {
-      minTlsVersion: '1.2'
-      alwaysOn: !isConsumptionPlan
-      use32BitWorkerProcess: false
-      appSettings: concat([
-        {
-          name: 'AzureFunctionsJobHost__logging__LogLevel__Default'
-          value: logLevel
-        }
-        {
-          name: 'AzureFunctionsWebHost__hostId'
-          value: hostId
-        }
-        {
-          name: 'AzureWebJobsStorage__accountName'
-          value: storageAccountName
-        }
-        {
-          name: 'AzureWebJobsStorage__credential'
-          value: 'managedidentity'
-        }
-        {
-          name: 'AzureWebJobsStorage__clientId'
-          value: userManagedIdentity.properties.clientId
-        }
-        {
-          name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: '~4'
-        }
-        {
-          name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: 'dotnet'
-        }
-        {
-          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
-          value: 'false'
-        }
-        {
-          name: 'QueueTriggerConnection__queueServiceUri'
-          value: storageAccount.properties.primaryEndpoints.queue
-        }
-        {
-          name: 'QueueTriggerConnection__credential'
-          value: 'managedidentity'
-        }
-        {
-          name: 'QueueTriggerConnection__clientId'
-          value: userManagedIdentity.properties.clientId
-        }
-      ], workerConfigWithStorage)
-    }
+    siteConfig: union({
+        minTlsVersion: '1.2'
+        alwaysOn: !isConsumptionPlan
+        use32BitWorkerProcess: false
+        appSettings: concat([
+            {
+              name: 'AzureFunctionsJobHost__logging__LogLevel__Default'
+              value: logLevel
+            }
+            {
+              name: 'AzureFunctionsWebHost__hostId'
+              value: hostId
+            }
+            {
+              name: 'AzureWebJobsStorage__accountName'
+              value: storageAccountName
+            }
+            {
+              name: 'AzureWebJobsStorage__credential'
+              value: 'managedidentity'
+            }
+            {
+              name: 'AzureWebJobsStorage__clientId'
+              value: userManagedIdentity.properties.clientId
+            }
+            {
+              name: 'FUNCTIONS_EXTENSION_VERSION'
+              value: '~4'
+            }
+            {
+              name: 'FUNCTIONS_WORKER_RUNTIME'
+              value: 'dotnet'
+            }
+            {
+              name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
+              value: 'false'
+            }
+            {
+              name: 'QueueTriggerConnection__queueServiceUri'
+              value: storageAccount.properties.primaryEndpoints.queue
+            }
+            {
+              name: 'QueueTriggerConnection__credential'
+              value: 'managedidentity'
+            }
+            {
+              name: 'QueueTriggerConnection__clientId'
+              value: userManagedIdentity.properties.clientId
+            }
+            {
+              // See: https://github.com/projectkudu/kudu/wiki/Configurable-settings#ensure-update-site-and-update-siteconfig-to-take-effect-synchronously 
+              name: 'WEBSITE_ENABLE_SYNC_UPDATE_SITE'
+              value: '1'
+            }
+            {
+              name: 'WEBSITE_RUN_FROM_PACKAGE'
+              value: runFromZipUrl ? split(zipUrl, '?')[0] : '1'
+            }
+          ], runFromZipUrl ? [
+            {
+              name: 'WEBSITE_RUN_FROM_PACKAGE_BLOB_MI_RESOURCE_ID'
+              value: userManagedIdentity.id
+            }
+          ] : [], workerConfigWithStorage)
+      }, isLinux ? {
+        linuxFxVersion: 'DOTNET|6.0'
+      } : {
+        netFrameworkVersion: 'v6.0'
+      })
   }
 
-  resource workerDeployments 'extensions@2020-09-01' = {
-    name: any('ZipDeploy')
+  resource workerDeploy 'extensions' = if (!runFromZipUrl) {
+    name: any('ZipDeploy') // Workaround per: https://github.com/Azure/bicep/issues/784#issuecomment-817260643
     properties: {
       packageUri: zipUrl
     }

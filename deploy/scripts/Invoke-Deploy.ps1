@@ -16,7 +16,10 @@ param (
     [string]$WorkerZipPath,
 
     [Parameter(Mandatory = $false)]
-    [string]$AzureFunctionsHostZipPath
+    [string]$AzureFunctionsHostZipPath,
+
+    [Parameter(Mandatory = $true)]
+    [string]$RuntimeIdentifier
 )
 
 Import-Module (Join-Path $PSScriptRoot "NuGet.Insights.psm1")
@@ -109,6 +112,7 @@ New-Deployment `
         -ResourceSettings $ResourceSettings `
         -WebsiteZipUrl $websiteZipUrl `
         -WorkerZipUrl $workerZipUrl `
+        -RuntimeIdentifier $RuntimeIdentifier `
         -SpotWorkerUploadScriptUrl $spotWorkerUploadScriptUrl `
         -AzureFunctionsHostZipUrl $azureFunctionsHostZipUrl `
         -WorkerStandaloneEnvUrl $workerStandaloneEnvUrl `

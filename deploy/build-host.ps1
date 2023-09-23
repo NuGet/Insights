@@ -1,15 +1,19 @@
 [CmdletBinding()]
 param (
-  [Parameter(Mandatory = $true)]
+  [Parameter(Mandatory = $false)]
+  [ValidateSet("win-x64", "linux-x64")]
   [string]$RuntimeIdentifier,
   
   [Parameter(Mandatory = $false)]
   [string]$OutputPath
 )
 
+Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1")
+$RuntimeIdentifier = Get-DefaultRuntimeIdentifier $RuntimeIdentifier
+
 $hostVersion = "4.3.0"
 
-$artifactsDir = Join-Path $PSScriptRoot "../artifacts/azure-functions"
+$artifactsDir = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../artifacts/azure-functions"))
 $hostSrcUrl = "https://github.com/Azure/azure-functions-host/archive/v$hostVersion.zip"
 $hostSrcZip = Join-Path $artifactsDir "azure-functions-host-$hostVersion.zip"
 $hostSrcDir = Join-Path $artifactsDir "azure-functions-host-$hostVersion"

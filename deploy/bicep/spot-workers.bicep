@@ -44,8 +44,8 @@ resource uploadBlobs 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
     arguments: '-ManagedIdentityClientId \'${userManagedIdentity.properties.clientId}\' -DeploymentLabel \'${deploymentLabel}\' -StorageAccountName \'${storageAccountName}\' -SpotWorkerDeploymentContainerName \'${spotWorkerDeploymentContainerName}\''
     primaryScriptUri: uploadScriptUrl
     supportingScriptUris: concat(deploymentUrls.files, [
-      'https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1'
-    ])
+        'https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1'
+      ])
     cleanupPreference: 'Always'
     retentionInterval: 'PT1H'
   }

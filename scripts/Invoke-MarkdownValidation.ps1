@@ -8,10 +8,10 @@ param (
 )
 
 if (!$RootDirectory) {
-    $RootDirectory = Join-Path $PSScriptRoot ".."
+    $RootDirectory = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot ".."))
 }
 
-$configPath = Join-Path $PSScriptRoot "../markdown-link-check.config.json"
+$configPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../markdown-link-check.config.json"))
 
 npm list -g markdown-link-check | Out-Null
 if ($LASTEXITCODE) {

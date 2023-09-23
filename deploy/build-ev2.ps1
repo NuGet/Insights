@@ -1,5 +1,9 @@
 [CmdletBinding()]
 param (
+    [Parameter(Mandatory = $false)]
+    [ValidateSet("win-x64", "linux-x64")]
+    [string]$RuntimeIdentifier,
+
     [Parameter(Mandatory = $true)]
     [string]$BuildVersion,
 
@@ -152,8 +156,10 @@ process {
         return "Templates/$name.Template.json"
     }
     
+    $RuntimeIdentifier = Get-DefaultRuntimeIdentifier $RuntimeIdentifier
+    
     # Declare shared variables
-    $artifacts = Join-Path $PSScriptRoot "../artifacts"
+    $artifacts = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../artifacts"))
     $ev2 = Join-Path $artifacts "ExpressV2"
     $serviceResourceName = "Deploy.ResourceInstance"
     $websiteBinPath = "bin/Website.zip"
@@ -203,7 +209,7 @@ process {
     # Build the Ev2 artifacts
     $anyUseSpotWorkers = $false
     foreach ($configName in $ConfigNames) {
-        $resourceSettings = Get-ResourceSettings $configName
+        $resourceSettings = Get-ResourceSettings $configName $null $RuntimeIdentifier
     
         if ($resourceSettings.ConfigName -ne $resourceSettings.StampName) {
             throw "The config name must match the stamp name."

@@ -4,6 +4,7 @@ param location string
 
 param planId string = 'new'
 param planName string = 'default'
+param isLinux bool
 
 param name string
 @secure()
@@ -15,16 +16,23 @@ resource userManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2
   name: userManagedIdentityName
 }
 
+// I've see weird deployment timeouts or "Central directory corrupt" errors when using ZipDeploy on Linux.
+var runFromZipUrl = isLinux
+
 // Website
-resource websitePlan 'Microsoft.Web/serverfarms@2020-09-01' = if (planId == 'new') {
+resource websitePlan 'Microsoft.Web/serverfarms@2022-09-01' = if (planId == 'new') {
   name: planName == 'default' ? '${name}-WebsitePlan' : planName
   location: location
+  kind: isLinux ? 'linux' : 'windows'
   sku: {
     name: 'B1'
   }
+  properties: {
+    reserved: isLinux
+  }
 }
 
-resource website 'Microsoft.Web/sites@2020-09-01' = {
+resource website 'Microsoft.Web/sites@2022-09-01' = {
   name: name
   location: location
   identity: {
@@ -37,33 +45,50 @@ resource website 'Microsoft.Web/sites@2020-09-01' = {
     serverFarmId: planId == 'new' ? websitePlan.id : planId
     clientAffinityEnabled: false
     httpsOnly: true
-    siteConfig: {
-      minTlsVersion: '1.2'
-      alwaysOn: false // I've run into problems with the AAD client certificate not refreshing...
-      use32BitWorkerProcess: false
-      netFrameworkVersion: 'v6.0'
-      appSettings: concat([
-        {
-          name: 'AzureAd:Instance'
-          value: environment().authentication.loginEndpoint
-        }
-        {
-          name: 'AzureAd:ClientId'
-          value: aadClientId
-        }
-        {
-          name: 'AzureAd:TenantId'
-          value: 'common'
-        }
-        {
-          name: 'AzureAd:ClientCredentials:0:ManagedIdentityClientId'
-          value: userManagedIdentity.properties.clientId
-        }
-      ], config)
-    }
+    siteConfig: union({
+        minTlsVersion: '1.2'
+        alwaysOn: false // I've run into problems with the AAD client certificate not refreshing...
+        use32BitWorkerProcess: false
+        appSettings: concat([
+            {
+              name: 'AzureAd__Instance'
+              value: environment().authentication.loginEndpoint
+            }
+            {
+              name: 'AzureAd__ClientId'
+              value: aadClientId
+            }
+            {
+              name: 'AzureAd__TenantId'
+              value: 'common'
+            }
+            {
+              name: 'AzureAd__ClientCredentials__0__ManagedIdentityClientId'
+              value: userManagedIdentity.properties.clientId
+            }
+            {
+              // See: https://github.com/projectkudu/kudu/wiki/Configurable-settings#ensure-update-site-and-update-siteconfig-to-take-effect-synchronously 
+              name: 'WEBSITE_ENABLE_SYNC_UPDATE_SITE'
+              value: '1'
+            }
+            {
+              name: 'WEBSITE_RUN_FROM_PACKAGE'
+              value: runFromZipUrl ? split(zipUrl, '?')[0] : '1'
+            }
+          ], runFromZipUrl ? [
+            {
+              name: 'WEBSITE_RUN_FROM_PACKAGE_BLOB_MI_RESOURCE_ID'
+              value: userManagedIdentity.id
+            }
+          ] : [], config)
+      }, isLinux ? {
+        linuxFxVersion: 'DOTNETCORE|6.0'
+      } : {
+        netFrameworkVersion: 'v6.0'
+      })
   }
 
-  resource deploy 'extensions' = {
+  resource websiteDeploy 'extensions' = if (!runFromZipUrl) {
     name: any('ZipDeploy') // Workaround per: https://github.com/Azure/bicep/issues/784#issuecomment-817260643
     properties: {
       packageUri: zipUrl

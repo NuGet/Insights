@@ -242,45 +242,45 @@ resource autoscale 'Microsoft.Insights/autoscalesettings@2015-04-01' = {
           maximum: string(maxInstances)
         }
         rules: concat(eventCounterRules, [
-          {
-            metricTrigger: {
-              metricName: 'Percentage CPU'
-              metricNamespace: 'microsoft.compute/virtualmachinescalesets'
-              metricResourceUri: vmss.id
-              timeGrain: 'PT1M'
-              statistic: 'Average'
-              timeWindow: 'PT10M'
-              timeAggregation: 'Average'
-              operator: 'GreaterThan'
-              threshold: 25
+            {
+              metricTrigger: {
+                metricName: 'Percentage CPU'
+                metricNamespace: 'microsoft.compute/virtualmachinescalesets'
+                metricResourceUri: vmss.id
+                timeGrain: 'PT1M'
+                statistic: 'Average'
+                timeWindow: 'PT10M'
+                timeAggregation: 'Average'
+                operator: 'GreaterThan'
+                threshold: 25
+              }
+              scaleAction: {
+                direction: 'Increase'
+                type: 'ChangeCount'
+                cooldown: 'PT1M'
+                value: '5'
+              }
             }
-            scaleAction: {
-              direction: 'Increase'
-              type: 'ChangeCount'
-              cooldown: 'PT1M'
-              value: '5'
+            {
+              metricTrigger: {
+                metricName: 'Percentage CPU'
+                metricNamespace: 'microsoft.compute/virtualmachinescalesets'
+                metricResourceUri: vmss.id
+                timeGrain: 'PT1M'
+                statistic: 'Average'
+                timeWindow: 'PT10M'
+                timeAggregation: 'Average'
+                operator: 'LessThan'
+                threshold: 15
+              }
+              scaleAction: {
+                direction: 'Decrease'
+                type: 'ChangeCount'
+                cooldown: 'PT2M'
+                value: '10'
+              }
             }
-          }
-          {
-            metricTrigger: {
-              metricName: 'Percentage CPU'
-              metricNamespace: 'microsoft.compute/virtualmachinescalesets'
-              metricResourceUri: vmss.id
-              timeGrain: 'PT1M'
-              statistic: 'Average'
-              timeWindow: 'PT10M'
-              timeAggregation: 'Average'
-              operator: 'LessThan'
-              threshold: 15
-            }
-            scaleAction: {
-              direction: 'Decrease'
-              type: 'ChangeCount'
-              cooldown: 'PT2M'
-              value: '10'
-            }
-          }
-        ])
+          ])
       }
     ]
   }

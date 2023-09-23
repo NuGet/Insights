@@ -12,19 +12,19 @@
   },
   "AppSettings": {
     "Shared": {
-      "NuGet.Insights": {
+      "NuGetInsights": {
         "DisabledDrivers": [
           "NuGetPackageExplorerToCsv"
         ]
       }
     },
     "Worker": {
-      "NuGet.Insights": {
+      "NuGetInsights": {
         "MoveTempToHome": false
       }
     },
     "Website": {
-      "NuGet.Insights": {
+      "NuGetInsights": {
         "RestrictUsers": true,
         "ShowAdminLink": true
       }

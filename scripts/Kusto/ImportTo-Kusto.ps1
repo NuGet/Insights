@@ -97,7 +97,7 @@ if (!$WorkingDirectory) {
 }
 
 if (!$ModelsPath) {
-    $ModelsPath = Join-Path $WorkingDirectory "..\..\src\Worker.Logic\Generated"
+    $ModelsPath = [System.IO.Path]::GetFullPath((Join-Path $WorkingDirectory "../../src/Worker.Logic/Generated"))
 }
 
 $kustoConnection = "https://$KustoClusterName.kusto.windows.net;Fed=true"

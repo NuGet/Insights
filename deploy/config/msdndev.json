@@ -1,5 +1,6 @@
 {
   "Deployment": {
-    "SubscriptionId": "7e9b1932-8591-42d8-a02e-7471cf53f915"
+    "SubscriptionId": "7e9b1932-8591-42d8-a02e-7471cf53f915",
+    "Location": "East US 2"
   }
 }

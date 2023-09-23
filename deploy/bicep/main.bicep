@@ -14,6 +14,7 @@ param alertPrefix string
 
 param websitePlanId string = 'new'
 param websitePlanName string = 'default'
+param websiteIsLinux bool
 param websiteName string
 @secure()
 param websiteZipUrl string
@@ -27,6 +28,7 @@ param workerPlanCount int
 @minValue(1)
 param workerCountPerPlan int
 param workerSku string = 'Y1'
+param workerIsLinux bool
 param workerAutoscaleNamePrefix string
 param workerMinInstances int
 param workerMaxInstances int
@@ -87,29 +89,20 @@ var sharedConfig = [
     value: '~2'
   }
   {
-    name: 'NuGet.Insights:DeploymentLabel'
+    name: 'NuGetInsights__DeploymentLabel'
     value: deploymentLabel
   }
   {
-    name: 'NuGet.Insights:LeaseContainerName'
+    name: 'NuGetInsights__LeaseContainerName'
     value: leaseContainerName
   }
   {
-    name: 'NuGet.Insights:StorageAccountName'
+    name: 'NuGetInsights__StorageAccountName'
     value: storageAccountName
   }
   {
-    name: 'NuGet.Insights:UserManagedIdentityClientId'
+    name: 'NuGetInsights__UserManagedIdentityClientId'
     value: userManagedIdentity.properties.clientId
-  }
-  {
-    // See: https://github.com/projectkudu/kudu/wiki/Configurable-settings#ensure-update-site-and-update-siteconfig-to-take-effect-synchronously 
-    name: 'WEBSITE_ENABLE_SYNC_UPDATE_SITE'
-    value: '1'
-  }
-  {
-    name: 'WEBSITE_RUN_FROM_PACKAGE'
-    value: '1'
   }
 ]
 
@@ -154,6 +147,7 @@ module website './website.bicep' = {
     location: location
     planId: websitePlanId
     planName: websitePlanName
+    isLinux: websiteIsLinux
     name: websiteName
     zipUrl: websiteZipUrl
     aadClientId: websiteAadClientId
@@ -209,6 +203,7 @@ module workers './function-workers.bicep' = {
     planCount: workerPlanCount
     countPerPlan: workerCountPerPlan
     sku: workerSku
+    isLinux: workerIsLinux
     autoscaleNamePrefix: workerAutoscaleNamePrefix
     minInstances: workerMinInstances
     maxInstances: workerMaxInstances

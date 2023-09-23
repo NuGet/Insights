@@ -9,7 +9,7 @@ namespace NuGet.Insights
 {
     public class NuGetInsightsSettings
     {
-        public const string DefaultSectionName = "NuGet.Insights";
+        public const string DefaultSectionName = "NuGetInsights";
 
         public NuGetInsightsSettings()
         {

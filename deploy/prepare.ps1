@@ -1,21 +1,36 @@
 [CmdletBinding()]
 param (
-    [Parameter(Mandatory = $true)]
-    [string]$ConfigName,
-
     [Parameter(Mandatory = $false)]
     [string]$StampName
 )
 
-Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1")
+dynamicparam {
+    Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1")
+    
+    $ConfigNameKey = "ConfigName"
+    $configNamesParameter = Get-ConfigNameDynamicParameter ([string[]]) $ConfigNameKey
 
-$resourceSettings = Get-ResourceSettings $ConfigName $StampName
+    $parameterDictionary = [System.Management.Automation.RuntimeDefinedParameterDictionary]::new()
+    $parameterDictionary.Add($ConfigNameKey, $configNamesParameter)
+    return $parameterDictionary
+}
 
-$parameters = @{ ResourceSettings = $resourceSettings }
+begin {
+    $ConfigName = $PsBoundParameters[$ConfigNameKey]
+}
 
-Write-Status "Using the following deployment parameters:"
-ConvertTo-Json $parameters -Depth 100 | Out-Default
+process {
+    Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1")
 
-Approve-SubscriptionId $resourceSettings.SubscriptionId
+    $runtimeIdentifier = Get-DefaultRuntimeIdentifier $null $false
+    $resourceSettings = Get-ResourceSettings $ConfigName $StampName $runtimeIdentifier
 
-. (Join-Path $PSScriptRoot "scripts/Invoke-Prepare.ps1") @parameters | Out-Null
+    $parameters = @{ ResourceSettings = $resourceSettings }
+
+    Write-Status "Using the following deployment parameters:"
+    ConvertTo-Json $parameters -Depth 100 | Out-Default
+
+    Approve-SubscriptionId $resourceSettings.SubscriptionId
+
+    . (Join-Path $PSScriptRoot "scripts/Invoke-Prepare.ps1") @parameters | Out-Null
+}

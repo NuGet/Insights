@@ -3,7 +3,7 @@
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $false)]
-    [ValidateSet("win-x64", "linux-x64", "osx-x64")]
+    [ValidateSet("win-x64", "linux-x64")]
     [string]$RuntimeIdentifier,
 
     [Parameter(Mandatory = $false)]
@@ -38,23 +38,10 @@ begin {
 }
 
 process {
-    if (!$RuntimeIdentifier) {
-        if ($IsLinux) {
-            $RuntimeIdentifier = "linux-x64"
-        }
-        elseif ($IsMacOS) {
-            $RuntimeIdentifier = "osx-x64"
-        }
-        else {
-            $RuntimeIdentifier = "win-x64"
-        }
-
-        Write-Host "The -RuntimeIdentifier parameter has been given a default value of '$RuntimeIdentifier'."
-    }
-    
     Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1")
 
-    $resourceSettings = Get-ResourceSettings $ConfigName $StampName
+    $RuntimeIdentifier = Get-DefaultRuntimeIdentifier $RuntimeIdentifier
+    $resourceSettings = Get-ResourceSettings $ConfigName $StampName $RuntimeIdentifier
     
     # Optionally, add the current (deploying) user as an allowed user for the website admin panel.
     if ($AllowDeployUser) {
@@ -64,8 +51,8 @@ process {
             throw "Could not find the 'HomeAccountId' from (Get-AzContext).Account.ExtendedProperties.HomeAccountId. Did you run Connect-AzAccount?"
         }
         else {
-            if (!$resourceSettings.WebsiteConfig['NuGet.Insights'].AllowedUsers) {
-                $resourceSettings.WebsiteConfig['NuGet.Insights'].AllowedUsers = @()
+            if (!$resourceSettings.WebsiteConfig['NuGetInsights'].AllowedUsers) {
+                $resourceSettings.WebsiteConfig['NuGetInsights'].AllowedUsers = @()
             }
     
             $objectId, $tenantId = $homeAccountId.Split('.', 2)
@@ -73,7 +60,7 @@ process {
             Write-Status "  Tenant ID: $tenantId"
             Write-Status "  Object ID: $objectId"
     
-            $resourceSettings.WebsiteConfig['NuGet.Insights'].AllowedUsers += @{
+            $resourceSettings.WebsiteConfig['NuGetInsights'].AllowedUsers += @{
                 TenantId = $tenantId;
                 ObjectId = $objectId
             }
@@ -82,7 +69,7 @@ process {
     
     
     # Publish (build and package) the app code
-    $deploymentDir = Join-Path $PSScriptRoot "../artifacts/deploy"
+    $deploymentDir = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../artifacts/deploy"))
     function Publish-Project ($ProjectName) {
         Write-Status "Publishing project '$ProjectName'..."
         dotnet publish (Join-Path $PSScriptRoot "../src/$ProjectName") `
@@ -116,6 +103,7 @@ process {
         WebsiteZipPath            = $WebsiteZipPath;
         WorkerZipPath             = $WorkerZipPath;
         AzureFunctionsHostZipPath = $AzureFunctionsHostZipPath;
+        RuntimeIdentifier         = $RuntimeIdentifier;
     }
     
     Write-Status "Using the following deployment parameters:"

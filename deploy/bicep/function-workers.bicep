@@ -8,6 +8,7 @@ param planCount int
 @minValue(1)
 param countPerPlan int
 param sku string
+param isLinux bool
 
 param autoscaleNamePrefix string
 param minInstances int
@@ -35,6 +36,7 @@ module workers './function-worker.bicep' = [for i in range(0, workerCount): {
     location: planLocations[(i / countPerPlan) % length(planLocations)]
     planName: '${planNamePrefix}${i / countPerPlan}'
     sku: sku
+    isLinux: isLinux
     autoscaleName: '${autoscaleNamePrefix}${i / countPerPlan}'
     minInstances: minInstances
     maxInstances: maxInstances

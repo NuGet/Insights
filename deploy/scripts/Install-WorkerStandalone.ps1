@@ -104,7 +104,7 @@ $hostEnv = [ordered]@{
     "ASPNETCORE_URLS"                                    = "http://localhost:$LocalHealthPort";
     "AzureFunctionsJobHost__Logging__Console__IsEnabled" = "false";
     "AzureWebJobsScriptRoot"                             = $appRoot;
-    "NuGet.Insights:DeploymentLabel"                     = $DeploymentLabel;
+    "NuGetInsights__DeploymentLabel"                     = $DeploymentLabel;
     "WEBSITE_HOSTNAME"                                   = "localhost:$LocalHealthPort"
     "DOTNET_gcServer"                                    = "1"
 }
@@ -115,7 +115,7 @@ if ($ApplicationInsightsConnectionString) {
 
 if ($UserManagedIdentityClientId) {
     $hostEnv["AzureWebJobsStorage__clientId"] = $UserManagedIdentityClientId;
-    $hostEnv["NuGet.Insights:UserManagedIdentityClientId"] = $UserManagedIdentityClientId;
+    $hostEnv["NuGetInsights__UserManagedIdentityClientId"] = $UserManagedIdentityClientId;
     $hostEnv["QueueTriggerConnection__clientId"] = $UserManagedIdentityClientId;
 }
 
