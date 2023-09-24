@@ -36,11 +36,14 @@ namespace NuGet.Insights.Website
 
             services.AddSingleton<ControllerInitializer>();
             services.AddSingleton<MoveMessagesTaskQueue>();
+            services.AddSingleton<CachedAdminViewModelService.AdminViewModelCache>();
+            services.AddSingleton<IAdminViewModelCache>(s => s.GetRequiredService<CachedAdminViewModelService.AdminViewModelCache>());
             services.AddScoped<IAuthorizationHandler, AllowListAuthorizationHandler>();
             services.AddScoped<AllowListAuthorizationHandler>();
             services.AddTransient<ViewModelFactory>();
             services.AddHostedService<InitializerHostedService>();
             services.AddHostedService<MoveMessagesHostedService>();
+            services.AddHostedService<CachedAdminViewModelService>();
 
             services.AddApplicationInsightsTelemetry(options =>
             {

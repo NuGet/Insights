@@ -1,5 +1,144 @@
-﻿@{
+@using Humanizer.Localisation;
+@using NuGet.Insights.Worker.KustoIngestion;
+@using NuGet.Insights.Worker.Workflow;
+@model IAdminViewModelCache
+@{
     ViewData["Title"] = "We're up and running.";
 }
 
-<h2>@ViewData["Title"]</h2>
+@functions {
+    private void ShowDate(DateTimeOffset timestamp)
+    {
+        <text>
+            @timestamp.ToZulu()
+            (@((DateTimeOffset.UtcNow - timestamp).Humanize(2, minUnit: TimeUnit.Second)) ago)
+        </text>
+    }
+}
+
+@if (Model != null)
+{
+    if (Model.Refreshing)
+    {
+        <p><b>⌛ This data is currently being refreshed.</b></p>
+    }
+
+    if (Model.Value is not null)
+    {
+        <h2>Latest workflow status</h2>
+        <p>
+            This summary is cached as of @{
+                ShowDate(Model.Value.AsOfTimestamp);
+            }.
+        </p>
+
+        var workflowRun = Model
+            .Value
+            .Data
+            .WorkflowRuns
+            .MaxBy(x => x.Created);
+        if (workflowRun is null)
+        {
+            <p>There are no workflow runs.</p>
+        }
+        else
+        {
+            <dl>
+                <dt>Workflow state</dt>
+                <dd>@workflowRun.State</dd>
+            </dl>
+            <dl>
+                <dt>Workflow started</dt>
+                <dd>
+                    @{
+                        ShowDate(workflowRun.Created);
+                    }
+                </dd>
+            </dl>
+            if (workflowRun.Completed.HasValue)
+            {
+                <dl>
+                    <dt>Workflow completed</dt>
+                    <dd>
+                        @{
+                            ShowDate(workflowRun.Completed.Value);
+                        }
+                    </dd>
+                </dl>
+            }
+        }
+
+        var kustoIngestion = Model
+            .Value
+            .Data
+            .KustoIngestions
+            .Where(x => x.State == KustoIngestionState.Complete)
+            .MaxBy(x => x.Completed.Value);
+        if (kustoIngestion is null)
+        {
+            <p>There are no Kusto ingestions.</p>
+        }
+        else
+        {
+            <dl>
+                <dt>Latest complete Kusto ingestion</dt>
+                <dd>
+                    @{
+                        ShowDate(kustoIngestion.Completed.Value);
+                    }
+                </dd>
+            </dl>
+
+            var maxGroup = Model
+                .Value
+                .Data
+                .CatalogScans
+                .SelectMany(x => x.LatestScans)
+                .Where(x => x.State == CatalogIndexScanState.Complete)
+                .Where(x => x.Completed.Value < kustoIngestion.Completed.Value)
+                .GroupBy(x => x.Max.Value)
+                .MaxBy(x => x.Key);
+
+            if (maxGroup is not null)
+            {
+                <dl>
+                    <dt>Catalog commit ingested into Kusto</dt>
+                    <dd>
+                        @{
+                            ShowDate(maxGroup.Key);
+                        }
+                    </dd>
+                </dl>
+            }
+        }
+    }
+
+    if (Model.Settings is not null)
+    {
+        <h2>Current settings</h2>
+        <dl>
+            <dt>Deployment label</dt>
+            <dd>@Model.Settings.DeploymentLabel</dd>
+        </dl>
+        <dl>
+            <dt>V3 service index used for catalog scans</dt>
+            <dd>
+                <a href="@Model.Settings.V3ServiceIndex">@Model.Settings.V3ServiceIndex</a>
+                @{
+                    var environment = Model.Settings.V3ServiceIndex switch
+                    {
+                        "https://api.nuget.org/v3/index.json" => "(NuGet.org PROD environment)",
+                        "https://apiint.nugettest.org/v3/index.json" => "(NuGet.org INT environment)",
+                        "https://apidev.nugettest.org/v3/index.json" => "(NuGet.org DEV environment)",
+                        _ => null
+                    };
+                }
+                @environment
+            </dd>
+        </dl>
+    }
+}
+else
+{
+    <h2>@ViewData["Title"]</h2>
+}

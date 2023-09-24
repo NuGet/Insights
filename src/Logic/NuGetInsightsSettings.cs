@@ -46,6 +46,7 @@ namespace NuGet.Insights
             };
         }
 
+        public string DeploymentLabel { get; set; }
         public string GalleryBaseUrl { get; set; }
         public string PackagesContainerBaseUrl { get; set; }
         public string SymbolPackagesContainerBaseUrl { get; set; }
