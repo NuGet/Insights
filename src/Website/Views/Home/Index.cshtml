@@ -18,9 +18,9 @@
 
 @if (Model != null)
 {
-    if (Model.Refreshing)
+    if (Model.Value is null || Model.Refreshing)
     {
-        <p><b>⌛ This data is currently being refreshed.</b></p>
+        <p><b>⌛ The workflow summary is currently being refreshed.</b></p>
     }
 
     if (Model.Value is not null)
@@ -47,14 +47,6 @@
                 <dt>Workflow state</dt>
                 <dd>@workflowRun.State</dd>
             </dl>
-            <dl>
-                <dt>Workflow started</dt>
-                <dd>
-                    @{
-                        ShowDate(workflowRun.Created);
-                    }
-                </dd>
-            </dl>
             if (workflowRun.Completed.HasValue)
             {
                 <dl>
@@ -62,6 +54,17 @@
                     <dd>
                         @{
                             ShowDate(workflowRun.Completed.Value);
+                        }
+                    </dd>
+                </dl>
+            }
+            else
+            {
+                <dl>
+                    <dt>Workflow started</dt>
+                    <dd>
+                        @{
+                            ShowDate(workflowRun.Created);
                         }
                     </dd>
                 </dl>
