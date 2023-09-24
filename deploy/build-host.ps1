@@ -11,7 +11,7 @@ param (
 Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1")
 $RuntimeIdentifier = Get-DefaultRuntimeIdentifier $RuntimeIdentifier
 
-$hostVersion = "4.3.0"
+$hostVersion = "4.27.1"
 
 $artifactsDir = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../artifacts/azure-functions"))
 $hostSrcUrl = "https://github.com/Azure/azure-functions-host/archive/v$hostVersion.zip"
@@ -78,7 +78,7 @@ Write-Host "Resetting repository level settings"
 
 Write-Host "Publishing host"
 dotnet restore $hostProjectPath --verbosity Normal
-dotnet publish $hostProjectPath -c Release --output $hostBinDir --runtime $RuntimeIdentifier --self-contained false
+dotnet publish $hostProjectPath -c Release --output $hostBinDir --runtime $RuntimeIdentifier --self-contained false /p:NoWarn=SA1518
 
 # Delete all out-of-process (non-.NET) workers to make the package smaller.
 Remove-DirSafe (Join-Path $hostBinDir "workers/*")
