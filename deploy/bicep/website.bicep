@@ -82,9 +82,9 @@ resource website 'Microsoft.Web/sites@2022-09-01' = {
             }
           ] : [], config)
       }, isLinux ? {
-        linuxFxVersion: 'DOTNETCORE|6.0'
+        linuxFxVersion: 'DOTNETCORE|7.0'
       } : {
-        netFrameworkVersion: 'v6.0'
+        netFrameworkVersion: 'v7.0'
       })
   }
 

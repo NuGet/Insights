@@ -35,7 +35,7 @@ namespace NuGet.Insights.Worker
         protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
         {
             hostBuilder
-                .ConfigureWebJobs(new Startup().Configure)
+                .ConfigureNuGetInsightsWorker()
                 .ConfigureServices(serviceCollection =>
                 {
                     serviceCollection.AddTransient(s => Output.GetTelemetryClient());

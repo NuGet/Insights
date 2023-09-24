@@ -295,7 +295,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 _logger.LogInformation(ex, "Package {Id} {Version} has an invalid public key. Path: {Path}", assembly.Id, assembly.Version, assembly.Path);
             }
 
-            if (publicKeyTokenBytes != null)
+            if (publicKeyTokenBytes != null && publicKeyTokenBytes.Length > 0)
             {
                 assembly.PublicKeyToken = publicKeyTokenBytes.ToLowerHex();
             }

@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
@@ -70,7 +71,8 @@ namespace NuGet.Insights.Worker
                 .Setup(x => x.ExecuteQueryAsync(
                     It.IsAny<string>(),
                     It.IsAny<string>(),
-                    It.IsAny<ClientRequestProperties>()))
+                    It.IsAny<ClientRequestProperties>(),
+                    It.IsAny<CancellationToken>()))
                 .ReturnsAsync(() =>
                 {
                     var mockReader = new Mock<IDataReader>();

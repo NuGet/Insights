@@ -1,9 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <IsPackable>false</IsPackable>
     <AssemblyName>NuGet.Insights.Worker.Logic.Test</AssemblyName>
     <RootNamespace>NuGet.Insights.Worker</RootNamespace>
+    <IsPackable>false</IsPackable>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
     <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>

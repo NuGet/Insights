@@ -1,9 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <IsPackable>false</IsPackable>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and $([MSBuild]::IsOSPlatform('OSX'))">osx-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and $([MSBuild]::IsOSPlatform('Linux'))">linux-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-x64</RuntimeIdentifier>
     <AssemblyName>NuGet.Insights.Worker.Test</AssemblyName>
     <RootNamespace>NuGet.Insights.Worker</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <!-- Workaround: https://github.com/Azure/azure-functions-openapi-extension/issues/552 -->
+    <NoWarn>CS0436</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />

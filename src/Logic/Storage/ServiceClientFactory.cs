@@ -190,7 +190,7 @@ namespace NuGet.Insights
 
             _logger.LogInformation("Blob endpoint: {BlobEndpoint}", blob.Uri);
             _logger.LogInformation("Queue endpoint: {QueueEndpoint}", queue.Uri);
-            // No Uri property for TableServiceClient, see https://github.com/Azure/azure-sdk-for-net/issues/19881
+            _logger.LogInformation("Table endpoint: {TableEndpoint}", table.Uri);
 
             return new ServiceClients(
                 created,

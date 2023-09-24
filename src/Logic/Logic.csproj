@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>NuGet.Insights.Logic</AssemblyName>
     <RootNamespace>NuGet.Insights</RootNamespace>
   </PropertyGroup>

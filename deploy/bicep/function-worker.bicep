@@ -157,7 +157,11 @@ resource worker 'Microsoft.Web/sites@2022-09-01' = {
             }
             {
               name: 'FUNCTIONS_WORKER_RUNTIME'
-              value: 'dotnet'
+              value: 'dotnet-isolated'
+            }
+            {
+              name: 'WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED'
+              value: '1'
             }
             {
               name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
@@ -191,9 +195,9 @@ resource worker 'Microsoft.Web/sites@2022-09-01' = {
             }
           ] : [], workerConfigWithStorage)
       }, isLinux ? {
-        linuxFxVersion: 'DOTNET|6.0'
+        linuxFxVersion: 'DOTNET-ISOLATED|7.0'
       } : {
-        netFrameworkVersion: 'v6.0'
+        netFrameworkVersion: 'v7.0'
       })
   }
 

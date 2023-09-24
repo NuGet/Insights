@@ -3,16 +3,19 @@
 
 using System.Threading.Tasks;
 using Azure.Storage.Queues.Models;
-using Microsoft.Azure.WebJobs;
-using static NuGet.Insights.Worker.CustomNameResolver;
+using Microsoft.Azure.Functions.Worker;
 
 namespace NuGet.Insights.Worker
 {
     public class Functions
     {
+        private const string WorkQueueVariable = $"%{NuGetInsightsSettings.DefaultSectionName}:{nameof(NuGetInsightsWorkerSettings.WorkQueueName)}%";
+        private const string ExpandQueueVariable = $"%{NuGetInsightsSettings.DefaultSectionName}:{nameof(NuGetInsightsWorkerSettings.ExpandQueueName)}%";
         private const string ConnectionName = "QueueTriggerConnection";
+
         private static bool IsMetricsFunctionInitialized = false;
         private static bool IsTimerFunctionInitialized = false;
+
         private readonly MetricsTimer _metricsTimer;
         private readonly TempStreamLeaseScope _tempStreamLeaseScope;
         private readonly TimerExecutionService _timerExecutionService;
@@ -30,7 +33,7 @@ namespace NuGet.Insights.Worker
             _messageProcessor = messageProcessor;
         }
 
-        [FunctionName("MetricsFunction")]
+        [Function("MetricsFunction")]
         public async Task MetricsFunction(
             [TimerTrigger("*/10 * * * * *")] TimerInfo timerInfo)
         {
@@ -42,7 +45,7 @@ namespace NuGet.Insights.Worker
             await _metricsTimer.ExecuteAsync();
         }
 
-        [FunctionName("TimerFunction")]
+        [Function("TimerFunction")]
         public async Task TimerAsync(
             [TimerTrigger("0 * * * * *")] TimerInfo timerInfo)
         {
@@ -55,14 +58,14 @@ namespace NuGet.Insights.Worker
             await _timerExecutionService.ExecuteAsync();
         }
 
-        [FunctionName("WorkQueueFunction")]
+        [Function("WorkQueueFunction")]
         public async Task WorkQueueAsync(
             [QueueTrigger(WorkQueueVariable, Connection = ConnectionName)] QueueMessage message)
         {
             await ProcessMessageAsync(QueueType.Work, message);
         }
 
-        [FunctionName("ExpandQueueFunction")]
+        [Function("ExpandQueueFunction")]
         public async Task ExpandQueueAsync(
             [QueueTrigger(ExpandQueueVariable, Connection = ConnectionName)] QueueMessage message)
         {

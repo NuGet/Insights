@@ -372,6 +372,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             Assert.False(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.Name_FileLoadException));
         }
 
+        /// <summary>
+        /// Prior to .NET 7, this package has a <see cref="PackageAssemblyEdgeCases.Name_FileLoadException"/> edge case.
+        /// </summary>
         [Fact]
         public async Task HandlesFileLoadExceptionWhenReadingAssemblyName()
         {
@@ -392,7 +395,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var record = output.Value.Records[1];
             Assert.Equal("lib/net451/getAddress,Azure.4.5.1.dll", record.Path);
             Assert.Equal(PackageAssemblyResultType.ValidAssembly, record.ResultType);
-            Assert.True(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.Name_FileLoadException));
+            Assert.False(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.Name_FileLoadException));
+            Assert.Null(record.PublicKeyToken);
             Assert.False(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.Name_CultureNotFoundException));
         }
 

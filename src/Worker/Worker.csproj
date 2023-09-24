@@ -1,19 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and $([MSBuild]::IsOSPlatform('OSX'))">osx-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and $([MSBuild]::IsOSPlatform('Linux'))">linux-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-x64</RuntimeIdentifier>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <AssemblyName>NuGet.Insights.Worker</AssemblyName>
     <RootNamespace>NuGet.Insights.Worker</RootNamespace>
-  </PropertyGroup>
-  <PropertyGroup>
-    <!-- Workaround: https://github.com/Azure/azure-functions-host/issues/5894#issuecomment-727024381 -->
-    <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
+    <OutputType>Exe</OutputType>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <PublishReadyToRunEmitSymbols>true</PublishReadyToRunEmitSymbols>
+    <FunctionsEnableWorkerIndexing>true</FunctionsEnableWorkerIndexing>
+    <FunctionsAutoRegisterGeneratedMetadataProvider>true</FunctionsAutoRegisterGeneratedMetadataProvider>
+    <FunctionsEnableExecutorSourceGen>true</FunctionsEnableExecutorSourceGen>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Logging.ApplicationInsights" />
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Storage" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Worker.Logic\Worker.Logic.csproj" />

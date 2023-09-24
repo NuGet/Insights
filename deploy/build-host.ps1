@@ -78,6 +78,9 @@ Write-Host "Resetting repository level settings"
 
 Write-Host "Publishing host"
 dotnet restore $hostProjectPath --verbosity Normal
+
+# NoWarn on SA1518 due to inconsistent line endings.
+# See: https://github.com/Azure/azure-functions-host/pull/9564
 dotnet publish $hostProjectPath -c Release --output $hostBinDir --runtime $RuntimeIdentifier --self-contained false /p:NoWarn=SA1518
 
 # Delete all out-of-process (non-.NET) workers to make the package smaller.

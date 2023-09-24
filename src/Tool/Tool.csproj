@@ -1,9 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>NuGet.Insights.Tool</AssemblyName>
     <RootNamespace>NuGet.Insights.Tool</RootNamespace>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" />

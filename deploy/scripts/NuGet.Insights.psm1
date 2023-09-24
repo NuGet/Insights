@@ -268,6 +268,16 @@ class ResourceSettings {
                 }
             }
         }
+
+        # Since Azure Functions isolated SDK does not support an INameResolver, we have to explicitly have the queue
+        # names used by Azure Functions triggers.
+        # Blocker: https://github.com/Azure/azure-functions-dotnet-worker/issues/393
+        if ($null -eq $this.WorkerConfig["NuGetInsights"].WorkQueueName) {
+            $this.WorkerConfig["NuGetInsights"].WorkQueueName = "work"
+        }
+        if ($null -eq $this.WorkerConfig["NuGetInsights"].ExpandQueueName) {
+            $this.WorkerConfig["NuGetInsights"].ExpandQueueName = "expand"
+        }
         
         if ($isConsumptionPlan) {            
             # Since Consumption plan requires WEBSITE_CONTENTAZUREFILECONNECTIONSTRING and this does not support SAS-based

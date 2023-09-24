@@ -318,3 +318,4 @@ __queuestorage__
 src/Worker/Properties/serviceDependencies.json
 src/Worker/Properties/**/* - Zip Deploy.json
 src/Worker/Properties/**/*.arm.json
+*.binlog

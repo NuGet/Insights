@@ -6,6 +6,7 @@ using System.Data;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Kusto.Data.Common;
 using Kusto.Ingest;
@@ -194,7 +195,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     .Setup(x => x.ExecuteQueryAsync(
                         It.IsAny<string>(),
                         It.IsAny<string>(),
-                        It.IsAny<ClientRequestProperties>()))
+                        It.IsAny<ClientRequestProperties>(),
+                        It.IsAny<CancellationToken>()))
                     .ReturnsAsync(() =>
                     {
                         var mockReader = new Mock<IDataReader>();
