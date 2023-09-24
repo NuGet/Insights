@@ -104,9 +104,10 @@ $hostEnv = [ordered]@{
     "ASPNETCORE_URLS"                                    = "http://localhost:$LocalHealthPort";
     "AzureFunctionsJobHost__Logging__Console__IsEnabled" = "false";
     "AzureWebJobsScriptRoot"                             = $appRoot;
+    "DOTNET_gcServer"                                    = "1";
+    "NUGET_INSIGHTS_ALLOW_ICU"                           = "true";
     "NuGetInsights__DeploymentLabel"                     = $DeploymentLabel;
-    "WEBSITE_HOSTNAME"                                   = "localhost:$LocalHealthPort"
-    "DOTNET_gcServer"                                    = "1"
+    "WEBSITE_HOSTNAME"                                   = "localhost:$LocalHealthPort";
 }
 
 if ($ApplicationInsightsConnectionString) {
