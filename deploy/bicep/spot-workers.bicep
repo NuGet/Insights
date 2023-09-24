@@ -1,5 +1,6 @@
 param location string
 param storageAccountName string
+param keyVaultName string
 param userManagedIdentityName string
 @secure()
 param uploadScriptUrl string
@@ -12,7 +13,7 @@ param appInsightsName string
 param adminUsername string
 @secure()
 param adminPassword string
-param specs array // An array of objects with these properties: "namePrefix", "location", "sku", "maxInstances"
+param specs array // An array of objects with these properties: "namePrefix", "location", "sku", "minInstances", "maxInstances"
 
 resource userManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
   name: userManagedIdentityName
@@ -20,6 +21,18 @@ resource userManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' existing = {
   name: storageAccountName
+}
+
+resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' existing = {
+  name: keyVaultName
+
+  resource adminPasswordSecret 'secrets' = {
+    name: 'admin-password'
+    properties: {
+      contentType: 'text/plain'
+      value: adminPassword
+    }
+  }
 }
 
 resource leaseContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2019-06-01' = {
@@ -71,11 +84,14 @@ module workers './spot-worker.bicep' = [for (spec, index) in specs: {
     nsgName: '${spec.namePrefix}nsg'
     vnetName: '${spec.namePrefix}vnet'
     vmssName: '${spec.namePrefix}vmss'
+    minInstances: spec.minInstances
     maxInstances: spec.maxInstances
     nicName: '${spec.namePrefix}nic'
     ipConfigName: '${spec.namePrefix}ip'
+    loadBalancerName: '${spec.namePrefix}lb'
     autoscaleName: '${spec.namePrefix}autoscale'
     adminUsername: adminUsername
     adminPassword: adminPassword
+    addLoadBalancer: spec.addLoadBalancer
   }
 }]

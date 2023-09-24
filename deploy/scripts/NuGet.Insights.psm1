@@ -224,7 +224,9 @@ class ResourceSettings {
                     Set-OrDefault NamePrefix "NuGetInsights-$StampName-SpotWorker-$i-" $target $keyPrefix
                     Set-OrDefault Location $this.Location $target $keyPrefix
                     Set-OrDefault Sku "Standard_D2as_v4" $target $keyPrefix
+                    Set-OrDefault MinInstances 1 $target $keyPrefix
                     Set-OrDefault MaxInstances 30 $target $keyPrefix
+                    Set-OrDefault AddLoadBalancer $false $target $keyPrefix
                 }
             }
         }
@@ -452,24 +454,33 @@ function Get-ResourceSettings($ConfigName, $StampName, $RuntimeIdentifier) {
 function New-WorkerStandaloneEnv($ResourceSettings) {
     $config = $ResourceSettings.WorkerConfig | ConvertTo-FlatConfig
 
-    # Placeholder values will be overridden by the ARM deployment or by the installation script. 
-    $config["APPLICATIONINSIGHTS_CONNECTION_STRING"] = "PLACEHOLDER";
-    $config["ASPNETCORE_URLS"] = "PLACEHOLDER";
+    # These set up the Azure Functions job host or match with the normal Azure Functions worker settings.
     $config["AzureFunctionsJobHost__logging__Console__IsEnabled"] = "false";
     $config["AzureFunctionsJobHost__logging__LogLevel__Default"] = $ResourceSettings.WorkerLogLevel;
     $config["AzureFunctionsWebHost__hostId"] = $ResourceSettings.WorkerHostId;
     $config["AzureWebJobs.MetricsFunction.Disabled"] = "true";
     $config["AzureWebJobs.TimerFunction.Disabled"] = "true";
-    $config["AzureWebJobsScriptRoot"] = "false";
+    $config["AzureWebJobsFeatureFlags"] = "EnableWorkerIndexing";
     $config["AzureWebJobsStorage__accountName"] = $ResourceSettings.StorageAccountName;
-    $config["AzureWebJobsStorage__clientId"] = "PLACEHOLDER";
     $config["AzureWebJobsStorage__credential"] = "managedidentity";
+    $config["DOTNET_gcServer"] = "1";
+    $config["FUNCTIONS_WORKER_RUNTIME_VERSION"] = "7.0";
+    $config["FUNCTIONS_WORKER_RUNTIME"] = "dotnet-isolated";
+    $config["NUGET_INSIGHTS_ALLOW_ICU"] = "true";
     $config["NuGetInsights__LeaseContainerName"] = $ResourceSettings.LeaseContainerName;
     $config["NuGetInsights__StorageAccountName"] = $ResourceSettings.StorageAccountName;
-    $config["NuGetInsights__UserManagedIdentityClientId"] = "PLACEHOLDER";
-    $config["QueueTriggerConnection__clientId"] = "PLACEHOLDER";
     $config["QueueTriggerConnection__credential"] = "managedidentity";
     $config["QueueTriggerConnection__queueServiceUri"] = "https://$($ResourceSettings.StorageAccountName).queue.$($ResourceSettings.StorageEndpointSuffix)/";
+    $config["WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED"] = "1";
+
+    # These are overridden by Install-WorkerStandalone.ps1. 
+    $config["APPLICATIONINSIGHTS_CONNECTION_STRING"] = "PLACEHOLDER";
+    $config["ASPNETCORE_URLS"] = "PLACEHOLDER";
+    $config["AzureWebJobsScriptRoot"] = "PLACEHOLDER";
+    $config["AzureWebJobsStorage__clientId"] = "PLACEHOLDER";
+    $config["NuGetInsights__DeploymentLabel"] = "PLACEHOLDER";
+    $config["NuGetInsights__UserManagedIdentityClientId"] = "PLACEHOLDER";
+    $config["QueueTriggerConnection__clientId"] = "PLACEHOLDER";
     $config["WEBSITE_HOSTNAME"] = "PLACEHOLDER";
 
     return $config

@@ -14,8 +14,7 @@ $RuntimeIdentifier = Get-DefaultRuntimeIdentifier $RuntimeIdentifier
 $hostVersion = "4.27.1"
 
 $artifactsDir = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../artifacts/azure-functions"))
-$hostSrcUrl = "https://github.com/Azure/azure-functions-host/archive/v$hostVersion.zip"
-$hostSrcZip = Join-Path $artifactsDir "azure-functions-host-$hostVersion.zip"
+$hostRepo = "https://github.com/Azure/azure-functions-host.git"
 $hostSrcDir = Join-Path $artifactsDir "azure-functions-host-$hostVersion"
 $hostBinDir = Join-Path $artifactsDir "host"
 $hostBinZip = if ($OutputPath) { $OutputPath } else { Join-Path $artifactsDir "AzureFunctionsHost.zip" }
@@ -37,18 +36,8 @@ function Remove-DirSafe ($dir) {
 Remove-DirSafe $artifactsDir
 New-Item $artifactsDir -ItemType Directory | Out-Null
 
-# Download the Azure Functions host source code from GitHub
-Write-Host "Downloading Azure Functions host source code"
-$beforeSecurityProtocol = [Net.ServicePointManager]::SecurityProtocol;
-[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-$beforeProgressPreference = $ProgressPreference
-$ProgressPreference = "SilentlyContinue"
-Invoke-WebRequest $hostSrcUrl -OutFile $hostSrcZip
-[Net.ServicePointManager]::SecurityProtocol = $beforeSecurityProtocol
-$ProgressPreference = $beforeProgressPreference
-
-# Unzip the source code
-Expand-Archive $hostSrcZip -DestinationPath $artifactsDir
+Write-Host "Cloning Azure Functions host source code"
+git clone --depth 1 --branch "v$hostVersion" $hostRepo $hostSrcDir
 
 # Build and publish the host
 $hostProjectPath = Join-Path $hostSrcDir "src/WebJobs.Script.WebHost/WebJobs.Script.WebHost.csproj"
@@ -83,8 +72,14 @@ dotnet restore $hostProjectPath --verbosity Normal
 # See: https://github.com/Azure/azure-functions-host/pull/9564
 dotnet publish $hostProjectPath -c Release --output $hostBinDir --runtime $RuntimeIdentifier --self-contained false /p:NoWarn=SA1518
 
+if ($LASTEXITCODE -ne 0) {
+  throw "Failed to publish the Azure Functions Host."
+}
+
 # Delete all out-of-process (non-.NET) workers to make the package smaller.
-Remove-DirSafe (Join-Path $hostBinDir "workers/*")
+$workersDir = Join-Path $hostBinDir "workers"
+Remove-DirSafe $workersDir
+New-Item $workersDir -ItemType Directory | Out-Null
 
 # Zip the host and app for a stand-alone Azure Functions deployment.
 Write-Host "Zipping host to `"$hostBinZip`""

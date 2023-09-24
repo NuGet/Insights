@@ -227,6 +227,7 @@ module spotWorkers './spot-workers.bicep' = if (useSpotWorkers) {
   params: {
     location: location
     storageAccountName: storageAccountName
+    keyVaultName: keyVaultName
     userManagedIdentityName: userManagedIdentityName
     uploadScriptUrl: spotWorkerUploadScriptUrl
     deploymentUrls: spotWorkerDeploymentUrls

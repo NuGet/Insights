@@ -5,7 +5,6 @@
     <ArtifactsSubdirectory Condition="'$(ArtifactsDirectory)' != ''">NuGet.Insights\</ArtifactsSubdirectory>
     <ArtifactsSubdirectory Condition="'$(ArtifactsDirectory)' == ''"></ArtifactsSubdirectory>
     <ArtifactsDirectory Condition="'$(ArtifactsDirectory)' == ''">$(MSBuildThisFileDirectory)artifacts</ArtifactsDirectory>
-    <DeploymentDir Condition="'$(DeploymentDir)' == ''">$(ArtifactsDirectory)\deploy</DeploymentDir>
     <_ProjectArtifactsDirectory>$(ArtifactsDirectory)\$(ArtifactsSubdirectory)$(MSBuildProjectName)\</_ProjectArtifactsDirectory>
     <BaseIntermediateOutputPath>$(_ProjectArtifactsDirectory)obj\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\</IntermediateOutputPath>

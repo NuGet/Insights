@@ -249,11 +249,11 @@ process {
     # Copy the runtime assets
     Copy-Item $WebsiteZipPath -Destination (Join-Path $ev2 $websiteBinPath) -Verbose
     Copy-Item $WorkerZipPath -Destination (Join-Path $ev2 $workerBinPath) -Verbose
-    if ($anyUseSpotWorkers) {
-        if (!$AzureFunctionsHostZipPath) {
-            throw "No AzureFunctionsHostZipPath parameter was provided but at least one of the configurations has UseSpotWorkers set to true."
-        }
+    if ($AzureFunctionsHostZipPath) {
         Copy-Item $AzureFunctionsHostZipPath -Destination (Join-Path $ev2 $azureFunctionsHostBinPath) -Verbose
+    }
+    elseif ($anyUseSpotWorkers) {
+        throw "No AzureFunctionsHostZipPath parameter was provided but at least one of the configurations has UseSpotWorkers set to true."
     }
     Copy-Item $installWorkerStandaloneSourcePath -Destination (Join-Path $ev2 $installWorkerStandalonePath) -Verbose
     Write-Host "Wrote Ev2 files to: $ev2"

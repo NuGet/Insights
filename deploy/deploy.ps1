@@ -72,18 +72,37 @@ process {
     $deploymentDir = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../artifacts/deploy"))
     function Publish-Project ($ProjectName) {
         Write-Status "Publishing project '$ProjectName'..."
-        dotnet publish (Join-Path $PSScriptRoot "../src/$ProjectName") `
-            "/p:DeploymentDir=$deploymentDir" `
+
+        # Workaround: https://github.com/Azure/azure-functions-dotnet-worker/issues/1834
+        dotnet build (Join-Path $PSScriptRoot "../src/$ProjectName") `
             --configuration Release `
             --runtime $RuntimeIdentifier `
             --self-contained false | Out-Default
         if ($LASTEXITCODE -ne 0) {
+            throw "Failed to build $ProjectName."
+        }
+
+        $publishDir = Join-Path $deploymentDir $ProjectName
+        if (Test-Path $publishDir) {
+            Remove-Item $publishDir -Force -Recurse
+        }
+
+        dotnet publish (Join-Path $PSScriptRoot "../src/$ProjectName") `
+            --no-build `
+            --configuration Release `
+            --runtime $RuntimeIdentifier `
+            --self-contained false `
+            --output $publishDir | Out-Default
+        if ($LASTEXITCODE -ne 0) {
             throw "Failed to publish $ProjectName."
         }
         
-        $path = Join-Path $deploymentDir "$ProjectName.zip"
+        $zipPath = Join-Path $deploymentDir "$ProjectName.zip"
+        Compress-Archive -Path (Join-Path $publishDir "*") -DestinationPath $zipPath -Force
+
+        Remove-Item $publishDir -Recurse -Force
     
-        return $path.ToString()
+        return $zipPath.ToString()
     }
     
     if (!$WebsiteZipPath) { $WebsiteZipPath = Publish-Project "Website" }

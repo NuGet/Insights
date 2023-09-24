@@ -76,7 +76,7 @@ resource workerPlanAutoScale 'Microsoft.Insights/autoscalesettings@2015-04-01' =
               direction: 'Increase'
               type: 'ChangeCount'
               cooldown: 'PT1M'
-              value: '5'
+              value: string(min(maxInstances - minInstances, 5))
             }
           }
           {
@@ -95,7 +95,7 @@ resource workerPlanAutoScale 'Microsoft.Insights/autoscalesettings@2015-04-01' =
               direction: 'Decrease'
               type: 'ChangeCount'
               cooldown: 'PT2M'
-              value: '10'
+              value: string(min(maxInstances - minInstances, 10))
             }
           }
         ]

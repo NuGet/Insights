@@ -93,11 +93,31 @@ jobs:
           pwsh: true
         retryCountOnTaskFailure: 1
 
-      - script: dotnet publish $(Build.SourcesDirectory)/src/Website/Website.csproj --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false
-        displayName: "Publish Website to ZIP"
+      - script: dotnet build $(Build.SourcesDirectory)/src/Website/Website.csproj --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false
+        displayName: "Build Website for ${{ rid }}"
 
-      - script: dotnet publish $(Build.SourcesDirectory)/src/Worker/Worker.csproj --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false
-        displayName: "Publish Worker to ZIP"
+      - script: dotnet publish $(Build.SourcesDirectory)/src/Website/Website.csproj --no-build --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false --output $(OutputDirectory)/deploy/Website
+        displayName: "Publish Website for ${{ rid }}"
+
+      - task: ArchiveFiles@2
+        displayName: "Zip Website"
+        inputs:
+          rootFolderOrFile: $(OutputDirectory)/deploy/Website
+          includeRootFolder: false
+          archiveFile: $(OutputDirectory)/deploy/Website.zip
+
+      - script: dotnet build $(Build.SourcesDirectory)/src/Worker/Worker.csproj --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false
+        displayName: "Build Worker for ${{ rid }}"
+
+      - script: dotnet publish $(Build.SourcesDirectory)/src/Worker/Worker.csproj --no-build --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false --output $(OutputDirectory)/deploy/Worker
+        displayName: "Publish Worker for ${{ rid }}"
+
+      - task: ArchiveFiles@2
+        displayName: "Zip Worker"
+        inputs:
+          rootFolderOrFile: $(OutputDirectory)/deploy/Worker
+          includeRootFolder: false
+          archiveFile: $(OutputDirectory)/deploy/Worker.zip
 
       - task: PowerShell@2
         displayName: "Publish Azure Functions host"

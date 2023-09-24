@@ -28,10 +28,10 @@ param (
 $ErrorActionPreference = "Stop"
 
 $dotnetInstallPattern = "dotnet-install.ps1"
-$dotnetChannel = "6.0"
+$dotnetChannel = "7.0"
 $dotnetRuntime = "aspnetcore"
 $binDir = "C:\bin"
-$dotnetDir = Join-Path $binDir "Microsoft\dotnet"
+$dotnetDir = "C:\Program Files\dotnet"
 $dotnet = Join-Path $dotnetDir "dotnet.exe"
 $scheduledTaskName = "NuGet.Insights Standalone Worker"
 $installDir = Join-Path $binDir $DeploymentLabel
@@ -65,7 +65,7 @@ Function Expand-Pattern($type, $pattern) {
 # Download and install the .NET runtime
 if (!(Test-Path $installDir)) { New-Item $installDir -ItemType Directory | Out-Null }
 $dotnetInstallPath = Get-Pattern $dotnetInstallPattern
-& $dotnetInstallPath -Channel $dotnetChannel -Runtime $dotnetRuntime -InstallDir $dotnetDir -NoPath
+& $dotnetInstallPath -Channel $dotnetChannel -Runtime $dotnetRuntime -InstallDir $dotnetDir
 Write-Host ""
 
 if ($ExpandOSPartition) {
@@ -101,13 +101,10 @@ foreach ($line in Get-Content $envPath) {
     $scriptEnv[$splits[0]] = $splits[1]
 }
 $hostEnv = [ordered]@{
-    "ASPNETCORE_URLS"                                    = "http://localhost:$LocalHealthPort";
-    "AzureFunctionsJobHost__Logging__Console__IsEnabled" = "false";
-    "AzureWebJobsScriptRoot"                             = $appRoot;
-    "DOTNET_gcServer"                                    = "1";
-    "NUGET_INSIGHTS_ALLOW_ICU"                           = "true";
-    "NuGetInsights__DeploymentLabel"                     = $DeploymentLabel;
-    "WEBSITE_HOSTNAME"                                   = "localhost:$LocalHealthPort";
+    "ASPNETCORE_URLS"                = "http://localhost:$LocalHealthPort";
+    "AzureWebJobsScriptRoot"         = $appRoot;
+    "NuGetInsights__DeploymentLabel" = $DeploymentLabel;
+    "WEBSITE_HOSTNAME"               = "localhost:$LocalHealthPort";
 }
 
 if ($ApplicationInsightsConnectionString) {
