@@ -18,6 +18,9 @@
     "queues": {
       "maxDequeueCount": 10,
       "messageEncoding": "none"
+    },
+    "http": {
+      "routePrefix": ""
     }
   }
 }

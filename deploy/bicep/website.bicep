@@ -49,6 +49,7 @@ resource website 'Microsoft.Web/sites@2022-09-01' = {
         minTlsVersion: '1.2'
         alwaysOn: false // I've run into problems with the AAD client certificate not refreshing...
         use32BitWorkerProcess: false
+        healthCheckPath: '/healthz'
         appSettings: concat([
             {
               name: 'AzureAd__Instance'

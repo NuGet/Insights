@@ -1,9 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Net;
 using System.Threading.Tasks;
 using Azure.Storage.Queues.Models;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 
 namespace NuGet.Insights.Worker
 {
@@ -31,6 +33,16 @@ namespace NuGet.Insights.Worker
             _tempStreamLeaseScope = tempStreamLeaseScope;
             _timerExecutionService = timerExecutionService;
             _messageProcessor = messageProcessor;
+        }
+
+        [Function("HealthFunction")]
+        public HttpResponseData HealthFunction(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "GET", Route = "healthz")] HttpRequestData request)
+        {
+            var response = request.CreateResponse(HttpStatusCode.OK);
+            response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
+            response.WriteString("The worker is alive.");
+            return response;
         }
 
         [Function("MetricsFunction")]

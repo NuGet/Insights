@@ -130,6 +130,7 @@ resource worker 'Microsoft.Web/sites@2022-09-01' = {
         minTlsVersion: '1.2'
         alwaysOn: !isConsumptionPlan
         use32BitWorkerProcess: false
+        healthCheckPath: '/healthz'
         appSettings: concat([
             {
               name: 'AzureFunctionsJobHost__logging__LogLevel__Default'

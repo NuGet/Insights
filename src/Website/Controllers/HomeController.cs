@@ -26,6 +26,12 @@ namespace NuGet.Insights.Website.Controllers
             return View(_options.Value.ShowAdminMetadata ? _cache : null);
         }
 
+        [HttpGet("/healthz")]
+        public ContentResult Health()
+        {
+            return Content("The website is alive.");
+        }
+
         public async Task<RedirectToActionResult> SignOutAndRedirect()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);

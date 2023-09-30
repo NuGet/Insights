@@ -262,7 +262,7 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2021-11-01' = {
               settings: {
                 protocol: 'http'
                 port: 80
-                requestPath: '/'
+                requestPath: '/healthz'
               }
             }
           }
