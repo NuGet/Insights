@@ -9,6 +9,9 @@ class ResourceSettings {
     [string]$Location
     
     [ValidateNotNullOrEmpty()]
+    [string]$LogAnalyticsWorkspaceName
+
+    [ValidateNotNullOrEmpty()]
     [string]$AppInsightsName
     
     [ValidateNotNullOrEmpty()]
@@ -168,6 +171,7 @@ class ResourceSettings {
         }
         
         Set-OrDefault Location "West US 2"
+        Set-OrDefault LogAnalyticsWorkspaceName "NuGetInsights-$StampName"
         Set-OrDefault AppInsightsName "NuGetInsights-$StampName"
         Set-OrDefault AppInsightsDailyCapGb 1
         Set-OrDefault ActionGroupName "NuGetInsights-$StampName"
@@ -534,6 +538,7 @@ function New-MainParameters(
         actionGroupShortName      = $ResourceSettings.ActionGroupShortName;
         alertEmail                = $ResourceSettings.AlertEmail;
         alertPrefix               = $ResourceSettings.AlertPrefix;
+        logAnalyticsWorkspaceName = $ResourceSettings.LogAnalyticsWorkspaceName;
         appInsightsDailyCapGb     = $ResourceSettings.AppInsightsDailyCapGb;
         appInsightsName           = $ResourceSettings.AppInsightsName;
         deploymentLabel           = $DeploymentLabel;

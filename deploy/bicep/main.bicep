@@ -5,6 +5,7 @@ param leaseContainerName string
 param userManagedIdentityName string
 param location string
 
+param logAnalyticsWorkspaceName string
 param appInsightsName string
 param appInsightsDailyCapGb int
 param actionGroupName string
@@ -56,26 +57,30 @@ resource userManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2
   location: location
 }
 
-resource appInsights 'Microsoft.Insights/components@2015-05-01' = {
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
+  name: logAnalyticsWorkspaceName
+  location: location
+  properties: {
+    features: {
+      immediatePurgeDataOn30Days: true
+    }
+    sku: {
+      name: 'PerGB2018'
+    }
+    retentionInDays: 30
+    workspaceCapping: {
+      dailyQuotaGb: appInsightsDailyCapGb
+    }
+  }
+}
+
+resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: appInsightsName
   location: location
   kind: 'web'
   properties: {
     Application_Type: 'web'
-  }
-
-  // This produces a warning due to limited type definitions, but works.
-  // See: https://github.com/Azure/bicep/issues/784#issuecomment-830997209
-  #disable-next-line BCP081
-  resource billing 'CurrentBillingFeatures' = {
-    name: 'Basic'
-    properties: {
-      CurrentBillingFeatures: 'Basic'
-      DataVolumeCap: {
-        Cap: appInsightsDailyCapGb
-        WarningThreshold: 90
-      }
-    }
+    WorkspaceResourceId: logAnalyticsWorkspace.id
   }
 }
 

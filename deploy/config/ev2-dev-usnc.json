@@ -14,6 +14,7 @@
     "WorkerCountPerPlan": 1,
     "WorkerPlanCount": 1,
     "WorkerLogLevel": "Warning",
+    "LogAnalyticsWorkspaceName": "ev2-dev-usnc-insights-la",
     "AppInsightsName": "ev2-dev-usnc-insights-ai",
     "AppInsightsDailyCapGb": 1,
     "ActionGroupName": "ev2-dev-usnc",
