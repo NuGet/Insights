@@ -173,6 +173,13 @@ namespace NuGet.Insights.Worker
             }
         }
 
+        public async Task<Dictionary<CatalogScanDriverType, CursorTableEntity>> GetCursorsAsync()
+        {
+            var nameToType = StartableDriverTypes.ToDictionary(GetCursorName);
+            var cursors = await _cursorStorageService.GetOrCreateAllAsync(nameToType.Keys.ToList());
+            return cursors.ToDictionary(x => nameToType[x.Name]);
+        }
+
         public async Task<CursorTableEntity> GetCursorAsync(CatalogScanDriverType driverType)
         {
             return await _cursorStorageService.GetOrCreateAsync(GetCursorName(driverType));

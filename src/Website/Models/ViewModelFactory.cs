@@ -56,12 +56,8 @@ namespace NuGet.Insights.Website
         {
             var workQueueTask = GetQueueAsync(QueueType.Work);
             var expandQueueTask = GetQueueAsync(QueueType.Expand);
-
-            var catalogScanTasks = CatalogScanCursorService
-                .StartableDriverTypes
-                .Select(GetCatalogScanAsync)
-                .ToList();
-
+            var cursorsTask = _catalogScanCursorService.GetCursorsAsync();
+            var catalogScansTask = _catalogScanStorageService.GetAllLatestIndexScansAsync(HistoryCount);
             var isWorkflowRunningTask = _workflowService.IsWorkflowRunningAsync();
             var timerStatesTask = _timerExecutionService.GetStateAsync();
             var workflowRunsTask = GetWorkflowRunsAsync();
@@ -71,25 +67,39 @@ namespace NuGet.Insights.Website
             await Task.WhenAll(
                 workQueueTask,
                 expandQueueTask,
+                catalogScansTask,
+                cursorsTask,
                 isWorkflowRunningTask,
                 timerStatesTask,
                 workflowRunsTask,
                 kustoIngestionsTask,
                 catalogCommitTimestampTask);
 
-            var catalogScans = await Task.WhenAll(catalogScanTasks);
-
-            // Calculate the cursor age.
+            // Build the catalog scan (driver) view models
             var catalogCommitTimestamp = await catalogCommitTimestampTask;
-            foreach (var catalogScan in catalogScans)
+            var catalogScans = new List<CatalogScanViewModel>();
+            foreach ((var driverType, var latestScans) in catalogScansTask.Result.OrderBy(x => x.Key))
             {
-                var min = catalogScan.Cursor.Value;
+                var cursor = cursorsTask.Result[driverType];
+                var nextCommitTimestampForCursor = await _catalogCommitTimestampProvider.GetNextAsync(cursor.Value);
+
+                var min = cursor.Value;
                 if (min < CatalogClient.NuGetOrgMin)
                 {
                     min = CatalogClient.NuGetOrgMin;
                 }
 
-                catalogScan.CursorAge = catalogCommitTimestamp - min;
+                catalogScans.Add(new CatalogScanViewModel
+                {
+                    Cursor = cursor,
+                    DefaultMax = nextCommitTimestampForCursor ?? CatalogClient.NuGetOrgFirstCommit,
+                    CursorAge = catalogCommitTimestamp - min,
+                    DriverType = driverType,
+                    LatestScans = latestScans,
+                    SupportsReprocess = _catalogScanService.SupportsReprocess(driverType),
+                    OnlyLatestLeavesSupport = _catalogScanService.GetOnlyLatestLeavesSupport(driverType),
+                    IsEnabled = _catalogScanService.IsEnabled(driverType),
+                });
             }
 
             // Calculate the next default max, which supports processing the catalog one commit at a time.
@@ -160,24 +170,6 @@ namespace NuGet.Insights.Website
             {
                 return MoveQueueMessagesState.None;
             }
-        }
-
-        private async Task<CatalogScanViewModel> GetCatalogScanAsync(CatalogScanDriverType driverType)
-        {
-            var latestScans = await _catalogScanStorageService.GetLatestIndexScansAsync(driverType, HistoryCount);
-            var cursor = await _catalogScanCursorService.GetCursorAsync(driverType);
-            var nextCommitTimestamp = await _catalogCommitTimestampProvider.GetNextAsync(cursor.Value);
-
-            return new CatalogScanViewModel
-            {
-                DriverType = driverType,
-                Cursor = cursor,
-                LatestScans = latestScans,
-                SupportsReprocess = _catalogScanService.SupportsReprocess(driverType),
-                OnlyLatestLeavesSupport = _catalogScanService.GetOnlyLatestLeavesSupport(driverType),
-                IsEnabled = _catalogScanService.IsEnabled(driverType),
-                DefaultMax = nextCommitTimestamp ?? CatalogClient.NuGetOrgFirstCommit,
-            };
         }
     }
 }

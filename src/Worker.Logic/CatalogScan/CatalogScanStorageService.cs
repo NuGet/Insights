@@ -216,6 +216,37 @@ namespace NuGet.Insights.Worker
                 .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
         }
 
+        public async Task<Dictionary<CatalogScanDriverType, List<CatalogIndexScan>>> GetAllLatestIndexScansAsync(int maxEntities)
+        {
+            var pks = CatalogScanCursorService.StartableDriverTypes.Select(x => x.ToString()).ToList();
+            var minPk = pks.Min(StringComparer.Ordinal);
+            var maxPk = pks.Max(StringComparer.Ordinal);
+
+            var table = await GetIndexScanTableAsync();
+            var query = table.QueryAsync<CatalogIndexScan>(x => x.PartitionKey.CompareTo(minPk) >= 0 && x.PartitionKey.CompareTo(maxPk) <= 0);
+
+            var output = CatalogScanCursorService.StartableDriverTypes.ToDictionary(x => x, x => new List<CatalogIndexScan>());
+            var completed = 0;
+
+            await foreach (var item in query)
+            {
+                if (output.TryGetValue(item.DriverType, out var list) && list.Count < maxEntities)
+                {
+                    list.Add(item);
+                    if (list.Count == maxEntities)
+                    {
+                        completed++;
+                        if (completed == output.Count)
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return output;
+        }
+
         public async Task<IReadOnlyList<CatalogIndexScan>> GetLatestIndexScansAsync(CatalogScanDriverType driverType, int maxEntities)
         {
             return await (await GetIndexScanTableAsync())

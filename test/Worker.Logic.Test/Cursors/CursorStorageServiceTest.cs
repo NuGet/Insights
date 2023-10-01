@@ -18,6 +18,44 @@ namespace NuGet.Insights.Worker
 {
     public class CursorStorageServiceTest : IClassFixture<CursorStorageServiceTest.Fixture>, IAsyncLifetime
     {
+        public class TheGetOrCreateAllAsyncMethod : CursorStorageServiceTest
+        {
+            public TheGetOrCreateAllAsyncMethod(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+            {
+            }
+
+            [Fact]
+            public async Task ReturnsExistingCursors()
+            {
+                var value = new DateTimeOffset(2020, 1, 1, 12, 30, 0, TimeSpan.Zero);
+                var cursorA = await Target.GetOrCreateAsync(CursorName + "A");
+                var cursorB = await Target.GetOrCreateAsync(CursorName + "B");
+
+                var cursors = await Target.GetOrCreateAllAsync(new[] { cursorB.Name, cursorA.Name });
+
+                Assert.Equal(2, cursors.Count);
+                Assert.Equal(cursorB.Name, cursors[0].Name);
+                Assert.Equal(cursorB.ETag, cursors[0].ETag);
+                Assert.Equal(cursorA.Name, cursors[1].Name);
+                Assert.Equal(cursorA.ETag, cursors[1].ETag);
+            }
+
+            [Fact]
+            public async Task CreateNewCursors()
+            {
+                var value = new DateTimeOffset(2020, 1, 1, 12, 30, 0, TimeSpan.Zero);
+
+                var cursors = await Target.GetOrCreateAllAsync(new[] { CursorName + "B", CursorName + "A" });
+
+                var entities = await GetEntitiesAsync<CursorTableEntity>();
+                Assert.Equal(2, cursors.Count);
+                Assert.Equal(entities[1].Name, cursors[0].Name);
+                Assert.Equal(entities[1].ETag, cursors[0].ETag);
+                Assert.Equal(entities[0].Name, cursors[1].Name);
+                Assert.Equal(entities[0].ETag, cursors[1].ETag);
+            }
+        }
+
         public class TheGetOrCreateAsyncMethod : CursorStorageServiceTest
         {
             public TheGetOrCreateAsyncMethod(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
