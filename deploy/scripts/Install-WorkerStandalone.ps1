@@ -21,6 +21,9 @@ param (
     [Parameter(Mandatory = $true)]
     [string]$UserManagedIdentityClientId,
 
+    [Parameter(Mandatory = $true)]
+    [string]$RoleName,
+
     [Parameter(Mandatory = $false)]
     [switch]$ExpandOSPartition
 )
@@ -105,6 +108,7 @@ $hostEnv = [ordered]@{
     "AzureWebJobsScriptRoot"         = $appRoot;
     "NuGetInsights__DeploymentLabel" = $DeploymentLabel;
     "WEBSITE_HOSTNAME"               = "localhost:$LocalHealthPort";
+    "WEBSITE_SITE_NAME"              = $RoleName;
 }
 
 if ($ApplicationInsightsConnectionString) {

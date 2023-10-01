@@ -455,10 +455,9 @@ function New-WorkerStandaloneEnv($ResourceSettings) {
     $config = $ResourceSettings.WorkerConfig | ConvertTo-FlatConfig
 
     # These set up the Azure Functions job host or match with the normal Azure Functions worker settings.
+    $config["ASPNETCORE_SUPPRESSSTATUSMESSAGES"] = "true";
     $config["AzureFunctionsJobHost__logging__Console__IsEnabled"] = "false";
     $config["AzureFunctionsJobHost__logging__LogLevel__Default"] = $ResourceSettings.WorkerLogLevel;
-    $config["logging__LogLevel__Default"] = $ResourceSettings.WorkerLogLevel;
-    $config["logging__ApplicationInsights__LogLevel__Default"] = $ResourceSettings.WorkerLogLevel;
     $config["AzureFunctionsWebHost__hostId"] = $ResourceSettings.WorkerHostId;
     $config["AzureWebJobs.MetricsFunction.Disabled"] = "true";
     $config["AzureWebJobs.TimerFunction.Disabled"] = "true";
@@ -468,6 +467,8 @@ function New-WorkerStandaloneEnv($ResourceSettings) {
     $config["DOTNET_gcServer"] = "1";
     $config["FUNCTIONS_WORKER_RUNTIME_VERSION"] = "7.0";
     $config["FUNCTIONS_WORKER_RUNTIME"] = "dotnet-isolated";
+    $config["logging__ApplicationInsights__LogLevel__Default"] = $ResourceSettings.WorkerLogLevel;
+    $config["logging__LogLevel__Default"] = $ResourceSettings.WorkerLogLevel;
     $config["NUGET_INSIGHTS_ALLOW_ICU"] = "true";
     $config["NuGetInsights__LeaseContainerName"] = $ResourceSettings.LeaseContainerName;
     $config["NuGetInsights__StorageAccountName"] = $ResourceSettings.StorageAccountName;
@@ -484,6 +485,7 @@ function New-WorkerStandaloneEnv($ResourceSettings) {
     $config["NuGetInsights__UserManagedIdentityClientId"] = "PLACEHOLDER";
     $config["QueueTriggerConnection__clientId"] = "PLACEHOLDER";
     $config["WEBSITE_HOSTNAME"] = "PLACEHOLDER";
+    $config["WEBSITE_SITE_NAME"] = "PLACEHOLDER";
 
     return $config
 }
