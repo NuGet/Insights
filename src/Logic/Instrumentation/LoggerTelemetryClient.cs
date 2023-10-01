@@ -42,6 +42,11 @@ namespace NuGet.Insights
             return new LoggerMetric(metricId, new[] { dimension1Name, dimension2Name, dimension3Name, dimension4Name }, _logger);
         }
 
+        public IDisposable StartOperation(string operationName)
+        {
+            return _logger.BeginScope(new { OperationName = operationName });
+        }
+
         public void TrackMetric(string name, double value, IDictionary<string, string> properties)
         {
             if (properties.Count == 0)

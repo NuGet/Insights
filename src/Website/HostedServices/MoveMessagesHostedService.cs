@@ -52,6 +52,9 @@ namespace NuGet.Insights.Website
             while (!stoppingToken.IsCancellationRequested)
             {
                 var moveTask = await _taskQueue.DequeueAsync(stoppingToken);
+
+                using var operation = _telemetryClient.StartOperation(nameof(MoveMessagesHostedService));
+
                 try
                 {
                     await ExecuteMoveTaskAsync(moveTask, stoppingToken);

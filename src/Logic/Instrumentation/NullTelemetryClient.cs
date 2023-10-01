@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 
 namespace NuGet.Insights
@@ -34,8 +35,22 @@ namespace NuGet.Insights
             return NullMetric.Instance;
         }
 
+        public IDisposable StartOperation(string operationName)
+        {
+            return NullDisposable.Instance;
+        }
+
         public void TrackMetric(string name, double value, IDictionary<string, string> properties)
         {
+        }
+
+        private class NullDisposable : IDisposable
+        {
+            public static NullDisposable Instance { get; } = new NullDisposable();
+
+            public void Dispose()
+            {
+            }
         }
     }
 }

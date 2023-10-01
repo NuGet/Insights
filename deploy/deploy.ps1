@@ -72,7 +72,6 @@ process {
     $deploymentDir = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../artifacts/deploy"))
     function Publish-Project ($ProjectName) {
         Write-Status "Publishing project '$ProjectName'..."
-
         # Workaround: https://github.com/Azure/azure-functions-dotnet-worker/issues/1834
         dotnet build (Join-Path $PSScriptRoot "../src/$ProjectName") `
             --configuration Release `
@@ -98,8 +97,10 @@ process {
         }
         
         $zipPath = Join-Path $deploymentDir "$ProjectName.zip"
+        Write-Host "Zipping $ProjectName"
         Compress-Archive -Path (Join-Path $publishDir "*") -DestinationPath $zipPath -Force
 
+        Write-Host "Cleaning publish directory for $ProjectName"
         Remove-Item $publishDir -Recurse -Force
     
         return $zipPath.ToString()

@@ -457,6 +457,8 @@ function New-WorkerStandaloneEnv($ResourceSettings) {
     # These set up the Azure Functions job host or match with the normal Azure Functions worker settings.
     $config["AzureFunctionsJobHost__logging__Console__IsEnabled"] = "false";
     $config["AzureFunctionsJobHost__logging__LogLevel__Default"] = $ResourceSettings.WorkerLogLevel;
+    $config["logging__LogLevel__Default"] = $ResourceSettings.WorkerLogLevel;
+    $config["logging__ApplicationInsights__LogLevel__Default"] = $ResourceSettings.WorkerLogLevel;
     $config["AzureFunctionsWebHost__hostId"] = $ResourceSettings.WorkerHostId;
     $config["AzureWebJobs.MetricsFunction.Disabled"] = "true";
     $config["AzureWebJobs.TimerFunction.Disabled"] = "true";

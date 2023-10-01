@@ -3,6 +3,9 @@
 
 using System;
 using System.Linq;
+using Microsoft.ApplicationInsights.Channel;
+using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -41,7 +44,8 @@ namespace NuGet.Insights.Website
             services.AddScoped<IAuthorizationHandler, AllowListAuthorizationHandler>();
             services.AddScoped<AllowListAuthorizationHandler>();
             services.AddTransient<ViewModelFactory>();
-            services.AddHostedService<InitializerHostedService>();
+            services.AddSingleton<InitializerHostedService>();
+            services.AddHostedService(s => s.GetRequiredService<InitializerHostedService>());
             services.AddHostedService<MoveMessagesHostedService>();
             services.AddHostedService<CachedAdminViewModelService>();
 
@@ -50,6 +54,7 @@ namespace NuGet.Insights.Website
                 options.ConnectionString = Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"];
                 options.EnableAdaptiveSampling = false;
             });
+            services.AddApplicationInsightsTelemetryProcessor<RemoveInProcDependencyEvents>();
 
             services
                 .AddMvc();
@@ -130,6 +135,31 @@ namespace NuGet.Insights.Website
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}");
             });
+        }
+
+        private class RemoveInProcDependencyEvents : ITelemetryProcessor
+        {
+            private readonly ITelemetryProcessor _next;
+
+            public RemoveInProcDependencyEvents(ITelemetryProcessor next)
+            {
+                _next = next;
+            }
+
+            public void Process(ITelemetry item)
+            {
+                /// These are produced by the Azure SDK integration in the Application Insights client.
+                /// We don't want to totally disable the telemetry with <code>DependencyTrackingTelemetryModule.EnableAzureSdkTelemetryListener</code>
+                /// but we do want to reduce the verbosity.
+                if (item is DependencyTelemetry dependency
+                    && dependency.Type != null
+                    && dependency.Type.StartsWith("InProc | ", StringComparison.Ordinal))
+                {
+                    return;
+                }
+
+                _next.Process(item);
+            }
         }
     }
 }

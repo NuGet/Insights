@@ -23,18 +23,24 @@ namespace NuGet.Insights.Website
 
         private readonly IServiceProvider _serviceProvider;
         private readonly AdminViewModelCache _cache;
+        private readonly InitializerHostedService _initializer;
         private readonly IOptions<NuGetInsightsWebsiteSettings> _options;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<CachedAdminViewModelService> _logger;
 
         public CachedAdminViewModelService(
             IServiceProvider serviceProvider,
             AdminViewModelCache cache,
+            InitializerHostedService initializer,
             IOptions<NuGetInsightsWebsiteSettings> options,
+            ITelemetryClient telemetryClient,
             ILogger<CachedAdminViewModelService> logger)
         {
             _serviceProvider = serviceProvider;
             _cache = cache;
+            _initializer = initializer;
             _options = options;
+            _telemetryClient = telemetryClient;
             _logger = logger;
         }
 
@@ -45,37 +51,43 @@ namespace NuGet.Insights.Website
                 return;
             }
 
+            var stopwatch = Stopwatch.StartNew();
             while (!stoppingToken.IsCancellationRequested)
             {
-                _cache.Refreshing = true;
-                _logger.LogInformation("Loading latest admin view model.");
-                var sw = Stopwatch.StartNew();
-                try
+                using (_telemetryClient.StartOperation(nameof(CachedAdminViewModelService)))
                 {
-                    var asOfTimestamp = DateTimeOffset.UtcNow;
-                    using (var scope = _serviceProvider.CreateScope())
+                    await _initializer.WaitAsync();
+
+                    _cache.Refreshing = true;
+                    _logger.LogInformation("Loading latest admin view model.");
+                    var sw = Stopwatch.StartNew();
+                    try
                     {
-                        var factory = scope.ServiceProvider.GetRequiredService<ViewModelFactory>();
-                        var data = await factory.GetAdminViewModelAsync();
-                        _cache.Value = new CachedAdminViewModel(asOfTimestamp, data);
-                        _cache.Settings = scope.ServiceProvider.GetRequiredService<IOptions<NuGetInsightsWebsiteSettings>>().Value;
+                        var asOfTimestamp = DateTimeOffset.UtcNow;
+                        using (var scope = _serviceProvider.CreateScope())
+                        {
+                            var factory = scope.ServiceProvider.GetRequiredService<ViewModelFactory>();
+                            var data = await factory.GetAdminViewModelAsync();
+                            _cache.Value = new CachedAdminViewModel(asOfTimestamp, data);
+                            _cache.Settings = scope.ServiceProvider.GetRequiredService<IOptions<NuGetInsightsWebsiteSettings>>().Value;
+                        }
+                        _logger.LogInformation(
+                            "Latest admin view model loaded after {DurationMs}ms. Sleeping for {SleepMs}ms.",
+                            sw.Elapsed.TotalMilliseconds,
+                            _options.Value.CachedAdminViewModelMaxAge.TotalMilliseconds);
                     }
-                    _logger.LogInformation(
-                        "Latest admin view model loaded after {DurationMs}ms. Sleeping for {SleepMs}ms.",
-                        sw.Elapsed.TotalMilliseconds,
-                        _options.Value.CachedAdminViewModelMaxAge.TotalMilliseconds);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(
-                        ex,
-                        "Failed to load admin view model after {DurationMs}ms. Sleeping for {SleepMs}ms.",
-                        sw.Elapsed.TotalMilliseconds,
-                        _options.Value.CachedAdminViewModelMaxAge.TotalMilliseconds);
-                }
-                finally
-                {
-                    _cache.Refreshing = false;
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(
+                            ex,
+                            "Failed to load admin view model after {DurationMs}ms. Sleeping for {SleepMs}ms.",
+                            sw.Elapsed.TotalMilliseconds,
+                            _options.Value.CachedAdminViewModelMaxAge.TotalMilliseconds);
+                    }
+                    finally
+                    {
+                        _cache.Refreshing = false;
+                    }
                 }
 
                 await Task.Delay(_options.Value.CachedAdminViewModelMaxAge, stoppingToken);

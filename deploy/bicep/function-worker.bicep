@@ -136,6 +136,14 @@ resource worker 'Microsoft.Web/sites@2022-09-01' = {
               value: logLevel
             }
             {
+              name: 'logging__LogLevel__Default'
+              value: logLevel
+            }
+            {
+              name: 'logging__ApplicationInsights__LogLevel__Default'
+              value: logLevel
+            }
+            {
               name: 'AzureFunctionsWebHost__hostId'
               value: hostId
             }

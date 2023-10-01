@@ -4,6 +4,9 @@
 using System;
 using System.IO;
 using System.Linq;
+using Microsoft.ApplicationInsights.Channel;
+using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,8 +41,26 @@ namespace NuGet.Insights.Worker
                 .ConfigureFunctionsWorkerDefaults()
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddApplicationInsightsTelemetryWorkerService();
+                    services.AddApplicationInsightsTelemetryWorkerService(options =>
+                    {
+                        options.EnableDependencyTrackingTelemetryModule = false;
+                        options.EnablePerformanceCounterCollectionModule = false;
+                        options.EnableAdaptiveSampling = false;
+                    });
                     services.ConfigureFunctionsApplicationInsights();
+
+                    // Logging can be sent to the host via the RPC channel. Log levels are shared in surprising ways.
+                    // Tracking issue: https://github.com/Azure/azure-functions-dotnet-worker/issues/1182
+                    // Sanity regained: https://github.com/devops-circle/Azure-Functions-Logging-Tests/blob/master/Func.Isolated.Net7.With.AI/Program.cs
+                    services.Configure<LoggerFilterOptions>(options =>
+                    {
+                        options.Rules.Remove(options
+                            .Rules
+                            .Single(rule => rule.ProviderName == typeof(ApplicationInsightsLoggerProvider).FullName));
+                    });
+
+                    // Remove in-proc dependency telemetry: https://github.com/Azure/azure-functions-dotnet-worker/issues/1845#issuecomment-1709122523
+                    services.AddApplicationInsightsTelemetryProcessor<RemoveInProcDependencyEvents>();
 
                     HandleMoveTempToHome(hostContext);
 
@@ -62,14 +83,9 @@ namespace NuGet.Insights.Worker
                     services.AddNuGetInsights("NuGet.Insights.Worker");
                     services.AddNuGetInsightsWorker();
                 })
-                .ConfigureLogging(logging =>
+                .ConfigureLogging((hostContext, logging) =>
                 {
-                    logging.Services.Configure<LoggerFilterOptions>(options =>
-                    {
-                        options.Rules.Remove(options
-                            .Rules
-                            .Single(rule => rule.ProviderName == typeof(ApplicationInsightsLoggerProvider).FullName));
-                    });
+                    logging.AddConfiguration(hostContext.Configuration.GetSection("Logging"));
                 });
         }
 
@@ -125,6 +141,28 @@ namespace NuGet.Insights.Worker
             if (HomeTempStreamDirectory is not null)
             {
                 settings.TempDirectories.Add(HomeTempStreamDirectory);
+            }
+        }
+
+        private class RemoveInProcDependencyEvents : ITelemetryProcessor
+        {
+            private readonly ITelemetryProcessor _next;
+
+            public RemoveInProcDependencyEvents(ITelemetryProcessor next)
+            {
+                _next = next;
+            }
+
+            public void Process(ITelemetry item)
+            {
+                if (item is DependencyTelemetry dependency
+                    && dependency.Type == "InProc"
+                    && dependency.Properties.ContainsKey("faas.execution"))
+                {
+                    return;
+                }
+
+                _next.Process(item);
             }
         }
     }

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 
 namespace NuGet.Insights
@@ -13,5 +14,6 @@ namespace NuGet.Insights
         IMetric GetMetric(string metricId, string dimension1Name, string dimension2Name, string dimension3Name);
         IMetric GetMetric(string metricId, string dimension1Name, string dimension2Name, string dimension3Name, string dimension4Name);
         void TrackMetric(string name, double value, IDictionary<string, string> properties);
+        IDisposable StartOperation(string operationName);
     }
 }

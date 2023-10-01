@@ -15,32 +15,54 @@ namespace NuGet.Insights.Website
     public class InitializerHostedService : BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<InitializerHostedService> _logger;
+        private readonly TaskCompletionSource _taskCompletionSource;
 
-        public InitializerHostedService(IServiceProvider serviceProvider, ILogger<InitializerHostedService> logger)
+        public InitializerHostedService(
+            IServiceProvider serviceProvider,
+            ITelemetryClient telemetryClient,
+            ILogger<InitializerHostedService> logger)
         {
             _serviceProvider = serviceProvider;
+            _telemetryClient = telemetryClient;
             _logger = logger;
+            _taskCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
+
+        public Task WaitAsync()
+        {
+            return _taskCompletionSource.Task;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             await Task.Yield();
 
-            var types = new List<Type>
+            try
             {
-                typeof(ControllerInitializer)
-            };
-
-            var initializedTypes = new HashSet<Type>();
-            using (var scope = _serviceProvider.CreateScope())
-            {
-                foreach (var type in types)
+                using (var operation = _telemetryClient.StartOperation(nameof(InitializerHostedService)))
                 {
-                    stoppingToken.ThrowIfCancellationRequested();
+                    var types = new List<Type>
+                    {
+                        typeof(ControllerInitializer)
+                    };
 
-                    await InitializeAsync(scope.ServiceProvider, initializedTypes, type, stoppingToken);
+                    var initializedTypes = new HashSet<Type>();
+                    using (var scope = _serviceProvider.CreateScope())
+                    {
+                        foreach (var type in types)
+                        {
+                            stoppingToken.ThrowIfCancellationRequested();
+
+                            await InitializeAsync(scope.ServiceProvider, initializedTypes, type, stoppingToken);
+                        }
+                    }
                 }
+            }
+            finally
+            {
+                _taskCompletionSource.TrySetResult();
             }
         }
 
