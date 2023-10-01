@@ -30,7 +30,7 @@ solution.**
 
 ### Build the code
 
-1. Ensure you have the .NET 6 SDK installed. [Install it if
+1. Ensure you have the .NET 7 SDK installed. [Install it if
    needed](https://dotnet.microsoft.com/download).
    ```
    dotnet --info
@@ -50,7 +50,7 @@ solution.**
 ### Deploy to Azure
 
 PowerShell is used for the following steps. I have tested Windows PowerShell
-5.1, Windows PowerShell 7.1.3, and Linux PowerShell 7.1.3.
+5.1, Windows PowerShell 7.3.7, and Linux PowerShell 7.3.7.
 
 1. Ensure you have the Az PowerShell modules. [Install them if
    needed](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps).
@@ -93,6 +93,8 @@ The end of the output looks like this:
 Warming up the website and workers...
 <b>https://nugetinsights-joel.azurewebsites.net/</b> - 200 OK
 https://nugetinsights-joel-worker-0.azurewebsites.net/ - 200 OK
+Deployment is complete.
+Go to here for the admin panel: https://nugetinsights-joel.azurewebsites.net/Admin
 </pre>
 
 You can go the first URL which is the website URL in your web browser and click on
