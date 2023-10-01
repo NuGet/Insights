@@ -19,11 +19,14 @@ param (
     [string]$WorkerZipPath,
 
     [Parameter(Mandatory = $false)]
-    [string]$AzureFunctionsHostZipPath
+    [string]$AzureFunctionsHostZipPath,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$UseExistingBuild
 )
 
 dynamicparam {
-    Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1")
+    Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1") -Force
     
     $ConfigNameKey = "ConfigName"
     $configNameParameter = Get-ConfigNameDynamicParameter ([string]) $ConfigNameKey
@@ -38,7 +41,7 @@ begin {
 }
 
 process {
-    Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1")
+    Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1") -Force
 
     $RuntimeIdentifier = Get-DefaultRuntimeIdentifier $RuntimeIdentifier
     $resourceSettings = Get-ResourceSettings $ConfigName $StampName $RuntimeIdentifier
@@ -71,6 +74,13 @@ process {
     # Publish (build and package) the app code
     $deploymentDir = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../artifacts/deploy"))
     function Publish-Project ($ProjectName) {
+        $zipPath = Join-Path $deploymentDir "$ProjectName.zip"
+        if ($UseExistingBuild -and (Test-Path $zipPath)) {
+            $age = [DateTimeOffset]::UtcNow - (Get-Item $zipPath).LastWriteTimeUtc
+            Write-Status "Using existing build of '$ProjectName', last modified $([int]$age.TotalMinutes) minutes ago."
+            return $zipPath
+        }
+
         Write-Status "Publishing project '$ProjectName'..."
         # Workaround: https://github.com/Azure/azure-functions-dotnet-worker/issues/1834
         dotnet build (Join-Path $PSScriptRoot "../src/$ProjectName") `
@@ -96,14 +106,13 @@ process {
             throw "Failed to publish $ProjectName."
         }
         
-        $zipPath = Join-Path $deploymentDir "$ProjectName.zip"
         Write-Host "Zipping $ProjectName"
         Compress-Archive -Path (Join-Path $publishDir "*") -DestinationPath $zipPath -Force
 
         Write-Host "Cleaning publish directory for $ProjectName"
         Remove-Item $publishDir -Recurse -Force
     
-        return $zipPath.ToString()
+        return $zipPath
     }
     
     if (!$WebsiteZipPath) { $WebsiteZipPath = Publish-Project "Website" }
@@ -112,9 +121,16 @@ process {
         if (!(Test-Path $deploymentDir)) { New-Item $deploymentDir -ItemType Directory | Out-Null }
         Write-Status "Publishing Azure Functions Host..."
         $AzureFunctionsHostZipPath = Join-Path $deploymentDir "AzureFunctionsHost.zip"
-        . (Join-Path $PSScriptRoot "build-host.ps1") `
-            -RuntimeIdentifier $RuntimeIdentifier `
-            -OutputPath $AzureFunctionsHostZipPath
+
+        if ($UseExistingBuild -and (Test-Path $AzureFunctionsHostZipPath)) {
+            $age = [DateTimeOffset]::UtcNow - (Get-Item $AzureFunctionsHostZipPath).LastWriteTimeUtc
+            Write-Status "Using existing build of Azure Functions Host, last modified $([int]$age.TotalMinutes) minutes ago."
+        }
+        else {
+            . (Join-Path $PSScriptRoot "build-host.ps1") `
+                -RuntimeIdentifier $RuntimeIdentifier `
+                -OutputPath $AzureFunctionsHostZipPath
+        }
     }
     
     $parameters = @{

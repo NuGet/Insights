@@ -18,7 +18,7 @@ param (
 )
 
 dynamicparam {
-    Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1")
+    Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1") -Force
     
     $ConfigNamesKey = "ConfigNames"
     $configNamesParameter = Get-ConfigNameDynamicParameter ([string[]]) $ConfigNamesKey

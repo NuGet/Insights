@@ -5,7 +5,7 @@ param (
 )
 
 dynamicparam {
-    Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1")
+    Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1") -Force
     
     $ConfigNameKey = "ConfigName"
     $configNamesParameter = Get-ConfigNameDynamicParameter ([string[]]) $ConfigNameKey
@@ -20,7 +20,7 @@ begin {
 }
 
 process {
-    Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1")
+    Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1") -Force
 
     $runtimeIdentifier = Get-DefaultRuntimeIdentifier $null $false
     $resourceSettings = Get-ResourceSettings $ConfigName $StampName $runtimeIdentifier

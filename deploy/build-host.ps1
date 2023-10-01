@@ -8,7 +8,7 @@ param (
   [string]$OutputPath
 )
 
-Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1")
+Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1") -Force
 $RuntimeIdentifier = Get-DefaultRuntimeIdentifier $RuntimeIdentifier
 
 $hostVersion = "4.27.1"
