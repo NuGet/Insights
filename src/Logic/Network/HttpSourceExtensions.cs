@@ -220,7 +220,7 @@ namespace NuGet.Insights
                         request,
                         async (response) =>
                         {
-                            url = response.RequestMessage?.RequestUri?.AbsoluteUri;
+                            url = response.RequestMessage?.RequestUri?.Obfuscate();
                             fetchedHeaders = true;
                             return await processAsync(response);
                         },

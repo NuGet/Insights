@@ -197,9 +197,9 @@ namespace NuGet.Insights
                 userDelegationKey = null;
             }
 
-            _logger.LogInformation("Blob endpoint: {BlobEndpoint}", blob.Uri);
-            _logger.LogInformation("Queue endpoint: {QueueEndpoint}", queue.Uri);
-            _logger.LogInformation("Table endpoint: {TableEndpoint}", table.Uri);
+            _logger.LogInformation("Blob endpoint: {BlobEndpoint}", blob.Uri.Obfuscate());
+            _logger.LogInformation("Queue endpoint: {QueueEndpoint}", queue.Uri.Obfuscate());
+            _logger.LogInformation("Table endpoint: {TableEndpoint}", table.Uri.Obfuscate());
 
             return new ServiceClients(
                 created,
