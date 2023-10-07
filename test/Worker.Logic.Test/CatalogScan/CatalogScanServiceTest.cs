@@ -41,23 +41,18 @@ namespace NuGet.Insights.Worker
             await SetDependencyCursorsAsync(DriverType, CursorValue);
             var scanResult = await CatalogScanService.UpdateAsync(DriverType);
             var scan = scanResult.Scan;
-            var isComplete = false;
-            await ProcessQueueAsync(
-                async _ =>
-                {
-                    scan = await CatalogScanStorageService.GetIndexScanAsync(DriverType, scan.ScanId);
-                    var anyFindLatest = (await CatalogScanStorageService.GetIndexScansAsync())
-                        .Any(x => x.DriverType == CatalogScanDriverType.Internal_FindLatestCatalogLeafScan);
-                    isComplete = scan.State == CatalogIndexScanState.FindingLatest && anyFindLatest;
-                    return !isComplete;
-                },
-                () => Task.FromResult(isComplete));
+
+            var processor = Host.Services.GetRequiredService<IMessageProcessor<CatalogIndexScanMessage>>();
+            var message = new CatalogIndexScanMessage { DriverType = DriverType, ScanId = scan.ScanId };
+            await processor.ProcessAsync(message, dequeueCount: 0);
+            scan = await CatalogScanStorageService.GetIndexScanAsync(DriverType, scan.ScanId);
             var scansBefore = await CatalogScanStorageService.GetIndexScansAsync();
 
             // Act
             var aborted = await CatalogScanService.AbortAsync(DriverType);
 
             // Assert
+            Assert.Equal(CatalogIndexScanState.FindingLatest, scan.State);
             Assert.Equal(scan.ScanId, aborted.ScanId);
 
             Assert.Equal(2, scansBefore.Count);
@@ -79,21 +74,18 @@ namespace NuGet.Insights.Worker
             await SetDependencyCursorsAsync(DriverType, CursorValue);
             var scanResult = await CatalogScanService.UpdateAsync(DriverType);
             var scan = scanResult.Scan;
-            var isComplete = false;
-            await ProcessQueueAsync(
-                async _ =>
-                {
-                    scan = await CatalogScanStorageService.GetIndexScanAsync(DriverType, scan.ScanId);
-                    isComplete = scan.State == CatalogIndexScanState.Working;
-                    return !isComplete;
-                },
-                () => Task.FromResult(isComplete));
+
+            var processor = Host.Services.GetRequiredService<IMessageProcessor<CatalogIndexScanMessage>>();
+            var message = new CatalogIndexScanMessage { DriverType = DriverType, ScanId = scan.ScanId };
+            await processor.ProcessAsync(message, dequeueCount: 0);
+            scan = await CatalogScanStorageService.GetIndexScanAsync(DriverType, scan.ScanId);
             var tablesBefore = await GetTableNamesAsync();
 
             // Act
             var aborted = await CatalogScanService.AbortAsync(DriverType);
 
             // Assert
+            Assert.Equal(CatalogIndexScanState.Working, scan.State);
             Assert.Equal(scan.ScanId, aborted.ScanId);
 
             Assert.Contains(Options.Value.CursorTableName, tablesBefore);
