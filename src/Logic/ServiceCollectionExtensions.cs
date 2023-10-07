@@ -51,7 +51,6 @@ namespace NuGet.Insights
 
                     return new NullDelegatingHandler();
                 })
-                .AddHttpMessageHandler<UrlReporterHandler>()
                 .ConfigureHttpClient(x =>
                 {
                     if (x.DefaultRequestHeaders.UserAgent == null
@@ -143,8 +142,6 @@ namespace NuGet.Insights
 
             serviceCollection.AddSingleton<IThrottle>(NullThrottle.Instance);
 
-            serviceCollection.AddSingleton<UrlReporterProvider>();
-            serviceCollection.AddTransient<UrlReporterHandler>();
             serviceCollection.AddTransient<LoggingHandler>();
             serviceCollection.AddTransient(
                 x =>
