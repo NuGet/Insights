@@ -32,12 +32,13 @@ namespace NuGet.Insights
 
         public const string HttpClientName = "NuGet.Insights";
         public const string LoggingHttpClientName = "NuGet.Insights.Logging";
+        public const string LoggingNoDecompressionHttpClientName = "NuGet.Insights.LoggingNoDecompression";
 
-        private static IHttpClientBuilder AddNuGetInsights(this IHttpClientBuilder builder)
+        private static IHttpClientBuilder AddNuGetInsights(this IHttpClientBuilder builder, DecompressionMethods automaticDecompression)
         {
             return builder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
             {
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                AutomaticDecompression = automaticDecompression,
             })
                 .AddHttpMessageHandler(serviceProvider =>
                 {
@@ -114,12 +115,17 @@ namespace NuGet.Insights
 
             serviceCollection
                 .AddHttpClient(HttpClientName)
-                .AddNuGetInsights();
+                .AddNuGetInsights(DecompressionMethods.All);
 
             serviceCollection
                 .AddHttpClient(LoggingHttpClientName)
-                .AddNuGetInsights()
-                .AddHttpMessageHandler<LoggingHandler>();
+                .AddHttpMessageHandler<LoggingHandler>()
+                .AddNuGetInsights(DecompressionMethods.All);
+
+            serviceCollection
+                .AddHttpClient(LoggingNoDecompressionHttpClientName)
+                .AddHttpMessageHandler<LoggingHandler>()
+                .AddNuGetInsights(DecompressionMethods.None);
 
             serviceCollection.AddTransient(x => x
                 .GetRequiredService<IHttpClientFactory>()
@@ -130,7 +136,10 @@ namespace NuGet.Insights
                 o.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
             });
 
-            serviceCollection.AddSingleton<ServiceClientFactory>();
+            serviceCollection.AddSingleton(s => new ServiceClientFactory(
+                () => s.GetRequiredService<IHttpClientFactory>().CreateClient(LoggingNoDecompressionHttpClientName),
+                s.GetRequiredService<IOptions<NuGetInsightsSettings>>(),
+                s.GetRequiredService<ILogger<ServiceClientFactory>>()));
 
             serviceCollection.AddSingleton<IThrottle>(NullThrottle.Instance);
 

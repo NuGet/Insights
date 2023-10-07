@@ -292,6 +292,9 @@ namespace NuGet.Insights
 
         protected async Task CleanUpStorageContainers(Predicate<string> shouldDelete)
         {
+            // Remove test hooks ffor the HTTP client pipeline to allow normal clean-up.
+            HttpMessageHandlerFactory.OnSendAsync = null;
+
             var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
             var containerItems = await blobServiceClient.GetBlobContainersAsync().ToListAsync();
             foreach (var containerItem in containerItems.Where(x => shouldDelete(x.Name)))
@@ -423,13 +426,16 @@ namespace NuGet.Insights
         public class TestServiceClientFactory : ServiceClientFactory
         {
             public TestServiceClientFactory(
+                Func<LoggingHandler> loggingHandlerFactory,
                 HttpClientHandler httpClientHandler,
                 IOptions<NuGetInsightsSettings> options,
                 ILogger<ServiceClientFactory> logger) : base(options, logger)
             {
+                LoggingHandlerFactory = loggingHandlerFactory;
                 HttpClientHandler = httpClientHandler;
             }
 
+            public Func<LoggingHandler> LoggingHandlerFactory { get; }
             public HttpClientHandler HttpClientHandler { get; }
             public TestHttpMessageHandlerFactory HandlerFactory { get; } = new TestHttpMessageHandlerFactory();
 
@@ -437,7 +443,11 @@ namespace NuGet.Insights
             {
                 var testHandler = HandlerFactory.Create();
                 testHandler.InnerHandler = HttpClientHandler;
-                return new HttpClientTransport(testHandler);
+
+                var loggingHandler = LoggingHandlerFactory();
+                loggingHandler.InnerHandler = testHandler;
+
+                return new HttpClientTransport(loggingHandler);
             }
         }
     }

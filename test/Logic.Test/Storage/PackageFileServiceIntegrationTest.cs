@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -59,14 +60,15 @@ namespace NuGet.Insights
             };
 
             var first = await Target.GetOrUpdateInfoAsync(leafItem);
-            var requestCount = HttpMessageHandlerFactory.Requests.Count;
+            var requestCount = HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg"));
             leafItem.CommitTimestamp = timestampB;
 
             // Act
             var second = await Target.GetOrUpdateInfoAsync(leafItem);
 
             // Assert
-            Assert.Equal(requestCount, HttpMessageHandlerFactory.Requests.Count);
+            Assert.Equal(2, requestCount);
+            Assert.Equal(requestCount, HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg")));
             Assert.Equal(timestampA, first.CommitTimestamp);
             Assert.Equal(timestampA, second.CommitTimestamp);
         }
@@ -88,13 +90,14 @@ namespace NuGet.Insights
             };
 
             await Target.GetOrUpdateInfoAsync(leafItem);
-            var requestCount = HttpMessageHandlerFactory.Requests.Count;
+            var requestCount = HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg"));
 
             // Act
             await Target.GetOrUpdateInfoAsync(leafItem);
 
             // Assert
-            Assert.Equal(requestCount, HttpMessageHandlerFactory.Requests.Count);
+            Assert.Equal(2, requestCount);
+            Assert.Equal(requestCount, HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg")));
         }
 
         public PackageFileServiceIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

@@ -320,7 +320,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
                 Assert.Single(HttpMessageHandlerFactory.Requests, r => r.Method == HttpMethod.Head && r.RequestUri.AbsoluteUri == Options.Value.DownloadsV1Urls.Single());
                 Assert.Single(HttpMessageHandlerFactory.Requests, r => r.Method == HttpMethod.Get && r.RequestUri.AbsoluteUri == Options.Value.DownloadsV1Urls.Single());
-                Assert.Equal(2, HttpMessageHandlerFactory.Requests.Count);
+                Assert.Equal(2, HttpMessageHandlerFactory.Requests.Count(r => r.RequestUri.AbsoluteUri == Options.Value.DownloadsV1Urls.Single()));
                 HttpMessageHandlerFactory.Requests.Clear();
 
                 // Arrange
@@ -335,7 +335,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 await AssertCsvBlobAsync(DownloadsToCsvDir, Step2, "latest_downloads.csv.gz");
                 Assert.Single(HttpMessageHandlerFactory.Requests, r => r.Method == HttpMethod.Head && r.RequestUri.AbsoluteUri == Options.Value.DownloadsV1Urls.Single());
                 Assert.Single(HttpMessageHandlerFactory.Requests, r => r.Method == HttpMethod.Get && r.RequestUri.AbsoluteUri == Options.Value.DownloadsV1Urls.Single());
-                Assert.Equal(2, HttpMessageHandlerFactory.Requests.Count);
+                Assert.Equal(2, HttpMessageHandlerFactory.Requests.Count(r => r.RequestUri.AbsoluteUri == Options.Value.DownloadsV1Urls.Single()));
             }
         }
 

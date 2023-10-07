@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Core.Pipeline;
@@ -20,14 +21,22 @@ namespace NuGet.Insights
     {
         private readonly SemaphoreSlim _lock = new SemaphoreSlim(1);
         private ServiceClients _serviceClients;
-
+        private readonly Func<HttpClient> _httpClientFactory;
         private readonly IOptions<NuGetInsightsSettings> _options;
         private readonly ILogger<ServiceClientFactory> _logger;
 
         public ServiceClientFactory(
             IOptions<NuGetInsightsSettings> options,
+            ILogger<ServiceClientFactory> logger) : this(httpClientFactory: null, options, logger)
+        {
+        }
+
+        public ServiceClientFactory(
+            Func<HttpClient> httpClientFactory,
+            IOptions<NuGetInsightsSettings> options,
             ILogger<ServiceClientFactory> logger)
         {
+            _httpClientFactory = httpClientFactory;
             _options = options;
             _logger = logger;
         }
@@ -203,6 +212,12 @@ namespace NuGet.Insights
 
         protected virtual HttpPipelineTransport GetHttpPipelineTransport()
         {
+            if (_logger.IsEnabled(LogLevel.Debug))
+            {
+                var httpClient = _httpClientFactory?.Invoke();
+                return httpClient != null ? new HttpClientTransport(httpClient) : null;
+            }
+
             return null;
         }
 

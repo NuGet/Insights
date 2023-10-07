@@ -1079,11 +1079,13 @@ namespace NuGet.Insights.ReferenceTracking
             SubjectType = PartitionKeyPrefix + SubjectTypeSuffix;
 
             ServiceClientFactoryA = new TestServiceClientFactory(
+                () => new LoggingHandler(output.GetLogger<LoggingHandler>()),
                 _fixture.HttpClientHandler,
                 _fixture.Options.Object,
                 Output.GetLogger<ServiceClientFactory>());
 
             ServiceClientFactoryB = new TestServiceClientFactory(
+                () => new LoggingHandler(output.GetLogger<LoggingHandler>()),
                 _fixture.HttpClientHandler,
                 _fixture.Options.Object,
                 Output.GetLogger<ServiceClientFactory>());

@@ -13,6 +13,7 @@ using Azure.Storage.Queues.Models;
 using Kusto.Ingest;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.KustoIngestion;
@@ -561,10 +562,18 @@ namespace NuGet.Insights.Worker
                 Assert.Equal(startingReadmeRequestCount, finalReadmeRequestCount);
                 Assert.Equal(intermediateSnupkgRequestCount, finalSnupkgRequestCount);
 
-                var userAgents = HttpMessageHandlerFactory.Requests.Select(r => r.Headers.UserAgent.ToString()).Distinct();
-                var userAgent = Assert.Single(userAgents);
-                Assert.StartsWith("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0; AppInsights)", userAgent);
-                Assert.Matches(@"(NuGet Test Client)/?(\d+)?\.?(\d+)?\.?(\d+)?", userAgent);
+                var userAgents = HttpMessageHandlerFactory.Requests.Select(r => r.Headers.UserAgent.ToString()).Distinct().Order().ToList();
+                foreach (var userAgent in userAgents)
+                {
+                    Logger.LogInformation("Found User-Agent: {UserAgent}", userAgent);
+                }
+
+                Assert.Equal(4, userAgents.Count); // NuGet Insights, and Blob + Queue + Table Azure SDK.
+                Assert.StartsWith("azsdk-net-Data.Tables/", userAgents[0]);
+                Assert.StartsWith("azsdk-net-Storage.Blobs/", userAgents[1]);
+                Assert.StartsWith("azsdk-net-Storage.Queues/", userAgents[2]);
+                Assert.StartsWith("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0; AppInsights)", userAgents[3]);
+                Assert.Matches(@"(NuGet Test Client)/?(\d+)?\.?(\d+)?\.?(\d+)?", userAgents[3]);
             }
         }
 
