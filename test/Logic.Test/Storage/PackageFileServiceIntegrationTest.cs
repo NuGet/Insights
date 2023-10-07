@@ -67,7 +67,7 @@ namespace NuGet.Insights
             var second = await Target.GetOrUpdateInfoAsync(leafItem);
 
             // Assert
-            Assert.Equal(2, requestCount);
+            Assert.True(requestCount >= 2); // HEAD, GET, and potential retries on the GET
             Assert.Equal(requestCount, HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg")));
             Assert.Equal(timestampA, first.CommitTimestamp);
             Assert.Equal(timestampA, second.CommitTimestamp);
@@ -96,7 +96,7 @@ namespace NuGet.Insights
             await Target.GetOrUpdateInfoAsync(leafItem);
 
             // Assert
-            Assert.Equal(2, requestCount);
+            Assert.True(requestCount >= 2); // HEAD, GET, and potential retries on the GET
             Assert.Equal(requestCount, HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg")));
         }
 
