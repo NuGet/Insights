@@ -7,12 +7,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
 using Azure.Core.Pipeline;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
@@ -300,7 +302,14 @@ namespace NuGet.Insights
             foreach (var containerItem in containerItems.Where(x => shouldDelete(x.Name)))
             {
                 Logger.LogInformation("Deleting blob container: {Name}", containerItem.Name);
-                await blobServiceClient.DeleteBlobContainerAsync(containerItem.Name);
+                try
+                {
+                    await blobServiceClient.DeleteBlobContainerAsync(containerItem.Name);
+                }
+                catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+                {
+                    // The delete is already done. This can happen if there are internal retries for the deletion.
+                }
             }
 
             var queueServiceClient = await ServiceClientFactory.GetQueueServiceClientAsync();
@@ -308,7 +317,14 @@ namespace NuGet.Insights
             foreach (var queueItem in queueItems.Where(x => shouldDelete(x.Name)))
             {
                 Logger.LogInformation("Deleting storage queue: {Name}", queueItem.Name);
-                await queueServiceClient.DeleteQueueAsync(queueItem.Name);
+                try
+                {
+                    await queueServiceClient.DeleteQueueAsync(queueItem.Name);
+                }
+                catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+                {
+                    // The delete is already done. This can happen if there are internal retries for the deletion.
+                }
             }
 
             var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
@@ -316,7 +332,14 @@ namespace NuGet.Insights
             foreach (var tableItem in tableItems.Where(x => shouldDelete(x.Name)))
             {
                 Logger.LogInformation("Deleting storage table: {Name}", tableItem.Name);
-                await tableServiceClient.DeleteTableAsync(tableItem.Name);
+                try
+                {
+                    await tableServiceClient.DeleteTableAsync(tableItem.Name);
+                }
+                catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+                {
+                    // The delete is already done. This can happen if there are internal retries for the deletion.
+                }
             }
         }
 
