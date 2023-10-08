@@ -14,7 +14,6 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
-using static NuGet.Insights.BaseLogicIntegrationTest;
 
 namespace NuGet.Insights
 {

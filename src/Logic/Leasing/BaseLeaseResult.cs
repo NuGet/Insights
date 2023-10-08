@@ -1,7 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Azure;
+
+#nullable enable
 
 namespace NuGet.Insights
 {
@@ -11,7 +14,7 @@ namespace NuGet.Insights
         public const string AcquiredBySomeoneElse = "The lease has been acquired by someone else, or transient errors happened.";
         public const string NotAvailable = "The lease is not available yet.";
 
-        protected BaseLeaseResult(T lease, bool acquired)
+        protected BaseLeaseResult(T? lease, ETag? etag, bool acquired)
         {
             if (acquired && lease == null)
             {
@@ -24,10 +27,12 @@ namespace NuGet.Insights
             }
 
             Lease = lease;
+            ETag = etag;
             Acquired = acquired;
         }
 
-        public T Lease { get; }
+        public T? Lease { get; }
+        public ETag? ETag { get; }
         public bool Acquired { get; }
     }
 }

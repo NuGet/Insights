@@ -4,6 +4,8 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -49,6 +51,86 @@ namespace NuGet.Insights
 
                 Assert.Equal(leaseResultA.Name, leaseResultB.Name);
                 Assert.True(leaseResultA.Acquired);
+                Assert.True(leaseResultB.Acquired);
+            }
+
+            [Fact]
+            public async Task AllowsReleaseLeaseAfterTimeout()
+            {
+                var leaseResultA = await Target.AcquireAsync(LeaseName, TimeSpan.FromSeconds(15));
+                await Task.Delay(TimeSpan.FromSeconds(15) + TimeSpan.FromSeconds(1));
+
+                var released = await Target.TryReleaseAsync(leaseResultA);
+
+                Assert.True(released);
+            }
+
+            [Fact]
+            public async Task AllowsReleaseWithRetriesAndNoOtherThread()
+            {
+                var requestCount = 0;
+                ServiceClientFactory.HandlerFactory.OnSendAsync = async (r, b, t) =>
+                {
+                    if (r.Headers.TryGetValues("x-ms-lease-action", out var values)
+                        && values.FirstOrDefault() == "release")
+                    {
+                        requestCount++;
+                        if (requestCount == 1)
+                        {
+                            await b(r, t);
+                            return new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                            {
+                                RequestMessage = r,
+                            };
+                        }
+                    };
+
+                    return null;
+                };
+
+                var leaseResultA = await Target.AcquireAsync(LeaseName, Duration);
+
+                var released = await Target.TryReleaseAsync(leaseResultA);
+
+                Assert.True(released);
+            }
+
+            [Fact]
+            public async Task DoesNotAllowReleaseWithRetriesAndAnotherThread()
+            {
+                var requestCount = 0;
+                StorageLeaseResult leaseResultB = null;
+                ServiceClientFactory.HandlerFactory.OnSendAsync = async (r, b, t) =>
+                {
+                    if (r.Headers.TryGetValues("x-ms-lease-action", out var values)
+                        && values.FirstOrDefault() == "release")
+                    {
+                        requestCount++;
+                        if (requestCount == 1)
+                        {
+                            // perform the release
+                            await b(r, t);
+
+                            // make another thread acquire
+                            leaseResultB = await Target.TryAcquireAsync(LeaseName, Duration);
+
+                            // signal the caller to retry
+                            return new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                            {
+                                RequestMessage = r,
+                            };
+                        }
+                    };
+
+                    return null;
+                };
+
+                var leaseResultA = await Target.AcquireAsync(LeaseName, Duration);
+
+                var released = await Target.TryReleaseAsync(leaseResultA);
+
+                Assert.False(released);
+                Assert.NotNull(leaseResultB);
                 Assert.True(leaseResultB.Acquired);
             }
 
@@ -243,7 +325,12 @@ namespace NuGet.Insights
                 };
                 Options = new Mock<IOptions<NuGetInsightsSettings>>();
                 Options.Setup(x => x.Value).Returns(() => Settings);
-                ServiceClientFactory = new ServiceClientFactory(Options.Object, output.GetLogger<ServiceClientFactory>());
+                HttpClientHandler = new HttpClientHandler();
+                ServiceClientFactory = new TestServiceClientFactory(
+                    () => new LoggingHandler(output.GetLogger<LoggingHandler>()),
+                    HttpClientHandler,
+                    Options.Object,
+                    output.GetLogger<ServiceClientFactory>());
                 Target = new StorageLeaseService(ServiceClientFactory, Options.Object);
             }
 
@@ -253,7 +340,8 @@ namespace NuGet.Insights
             public TimeSpan Duration { get; }
             public NuGetInsightsSettings Settings { get; }
             public Mock<IOptions<NuGetInsightsSettings>> Options { get; }
-            public ServiceClientFactory ServiceClientFactory { get; }
+            public HttpClientHandler HttpClientHandler { get; }
+            public TestServiceClientFactory ServiceClientFactory { get; }
             public StorageLeaseService Target { get; }
 
             public async Task DisposeAsync()
@@ -261,6 +349,8 @@ namespace NuGet.Insights
                 await (await ServiceClientFactory.GetBlobServiceClientAsync())
                     .GetBlobContainerClient(ContainerName)
                     .DeleteIfExistsAsync();
+
+                HttpClientHandler.Dispose();
             }
 
             public async Task InitializeAsync()

@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -45,29 +46,34 @@ namespace NuGet.Insights
             var blob = await GetBlobAsync(name);
             var leaseClient = blob.GetBlobLeaseClient();
 
-            if (!await blob.ExistsAsync())
-            {
-                try
-                {
-                    await blob.UploadAsync(Stream.Null, overwrite: false);
-                }
-                catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.Conflict || ex.Status == (int)HttpStatusCode.PreconditionFailed)
-                {
-                    // Ignore this exception.
-                }
-            }
-
             try
             {
-                BlobLease lease = await leaseClient.AcquireAsync(leaseDuration);
-
-                if (DateTimeOffset.UtcNow - lease.LastModified > TimeSpan.FromHours(18))
+                BlobLease lease;
+                try
                 {
-                    // Update the last modified time so that any blob deletion policy leaves this blob alone.
-                    await blob.UploadAsync(Stream.Null, new BlobUploadOptions { Conditions = new BlobRequestConditions { LeaseId = lease.LeaseId } });
+                    lease = await leaseClient.AcquireAsync(leaseDuration);
+                }
+                catch (RequestFailedException acquireEx) when (acquireEx.Status == (int)HttpStatusCode.NotFound)
+                {
+                    try
+                    {
+                        await blob.UploadAsync(Stream.Null, overwrite: false);
+                    }
+                    catch (RequestFailedException createEx) when (createEx.Status == (int)HttpStatusCode.Conflict || createEx.Status == (int)HttpStatusCode.PreconditionFailed)
+                    {
+                        // Ignore this exception. Another thread created the blob already.
+                    }
+
+                    lease = await leaseClient.AcquireAsync(leaseDuration);
                 }
 
-                return StorageLeaseResult.Leased(name, lease.LeaseId);
+                // Update the etag so we can detect if anyone else has acquired the lease successfully. This also
+                // updates the Last-Modified date which prevents a blob life cycle policy from deleting this blob.
+                BlobInfo blobInfo = await blob.SetMetadataAsync(
+                    new Dictionary<string, string> { { "leasestarted", DateTimeOffset.UtcNow.ToString("O") } },
+                    new BlobRequestConditions { LeaseId = lease.LeaseId });
+
+                return StorageLeaseResult.Leased(name, lease.LeaseId, blobInfo.ETag);
             }
             catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.Conflict)
             {
@@ -77,7 +83,7 @@ namespace NuGet.Insights
                 }
                 else
                 {
-                    return StorageLeaseResult.NotLeased();
+                    return StorageLeaseResult.NotLeased(name);
                 }
             }
         }
@@ -144,6 +150,19 @@ namespace NuGet.Insights
             }
             catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.Conflict)
             {
+                try
+                {
+                    BlobProperties properties = await blob.GetPropertiesAsync();
+                    if (properties.ETag == result.ETag && properties.LeaseState == LeaseState.Available)
+                    {
+                        return true;
+                    }
+                }
+                catch
+                {
+                    // Ignore, this is best effort.
+                }
+
                 if (shouldThrow)
                 {
                     throw new InvalidOperationException(StorageLeaseResult.AcquiredBySomeoneElse, ex);

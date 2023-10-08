@@ -1,20 +1,22 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
+#nullable enable
+
 namespace NuGet.Insights
 {
     public class AutoRenewingStorageLeaseResult : BaseLeaseResult<StorageLeaseResult>, IAsyncDisposable
     {
-        private readonly StorageLeaseService _service;
-        private readonly CancellationTokenSource _cts;
-        private readonly Task _renewTask;
+        private readonly StorageLeaseService? _service;
+        private readonly CancellationTokenSource? _cts;
+        private readonly Task? _renewTask;
 
-        private AutoRenewingStorageLeaseResult(StorageLeaseService service, StorageLeaseResult lease, bool acquired, CancellationTokenSource cts, Task renewTask)
-            : base(lease, acquired)
+        private AutoRenewingStorageLeaseResult(StorageLeaseService? service, StorageLeaseResult? lease, bool acquired, CancellationTokenSource? cts, Task? renewTask)
+            : base(lease, lease?.ETag, acquired)
         {
             _service = service;
             _cts = cts;
@@ -25,10 +27,10 @@ namespace NuGet.Insights
         {
             if (Acquired)
             {
-                _cts.Cancel();
-                await _renewTask;
+                _cts!.Cancel();
+                await _renewTask!;
                 _cts.Dispose();
-                await _service.ReleaseAsync(Lease);
+                await _service!.ReleaseAsync(Lease);
             }
         }
 

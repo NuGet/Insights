@@ -14,7 +14,6 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using Xunit;
 using Xunit.Abstractions;
-using static NuGet.Insights.BaseLogicIntegrationTest;
 
 namespace NuGet.Insights
 {
