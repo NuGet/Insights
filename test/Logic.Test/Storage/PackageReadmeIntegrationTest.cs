@@ -33,7 +33,10 @@ namespace NuGet.Insights
             var info = await Target.GetOrUpdateInfoFromLeafItemAsync(leaf);
 
             // Assert
-            Assert.Single(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsolutePath.EndsWith("/readme")));
+            Assert.Single(HttpMessageHandlerFactory
+                .Responses
+                .Where(x => x.StatusCode < HttpStatusCode.InternalServerError)
+                .Where(x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith("/readme")));
             Assert.Equal(ReadmeType.Embedded, info.ReadmeType);
             Assert.Equal(7628, info.ReadmeBytes.Length);
             Assert.NotEmpty(info.HttpHeaders);
@@ -58,7 +61,10 @@ namespace NuGet.Insights
             var info = await Target.GetOrUpdateInfoFromLeafItemAsync(leaf);
 
             // Assert
-            Assert.Single(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsolutePath.EndsWith("/readme")));
+            Assert.Single(HttpMessageHandlerFactory
+                .Responses
+                .Where(x => x.StatusCode < HttpStatusCode.InternalServerError)
+                .Where(x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith("/readme")));
             Assert.Equal(ReadmeType.None, info.ReadmeType);
         }
 
