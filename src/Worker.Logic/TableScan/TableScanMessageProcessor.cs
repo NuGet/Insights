@@ -267,6 +267,7 @@ namespace NuGet.Insights.Worker
 
             return new TableScanMessage<T>
             {
+                Started = originalMessage.Started,
                 TaskStateKey = taskState.GetKey(),
                 DriverType = originalMessage.DriverType,
                 TableName = originalMessage.TableName,
