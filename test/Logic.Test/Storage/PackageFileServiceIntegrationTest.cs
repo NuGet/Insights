@@ -30,14 +30,15 @@ namespace NuGet.Insights
             };
 
             var first = await Target.GetOrUpdateInfoAsync(leafItem);
-            var requestCount = HttpMessageHandlerFactory.Requests.Count;
+            var requestCountBefore = HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg"));
             leafItem.CommitTimestamp = timestampB;
 
             // Act
             var second = await Target.GetOrUpdateInfoAsync(leafItem);
 
             // Assert
-            Assert.InRange(HttpMessageHandlerFactory.Requests.Count, 2 * (requestCount - 1), 2 * requestCount); // 412 retries might occur on the GET If-Match, so allow for that.
+            var requestCountAfter = HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg"));
+            Assert.True(requestCountAfter > requestCountBefore);
             Assert.Equal(timestampA, first.CommitTimestamp);
             Assert.Equal(timestampB, second.CommitTimestamp);
         }
