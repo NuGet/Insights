@@ -278,6 +278,10 @@ namespace NuGet.Insights
 
         public virtual async Task DisposeAsync()
         {
+            Output.WriteLine(new string('-', 40));
+            Output.WriteLine("Beginning test clean-up.");
+            Output.WriteLine(new string('-', 40));
+
             try
             {
                 // Global assertions

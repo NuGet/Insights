@@ -35,7 +35,7 @@ namespace NuGet.Insights.Worker
                 if (message.AttemptCount <= 10)
                 {
                     _logger.LogTransientWarning(
-                        "Attempt {AttemptCount}: no task state for {StorageSuffix}, {PartitionKey}, {RowKey} was found. Trying again.",
+                        "Attempt {AttemptCount}: no task state for storage suffix '{StorageSuffix}', {PartitionKey}, {RowKey} was found. Trying again.",
                         message.AttemptCount,
                         message.TaskStateKey.StorageSuffix,
                         message.TaskStateKey.PartitionKey,
@@ -44,8 +44,8 @@ namespace NuGet.Insights.Worker
                 }
                 else
                 {
-                    _logger.LogError(
-                        "Attempt {AttemptCount}: no task state for {StorageSuffix}, {PartitionKey}, {RowKey} was found. Giving up.",
+                    _logger.LogTransientWarning(
+                        "Attempt {AttemptCount}: no task state for storage suffix '{StorageSuffix}', {PartitionKey}, {RowKey} was found. Giving up.",
                         message.AttemptCount,
                         message.TaskStateKey.StorageSuffix,
                         message.TaskStateKey.PartitionKey,

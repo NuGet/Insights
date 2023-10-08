@@ -61,7 +61,7 @@ namespace NuGet.Insights.Worker
                 }
                 else
                 {
-                    _logger.LogError("After {AttemptCount} attempts, the '{DriverType}' catalog index scan '{ScanId}' should have already been created. Giving up.",
+                    _logger.LogTransientWarning("After {AttemptCount} attempts, the '{DriverType}' catalog index scan '{ScanId}' should have already been created. Giving up.",
                         message.AttemptCount,
                         message.DriverType,
                         message.ScanId);
