@@ -8,6 +8,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
+using Azure.Data.Tables.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -68,7 +69,14 @@ namespace NuGet.Insights.Worker
         public async Task InsertAsync(CatalogIndexScan indexScan)
         {
             var table = await GetIndexScanTableAsync();
-            await table.AddEntityAsync(indexScan);
+            try
+            {
+                await table.AddEntityAsync(indexScan);
+            }
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.Conflict && ex.ErrorCode == TableErrorCode.EntityAlreadyExists)
+            {
+                _logger.LogTransientWarning("Catalog index scan {DriverType} {ScanId} was already inserted.", indexScan.DriverType, indexScan.ScanId);
+            }
         }
 
         public async Task<IReadOnlyList<CatalogPageScan>> GetPageScansAsync(string storageSuffix, string scanId)

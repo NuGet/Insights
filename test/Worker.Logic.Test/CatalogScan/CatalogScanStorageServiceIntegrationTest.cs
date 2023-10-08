@@ -10,6 +10,29 @@ namespace NuGet.Insights.Worker
 {
     public class CatalogScanStorageServiceIntegrationTest : BaseWorkerLogicIntegrationTest
     {
+        public class TheInsertAsyncMethodForIndexScan : CatalogScanStorageServiceIntegrationTest
+        {
+            [Fact]
+            public async Task AllowsExistingIndexScanWithMatchingInfo()
+            {
+                await Target.InitializeAsync();
+                var scan = new CatalogIndexScan(DriverType, StorageUtility.GenerateDescendingId().ToString(), StorageSuffix)
+                {
+                    State = CatalogIndexScanState.Created,
+                };
+                await Target.InsertAsync(scan);
+
+                await Target.InsertAsync(scan);
+
+                var actual = await Target.GetIndexScanAsync(DriverType, scan.ScanId);
+                Assert.NotNull(actual);
+            }
+
+            public TheInsertAsyncMethodForIndexScan(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
+        }
+
         public class TheDeleteOlderIndexScansAsyncMethod : CatalogScanStorageServiceIntegrationTest
         {
             [Fact]
