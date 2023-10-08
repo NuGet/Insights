@@ -46,9 +46,9 @@ namespace NuGet.Insights
             var blob = await GetBlobAsync(name);
             var leaseClient = blob.GetBlobLeaseClient();
 
+            BlobLease lease;
             try
             {
-                BlobLease lease;
                 try
                 {
                     lease = await leaseClient.AcquireAsync(leaseDuration);
@@ -66,16 +66,30 @@ namespace NuGet.Insights
 
                     lease = await leaseClient.AcquireAsync(leaseDuration);
                 }
+            }
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.Conflict)
+            {
+                if (shouldThrow)
+                {
+                    throw new InvalidOperationException(StorageLeaseResult.NotAvailable, ex);
+                }
+                else
+                {
+                    return StorageLeaseResult.NotLeased(name);
+                }
+            }
 
-                // Update the etag so we can detect if anyone else has acquired the lease successfully. This also
-                // updates the Last-Modified date which prevents a blob life cycle policy from deleting this blob.
+            // Update the etag so we can detect if anyone else has acquired the lease successfully. This also
+            // updates the Last-Modified date which prevents a blob life cycle policy from deleting this blob.
+            try
+            {
                 BlobInfo blobInfo = await blob.SetMetadataAsync(
                     new Dictionary<string, string> { { "leasestarted", DateTimeOffset.UtcNow.ToString("O") } },
                     new BlobRequestConditions { LeaseId = lease.LeaseId });
 
                 return StorageLeaseResult.Leased(name, lease.LeaseId, blobInfo.ETag);
             }
-            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.Conflict)
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.PreconditionFailed)
             {
                 if (shouldThrow)
                 {
