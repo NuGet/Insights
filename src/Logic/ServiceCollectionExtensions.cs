@@ -34,6 +34,13 @@ namespace NuGet.Insights
         public const string LoggingHttpClientName = "NuGet.Insights.Logging";
         public const string LoggingNoDecompressionHttpClientName = "NuGet.Insights.LoggingNoDecompression";
 
+        /// <summary>
+        /// This should be longer than the Azure Storage server-side timeouts.
+        /// Source: https://learn.microsoft.com/en-us/rest/api/storageservices/setting-timeouts-for-table-service-operations
+        /// Source: https://learn.microsoft.com/en-us/rest/api/storageservices/query-timeout-and-pagination
+        /// </summary>
+        public static readonly TimeSpan HttpClientTimeout = TimeSpan.FromSeconds(45);
+
         private static IHttpClientBuilder AddNuGetInsights(this IHttpClientBuilder builder, DecompressionMethods automaticDecompression)
         {
             return builder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
@@ -57,6 +64,11 @@ namespace NuGet.Insights
                         || x.DefaultRequestHeaders.UserAgent.Count == 0)
                     {
                         UserAgent.SetUserAgent(x);
+                    }
+
+                    if (x.Timeout > HttpClientTimeout)
+                    {
+                        x.Timeout = HttpClientTimeout;
                     }
                 });
         }

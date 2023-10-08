@@ -5,6 +5,7 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure.Core;
 using Azure.Core.Pipeline;
 using Azure.Data.Tables;
 using Azure.Identity;
@@ -143,6 +144,19 @@ namespace NuGet.Insights
             return untilRefresh > TimeSpan.Zero ? untilRefresh : TimeSpan.Zero;
         }
 
+        private static T GetOptions<T>(T options, HttpPipelineTransport transport) where T : ClientOptions
+        {
+            if (transport is not null)
+            {
+                options.Transport = transport;
+            };
+
+            options.Retry.MaxRetries = 2;
+            options.Retry.NetworkTimeout = ServiceCollectionExtensions.HttpClientTimeout;
+
+            return options;
+        }
+
         private async Task<ServiceClients> GetServiceClientsAsync(DateTimeOffset created)
         {
             var httpPipelineTransport = GetHttpPipelineTransport();
@@ -158,17 +172,17 @@ namespace NuGet.Insights
                 blob = new BlobServiceClient(
                     new Uri($"https://{_options.Value.StorageAccountName}.blob.core.windows.net"),
                     new ManagedIdentityCredential(clientId: _options.Value.UserManagedIdentityClientId),
-                    options: httpPipelineTransport != null ? new BlobClientOptions { Transport = httpPipelineTransport } : null);
+                    GetOptions(new BlobClientOptions(), httpPipelineTransport));
 
                 queue = new QueueServiceClient(
                     new Uri($"https://{_options.Value.StorageAccountName}.queue.core.windows.net"),
                     new ManagedIdentityCredential(clientId: _options.Value.UserManagedIdentityClientId),
-                    options: httpPipelineTransport != null ? new QueueClientOptions { Transport = httpPipelineTransport } : null);
+                    GetOptions(new QueueClientOptions(), httpPipelineTransport));
 
                 table = new TableServiceClient(
                     new Uri($"https://{_options.Value.StorageAccountName}.table.core.windows.net"),
                     new ManagedIdentityCredential(clientId: _options.Value.UserManagedIdentityClientId),
-                    options: httpPipelineTransport != null ? new TableClientOptions { Transport = httpPipelineTransport } : null);
+                    GetOptions(new TableClientOptions(), httpPipelineTransport));
 
                 userDelegationKey = await blob.GetUserDelegationKeyAsync(startsOn: null, expiresOn: sasExpiry);
 
@@ -184,15 +198,15 @@ namespace NuGet.Insights
 
                 blob = new BlobServiceClient(
                     _options.Value.StorageConnectionString,
-                    options: httpPipelineTransport != null ? new BlobClientOptions { Transport = httpPipelineTransport } : null);
+                    GetOptions(new BlobClientOptions(), httpPipelineTransport));
 
                 queue = new QueueServiceClient(
                     _options.Value.StorageConnectionString,
-                    options: httpPipelineTransport != null ? new QueueClientOptions { Transport = httpPipelineTransport } : null);
+                    GetOptions(new QueueClientOptions(), httpPipelineTransport));
 
                 table = new TableServiceClient(
                     _options.Value.StorageConnectionString,
-                    options: httpPipelineTransport != null ? new TableClientOptions { Transport = httpPipelineTransport } : null);
+                    GetOptions(new TableClientOptions(), httpPipelineTransport));
 
                 userDelegationKey = null;
             }
