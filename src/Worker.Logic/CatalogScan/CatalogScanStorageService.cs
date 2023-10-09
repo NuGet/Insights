@@ -121,7 +121,7 @@ namespace NuGet.Insights.Worker
             }
 
             var min = sortedLeafIds[0];
-            var max = sortedLeafIds[1];
+            var max = sortedLeafIds[sortedLeafIds.Count - 1];
 
             var table = await GetLeafScanTableAsync(storageSuffix);
             var leafScans = await table
