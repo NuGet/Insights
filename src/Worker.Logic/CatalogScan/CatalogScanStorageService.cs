@@ -102,7 +102,7 @@ namespace NuGet.Insights.Worker
 
         public async Task<IReadOnlyDictionary<string, CatalogLeafScan>> GetLeafScansAsync(string storageSuffix, string scanId, string pageId, IEnumerable<string> leafIds)
         {
-            var sortedLeafIds = leafIds.OrderBy(x => x).ToList();
+            var sortedLeafIds = leafIds.OrderBy(x => x, StringComparer.Ordinal).ToList();
             if (sortedLeafIds.Count == 0)
             {
                 return EmptyLeafIdToLeafScans;
@@ -120,9 +120,15 @@ namespace NuGet.Insights.Worker
                 }
             }
 
+            var min = sortedLeafIds[0];
+            var max = sortedLeafIds[1];
+
             var table = await GetLeafScanTableAsync(storageSuffix);
             var leafScans = await table
-                .QueryAsync<CatalogLeafScan>(x => x.PartitionKey == CatalogLeafScan.GetPartitionKey(scanId, pageId))
+                .QueryAsync<CatalogLeafScan>(x =>
+                    x.PartitionKey == CatalogLeafScan.GetPartitionKey(scanId, pageId)
+                    && x.RowKey.CompareTo(min) >= 0
+                    && x.RowKey.CompareTo(max) <= 0)
                 .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
             var uniqueLeafIds = sortedLeafIds.ToHashSet();
             return leafScans

@@ -4,6 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -134,6 +137,43 @@ namespace NuGet.Insights.Worker
                 // Assert
                 AssertProcessedScans(scans.Where(x => x.AttemptCount <= 10).ToList());
                 await AssertPoisonAsync(result, messages);
+            }
+
+            [Fact]
+            public async Task HandlesUpdateHiddenByRetryGracefully()
+            {
+                // Arrange
+                var scans = new[]
+                {
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
+                };
+                await InitializeScansAsync(scans);
+                var messages = MakeMessages(scans);
+
+                int requestCount = 0;
+                HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
+                {
+                    if (r.RequestUri.AbsolutePath.EndsWith("/$batch"))
+                    {
+                        if (Interlocked.Increment(ref requestCount) == 1)
+                        {
+                            await b(r, t);
+                            return new HttpResponseMessage(HttpStatusCode.InternalServerError) { RequestMessage = r };
+                        }
+                    }
+
+                    return null;
+                };
+
+                // Act
+                var result = await Target.ProcessAsync(messages, dequeueCount: 0);
+
+                // Assert
+                AssertProcessedScans(scans);
+                await AssertSuccessAsync(result);
             }
 
             [Fact]
@@ -310,6 +350,45 @@ namespace NuGet.Insights.Worker
                 // Assert
                 AssertProcessedScansOneByOne(scans.Where(x => x.AttemptCount <= 10).ToList());
                 await AssertPoisonAsync(result, messages);
+            }
+
+            [Fact]
+            public async Task HandlesUpdateHiddenByRetryGracefully()
+            {
+                // Arrange
+                var scans = new[]
+                {
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
+                };
+                await InitializeScansAsync(scans);
+                var messages = MakeMessages(scans);
+
+                var requestCount = 0;
+                HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
+                {
+                    if (r.RequestUri.AbsolutePath.EndsWith("RowKey='li-3')")
+                        && r.Headers.IfMatch.Count != 0)
+                    {
+                        if (Interlocked.Increment(ref requestCount) == 1)
+                        {
+                            await b(r, t);
+                            return new HttpResponseMessage(HttpStatusCode.InternalServerError) { RequestMessage = r };
+                        }
+                    }
+
+                    return null;
+                };
+
+                // Act
+                var result = await Target.ProcessAsync(messages, dequeueCount: 0);
+
+                // Assert
+                Assert.True(requestCount > 1);
+                AssertProcessedScansOneByOne(scans);
+                await AssertSuccessAsync(result);
             }
 
             [Fact]

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Azure;
+using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -215,7 +216,44 @@ namespace NuGet.Insights.Worker
                 scanToMessage.Add(scan, message);
                 StartAttempt(scan, dequeueCount);
             }
-            await _storageService.ReplaceAsync(scans);
+
+            try
+            {
+                await _storageService.ReplaceAsync(scans);
+            }
+            catch (TableTransactionFailedException ex) when (
+                scans.Count <= StorageUtility.MaxBatchSize
+                && ex.Status == (int)HttpStatusCode.PreconditionFailed
+                && ex.FailedTransactionActionIndex == 0)
+            {
+                var newScans = await _storageService.GetLeafScansAsync(
+                    scans[0].StorageSuffix,
+                    scans[0].ScanId,
+                    scans[0].PageId,
+                    scans.Select(x => x.LeafId));
+
+                var allMatch = true;
+                foreach (var scan in scans)
+                {
+                    if (newScans.TryGetValue(scan.LeafId, out var newScan) && Matches(scan, newScan))
+                    {
+                        _logger.LogTransientWarning(
+                            "Leaf scan {StorageSuffix} {ScanId} {PageId} {LeafId} was already updated.",
+                            scan.StorageSuffix, scan.ScanId, scan.PageId, scan.LeafId);
+                        scan.ETag = newScan.ETag;
+                    }
+                    else
+                    {
+                        allMatch = false;
+                        break;
+                    }
+                }
+
+                if (!allMatch)
+                {
+                    throw;
+                }
+            }
 
             // Execute the batch logic
             BatchMessageProcessorResult<CatalogLeafScan> result;
@@ -257,6 +295,12 @@ namespace NuGet.Insights.Worker
             await _storageService.ReplaceAsync(allTryAgainLaterScans);
         }
 
+        private static bool Matches(CatalogLeafScan scan, CatalogLeafScan newScan)
+        {
+            return newScan.AttemptCount == scan.AttemptCount
+                                        && newScan.NextAttempt == scan.NextAttempt;
+        }
+
         private async Task ProcessOneByOneAsync(
             long dequeueCount,
             List<CatalogLeafScanMessage> failed,
@@ -272,8 +316,27 @@ namespace NuGet.Insights.Worker
                 _logger.LogInformation("Attempting catalog leaf scan.");
 
                 // Increment the attempt counter for the scan
-                StartAttempt(scan, dequeueCount);
-                await _storageService.ReplaceAsync(scan);
+                try
+                {
+                    StartAttempt(scan, dequeueCount);
+                    await _storageService.ReplaceAsync(scan);
+                }
+                catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.PreconditionFailed)
+                {
+                    // This could be better, per https://github.com/Azure/azure-sdk-for-net/issues/39146
+                    var newScan = await _storageService.GetLeafScanAsync(scan.StorageSuffix, scan.ScanId, scan.PageId, scan.LeafId);
+                    if (newScan is not null && newScan.AttemptCount == scan.AttemptCount && newScan.NextAttempt == scan.NextAttempt)
+                    {
+                        _logger.LogTransientWarning(
+                            "Leaf scan {StorageSuffix} {ScanId} {PageId} {LeafId} was already updated.",
+                            scan.StorageSuffix, scan.ScanId, scan.PageId, scan.LeafId);
+                        scan.ETag = newScan.ETag;
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
 
                 // Execute the non-batch logic
                 try
