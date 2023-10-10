@@ -114,7 +114,6 @@ jobs:
             targetType: "filePath"
             filePath: $(Build.SourcesDirectory)/scripts/Invoke-MarkdownValidation.ps1
             pwsh: true
-          retryCountOnTaskFailure: 1
 
         - script: dotnet build $(Build.SourcesDirectory)/src/Website/Website.csproj --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false
           displayName: "Build Website for ${{ rid }}"

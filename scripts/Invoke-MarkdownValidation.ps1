@@ -33,19 +33,23 @@ else {
 }
 
 foreach ($md in $documents) {
-    Write-Host "Checking $md" -ForegroundColor DarkGray
-    $output = markdown-link-check $md --config $configPath --verbose 2>&1 | Out-String
-    $statusMatches = [Regex]::Matches($output, "^\s*\[([^\]]+)\]", [System.Text.RegularExpressions.RegexOptions]::Multiline)
-    $nonSuccessStatuses = $statusMatches | `
-        ForEach-Object { $_.Groups[1].Value } | `
-        Where-Object { $_ -ne "✓" } | `
-        Where-Object { $_ -ne "/" } | `
-        Sort-Object | `
-        Get-Unique
+    $failed = $true
+    for ($i = 0; $i -lt 5 -and $failed; $i++) {
+        $prefix = if ($i -eq 0) { "" } else { "[Attempt $($i + 1)] " }
+        Write-Host "$($prefix)Checking $md" -ForegroundColor DarkGray
+        $output = markdown-link-check $md --config $configPath --verbose 2>&1 | Out-String
+        $statusMatches = [Regex]::Matches($output, "^\s*\[([^\]]+)\]", [System.Text.RegularExpressions.RegexOptions]::Multiline)
+        $nonSuccessStatuses = $statusMatches | `
+            ForEach-Object { $_.Groups[1].Value } | `
+            Where-Object { $_ -ne "✓" } | `
+            Where-Object { $_ -ne "/" } | `
+            Sort-Object | `
+            Get-Unique
+        $failed = ($LASTEXITCODE -ne 0) -or ($nonSuccessStatuses.Count -gt 0)
+    }
 
-    if (($LASTEXITCODE -ne 0) -or ($nonSuccessStatuses.Count -gt 0)) {
-        # Run again for full colored and Unicode output
-        markdown-link-check $md --config $configPath
+    if ($failed) {
+        Write-Host $output
 
         if ($nonSuccessStatuses.Count -gt 0) {
             Write-Host "Non-success link statuses found: $nonSuccessStatuses" -ForegroundColor Yellow
