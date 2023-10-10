@@ -346,6 +346,8 @@ namespace NuGet.Insights
 
             public async Task DisposeAsync()
             {
+                Output.WriteTestCleanup();
+
                 await (await ServiceClientFactory.GetBlobServiceClientAsync())
                     .GetBlobContainerClient(ContainerName)
                     .DeleteIfExistsAsync();

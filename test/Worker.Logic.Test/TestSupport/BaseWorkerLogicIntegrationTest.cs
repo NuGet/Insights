@@ -493,7 +493,7 @@ namespace NuGet.Insights.Worker
 
                 Output.WriteLine("");
                 Output.WriteLine("DIFF: ");
-                Output.WriteLine(new string('-', 80));
+                Output.WriteHorizontalRule();
 
                 foreach (var line in result.Lines)
                 {
@@ -511,7 +511,7 @@ namespace NuGet.Insights.Worker
                     }
                 }
 
-                Output.WriteLine(new string('-', 80));
+                Output.WriteHorizontalRule();
                 Output.WriteLine("");
             }
 

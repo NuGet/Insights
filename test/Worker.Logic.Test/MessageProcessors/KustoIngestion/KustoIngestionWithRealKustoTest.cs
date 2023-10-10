@@ -94,19 +94,14 @@ namespace NuGet.Insights.Worker.KustoIngestion
             return (defaultTableName, data);
         }
 
-        public override async Task DisposeAsync()
+        protected override async Task DisposeInternalAsync()
         {
-            try
+            if (new KustoFactAttribute().Skip is null)
             {
-                if (new KustoFactAttribute().Skip is null)
-                {
-                    await CleanUpKustoTablesAsync();
-                }
+                await CleanUpKustoTablesAsync();
             }
-            finally
-            {
-                await base.DisposeAsync();
-            }
+
+            await base.DisposeInternalAsync();
         }
 
         public KustoIngestionWithRealKustoTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

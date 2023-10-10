@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Extensions.Logging;
@@ -8,6 +8,18 @@ namespace NuGet.Insights
 {
     public static class TestOutputHelperExtensions
     {
+        public static void WriteTestCleanup(this ITestOutputHelper output)
+        {
+            output.WriteHorizontalRule();
+            output.WriteLine("Beginning test clean-up.");
+            output.WriteHorizontalRule();
+        }
+
+        public static void WriteHorizontalRule(this ITestOutputHelper output)
+        {
+            output.WriteLine(new string('-', 80));
+        }
+
         public static ILogger<T> GetLogger<T>(this ITestOutputHelper output)
         {
             var factory = new LoggerFactory();

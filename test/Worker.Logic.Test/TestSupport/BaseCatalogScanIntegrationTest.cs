@@ -32,18 +32,10 @@ namespace NuGet.Insights.Worker
             return UpdateAsync(DriverType, onlyLatestLeaves: null, max);
         }
 
-        public override async Task DisposeAsync()
+        protected override async Task DisposeInternalAsync()
         {
-            try
-            {
-                // Global assertions
-                await AssertExpectedStorageAsync();
-            }
-            finally
-            {
-                // Clean up
-                await base.DisposeAsync();
-            }
+            await AssertExpectedStorageAsync();
+            await base.DisposeInternalAsync();
         }
 
         private async Task AssertExpectedStorageAsync()

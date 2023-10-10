@@ -276,18 +276,17 @@ namespace NuGet.Insights
             return Task.CompletedTask;
         }
 
-        public virtual async Task DisposeAsync()
+        public async Task DisposeAsync()
         {
-            Output.WriteLine(new string('-', 80));
-            Output.WriteLine("Beginning test clean-up.");
-            Output.WriteLine(new string('-', 80));
+            Output.WriteTestCleanup();
 
-            // Remove test hooks ffor the HTTP client pipeline to allow normal clean-up.
+            // Remove test hooks for the HTTP client pipeline to allow normal clean-up.
             HttpMessageHandlerFactory.OnSendAsync = null;
 
             try
             {
-                // Global assertions
+                await DisposeInternalAsync();
+
                 AssertLogLevelOrLess();
             }
             finally
@@ -304,6 +303,11 @@ namespace NuGet.Insights
                     }
                 }
             }
+        }
+
+        protected virtual Task DisposeInternalAsync()
+        {
+            return Task.CompletedTask;
         }
 
         protected async Task CleanUpStorageContainers(Predicate<string> shouldDelete)
