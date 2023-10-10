@@ -282,6 +282,9 @@ namespace NuGet.Insights
             Output.WriteLine("Beginning test clean-up.");
             Output.WriteLine(new string('-', 80));
 
+            // Remove test hooks ffor the HTTP client pipeline to allow normal clean-up.
+            HttpMessageHandlerFactory.OnSendAsync = null;
+
             try
             {
                 // Global assertions
@@ -289,15 +292,22 @@ namespace NuGet.Insights
             }
             finally
             {
-                await CleanUpStorageContainers(x => x.StartsWith(StoragePrefix));
+                try
+                {
+                    await CleanUpStorageContainers(x => x.StartsWith(StoragePrefix));
+                }
+                finally
+                {
+                    if (_lazyHost.IsValueCreated)
+                    {
+                        _lazyHost.Value.Dispose();
+                    }
+                }
             }
         }
 
         protected async Task CleanUpStorageContainers(Predicate<string> shouldDelete)
         {
-            // Remove test hooks ffor the HTTP client pipeline to allow normal clean-up.
-            HttpMessageHandlerFactory.OnSendAsync = null;
-
             var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
             var containerItems = await blobServiceClient.GetBlobContainersAsync().ToListAsync();
             foreach (var containerItem in containerItems.Where(x => shouldDelete(x.Name)))

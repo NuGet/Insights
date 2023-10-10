@@ -30,10 +30,6 @@ namespace NuGet.Insights
         {
         }
 
-        public const string HttpClientName = "NuGet.Insights";
-        public const string LoggingHttpClientName = "NuGet.Insights.Logging";
-        public const string LoggingNoDecompressionHttpClientName = "NuGet.Insights.LoggingNoDecompression";
-
         /// <summary>
         /// This should be longer than the Azure Storage server-side timeouts.
         /// Source: https://learn.microsoft.com/en-us/rest/api/storageservices/setting-timeouts-for-table-service-operations
@@ -41,36 +37,62 @@ namespace NuGet.Insights
         /// </summary>
         public static readonly TimeSpan HttpClientTimeout = TimeSpan.FromSeconds(45);
 
-        private static IHttpClientBuilder AddNuGetInsights(this IHttpClientBuilder builder, DecompressionMethods automaticDecompression)
+        private static readonly SocketsHttpHandler DecompressingHandler = new SocketsHttpHandler
         {
-            return builder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            AutomaticDecompression = DecompressionMethods.All,
+            PooledConnectionLifetime = TimeSpan.FromMinutes(5),
+        };
+
+        private static readonly SocketsHttpHandler NoDecompressingHandler = new SocketsHttpHandler
+        {
+            AutomaticDecompression = DecompressionMethods.None,
+            PooledConnectionLifetime = TimeSpan.FromMinutes(5),
+        };
+
+        private class NoDisposeHandler : DelegatingHandler
+        {
+            protected override void Dispose(bool disposing)
             {
-                AutomaticDecompression = automaticDecompression,
-            })
-                .AddHttpMessageHandler(serviceProvider =>
-                {
-                    // Enable a hook for injecting additional HTTP messages in.
-                    var factory = serviceProvider.GetService<INuGetInsightsHttpMessageHandlerFactory>();
-                    if (factory != null)
-                    {
-                        return factory.Create();
-                    }
+                // Ignore
+            }
+        }
 
-                    return new NullDelegatingHandler();
-                })
-                .ConfigureHttpClient(x =>
-                {
-                    if (x.DefaultRequestHeaders.UserAgent == null
-                        || x.DefaultRequestHeaders.UserAgent.Count == 0)
-                    {
-                        UserAgent.SetUserAgent(x);
-                    }
+        private static HttpMessageHandler GetHttpMessageHandler(IServiceProvider serviceProvider, bool enableLogging, bool automaticDecompression)
+        {
+            HttpMessageHandler pipeline = automaticDecompression ? DecompressingHandler : NoDecompressingHandler;
 
-                    if (x.Timeout > HttpClientTimeout)
-                    {
-                        x.Timeout = HttpClientTimeout;
-                    }
-                });
+            // Protect against unintentional disposal
+            pipeline = new NoDisposeHandler { InnerHandler = pipeline };
+
+            // Enable a hook in the HTTP pipeline
+            var factory = serviceProvider.GetService<INuGetInsightsHttpMessageHandlerFactory>();
+            if (factory != null)
+            {
+                var handler = factory.Create();
+                handler.InnerHandler = pipeline;
+                pipeline = handler;
+            }
+
+            // Optionally enable logging
+            var logger = serviceProvider.GetRequiredService<ILogger<LoggingHandler>>();
+            if (enableLogging && (logger.IsEnabled(LogLevel.Warning) || logger.IsEnabled(LogLevel.Information)))
+            {
+                var handler = new LoggingHandler(logger) { InnerHandler = pipeline };
+                pipeline = handler;
+            }
+
+            return pipeline;
+        }
+
+        private static HttpClient GetHttpClient(
+            IServiceProvider serviceProvider,
+            bool enableLogging,
+            bool automaticDecompression)
+        {
+            var handler = GetHttpMessageHandler(serviceProvider, enableLogging, automaticDecompression);
+            var httpClient = new HttpClient(handler) { Timeout = HttpClientTimeout };
+            UserAgent.SetUserAgent(httpClient);
+            return httpClient;
         }
 
         public static IServiceCollection AddNuGetInsights(
@@ -124,38 +146,25 @@ namespace NuGet.Insights
                 .SetMethod
                 .Invoke(null, new object[] { userAgent });
 
-            serviceCollection
-                .AddHttpClient(HttpClientName)
-                .AddNuGetInsights(DecompressionMethods.All);
-
-            serviceCollection
-                .AddHttpClient(LoggingHttpClientName)
-                .AddHttpMessageHandler<LoggingHandler>()
-                .AddNuGetInsights(DecompressionMethods.All);
-
-            serviceCollection
-                .AddHttpClient(LoggingNoDecompressionHttpClientName)
-                .AddHttpMessageHandler<LoggingHandler>()
-                .AddNuGetInsights(DecompressionMethods.None);
-
-            serviceCollection.AddTransient(x => x
-                .GetRequiredService<IHttpClientFactory>()
-                .CreateClient(LoggingHttpClientName));
+            serviceCollection.AddSingleton(x => GetHttpClient(x, enableLogging: true, automaticDecompression: true));
 
             serviceCollection.AddLogging(o =>
             {
                 o.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
             });
 
-            serviceCollection.AddSingleton(s => new ServiceClientFactory(
-                () => s.GetRequiredService<IHttpClientFactory>().CreateClient(LoggingNoDecompressionHttpClientName),
-                s.GetRequiredService<IOptions<NuGetInsightsSettings>>(),
-                s.GetRequiredService<ILogger<ServiceClientFactory>>()));
+            serviceCollection.AddSingleton(x =>
+            {
+                var httpClient = GetHttpClient(x, enableLogging: true, automaticDecompression: false);
+                return new ServiceClientFactory(
+                    () => httpClient,
+                    x.GetRequiredService<IOptions<NuGetInsightsSettings>>(),
+                    x.GetRequiredService<ILogger<ServiceClientFactory>>());
+            });
 
             serviceCollection.AddSingleton<IThrottle>(NullThrottle.Instance);
 
-            serviceCollection.AddTransient<LoggingHandler>();
-            serviceCollection.AddTransient(
+            serviceCollection.AddSingleton(
                 x =>
                 {
                     var options = x.GetRequiredService<IOptions<NuGetInsightsSettings>>();
@@ -163,10 +172,9 @@ namespace NuGet.Insights
                         new PackageSource(options.Value.V3ServiceIndex),
                         () =>
                         {
-                            var factory = x.GetRequiredService<IHttpMessageHandlerFactory>();
-                            var httpMessageHandler = factory.CreateHandler(HttpClientName);
-
-                            return Task.FromResult<HttpHandlerResource>(new HttpMessageHandlerResource(httpMessageHandler));
+                            var handler = GetHttpMessageHandler(x, enableLogging: false, automaticDecompression: true);
+                            var handlerResource = new HttpMessageHandlerResource(handler);
+                            return Task.FromResult<HttpHandlerResource>(handlerResource);
                         },
                         x.GetRequiredService<IThrottle>());
                 });

@@ -98,14 +98,14 @@ namespace NuGet.Insights.Worker.KustoIngestion
         {
             try
             {
-                await base.DisposeAsync();
-            }
-            finally
-            {
                 if (new KustoFactAttribute().Skip is null)
                 {
                     await CleanUpKustoTablesAsync();
                 }
+            }
+            finally
+            {
+                await base.DisposeAsync();
             }
         }
 
