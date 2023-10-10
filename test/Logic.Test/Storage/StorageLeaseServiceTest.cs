@@ -25,11 +25,11 @@ namespace NuGet.Insights
             [Fact]
             public async Task AllowsSomeoneElseToAcquire()
             {
-                var leaseA = await Target.AcquireAsync(LeaseName, Duration);
+                var leaseA = await Target.AcquireAsync(LeaseName, MaxDuration);
 
                 await Target.BreakAsync(LeaseName);
 
-                var leaseB = await Target.AcquireAsync(LeaseName, Duration);
+                var leaseB = await Target.AcquireAsync(LeaseName, MaxDuration);
                 Assert.Equal(leaseA.Name, leaseB.Name);
                 Assert.NotEqual(leaseA.Lease, leaseB.Lease);
             }
@@ -44,10 +44,10 @@ namespace NuGet.Insights
             [Fact]
             public async Task AllowsReleaseLeaseToBeReacquired()
             {
-                var leaseResultA = await Target.AcquireAsync(LeaseName, Duration);
+                var leaseResultA = await Target.AcquireAsync(LeaseName, MaxDuration);
 
                 await Target.ReleaseAsync(leaseResultA);
-                var leaseResultB = await Target.TryAcquireAsync(LeaseName, Duration);
+                var leaseResultB = await Target.TryAcquireAsync(LeaseName, MaxDuration);
 
                 Assert.Equal(leaseResultA.Name, leaseResultB.Name);
                 Assert.True(leaseResultA.Acquired);
@@ -57,8 +57,8 @@ namespace NuGet.Insights
             [Fact]
             public async Task AllowsReleaseLeaseAfterTimeout()
             {
-                var leaseResultA = await Target.AcquireAsync(LeaseName, TimeSpan.FromSeconds(15));
-                await Task.Delay(TimeSpan.FromSeconds(15) + TimeSpan.FromSeconds(1));
+                var leaseResultA = await Target.AcquireAsync(LeaseName, MinDuration);
+                await Task.Delay(MinDuration + TimeSpan.FromSeconds(1));
 
                 var released = await Target.TryReleaseAsync(leaseResultA);
 
@@ -88,7 +88,7 @@ namespace NuGet.Insights
                     return null;
                 };
 
-                var leaseResultA = await Target.AcquireAsync(LeaseName, Duration);
+                var leaseResultA = await Target.AcquireAsync(LeaseName, MaxDuration);
 
                 var released = await Target.TryReleaseAsync(leaseResultA);
 
@@ -112,7 +112,7 @@ namespace NuGet.Insights
                             await b(r, t);
 
                             // make another thread acquire
-                            leaseResultB = await Target.TryAcquireAsync(LeaseName, Duration);
+                            leaseResultB = await Target.TryAcquireAsync(LeaseName, MaxDuration);
 
                             // signal the caller to retry
                             return new HttpResponseMessage(HttpStatusCode.InternalServerError)
@@ -125,7 +125,7 @@ namespace NuGet.Insights
                     return null;
                 };
 
-                var leaseResultA = await Target.AcquireAsync(LeaseName, Duration);
+                var leaseResultA = await Target.AcquireAsync(LeaseName, MaxDuration);
 
                 var released = await Target.TryReleaseAsync(leaseResultA);
 
@@ -137,7 +137,7 @@ namespace NuGet.Insights
             [Fact]
             public async Task ReleasesLease()
             {
-                var leaseResultA = await Target.AcquireAsync(LeaseName, Duration);
+                var leaseResultA = await Target.AcquireAsync(LeaseName, MaxDuration);
 
                 var released = await Target.TryReleaseAsync(leaseResultA);
 
@@ -147,9 +147,9 @@ namespace NuGet.Insights
             [Fact]
             public async Task FailsToReleaseLostLease()
             {
-                var leaseResultA = await Target.AcquireAsync(LeaseName, TimeSpan.FromSeconds(15));
-                await Task.Delay(TimeSpan.FromSeconds(15) + TimeSpan.FromSeconds(1));
-                await Target.AcquireAsync(LeaseName, TimeSpan.FromSeconds(15));
+                var leaseResultA = await Target.AcquireAsync(LeaseName, MinDuration);
+                await Task.Delay(MinDuration + TimeSpan.FromSeconds(1));
+                await Target.AcquireAsync(LeaseName, MinDuration);
 
                 var released = await Target.TryReleaseAsync(leaseResultA);
 
@@ -166,9 +166,9 @@ namespace NuGet.Insights
             [Fact]
             public async Task FailsToReleaseLostLease()
             {
-                var leaseResultA = await Target.AcquireAsync(LeaseName, TimeSpan.FromSeconds(15));
-                await Task.Delay(TimeSpan.FromSeconds(15) + TimeSpan.FromSeconds(1));
-                var leaseResultB = await Target.AcquireAsync(LeaseName, TimeSpan.FromSeconds(15));
+                var leaseResultA = await Target.AcquireAsync(LeaseName, MinDuration);
+                await Task.Delay(MinDuration + TimeSpan.FromSeconds(1));
+                var leaseResultB = await Target.AcquireAsync(LeaseName, MinDuration);
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(
                     () => Target.ReleaseAsync(leaseResultA));
@@ -185,7 +185,7 @@ namespace NuGet.Insights
             [Fact]
             public async Task FailsToRenewLostLease()
             {
-                var leaseResultA = await Target.AcquireAsync(LeaseName, Duration);
+                var leaseResultA = await Target.AcquireAsync(LeaseName, MaxDuration);
                 await Target.BreakAsync(LeaseName);
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -203,7 +203,7 @@ namespace NuGet.Insights
             [Fact]
             public async Task RenewsWhenLeaseIsStillActive()
             {
-                var leaseResult = await Target.AcquireAsync(LeaseName, TimeSpan.FromSeconds(15));
+                var leaseResult = await Target.AcquireAsync(LeaseName, MaxDuration);
 
                 var renewed = await Target.TryRenewAsync(leaseResult);
 
@@ -213,9 +213,9 @@ namespace NuGet.Insights
             [Fact]
             public async Task FailsToRenewLostLease()
             {
-                var leaseResultA = await Target.AcquireAsync(LeaseName, Duration);
+                var leaseResultA = await Target.AcquireAsync(LeaseName, MaxDuration);
                 await Target.BreakAsync(LeaseName);
-                await Target.AcquireAsync(LeaseName, Duration);
+                await Target.AcquireAsync(LeaseName, MaxDuration);
 
                 var renewed = await Target.TryRenewAsync(leaseResultA);
 
@@ -232,10 +232,10 @@ namespace NuGet.Insights
             [Fact]
             public async Task DoesNotAcquireWhenSomeoneElseLeasesFirst()
             {
-                await Target.AcquireAsync(LeaseName, Duration);
+                await Target.AcquireAsync(LeaseName, MaxDuration);
 
                 var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                    () => Target.AcquireAsync(LeaseName, Duration));
+                    () => Target.AcquireAsync(LeaseName, MaxDuration));
                 Assert.Equal("The lease is not available yet.", ex.Message);
             }
         }
@@ -249,7 +249,7 @@ namespace NuGet.Insights
             [Fact]
             public async Task AcquiresWhenNotExists()
             {
-                var result = await Target.TryAcquireAsync(LeaseName, Duration);
+                var result = await Target.TryAcquireAsync(LeaseName, MaxDuration);
 
                 Assert.True(result.Acquired);
                 Assert.NotNull(result.Lease);
@@ -259,9 +259,9 @@ namespace NuGet.Insights
             [Fact]
             public async Task DoesNotAcquireAlreadyAcquiredLease()
             {
-                var resultA = await Target.AcquireAsync(LeaseName, Duration);
+                var resultA = await Target.AcquireAsync(LeaseName, MaxDuration);
 
-                var resultB = await Target.TryAcquireAsync(LeaseName, Duration);
+                var resultB = await Target.TryAcquireAsync(LeaseName, MaxDuration);
 
                 Assert.True(resultA.Acquired);
                 Assert.False(resultB.Acquired);
@@ -271,7 +271,6 @@ namespace NuGet.Insights
             public async Task ManyThreadsDoNotCauseException()
             {
                 var sw = Stopwatch.StartNew();
-                var leaseDuration = TimeSpan.FromSeconds(15);
                 await Task.WhenAll(Enumerable
                     .Range(0, 16)
                     .Select(async x =>
@@ -282,7 +281,7 @@ namespace NuGet.Insights
                             {
                                 Output.WriteLine($"[{sw.Elapsed}] [{x}] Trying to acquire lease {i}...");
                                 var acquireSw = Stopwatch.StartNew();
-                                var result = await Target.TryAcquireAsync(i.ToString(), leaseDuration);
+                                var result = await Target.TryAcquireAsync(i.ToString(), MinDuration);
                                 if (result.Acquired)
                                 {
                                     Output.WriteLine($"[{sw.Elapsed}] [{x}] Releasing lease {i}...");
@@ -290,7 +289,7 @@ namespace NuGet.Insights
                                     {
                                         await Target.ReleaseAsync(result);
                                     }
-                                    catch (InvalidOperationException) when (acquireSw.Elapsed >= leaseDuration)
+                                    catch (InvalidOperationException) when (acquireSw.Elapsed >= MinDuration)
                                     {
                                         Output.WriteLine($"[{sw.Elapsed}] [{x}] Timeout for lease {i}, failed to release.");
                                     }
@@ -317,7 +316,8 @@ namespace NuGet.Insights
                 Output = output;
                 ContainerName = TestSettings.NewStoragePrefix() + "1l1";
                 LeaseName = "some-lease";
-                Duration = TimeSpan.FromSeconds(60);
+                MinDuration = TimeSpan.FromSeconds(15);
+                MaxDuration = TimeSpan.FromSeconds(60);
                 Settings = new NuGetInsightsSettings
                 {
                     StorageConnectionString = TestSettings.StorageConnectionString,
@@ -337,7 +337,8 @@ namespace NuGet.Insights
             public ITestOutputHelper Output { get; }
             public string ContainerName { get; }
             public string LeaseName { get; }
-            public TimeSpan Duration { get; }
+            public TimeSpan MinDuration { get; }
+            public TimeSpan MaxDuration { get; }
             public NuGetInsightsSettings Settings { get; }
             public Mock<IOptions<NuGetInsightsSettings>> Options { get; }
             public HttpClientHandler HttpClientHandler { get; }
