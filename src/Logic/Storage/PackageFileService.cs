@@ -122,23 +122,24 @@ namespace NuGet.Insights
                 return MakeDeletedInfo(leafItem);
             }
 
-            return await GetInfoAsync(leafItem, reader.Properties, reader);
+            return await GetInfoAsync(leafItem, reader.Properties, reader, url);
         }
 
         private async Task<PackageFileInfoV1> GetInfoAsync(
             ICatalogLeafItem leafItem,
             ILookup<string, string> headers,
-            ZipDirectoryReader reader)
+            ZipDirectoryReader reader,
+            string url)
         {
             var zipDirectory = await reader.ReadAsync();
-            var signatureEntry = zipDirectory.Entries.Single(x => x.GetName() == ".signature.p7s");
-            var signatureBytes = await reader.ReadUncompressedFileDataAsync(zipDirectory, signatureEntry);
+            var signatureBytes = await _fileDownloader.GetSignatureBytesAsync(reader, zipDirectory, leafItem.PackageId, leafItem.PackageVersion, url);
 
             var signedCms = new SignedCms();
             signedCms.Decode(signatureBytes);
 
             using var destStream = new MemoryStream();
             await _mzipFormat.WriteAsync(reader.Stream, destStream);
+
             return new PackageFileInfoV1
             {
                 CommitTimestamp = leafItem.CommitTimestamp,

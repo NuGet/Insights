@@ -47,6 +47,11 @@ namespace NuGet.Insights
 
         public async Task<(ILookup<string, string> Headers, TempStreamResult Body)?> DownloadUrlToFileAsync(string url, CancellationToken token)
         {
+            return await DownloadUrlToFileAsync(url, allowNotFound: true, token);
+        }
+
+        private async Task<(ILookup<string, string> Headers, TempStreamResult Body)?> DownloadUrlToFileAsync(string url, bool allowNotFound, CancellationToken token)
+        {
             var nuGetLogger = _logger.ToNuGetLogger();
             var writer = _tempStreamService.GetWriter();
 
@@ -60,7 +65,7 @@ namespace NuGet.Insights
                         new HttpSourceRequest(url, nuGetLogger),
                         async response =>
                         {
-                            if (response.StatusCode == HttpStatusCode.NotFound)
+                            if (allowNotFound && response.StatusCode == HttpStatusCode.NotFound)
                             {
                                 return null;
                             }
@@ -106,6 +111,33 @@ namespace NuGet.Insights
         public async Task<ZipDirectoryReader?> GetZipDirectoryReaderAsync(string id, string version, ArtifactFileType fileType, string url)
         {
             return await GetZipDirectoryReaderAsync(id, version, fileType, url, ZipDownloadMode.DefaultMiniZip);
+        }
+
+        public async Task<byte[]> GetSignatureBytesAsync(ZipDirectoryReader reader, ZipDirectory zipDirectory, string id, string version, string url)
+        {
+            var signatureEntry = zipDirectory.Entries.Single(x => x.GetName() == ".signature.p7s");
+
+            try
+            {
+                return await reader.ReadUncompressedFileDataAsync(zipDirectory, signatureEntry);
+            }
+            catch (MiniZipHttpException ex)
+            {
+                _logger.LogTransientWarning(ex, "Fetching signature bytes from {Url} for {Id} {Version} failed using MiniZip. Trying again with a full download.", url, id, version);
+                var result = await DownloadUrlToFileAsync(url, allowNotFound: false, CancellationToken.None);
+                try
+                {
+                    using var fullReader = new ZipDirectoryReader(result.Value.Body.Stream, leaveOpen: false, result.Value.Headers);
+                    return await fullReader.ReadUncompressedFileDataAsync(zipDirectory, signatureEntry);
+                }
+                finally
+                {
+                    if (result.HasValue)
+                    {
+                        result.Value.Body.Dispose();
+                    }
+                }
+            }
         }
 
         private enum ZipDownloadMode
