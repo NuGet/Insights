@@ -71,7 +71,7 @@ namespace NuGet.Insights
             {
                 if (shouldThrow)
                 {
-                    throw new InvalidOperationException(StorageLeaseResult.NotAvailable, ex);
+                    throw new StorageLeaseException(StorageLeaseResult.NotAvailable, ex);
                 }
                 else
                 {
@@ -93,7 +93,7 @@ namespace NuGet.Insights
             {
                 if (shouldThrow)
                 {
-                    throw new InvalidOperationException(StorageLeaseResult.NotAvailable, ex);
+                    throw new StorageLeaseException(StorageLeaseResult.NotAvailable, ex);
                 }
                 else
                 {
@@ -126,7 +126,7 @@ namespace NuGet.Insights
             {
                 if (shouldThrow)
                 {
-                    throw new InvalidOperationException(StorageLeaseResult.AcquiredBySomeoneElse, ex);
+                    throw new StorageLeaseException(StorageLeaseResult.AcquiredBySomeoneElse, ex);
                 }
                 else
                 {
@@ -179,7 +179,7 @@ namespace NuGet.Insights
 
                 if (shouldThrow)
                 {
-                    throw new InvalidOperationException(StorageLeaseResult.AcquiredBySomeoneElse, ex);
+                    throw new StorageLeaseException(StorageLeaseResult.AcquiredBySomeoneElse, ex);
                 }
                 else
                 {

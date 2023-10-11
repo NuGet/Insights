@@ -25,10 +25,13 @@ namespace NuGet.Insights
             [Fact]
             public async Task AllowsSomeoneElseToAcquire()
             {
-                var leaseA = await Target.AcquireAsync(LeaseName, MaxDuration);
+                // arrange
+                var leaseA = await AcquireWithRetryAsync(LeaseName, MaxDuration);
 
+                // act
                 await Target.BreakAsync(LeaseName);
 
+                // assert
                 var leaseB = await Target.AcquireAsync(LeaseName, MaxDuration);
                 Assert.Equal(leaseA.Name, leaseB.Name);
                 Assert.NotEqual(leaseA.Lease, leaseB.Lease);
@@ -44,11 +47,14 @@ namespace NuGet.Insights
             [Fact]
             public async Task AllowsReleaseLeaseToBeReacquired()
             {
-                var leaseResultA = await Target.AcquireAsync(LeaseName, MaxDuration);
+                // arrange
+                var leaseResultA = await AcquireWithRetryAsync(LeaseName, MaxDuration);
 
+                // act
                 await Target.ReleaseAsync(leaseResultA);
                 var leaseResultB = await Target.TryAcquireAsync(LeaseName, MaxDuration);
 
+                // assert
                 Assert.Equal(leaseResultA.Name, leaseResultB.Name);
                 Assert.True(leaseResultA.Acquired);
                 Assert.True(leaseResultB.Acquired);
@@ -57,17 +63,22 @@ namespace NuGet.Insights
             [Fact]
             public async Task AllowsReleaseLeaseAfterTimeout()
             {
-                var leaseResultA = await Target.AcquireAsync(LeaseName, MinDuration);
+                // arrange
+                var leaseResultA = await AcquireWithRetryAsync(LeaseName, MinDuration);
                 await Task.Delay(MinDuration + TimeSpan.FromSeconds(1));
 
+                // act
                 var released = await Target.TryReleaseAsync(leaseResultA);
 
+                // assert
                 Assert.True(released);
             }
 
             [Fact]
             public async Task AllowsReleaseWithRetriesAndNoOtherThread()
             {
+                // arrange
+                var leaseResultA = await AcquireWithRetryAsync(LeaseName, MaxDuration);
                 var requestCount = 0;
                 ServiceClientFactory.HandlerFactory.OnSendAsync = async (r, b, t) =>
                 {
@@ -88,16 +99,19 @@ namespace NuGet.Insights
                     return null;
                 };
 
-                var leaseResultA = await Target.AcquireAsync(LeaseName, MaxDuration);
-
+                // act
                 var released = await Target.TryReleaseAsync(leaseResultA);
 
+                // assert
                 Assert.True(released);
             }
 
             [Fact]
             public async Task DoesNotAllowReleaseWithRetriesAndAnotherThread()
             {
+                // arrange
+                var leaseResultA = await AcquireWithRetryAsync(LeaseName, MaxDuration);
+
                 var requestCount = 0;
                 StorageLeaseResult leaseResultB = null;
                 ServiceClientFactory.HandlerFactory.OnSendAsync = async (r, b, t) =>
@@ -125,10 +139,10 @@ namespace NuGet.Insights
                     return null;
                 };
 
-                var leaseResultA = await Target.AcquireAsync(LeaseName, MaxDuration);
-
+                // act
                 var released = await Target.TryReleaseAsync(leaseResultA);
 
+                // assert
                 Assert.False(released);
                 Assert.NotNull(leaseResultB);
                 Assert.True(leaseResultB.Acquired);
@@ -137,22 +151,28 @@ namespace NuGet.Insights
             [Fact]
             public async Task ReleasesLease()
             {
-                var leaseResultA = await Target.AcquireAsync(LeaseName, MaxDuration);
+                // arrange
+                var leaseResultA = await AcquireWithRetryAsync(LeaseName, MaxDuration);
 
+                // act
                 var released = await Target.TryReleaseAsync(leaseResultA);
 
+                // assert
                 Assert.True(released);
             }
 
             [Fact]
             public async Task FailsToReleaseLostLease()
             {
-                var leaseResultA = await Target.AcquireAsync(LeaseName, MinDuration);
+                // arrange
+                var leaseResultA = await AcquireWithRetryAsync(LeaseName, MinDuration);
                 await Task.Delay(MinDuration + TimeSpan.FromSeconds(1));
-                await Target.AcquireAsync(LeaseName, MinDuration);
+                await AcquireWithRetryAsync(LeaseName, MinDuration);
 
+                // act
                 var released = await Target.TryReleaseAsync(leaseResultA);
 
+                // assert
                 Assert.False(released);
             }
         }
@@ -166,11 +186,13 @@ namespace NuGet.Insights
             [Fact]
             public async Task FailsToReleaseLostLease()
             {
-                var leaseResultA = await Target.AcquireAsync(LeaseName, MinDuration);
+                // arrange
+                var leaseResultA = await AcquireWithRetryAsync(LeaseName, MinDuration);
                 await Task.Delay(MinDuration + TimeSpan.FromSeconds(1));
-                var leaseResultB = await Target.AcquireAsync(LeaseName, MinDuration);
+                var leaseResultB = await AcquireWithRetryAsync(LeaseName, MinDuration);
 
-                var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                // act & assert
+                var ex = await Assert.ThrowsAsync<StorageLeaseException>(
                     () => Target.ReleaseAsync(leaseResultA));
                 Assert.Equal("The lease has been acquired by someone else, or transient errors happened.", ex.Message);
             }
@@ -185,10 +207,12 @@ namespace NuGet.Insights
             [Fact]
             public async Task FailsToRenewLostLease()
             {
-                var leaseResultA = await Target.AcquireAsync(LeaseName, MaxDuration);
+                // arrange
+                var leaseResultA = await AcquireWithRetryAsync(LeaseName, MaxDuration);
                 await Target.BreakAsync(LeaseName);
 
-                var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                // act & assert
+                var ex = await Assert.ThrowsAsync<StorageLeaseException>(
                     () => Target.RenewAsync(leaseResultA));
                 Assert.Equal("The lease has been acquired by someone else, or transient errors happened.", ex.Message);
             }
@@ -203,22 +227,28 @@ namespace NuGet.Insights
             [Fact]
             public async Task RenewsWhenLeaseIsStillActive()
             {
-                var leaseResult = await Target.AcquireAsync(LeaseName, MaxDuration);
+                // arrange
+                var leaseResult = await AcquireWithRetryAsync(LeaseName, MaxDuration);
 
+                // act
                 var renewed = await Target.TryRenewAsync(leaseResult);
 
+                // assert
                 Assert.True(renewed);
             }
 
             [Fact]
             public async Task FailsToRenewLostLease()
             {
-                var leaseResultA = await Target.AcquireAsync(LeaseName, MaxDuration);
+                // arrange
+                var leaseResultA = await AcquireWithRetryAsync(LeaseName, MaxDuration);
                 await Target.BreakAsync(LeaseName);
-                await Target.AcquireAsync(LeaseName, MaxDuration);
+                await AcquireWithRetryAsync(LeaseName, MaxDuration);
 
+                // act
                 var renewed = await Target.TryRenewAsync(leaseResultA);
 
+                // assert
                 Assert.False(renewed);
             }
         }
@@ -232,9 +262,11 @@ namespace NuGet.Insights
             [Fact]
             public async Task DoesNotAcquireWhenSomeoneElseLeasesFirst()
             {
-                await Target.AcquireAsync(LeaseName, MaxDuration);
+                // arrange
+                await AcquireWithRetryAsync(LeaseName, MaxDuration);
 
-                var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                // act & assert
+                var ex = await Assert.ThrowsAsync<StorageLeaseException>(
                     () => Target.AcquireAsync(LeaseName, MaxDuration));
                 Assert.Equal("The lease is not available yet.", ex.Message);
             }
@@ -249,8 +281,10 @@ namespace NuGet.Insights
             [Fact]
             public async Task AcquiresWhenNotExists()
             {
+                // act
                 var result = await Target.TryAcquireAsync(LeaseName, MaxDuration);
 
+                // assert
                 Assert.True(result.Acquired);
                 Assert.NotNull(result.Lease);
                 Assert.Equal(LeaseName, result.Name);
@@ -259,10 +293,13 @@ namespace NuGet.Insights
             [Fact]
             public async Task DoesNotAcquireAlreadyAcquiredLease()
             {
-                var resultA = await Target.AcquireAsync(LeaseName, MaxDuration);
+                // arrange
+                var resultA = await AcquireWithRetryAsync(LeaseName, MaxDuration);
 
+                // act
                 var resultB = await Target.TryAcquireAsync(LeaseName, MaxDuration);
 
+                // assert
                 Assert.True(resultA.Acquired);
                 Assert.False(resultB.Acquired);
             }
@@ -289,7 +326,7 @@ namespace NuGet.Insights
                                     {
                                         await Target.ReleaseAsync(result);
                                     }
-                                    catch (InvalidOperationException) when (acquireSw.Elapsed >= MinDuration)
+                                    catch (StorageLeaseException) when (acquireSw.Elapsed >= MinDuration)
                                     {
                                         Output.WriteLine($"[{sw.Elapsed}] [{x}] Timeout for lease {i}, failed to release.");
                                     }
@@ -344,6 +381,46 @@ namespace NuGet.Insights
             public HttpClientHandler HttpClientHandler { get; }
             public TestServiceClientFactory ServiceClientFactory { get; }
             public StorageLeaseService Target { get; }
+
+            /// <summary>
+            /// This should only be used in the "arrange" or setup step of a unit test.
+            /// </summary>
+            public async Task<StorageLeaseResult> AcquireWithRetryAsync(string lease, TimeSpan leaseDuration)
+            {
+                const int maxAttempts = 3;
+                for (var attempt = 1; attempt <= maxAttempts; attempt++)
+                {
+                    try
+                    {
+                        return await Target.AcquireAsync(lease, leaseDuration);
+                    }
+                    catch (StorageLeaseException ex) when (attempt < maxAttempts)
+                    {
+                        Output.GetLogger<BaseTest>().LogTransientWarning(ex, "Failed to acquire lease. Trying again.");
+                    }
+                }
+
+                throw new NotImplementedException();
+            }
+
+            /// <summary>
+            /// The tests in this test suite are flaky due to the timing nature of a blob lease.
+            /// </summary>
+            public async Task RetryAsync(Func<Task> testAsync)
+            {
+                const int maxAttempts = 3;
+                for (var attempt = 1; attempt <= maxAttempts; attempt++)
+                {
+                    try
+                    {
+                        await testAsync();
+                    }
+                    catch (StorageLeaseException ex) when (attempt < maxAttempts)
+                    {
+                        Output.GetLogger<BaseTest>().LogTransientWarning(ex, "[Attempt {Attempt}] A retriable exception was thrown. Retrying.", attempt);
+                    }
+                }
+            }
 
             public async Task DisposeAsync()
             {
