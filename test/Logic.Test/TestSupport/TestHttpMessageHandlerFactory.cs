@@ -20,6 +20,12 @@ namespace NuGet.Insights
 
         public ConcurrentQueue<HttpResponseMessage> Responses { get; } = new ConcurrentQueue<HttpResponseMessage>();
 
+        public void Clear()
+        {
+            Requests.Clear();
+            Responses.Clear();
+        }
+
         public DelegatingHandler Create()
         {
             return new TestHttpMessageHandler(async (req, baseSendAsync, token) =>

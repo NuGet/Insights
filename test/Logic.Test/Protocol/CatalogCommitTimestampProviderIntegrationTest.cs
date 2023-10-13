@@ -198,7 +198,7 @@ namespace NuGet.Insights
         {
             // Arrange
             await Target.GetNextAsync(DateTimeOffset.MinValue);
-            HttpMessageHandlerFactory.Requests.Clear();
+            HttpMessageHandlerFactory.Clear();
 
             // Act
             var min = await Target.GetNextAsync(DateTimeOffset.Parse("2015-02-01T06:30:11.7477681Z"));

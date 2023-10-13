@@ -321,7 +321,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 Assert.Single(HttpMessageHandlerFactory.Requests, r => r.Method == HttpMethod.Head && r.RequestUri.AbsoluteUri == Options.Value.DownloadsV1Urls.Single());
                 Assert.Single(HttpMessageHandlerFactory.Requests, r => r.Method == HttpMethod.Get && r.RequestUri.AbsoluteUri == Options.Value.DownloadsV1Urls.Single());
                 Assert.Equal(2, HttpMessageHandlerFactory.Requests.Count(r => r.RequestUri.AbsoluteUri == Options.Value.DownloadsV1Urls.Single()));
-                HttpMessageHandlerFactory.Requests.Clear();
+                HttpMessageHandlerFactory.Clear();
 
                 // Arrange
                 SetData(Step2);

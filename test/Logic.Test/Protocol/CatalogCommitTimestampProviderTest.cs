@@ -95,6 +95,7 @@ namespace NuGet.Insights
 
                 return Task.FromResult(new HttpResponseMessage(json == null ? HttpStatusCode.NotFound : HttpStatusCode.OK)
                 {
+                    RequestMessage = r,
                     Content = new StringContent(json ?? string.Empty)
                 });
             };
@@ -230,7 +231,7 @@ namespace NuGet.Insights
         {
             // Arrange
             await Target.GetNextAsync(TS0);
-            HttpMessageHandlerFactory.Requests.Clear();
+            HttpMessageHandlerFactory.Clear();
 
             // Act
             var min = await Target.GetNextAsync(TS0);
@@ -249,7 +250,7 @@ namespace NuGet.Insights
             Index.Items.Add(new CatalogPageItem { Url = Page1Url, CommitTimestamp = TS4 });
 
             await Target.GetNextAsync(TS3);
-            HttpMessageHandlerFactory.Requests.Clear();
+            HttpMessageHandlerFactory.Clear();
 
             // Act
             var min = await Target.GetNextAsync(TS0);

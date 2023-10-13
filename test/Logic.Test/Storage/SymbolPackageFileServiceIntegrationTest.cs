@@ -97,7 +97,7 @@ namespace NuGet.Insights
                     Type = CatalogLeafType.PackageDetails,
                 };
                 await Target.GetOrUpdateInfoFromLeafItemAsync(leafItem);
-                HttpMessageHandlerFactory.Requests.Clear();
+                HttpMessageHandlerFactory.Clear();
 
                 // Act
                 (var directory, var size, var headers) = await Target.GetZipDirectoryFromLeafItemAsync(leafItem);

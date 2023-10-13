@@ -22,16 +22,16 @@ namespace NuGet.Insights
             {
                 // Arrange
                 var url = $"http://localhost/{TestData}/deltax.1.0.0.nupkg";
-                HttpMessageHandlerFactory.OnSendAsync = async (req, b, t) =>
+                HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
                 {
-                    if (req.RequestUri.GetLeftPart(UriPartial.Path) == url)
+                    if (r.RequestUri.GetLeftPart(UriPartial.Path) == url)
                     {
-                        if (req.Method != HttpMethod.Get || req.Headers.Range is not null)
+                        if (r.Method != HttpMethod.Get || r.Headers.Range is not null)
                         {
                             return new HttpResponseMessage(HttpStatusCode.InternalServerError);
                         }
 
-                        var newReq = Clone(req);
+                        var newReq = Clone(r);
                         newReq.RequestUri = new Uri(url + ".testdata");
                         var response = await TestDataHttpClient.SendAsync(newReq);
                         response.EnsureSuccessStatusCode();
