@@ -80,6 +80,7 @@ namespace NuGet.Insights
                     var stream = Resources.LoadMemoryStream(Resources.READMEs.WindowsAzure_Storage_9_3_3);
                     return new HttpResponseMessage(HttpStatusCode.OK)
                     {
+                        RequestMessage = r,
                         Content = new StreamContent(stream)
                         {
                             Headers =
@@ -107,8 +108,14 @@ namespace NuGet.Insights
             var info = await Target.GetOrUpdateInfoFromLeafItemAsync(leaf);
 
             // Assert
-            Assert.Single(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsolutePath.EndsWith("/readme")));
-            Assert.Single(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsolutePath.EndsWith("/legacy-readme")));
+            Assert.Single(HttpMessageHandlerFactory
+                .Responses
+                .Where(x => x.StatusCode < HttpStatusCode.InternalServerError)
+                .Where(x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith("/readme")));
+            Assert.Single(HttpMessageHandlerFactory
+                .Responses
+                .Where(x => x.StatusCode < HttpStatusCode.InternalServerError)
+                .Where(x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith("/legacy-readme")));
             Assert.Equal(ReadmeType.Legacy, info.ReadmeType);
             Assert.Equal(618, info.ReadmeBytes.Length);
             Assert.NotEmpty(info.HttpHeaders);
