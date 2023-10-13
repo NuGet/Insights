@@ -41,10 +41,9 @@ namespace NuGet.Insights
                 Assert.True(info.Available);
                 Assert.Equal("750829", info.HttpHeaders["Content-Length"].Single());
                 Assert.Equal("vaWuAPufkOrRT0f48FuX90NnymmB/hrLUvg+XsQUHkaht/cwpqkLYcNlUPrjiak7Uhw4uX14dcXUT/NznHHHHg==", info.HttpHeaders["x-ms-meta-SHA512"].Single());
-                Assert.Equal(1, HttpMessageHandlerFactory.Responses.Count(x =>
-                    x.RequestMessage.Method == HttpMethod.Get
-                    && x.RequestMessage.RequestUri.AbsolutePath.EndsWith(".snupkg")
-                    && x.IsSuccessStatusCode));
+                Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x =>
+                    x.Method == HttpMethod.Get
+                    && x.RequestUri.AbsolutePath.EndsWith(".snupkg")));
             }
 
             [Fact]
@@ -70,10 +69,9 @@ namespace NuGet.Insights
                 Assert.Equal(1, HttpMessageHandlerFactory.Responses.Count(x =>
                     x.RequestMessage.RequestUri.AbsolutePath.EndsWith(".snupkg")
                     && x.StatusCode == HttpStatusCode.NotFound));
-                Assert.Equal(0, HttpMessageHandlerFactory.Responses.Count(x =>
-                    x.RequestMessage.Method == HttpMethod.Get
-                    && x.RequestMessage.RequestUri.AbsolutePath.EndsWith(".snupkg")
-                    && x.IsSuccessStatusCode));
+                Assert.Equal(0, HttpMessageHandlerFactory.SuccessRequests.Count(x =>
+                    x.Method == HttpMethod.Get
+                    && x.RequestUri.AbsolutePath.EndsWith(".snupkg")));
             }
         }
 

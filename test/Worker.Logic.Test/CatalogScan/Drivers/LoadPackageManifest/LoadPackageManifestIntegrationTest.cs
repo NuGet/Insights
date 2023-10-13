@@ -98,8 +98,8 @@ namespace NuGet.Insights.Worker.LoadPackageManifest
 
         private async Task AssertOutputAsync(string testName, string stepName)
         {
-            Assert.Empty(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsoluteUri.EndsWith(".nupkg")));
-            Assert.NotEmpty(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsoluteUri.EndsWith(".nuspec")));
+            Assert.Empty(HttpMessageHandlerFactory.Responses.Where(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".nupkg")));
+            Assert.NotEmpty(HttpMessageHandlerFactory.Responses.Where(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".nuspec")));
 
             await AssertWideEntityOutputAsync(
                 Options.Value.PackageManifestTableName,

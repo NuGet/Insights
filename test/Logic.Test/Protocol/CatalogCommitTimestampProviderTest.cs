@@ -116,7 +116,8 @@ namespace NuGet.Insights
 
             // Assert
             Assert.Null(min);
-            Assert.Equal(IndexUrl, Assert.Single(HttpMessageHandlerFactory.Requests).RequestUri.AbsoluteUri);
+            var request = Assert.Single(HttpMessageHandlerFactory.SuccessRequests);
+            Assert.Equal(IndexUrl, request.RequestUri.AbsoluteUri);
         }
 
         [Fact]
@@ -127,7 +128,8 @@ namespace NuGet.Insights
 
             // Assert
             Assert.Null(min);
-            Assert.Equal(IndexUrl, Assert.Single(HttpMessageHandlerFactory.Requests).RequestUri.AbsoluteUri);
+            var request = Assert.Single(HttpMessageHandlerFactory.SuccessRequests);
+            Assert.Equal(IndexUrl, request.RequestUri.AbsoluteUri);
         }
 
         [Fact]
@@ -138,9 +140,9 @@ namespace NuGet.Insights
 
             // Assert
             Assert.Equal(TS1, min);
-            Assert.Equal(2, HttpMessageHandlerFactory.Requests.Count);
-            Assert.Equal(1, HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri == IndexUrl));
-            Assert.Equal(1, HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri == Page0Url));
+            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count());
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == IndexUrl));
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page0Url));
         }
 
         [Fact]
@@ -158,10 +160,10 @@ namespace NuGet.Insights
 
             // Assert
             Assert.Equal(TS2, min);
-            Assert.Equal(4, HttpMessageHandlerFactory.Requests.Count);
-            Assert.Equal(2, HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri == IndexUrl));
-            Assert.Equal(1, HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri == Page0Url));
-            Assert.Equal(1, HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri == Page1Url));
+            Assert.Equal(4, HttpMessageHandlerFactory.SuccessRequests.Count());
+            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == IndexUrl));
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page0Url));
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page1Url));
         }
 
         [Fact]
@@ -182,10 +184,10 @@ namespace NuGet.Insights
 
             // Assert
             Assert.Equal(TS6, min);
-            Assert.Equal(4, HttpMessageHandlerFactory.Requests.Count);
-            Assert.Equal(2, HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri == IndexUrl));
-            Assert.Equal(1, HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri == Page0Url));
-            Assert.Equal(1, HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri == Page2Url));
+            Assert.Equal(4, HttpMessageHandlerFactory.SuccessRequests.Count());
+            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == IndexUrl));
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page0Url));
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page2Url));
         }
 
         [Fact]
@@ -205,9 +207,9 @@ namespace NuGet.Insights
 
             // Assert
             Assert.Equal(TS2, min);
-            Assert.Equal(4, HttpMessageHandlerFactory.Requests.Count);
-            Assert.Equal(2, HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri == IndexUrl));
-            Assert.Equal(2, HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri == Page0Url));
+            Assert.Equal(4, HttpMessageHandlerFactory.SuccessRequests.Count());
+            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == IndexUrl));
+            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page0Url));
         }
 
         [Fact]
@@ -221,9 +223,9 @@ namespace NuGet.Insights
 
             // Assert
             Assert.Null(min);
-            Assert.Equal(3, HttpMessageHandlerFactory.Requests.Count);
-            Assert.Equal(2, HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri == IndexUrl));
-            Assert.Equal(1, HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri == Page0Url));
+            Assert.Equal(3, HttpMessageHandlerFactory.SuccessRequests.Count());
+            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == IndexUrl));
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page0Url));
         }
 
         [Fact]
@@ -238,7 +240,7 @@ namespace NuGet.Insights
 
             // Assert
             Assert.Equal(TS1, min);
-            Assert.Empty(HttpMessageHandlerFactory.Requests);
+            Assert.Empty(HttpMessageHandlerFactory.Responses);
         }
 
         [Fact]
@@ -257,7 +259,8 @@ namespace NuGet.Insights
 
             // Assert
             Assert.Equal(TS1, min);
-            Assert.Equal(Page0Url, Assert.Single(HttpMessageHandlerFactory.Requests).RequestUri.AbsoluteUri);
+            var request = Assert.Single(HttpMessageHandlerFactory.SuccessRequests);
+            Assert.Equal(Page0Url, request.RequestUri.AbsoluteUri);
         }
 
         [Fact]

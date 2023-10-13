@@ -34,9 +34,8 @@ namespace NuGet.Insights
 
             // Assert
             Assert.Single(HttpMessageHandlerFactory
-                .Responses
-                .Where(x => x.StatusCode < HttpStatusCode.InternalServerError)
-                .Where(x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith("/readme")));
+                .SuccessRequests
+                .Where(x => x.RequestUri.AbsolutePath.EndsWith("/readme")));
             Assert.Equal(ReadmeType.Embedded, info.ReadmeType);
             Assert.Equal(7628, info.ReadmeBytes.Length);
             Assert.NotEmpty(info.HttpHeaders);
@@ -63,7 +62,7 @@ namespace NuGet.Insights
             // Assert
             Assert.Single(HttpMessageHandlerFactory
                 .Responses
-                .Where(x => x.StatusCode < HttpStatusCode.InternalServerError)
+                .Where(x => x.StatusCode == HttpStatusCode.NotFound)
                 .Where(x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith("/readme")));
             Assert.Equal(ReadmeType.None, info.ReadmeType);
         }
@@ -110,12 +109,11 @@ namespace NuGet.Insights
             // Assert
             Assert.Single(HttpMessageHandlerFactory
                 .Responses
-                .Where(x => x.StatusCode < HttpStatusCode.InternalServerError)
+                .Where(x => x.StatusCode == HttpStatusCode.NotFound)
                 .Where(x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith("/readme")));
             Assert.Single(HttpMessageHandlerFactory
-                .Responses
-                .Where(x => x.StatusCode < HttpStatusCode.InternalServerError)
-                .Where(x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith("/legacy-readme")));
+                .SuccessRequests
+                .Where(x => x.RequestUri.AbsolutePath.EndsWith("/legacy-readme")));
             Assert.Equal(ReadmeType.Legacy, info.ReadmeType);
             Assert.Equal(618, info.ReadmeBytes.Length);
             Assert.NotEmpty(info.HttpHeaders);
@@ -140,8 +138,8 @@ namespace NuGet.Insights
             var info = await Target.GetOrUpdateInfoFromLeafItemAsync(leaf);
 
             // Assert
-            Assert.Empty(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsolutePath.EndsWith("/readme")));
-            Assert.Empty(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsolutePath.EndsWith("/legacy-readme")));
+            Assert.Empty(HttpMessageHandlerFactory.Responses.Where(x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith("/readme")));
+            Assert.Empty(HttpMessageHandlerFactory.Responses.Where(x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith("/legacy-readme")));
             Assert.Equal(ReadmeType.None, info.ReadmeType);
         }
 

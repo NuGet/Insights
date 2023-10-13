@@ -32,14 +32,14 @@ namespace NuGet.Insights
             };
 
             var first = await Target.GetOrUpdateInfoAsync(leafItem);
-            var requestCountBefore = HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg"));
+            var requestCountBefore = HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg"));
             leafItem.CommitTimestamp = timestampB;
 
             // Act
             var second = await Target.GetOrUpdateInfoAsync(leafItem);
 
             // Assert
-            var requestCountAfter = HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg"));
+            var requestCountAfter = HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg"));
             Assert.True(requestCountAfter > requestCountBefore);
             Assert.Equal(timestampA, first.CommitTimestamp);
             Assert.Equal(timestampB, second.CommitTimestamp);
@@ -63,15 +63,15 @@ namespace NuGet.Insights
             };
 
             var first = await Target.GetOrUpdateInfoAsync(leafItem);
-            var requestCount = HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg"));
+            var requestCount = HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg"));
             leafItem.CommitTimestamp = timestampB;
 
             // Act
             var second = await Target.GetOrUpdateInfoAsync(leafItem);
 
             // Assert
-            Assert.True(requestCount >= 2); // HEAD, GET, and potential retries on the GET
-            Assert.Equal(requestCount, HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg")));
+            Assert.Equal(2, requestCount); // HEAD and GET
+            Assert.Equal(requestCount, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg")));
             Assert.Equal(timestampA, first.CommitTimestamp);
             Assert.Equal(timestampA, second.CommitTimestamp);
         }
@@ -109,7 +109,7 @@ namespace NuGet.Insights
             // Assert
             Assert.NotNull(info);
             Assert.True(info.Available);
-            var nupkgRequests = HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg"));
+            var nupkgRequests = HttpMessageHandlerFactory.SuccessRequests.Where(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg"));
             Assert.NotEmpty(nupkgRequests.Where(x => x.Method == HttpMethod.Get && x.Headers.Range is null));
         }
 
@@ -145,7 +145,7 @@ namespace NuGet.Insights
             // Assert
             Assert.NotNull(info);
             Assert.True(info.Available);
-            var nupkgRequests = HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg"));
+            var nupkgRequests = HttpMessageHandlerFactory.SuccessRequests.Where(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg"));
             Assert.Empty(nupkgRequests.Where(x => x.Method == HttpMethod.Get && x.Headers.Range is null)); // all range requests
             Assert.Contains(nupkgRequests, x => x.RequestUri.Query.Contains("cache-bust="));
         }
@@ -182,7 +182,7 @@ namespace NuGet.Insights
             // Assert
             Assert.NotNull(info);
             Assert.True(info.Available);
-            var nupkgRequests = HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg"));
+            var nupkgRequests = HttpMessageHandlerFactory.SuccessRequests.Where(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg"));
             Assert.NotEmpty(nupkgRequests.Where(x => x.Method == HttpMethod.Get && x.Headers.Range is null));
         }
 
@@ -203,14 +203,14 @@ namespace NuGet.Insights
             };
 
             await Target.GetOrUpdateInfoAsync(leafItem);
-            var requestCount = HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg"));
+            var requestCount = HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg"));
 
             // Act
             await Target.GetOrUpdateInfoAsync(leafItem);
 
             // Assert
             Assert.True(requestCount >= 2); // HEAD, GET, and potential retries on the GET
-            Assert.Equal(requestCount, HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg")));
+            Assert.Equal(requestCount, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg")));
         }
 
         public PackageFileServiceIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

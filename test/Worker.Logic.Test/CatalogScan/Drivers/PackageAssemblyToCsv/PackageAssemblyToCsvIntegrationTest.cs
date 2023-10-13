@@ -229,10 +229,10 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             await AssertOutputAsync(PackageAssemblyToCsv_WithDuplicatesDir, Step1, 0);
 
             var duplicatePackageRequests = HttpMessageHandlerFactory
-                .Responses
-                .Where(x => x.RequestMessage.RequestUri.GetLeftPart(UriPartial.Path).EndsWith("/gosms.ge-sms-api.1.0.1.nupkg"))
+                .SuccessRequests
+                .Where(x => x.RequestUri.GetLeftPart(UriPartial.Path).EndsWith("/gosms.ge-sms-api.1.0.1.nupkg"))
                 .ToList();
-            Assert.Equal(LatestLeavesTypes.Contains(DriverType) ? 1 : 2, duplicatePackageRequests.Count(x => x.IsSuccessStatusCode));
+            Assert.Equal(LatestLeavesTypes.Contains(DriverType) ? 1 : 2, duplicatePackageRequests.Count());
         }
 
         protected override IEnumerable<string> GetExpectedTableNames()

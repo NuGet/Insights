@@ -318,9 +318,9 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
 
                 // Assert
                 await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
-                Assert.Single(HttpMessageHandlerFactory.Requests, r => r.Method == HttpMethod.Head && r.RequestUri.AbsoluteUri == Options.Value.DownloadsV1Urls.Single());
-                Assert.Single(HttpMessageHandlerFactory.Requests, r => r.Method == HttpMethod.Get && r.RequestUri.AbsoluteUri == Options.Value.DownloadsV1Urls.Single());
-                Assert.Equal(2, HttpMessageHandlerFactory.Requests.Count(r => r.RequestUri.AbsoluteUri == Options.Value.DownloadsV1Urls.Single()));
+                Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Head && r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json"));
+                Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Get && r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json"));
+                Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(r => r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json")));
                 HttpMessageHandlerFactory.Clear();
 
                 // Arrange
@@ -333,9 +333,9 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 // Assert
                 await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 1);
                 await AssertCsvBlobAsync(DownloadsToCsvDir, Step2, "latest_downloads.csv.gz");
-                Assert.Single(HttpMessageHandlerFactory.Requests, r => r.Method == HttpMethod.Head && r.RequestUri.AbsoluteUri == Options.Value.DownloadsV1Urls.Single());
-                Assert.Single(HttpMessageHandlerFactory.Requests, r => r.Method == HttpMethod.Get && r.RequestUri.AbsoluteUri == Options.Value.DownloadsV1Urls.Single());
-                Assert.Equal(2, HttpMessageHandlerFactory.Requests.Count(r => r.RequestUri.AbsoluteUri == Options.Value.DownloadsV1Urls.Single()));
+                Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Head && r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json"));
+                Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Get && r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json"));
+                Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(r => r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json")));
             }
         }
 
@@ -366,9 +366,10 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
         {
             HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
             {
-                if (req.RequestUri.AbsolutePath.EndsWith("/downloads.v1.json"))
+                if (req.RequestUri.AbsoluteUri == Options.Value.DownloadsV1Urls.Single())
                 {
                     var newReq = Clone(req);
+                    newReq.Headers.TryAddWithoutValidation("Original", req.RequestUri.AbsoluteUri);
                     newReq.RequestUri = new Uri($"http://localhost/{TestData}/{dirName}/{stepName}/downloads.v1.json");
                     return await TestDataHttpClient.SendAsync(newReq);
                 }

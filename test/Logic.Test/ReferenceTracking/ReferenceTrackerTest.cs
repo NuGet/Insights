@@ -228,8 +228,8 @@ namespace NuGet.Insights.ReferenceTracking
                     return output;
                 }
 
-                ServiceClientFactoryA.HandlerFactory.Requests.Clear();
-                ServiceClientFactoryB.HandlerFactory.Requests.Clear();
+                ServiceClientFactoryA.HandlerFactory.Clear();
+                ServiceClientFactoryB.HandlerFactory.Clear();
 
                 ServiceClientFactoryA.HandlerFactory.OnSendAsync = (r, b, t) => WaitForTurnAsync('a', r, b, t);
                 ServiceClientFactoryB.HandlerFactory.OnSendAsync = (r, b, t) => WaitForTurnAsync('b', r, b, t);
@@ -464,7 +464,7 @@ namespace NuGet.Insights.ReferenceTracking
                 }
 
                 ServiceClientFactoryA.HandlerFactory.OnSendAsync = null;
-                ServiceClientFactoryA.HandlerFactory.Requests.Clear();
+                ServiceClientFactoryA.HandlerFactory.Clear();
             }
 
             private readonly FaultInjectionFixture _faultInjectionFixture;
@@ -886,7 +886,7 @@ namespace NuGet.Insights.ReferenceTracking
 
                 // Assert
                 await AssertExpectedAsync(references);
-                Assert.All(ServiceClientFactoryA.HandlerFactory.Requests, x => Assert.Equal(HttpMethod.Get, x.Method));
+                Assert.All(ServiceClientFactoryA.HandlerFactory.Responses, x => Assert.Equal(HttpMethod.Get, x.RequestMessage.Method));
             }
 
             [Fact]
@@ -899,14 +899,14 @@ namespace NuGet.Insights.ReferenceTracking
                 {
                     { OwnerRK0, new HashSet<SubjectEdge> { SE(SubjectPK0, SubjectRK0) } },
                 };
-                ServiceClientFactoryA.HandlerFactory.Requests.Clear();
+                ServiceClientFactoryA.HandlerFactory.Clear();
 
                 // Act
                 await SetReferencesAsync(references);
 
                 // Assert
                 await AssertExpectedAsync(references);
-                Assert.Single(ServiceClientFactoryA.HandlerFactory.Requests, x => x.Method != HttpMethod.Get);
+                Assert.Single(ServiceClientFactoryA.HandlerFactory.Responses, x => x.RequestMessage.Method != HttpMethod.Get);
             }
 
             [Fact]
@@ -919,14 +919,14 @@ namespace NuGet.Insights.ReferenceTracking
                 {
                     { OwnerRK0, new HashSet<SubjectEdge> { new(SubjectPK0, SubjectRK0, D(1)) } },
                 };
-                ServiceClientFactoryA.HandlerFactory.Requests.Clear();
+                ServiceClientFactoryA.HandlerFactory.Clear();
 
                 // Act
                 await SetReferencesAsync(references);
 
                 // Assert
                 await AssertExpectedAsync(references);
-                Assert.All(ServiceClientFactoryA.HandlerFactory.Requests, x => Assert.Equal(HttpMethod.Get, x.Method));
+                Assert.All(ServiceClientFactoryA.HandlerFactory.Responses, x => Assert.Equal(HttpMethod.Get, x.RequestMessage.Method));
             }
 
             [Fact]

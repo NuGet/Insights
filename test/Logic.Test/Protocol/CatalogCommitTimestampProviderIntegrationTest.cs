@@ -102,11 +102,11 @@ namespace NuGet.Insights
             // Assert
             Assert.Equal(CommitTimestamps.Count, timestamps.Count);
             Assert.Equal(CommitTimestamps, timestamps);
-            Assert.Equal(4, HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.RequestUri.Host == "api.nuget.org" && x.IsSuccessStatusCode));
-            Assert.NotEmpty(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsoluteUri == IndexUrl));
-            Assert.NotEmpty(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsoluteUri == Page0Url));
-            Assert.NotEmpty(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsoluteUri == Page1Url));
-            Assert.NotEmpty(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsoluteUri == Page2Url));
+            Assert.Equal(4, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.Host == "api.nuget.org"));
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == IndexUrl));
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page0Url));
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page1Url));
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page2Url));
         }
 
         [Theory]
@@ -126,11 +126,11 @@ namespace NuGet.Insights
             // Assert
             Assert.Equal(CommitTimestamps.Count, timestamps.Count);
             Assert.Equal(CommitTimestamps, timestamps);
-            Assert.Equal(4, HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.RequestUri.Host == "api.nuget.org" && x.IsSuccessStatusCode));
-            Assert.NotEmpty(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsoluteUri == IndexUrl));
-            Assert.NotEmpty(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsoluteUri == Page0Url));
-            Assert.NotEmpty(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsoluteUri == Page1Url));
-            Assert.NotEmpty(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsoluteUri == Page2Url));
+            Assert.Equal(4, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.Host == "api.nuget.org"));
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == IndexUrl));
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page0Url));
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page1Url));
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page2Url));
         }
 
         [Fact]
@@ -205,8 +205,7 @@ namespace NuGet.Insights
 
             // Assert
             Assert.Equal(DateTimeOffset.Parse("2015-02-01T06:30:42.5921094Z"), min);
-            Assert.Equal(1, HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.RequestUri.AbsoluteUri == Page1Url && x.IsSuccessStatusCode));
-            Assert.NotEmpty(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsoluteUri == Page1Url));
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page1Url));
         }
     }
 }

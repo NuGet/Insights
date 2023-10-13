@@ -5,6 +5,8 @@ using System.Collections.Concurrent;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace NuGet.Insights
 {
@@ -16,9 +18,13 @@ namespace NuGet.Insights
     {
         public SendMessageWithBaseAsync OnSendAsync { get; set; }
 
-        public ConcurrentQueue<HttpRequestMessage> Requests { get; } = new ConcurrentQueue<HttpRequestMessage>();
+        private ConcurrentQueue<HttpRequestMessage> Requests { get; } = new ConcurrentQueue<HttpRequestMessage>();
 
         public ConcurrentQueue<HttpResponseMessage> Responses { get; } = new ConcurrentQueue<HttpResponseMessage>();
+
+        public IEnumerable<HttpRequestMessage> SuccessRequests => Responses
+            .Where(x => x.IsSuccessStatusCode && x.RequestMessage is not null)
+            .Select(x => x.RequestMessage);
 
         public void Clear()
         {

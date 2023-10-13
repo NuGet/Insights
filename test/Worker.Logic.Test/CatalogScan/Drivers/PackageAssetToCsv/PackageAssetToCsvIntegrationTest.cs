@@ -306,11 +306,11 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             await AssertOutputAsync(PackageAssetToCsv_WithDuplicatesDir, Step1, 0);
 
             var duplicatePackageRequests = HttpMessageHandlerFactory
-                .Responses
-                .Where(x => x.RequestMessage.RequestUri.GetLeftPart(UriPartial.Path).EndsWith("/gosms.ge-sms-api.1.0.1.nupkg"))
+                .SuccessRequests
+                .Where(x => x.RequestUri.GetLeftPart(UriPartial.Path).EndsWith("/gosms.ge-sms-api.1.0.1.nupkg"))
                 .ToList();
             var onlyLatestLeaves = LatestLeavesTypes.Contains(DriverType);
-            Assert.Equal(onlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Count(x => x.RequestMessage.Method == HttpMethod.Get && x.IsSuccessStatusCode));
+            Assert.Equal(onlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Count(x => x.Method == HttpMethod.Get));
         }
 
         private void FailRangeRequests()

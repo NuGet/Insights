@@ -98,8 +98,8 @@ namespace NuGet.Insights.Worker.LoadPackageReadme
 
         private async Task AssertOutputAsync(string testName, string stepName)
         {
-            Assert.Empty(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsoluteUri.EndsWith(".nupkg")));
-            Assert.NotEmpty(HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.AbsoluteUri.EndsWith("/readme")));
+            Assert.Empty(HttpMessageHandlerFactory.Responses.Where(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".nupkg")));
+            Assert.NotEmpty(HttpMessageHandlerFactory.Responses.Where(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith("/readme")));
 
             await AssertWideEntityOutputAsync(
                 Options.Value.PackageReadmeTableName,

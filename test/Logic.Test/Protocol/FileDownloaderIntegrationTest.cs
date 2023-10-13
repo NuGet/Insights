@@ -28,11 +28,13 @@ namespace NuGet.Insights
                     {
                         if (r.Method != HttpMethod.Get || r.Headers.Range is not null)
                         {
-                            return new HttpResponseMessage(HttpStatusCode.InternalServerError);
+                            return new HttpResponseMessage(HttpStatusCode.InternalServerError) { RequestMessage = r };
                         }
 
                         var newReq = Clone(r);
-                        newReq.RequestUri = new Uri(url + ".testdata");
+                        var builder = new UriBuilder(r.RequestUri);
+                        builder.Path += ".testdata";
+                        newReq.RequestUri = builder.Uri;
                         var response = await TestDataHttpClient.SendAsync(newReq);
                         response.EnsureSuccessStatusCode();
                         return response;
@@ -52,10 +54,15 @@ namespace NuGet.Insights
                 Assert.Equal("12830", reader.Properties["Content-Length"].Single());
 
                 Assert.Contains(LogMessages, x => x.Contains("Trying again with a full download."));
-                Assert.Equal(7, HttpMessageHandlerFactory.Requests.Count);
-                Assert.Equal(3, HttpMessageHandlerFactory.Requests.Count(x => x.Method == HttpMethod.Head && x.RequestUri.AbsoluteUri == url));
-                Assert.Equal(3, HttpMessageHandlerFactory.Requests.Count(x => x.Method == HttpMethod.Head && x.RequestUri.GetLeftPart(UriPartial.Path) == url && x.RequestUri.Query.Contains("cache-bust=")));
-                Assert.Equal(1, HttpMessageHandlerFactory.Requests.Count(x => x.Method == HttpMethod.Get && x.RequestUri.GetLeftPart(UriPartial.Path) == url && x.RequestUri.Query.Contains("cache-bust=")));
+                Assert.Equal(7, HttpMessageHandlerFactory.Responses.Count());
+                Assert.Equal(3, HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.Method == HttpMethod.Head
+                    && x.RequestMessage.RequestUri.AbsoluteUri == url));
+                Assert.Equal(3, HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.Method == HttpMethod.Head
+                    && x.RequestMessage.RequestUri.GetLeftPart(UriPartial.Path) == url
+                    && x.RequestMessage.RequestUri.Query.Contains("cache-bust=")));
+                Assert.Equal(1, HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.Method == HttpMethod.Get
+                    && x.RequestMessage.RequestUri.GetLeftPart(UriPartial.Path).StartsWith(url)
+                    && x.RequestMessage.RequestUri.Query.Contains("cache-bust=")));
             }
 
             [Fact]
@@ -67,13 +74,13 @@ namespace NuGet.Insights
                     "9.0.1",
                     ArtifactFileType.Nupkg,
                     "https://api.nuget.org/v3-flatcontainer/newtonsoft.json/9.0.1/newtonsoft.json.9.0.1.nupkg");
-                var requestCount = HttpMessageHandlerFactory.Requests.Count;
+                var requestCount = HttpMessageHandlerFactory.Responses.Count;
 
                 // Act
                 await reader.ReadAsync();
 
                 // Act
-                Assert.Equal(requestCount, HttpMessageHandlerFactory.Requests.Count);
+                Assert.Equal(requestCount, HttpMessageHandlerFactory.Responses.Count);
             }
 
             [Fact]
@@ -95,13 +102,13 @@ namespace NuGet.Insights
                     "9.0.1",
                     ArtifactFileType.Nupkg,
                     "https://api.nuget.org/v3-flatcontainer/newtonsoft.json/9.0.1/newtonsoft.json.9.0.1.nupkg");
-                var requestCount = HttpMessageHandlerFactory.Requests.Count;
+                var requestCount = HttpMessageHandlerFactory.Responses.Count;
 
                 // Act
                 await reader.ReadAsync();
 
                 // Act
-                Assert.Equal(requestCount, HttpMessageHandlerFactory.Requests.Count);
+                Assert.Equal(requestCount, HttpMessageHandlerFactory.Responses.Count);
             }
 
             public TheGetZipDirectoryReaderAsyncMethod(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

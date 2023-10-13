@@ -562,7 +562,7 @@ namespace NuGet.Insights.Worker
                 Assert.Equal(startingReadmeRequestCount, finalReadmeRequestCount);
                 Assert.Equal(intermediateSnupkgRequestCount, finalSnupkgRequestCount);
 
-                var userAgents = HttpMessageHandlerFactory.Requests.Select(r => r.Headers.UserAgent.ToString()).Distinct().Order().ToList();
+                var userAgents = HttpMessageHandlerFactory.Responses.Select(r => r.RequestMessage.Headers.UserAgent.ToString()).Distinct().Order().ToList();
                 foreach (var userAgent in userAgents)
                 {
                     Logger.LogInformation("Found User-Agent: {UserAgent}", userAgent);
@@ -579,22 +579,22 @@ namespace NuGet.Insights.Worker
 
         private int GetNuspecRequestCount()
         {
-            return HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri.EndsWith(".nuspec"));
+            return HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".nuspec"));
         }
 
         private int GetNupkgRequestCount()
         {
-            return HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri.EndsWith(".nupkg"));
+            return HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".nupkg"));
         }
 
         private int GetReadmeRequestCount()
         {
-            return HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri.EndsWith(".md"));
+            return HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".md"));
         }
 
         private int GetSnupkgRequestCount()
         {
-            return HttpMessageHandlerFactory.Requests.Count(x => x.RequestUri.AbsoluteUri.EndsWith(".snupkg"));
+            return HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".snupkg"));
         }
     }
 }
