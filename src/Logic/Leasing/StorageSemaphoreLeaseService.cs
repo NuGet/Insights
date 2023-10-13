@@ -51,7 +51,7 @@ namespace NuGet.Insights
             }
             else
             {
-                _logger.LogWarning("Failed to acquired semaphore {Name} after {DurationMs}ms.", name, sw.Elapsed.TotalMilliseconds);
+                _logger.LogTransientWarning("Failed to acquire semaphore {Name} after {DurationMs}ms.", name, sw.Elapsed.TotalMilliseconds);
             }
 
             return result;
