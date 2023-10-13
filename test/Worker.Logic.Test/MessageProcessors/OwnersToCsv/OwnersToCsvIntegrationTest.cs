@@ -41,7 +41,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             }
 
             [Fact]
-            public async Task ExecuteAsync()
+            public async Task Execute()
             {
                 // Arrange
                 ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
@@ -79,7 +79,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             }
 
             [Fact]
-            public async Task ExecuteAsync()
+            public async Task Execute()
             {
                 // Arrange
                 ConfigureAndSetLastModified();
@@ -117,7 +117,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             }
 
             [Fact]
-            public async Task ExecuteAsync()
+            public async Task Execute()
             {
                 // Arrange
                 ConfigureAndSetLastModified();
@@ -156,7 +156,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             }
 
             [Fact]
-            public async Task ExecuteAsync()
+            public async Task Execute()
             {
                 // Arrange
                 ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
@@ -201,7 +201,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             }
 
             [Fact]
-            public async Task ExecuteAsync()
+            public async Task Execute()
             {
                 // Arrange
                 ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
@@ -227,7 +227,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             }
 
             [Fact]
-            public async Task ExecuteAsync()
+            public async Task Execute()
             {
                 // Arrange
                 ConfigureAndSetLastModified();

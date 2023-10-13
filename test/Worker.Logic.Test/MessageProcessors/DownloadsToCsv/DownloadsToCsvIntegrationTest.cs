@@ -45,7 +45,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             }
 
             [Fact]
-            public async Task ExecuteAsync()
+            public async Task Execute()
             {
                 // Arrange
                 ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
@@ -83,7 +83,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             }
 
             [Fact]
-            public async Task ExecuteAsync()
+            public async Task Execute()
             {
                 // Arrange
                 ConfigureAndSetLastModified();
@@ -121,7 +121,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             }
 
             [Fact]
-            public async Task ExecuteAsync()
+            public async Task Execute()
             {
                 // Arrange
                 ConfigureAndSetLastModified();
@@ -160,7 +160,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             }
 
             [Fact]
-            public async Task ExecuteAsync()
+            public async Task Execute()
             {
                 // Arrange
                 ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
@@ -205,7 +205,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             }
 
             [Fact]
-            public async Task ExecuteAsync()
+            public async Task Execute()
             {
                 // Arrange
                 ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
@@ -250,7 +250,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             }
 
             [Fact]
-            public async Task ExecuteAsync()
+            public async Task Execute()
             {
                 // Arrange
                 ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
@@ -281,7 +281,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             }
 
             [Fact]
-            public async Task ExecuteAsync()
+            public async Task Execute()
             {
                 // Arrange
                 ConfigureAndSetLastModified(DownloadsToCsv_UnicodeDuplicatesDir);
@@ -305,7 +305,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             }
 
             [Fact]
-            public async Task ExecuteAsync()
+            public async Task Execute()
             {
                 // Arrange
                 ConfigureAndSetLastModified();

@@ -27,7 +27,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             [Theory]
             [InlineData(false)]
             [InlineData(true)]
-            public async Task ExecuteAsync(bool applyPartitioningPolicy)
+            public async Task Execute(bool applyPartitioningPolicy)
             {
                 ConfigureWorkerSettings = x =>
                 {
@@ -96,7 +96,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public class KustoIngestion_RetriesFailedBlob : KustoIngestionWithMockKustoTest
         {
             [Fact]
-            public async Task ExecuteAsync()
+            public async Task Execute()
             {
                 ConfigureWorkerSettings = x =>
                 {
@@ -181,7 +181,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public class KustoIngestion_MarksFailureWhenValidationFailsTooManyTimes : KustoIngestionWithMockKustoTest
         {
             [Fact]
-            public async Task ExecuteAsync()
+            public async Task Execute()
             {
                 ConfigureWorkerSettings = x =>
                 {

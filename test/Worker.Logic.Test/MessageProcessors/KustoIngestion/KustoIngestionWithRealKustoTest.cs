@@ -25,7 +25,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         /// For AAD app registrations: .add database DB_NAME admins('aadapp=AAD_CLIENT_ID;AAD_TENANT_ID')
         /// </summary>
         [KustoFact]
-        public async Task ExecuteAsync()
+        public async Task ExecuteRealIngestion()
         {
             ConfigureWorkerSettings = x =>
             {

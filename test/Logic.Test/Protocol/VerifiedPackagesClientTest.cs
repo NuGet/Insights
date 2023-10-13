@@ -20,7 +20,7 @@ namespace NuGet.Insights
         }
 
         [Fact]
-        public async Task ExecuteAsync()
+        public async Task FetchesVerifiedPackages()
         {
             // Arrange
             var url = $"http://localhost/{TestData}/{VerifiedPackagesToCsvDir}/{Step1}/verifiedPackages.json";

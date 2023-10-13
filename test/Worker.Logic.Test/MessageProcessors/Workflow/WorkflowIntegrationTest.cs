@@ -22,7 +22,7 @@ namespace NuGet.Insights.Worker.Workflow
         public class Workflow_RetriesForFailedValidation : WorkflowIntegrationTest
         {
             [Fact]
-            public async Task ExecuteAsync()
+            public async Task Execute()
             {
                 ConfigureWorkerSettings = x =>
                 {
@@ -112,7 +112,7 @@ namespace NuGet.Insights.Worker.Workflow
         public class Workflow_FailsIfKustoIngestionFailsTooMuch : WorkflowIntegrationTest
         {
             [Fact]
-            public async Task ExecuteAsync()
+            public async Task Execute()
             {
                 ConfigureWorkerSettings = x =>
                 {
@@ -192,7 +192,7 @@ namespace NuGet.Insights.Worker.Workflow
         public class Workflow_FailsWithAbortedCatalogScan : WorkflowIntegrationTest
         {
             [Fact]
-            public async Task ExecuteAsync()
+            public async Task Execute()
             {
                 ConfigureWorkerSettings = x =>
                 {
@@ -261,7 +261,7 @@ namespace NuGet.Insights.Worker.Workflow
         public class Workflow_SucceedsIfAllCatalogScansAreCaughtUp : WorkflowIntegrationTest
         {
             [Fact]
-            public async Task ExecuteAsync()
+            public async Task Execute()
             {
                 ConfigureWorkerSettings = x =>
                 {

@@ -26,7 +26,7 @@ namespace NuGet.Insights.Worker.TableCopy
             }
 
             [Fact]
-            public Task ExecuteAsync()
+            public Task Execute()
             {
                 return CopyAsync(TableScanStrategy.Serial, lowerBound: null, upperBound: null);
             }
@@ -39,7 +39,7 @@ namespace NuGet.Insights.Worker.TableCopy
             }
 
             [Fact]
-            public Task ExecuteAsync()
+            public Task Execute()
             {
                 return CopyAsync(TableScanStrategy.PrefixScan, lowerBound: null, upperBound: null);
             }
@@ -52,7 +52,7 @@ namespace NuGet.Insights.Worker.TableCopy
             }
 
             [Fact]
-            public Task ExecuteAsync()
+            public Task Execute()
             {
                 return CopyAsync(TableScanStrategy.PrefixScan, lowerBound: "dexih.connections.bbbbb", upperBound: "uuuuu");
             }

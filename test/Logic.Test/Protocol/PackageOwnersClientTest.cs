@@ -20,7 +20,7 @@ namespace NuGet.Insights
         }
 
         [Fact]
-        public async Task ExecuteAsync()
+        public async Task FetchesPackageOwners()
         {
             // Arrange
             var url = $"http://localhost/{TestData}/{OwnersToCsvDir}/{Step1}/owners.v2.json";
