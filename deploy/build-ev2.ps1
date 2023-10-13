@@ -166,9 +166,9 @@ process {
     $workerBinPath = "bin/Worker.zip"
     $azureFunctionsHostBinPath = "bin/AzureFunctionsHost.zip"
     $workerStandaloneEnvPathPattern = "bin/WorkerStandalone.{0}.env"
-    $installWorkerStandaloneSourcePath = Join-Path $PSScriptRoot "scripts\Install-WorkerStandalone.ps1"
+    $installWorkerStandaloneSourcePath = Join-Path $PSScriptRoot "scripts/Install-WorkerStandalone.ps1"
     $installWorkerStandalonePath = "bin/Install-WorkerStandalone.ps1"
-    $setDeploymentLabelSourcePath = Join-Path $PSScriptRoot "scripts\Set-DeploymentLabel.ps1"
+    $setDeploymentLabelSourcePath = Join-Path $PSScriptRoot "scripts/Set-DeploymentLabel.ps1"
     $setDeploymentLabelPath = "Set-DeploymentLabel.ps1"
     
     # Install Bicep, if needed.
@@ -258,5 +258,5 @@ process {
     Copy-Item $installWorkerStandaloneSourcePath -Destination (Join-Path $ev2 $installWorkerStandalonePath) -Verbose
     Write-Host "Wrote Ev2 files to: $ev2"
     
-    Copy-Item $setDeploymentLabelSourcePath -Destination (Join-Path $artifacts $setDeploymentLabelPath) -Verbose    
+    Copy-Item $setDeploymentLabelSourcePath -Destination (Join-Path $ev2 $setDeploymentLabelPath) -Verbose    
 }

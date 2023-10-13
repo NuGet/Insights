@@ -7,38 +7,135 @@ parameters:
     - osx-x64
     - win-x64
 - name: storageTypes
-  displayName: The types of Azure Storage to test against ("azurite" or "azure")
+  displayName: The types of Azure Storage to test against ("Azurite" or "Azure")
   type: object
   default:
-    - azure
-    - azurite
+    - Azure
+    - Azurite
 
-jobs:
+stages:
 - ${{ each rid in parameters.rids }}:
-  - ${{ each storageType in parameters.storageTypes }}:
-    - job: ${{ replace(rid, '-', '_') }}_with_${{ storageType }}_storage
-    
-      pool:
-        ${{ if startsWith(rid, 'linux-') }}:
-          name: Azure Pipelines
-          vmImage: ubuntu-latest
-        ${{ elseif startsWith(rid, 'osx-') }}:
-          name: Azure Pipelines
-          vmImage: macos-latest
-        ${{ elseif startsWith(rid, 'win-') }}:
-          name: Azure Pipelines
-          vmImage: windows-latest
+  - stage: ${{ replace(rid, '-', '_') }}
+    displayName: "Build for ${{ rid }}"
+    dependsOn:
+      
+    pool:
+      ${{ if startsWith(rid, 'linux-') }}:
+        name: Azure Pipelines
+        vmImage: ubuntu-latest
+      ${{ elseif startsWith(rid, 'osx-') }}:
+        name: Azure Pipelines
+        vmImage: macos-latest
+      ${{ elseif startsWith(rid, 'win-') }}:
+        name: Azure Pipelines
+        vmImage: windows-latest
 
-      variables:
-        - group: NuGet.Insights
-        - name: BuildConfiguration
-          value: Release
-        - name: BuildSolution
-          value: "$(Build.SourcesDirectory)/NuGet.Insights.sln"
-        - name: OutputDirectory
-          value: "$(Build.SourcesDirectory)/artifacts"
+    variables:
+    - group: NuGet.Insights
+    - name: BuildConfiguration
+      value: Release
+    - name: BuildSolution
+      value: "$(Build.SourcesDirectory)/NuGet.Insights.sln"
+    - name: OutputDirectory
+      value: "$(Build.SourcesDirectory)/artifacts"
+
+    jobs:
+    - job: static_analysis
+      displayName: "Static analysis"
 
       steps:
+      - task: PowerShell@2
+        displayName: "Checking for Forks changes"
+        inputs:
+          targetType: "filePath"
+          filePath: $(Build.SourcesDirectory)/src/Forks/download.ps1
+
+      - script: npm install -g markdown-link-check@3.10.0
+        displayName: "Install markdown-link-check"
+
+      - task: PowerShell@2
+        displayName: Validate markdown
+        inputs:
+          targetType: "filePath"
+          filePath: $(Build.SourcesDirectory)/scripts/Invoke-MarkdownValidation.ps1
+          pwsh: true
+
+    - job: build_and_publish
+      displayName: "Build and publish"
+
+      steps:
+      - task: UseDotNet@2
+        displayName: "Install .NET SDK from global.json"
+        inputs:
+          packageType: sdk
+          useGlobalJson: true
+          performMultiLevelLookup: true
+      
+      - task: NuGetAuthenticate@1
+        displayName: "NuGet authenticate"
+
+      - script: dotnet restore $(BuildSolution)
+        displayName: "Restore"
+
+      - script: dotnet build $(Build.SourcesDirectory)/src/Website/Website.csproj --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false
+        displayName: "Build Website for ${{ rid }}"
+
+      - script: dotnet publish $(Build.SourcesDirectory)/src/Website/Website.csproj --no-build --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false --output $(OutputDirectory)/deploy/Website
+        displayName: "Publish Website for ${{ rid }}"
+
+      - task: ArchiveFiles@2
+        displayName: "Zip Website"
+        inputs:
+          rootFolderOrFile: $(OutputDirectory)/deploy/Website
+          includeRootFolder: false
+          archiveFile: $(OutputDirectory)/deploy/Website.zip
+
+      - script: dotnet build $(Build.SourcesDirectory)/src/Worker/Worker.csproj --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false
+        displayName: "Build Worker for ${{ rid }}"
+
+      - script: dotnet publish $(Build.SourcesDirectory)/src/Worker/Worker.csproj --no-build --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false --output $(OutputDirectory)/deploy/Worker
+        displayName: "Publish Worker for ${{ rid }}"
+
+      - task: ArchiveFiles@2
+        displayName: "Zip Worker"
+        inputs:
+          rootFolderOrFile: $(OutputDirectory)/deploy/Worker
+          includeRootFolder: false
+          archiveFile: $(OutputDirectory)/deploy/Worker.zip
+
+      - task: PowerShell@2
+        displayName: "Publish Azure Functions host"
+        inputs:
+          targetType: "filePath"
+          filePath: $(Build.SourcesDirectory)/deploy/build-host.ps1
+          arguments: >
+            -RuntimeIdentifier ${{ rid }}
+            -OutputPath $(OutputDirectory)/deploy/AzureFunctionsHost.zip
+
+      - task: PowerShell@2
+        displayName: "Generate Ev2 files"
+        inputs:
+          targetType: "filePath"
+          filePath: $(Build.SourcesDirectory)/deploy/build-ev2.ps1
+          arguments: >
+            -ConfigNames ev2-dev-usnc
+            -BuildVersion $(Build.BuildNumber)
+            -WebsiteZipPath $(OutputDirectory)/deploy/Website.zip
+            -WorkerZipPath $(OutputDirectory)/deploy/Worker.zip
+            -AzureFunctionsHostZipPath $(OutputDirectory)/deploy/AzureFunctionsHost.zip
+
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish build artifacts"
+        inputs:
+          pathToPublish: $(OutputDirectory)/ExpressV2
+          artifactName: drop-${{ rid }}
+          Parallel: true
+
+    - ${{ each storageType in parameters.storageTypes }}:
+      - job: test_${{ storageType }}_storage
+        displayName: "Test with ${{ storageType }} storage"
+
+        steps:
         - task: UseDotNet@2
           displayName: "Install .NET SDK from global.json"
           inputs:
@@ -46,7 +143,7 @@ jobs:
             useGlobalJson: true
             performMultiLevelLookup: true
         
-        - task: NuGetAuthenticate@0
+        - task: NuGetAuthenticate@1
           displayName: "NuGet authenticate"
 
         - script: dotnet restore $(BuildSolution)
@@ -62,15 +159,15 @@ jobs:
             Set-Content $certFile -Value $rawCert -AsByteStream
             echo "##vso[task.setvariable variable=NUGETINSIGHTS_KUSTOCLIENTCERTIFICATE;]$certFile"
           displayName: "Save Kusto client certificate"
-          condition: eq('${{ storageType }}', 'azure')
+          condition: eq('${{ storageType }}', 'Azure')
 
         - script: npx --yes --loglevel info azurite --version
           displayName: "Install Azurite for npx"
-          condition: eq('${{ storageType }}', 'azurite')
+          condition: eq('${{ storageType }}', 'Azurite')
 
         - bash: npx --yes azurite --silent --location ./azurite &
           displayName: "Start Azurite"
-          condition: eq('${{ storageType }}', 'azurite')
+          condition: eq('${{ storageType }}', 'Azurite')
 
         - task: PowerShell@2
           displayName: "Wait for Azurite to be ready"
@@ -78,12 +175,12 @@ jobs:
             targetType: "filePath"
             filePath: $(Build.SourcesDirectory)/scripts/Wait-StorageEmulator.ps1
             pwsh: true
-          condition: eq('${{ storageType }}', 'azurite')
+          condition: eq('${{ storageType }}', 'Azurite')
 
-        - script: dotnet test $(BuildSolution) --no-build --no-restore --configuration $(BuildConfiguration) --logger trx --logger "console;verbosity=normal" --blame-hang-timeout 20m --collect "Code coverage" --results-directory $(OutputDirectory)/TestResults/
+        - script: dotnet test $(BuildSolution) --no-build --no-restore --configuration $(BuildConfiguration) --logger trx --logger "console;verbosity=normal" --blame-crash-dump-type full --blame-hang-timeout 20m --collect "Code coverage" --results-directory $(OutputDirectory)/TestResults/
           displayName: "Run tests"
           env:
-            ${{ if eq(storageType, 'azure') }}:
+            ${{ if eq(storageType, 'Azure') }}:
               NUGETINSIGHTS_STORAGEACCOUNTNAME: $(nugetinsightstests-StorageAccountName)
               NUGETINSIGHTS_STORAGESAS: $(nugetinsightstests-BlobQueueTableFullAccessSas)
               NUGETINSIGHTS_STORAGEBLOBREADSAS: $(nugetinsightstests-BlobReadSas)
@@ -106,73 +203,3 @@ jobs:
             testResultsFiles: "$(OutputDirectory)/TestResults/**/*.trx"
             failTaskOnFailedTests: false
           condition: always()
-
-        - task: PowerShell@2
-          displayName: "Checking for Forks changes"
-          inputs:
-            targetType: "filePath"
-            filePath: $(Build.SourcesDirectory)/src/Forks/download.ps1
-
-        - script: npm install -g markdown-link-check@3.10.0
-          displayName: "Install markdown-link-check"
-
-        - task: PowerShell@2
-          displayName: Validate markdown
-          inputs:
-            targetType: "filePath"
-            filePath: $(Build.SourcesDirectory)/scripts/Invoke-MarkdownValidation.ps1
-            pwsh: true
-
-        - script: dotnet build $(Build.SourcesDirectory)/src/Website/Website.csproj --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false
-          displayName: "Build Website for ${{ rid }}"
-
-        - script: dotnet publish $(Build.SourcesDirectory)/src/Website/Website.csproj --no-build --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false --output $(OutputDirectory)/deploy/Website
-          displayName: "Publish Website for ${{ rid }}"
-
-        - task: ArchiveFiles@2
-          displayName: "Zip Website"
-          inputs:
-            rootFolderOrFile: $(OutputDirectory)/deploy/Website
-            includeRootFolder: false
-            archiveFile: $(OutputDirectory)/deploy/Website.zip
-
-        - script: dotnet build $(Build.SourcesDirectory)/src/Worker/Worker.csproj --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false
-          displayName: "Build Worker for ${{ rid }}"
-
-        - script: dotnet publish $(Build.SourcesDirectory)/src/Worker/Worker.csproj --no-build --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false --output $(OutputDirectory)/deploy/Worker
-          displayName: "Publish Worker for ${{ rid }}"
-
-        - task: ArchiveFiles@2
-          displayName: "Zip Worker"
-          inputs:
-            rootFolderOrFile: $(OutputDirectory)/deploy/Worker
-            includeRootFolder: false
-            archiveFile: $(OutputDirectory)/deploy/Worker.zip
-
-        - task: PowerShell@2
-          displayName: "Publish Azure Functions host"
-          inputs:
-            targetType: "filePath"
-            filePath: $(Build.SourcesDirectory)/deploy/build-host.ps1
-            arguments: >
-              -RuntimeIdentifier ${{ rid }}
-              -OutputPath $(OutputDirectory)/deploy/AzureFunctionsHost.zip
-
-        - task: PowerShell@2
-          displayName: "Generate Ev2 files"
-          inputs:
-            targetType: "filePath"
-            filePath: $(Build.SourcesDirectory)/deploy/build-ev2.ps1
-            arguments: >
-              -ConfigNames ev2-dev-usnc
-              -BuildVersion $(Build.BuildNumber)
-              -WebsiteZipPath $(OutputDirectory)/deploy/Website.zip
-              -WorkerZipPath $(OutputDirectory)/deploy/Worker.zip
-              -AzureFunctionsHostZipPath $(OutputDirectory)/deploy/AzureFunctionsHost.zip
-
-        - task: PublishBuildArtifacts@1
-          displayName: "Publish build artifacts"
-          inputs:
-            pathToPublish: $(OutputDirectory)/ExpressV2
-            artifactName: drop-${{ rid }}-with-${{ storageType }}-storage
-            Parallel: true
