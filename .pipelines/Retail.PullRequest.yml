@@ -91,13 +91,21 @@ jobs:
               NUGETINSIGHTS_KUSTODATABASENAME: $(nugetinsightstests-KustoDatabaseName)
           retryCountOnTaskFailure: 1
 
+        - task: PublishBuildArtifacts@1
+          displayName: "Upload hangdump artifacts"
+          inputs:
+            pathToPublish: "$(OutputDirectory)/TestResults"
+            artifactName: hangdump-${{ rid }}-with-${{ storageType }}-storage
+            Parallel: true
+          condition: failed()
+
         - task: PublishTestResults@2
           displayName: "Publish test results"
           inputs:
             testResultsFormat: VSTest
             testResultsFiles: "$(OutputDirectory)/TestResults/**/*.trx"
             failTaskOnFailedTests: false
-          condition: succeededOrFailed()
+          condition: always()
 
         - task: PowerShell@2
           displayName: "Checking for Forks changes"
