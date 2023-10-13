@@ -3,10 +3,12 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using NuGet.Services.Validation;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -21,6 +23,102 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         }
 
         public ICatalogLeafToCsvBatchDriver<PackageCertificateRecord, CertificateRecord> Target => Host.Services.GetRequiredService<ICatalogLeafToCsvBatchDriver<PackageCertificateRecord, CertificateRecord>>();
+
+        [Fact]
+        public async Task HandlesTimeNotValidCodeSigningCertificate()
+        {
+            await Target.InitializeAsync();
+            var leaf = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2022.06.28.00.44.15/microsoft.extensions.primitives.5.0.0.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "Microsoft.Extensions.Primitives",
+                PackageVersion = "5.0.0",
+            };
+
+            var output = await Target.ProcessLeavesAsync(new[] { leaf });
+
+            var record = output
+                .Result
+                .Sets2
+                .SelectMany(x => x.Records)
+                .Single(x => x.Fingerprint == "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4");
+            Assert.Equal(X509ChainStatusFlags.NotTimeValid, record.CodeSigningStatusFlags);
+            Assert.Equal(EndCertificateStatus.Invalid, record.CodeSigningStatus);
+            Assert.NotNull(record.CodeSigningStatusUpdateTime);
+        }
+
+        [Fact]
+        public async Task HandlesRevokedCodeSigningCertificate()
+        {
+            await Target.InitializeAsync();
+            var leaf = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2019.01.30.01.58.32/purewebsockets.2.4.0-beta.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "PureWebSockets",
+                PackageVersion = "2.4.0-beta",
+            };
+
+            var output = await Target.ProcessLeavesAsync(new[] { leaf });
+
+            var record = output
+                .Result
+                .Sets2
+                .SelectMany(x => x.Records)
+                .Single(x => x.Fingerprint == "h9f-OjnpjgG78Lrw7n8NF3V6AxXhmRdVrhIhqjlCstg");
+            Assert.Equal(X509ChainStatusFlags.NotTimeValid | X509ChainStatusFlags.Revoked, record.CodeSigningStatusFlags);
+            Assert.Equal(EndCertificateStatus.Invalid, record.CodeSigningStatus);
+            Assert.NotNull(record.CodeSigningStatusUpdateTime);
+        }
+
+        [Fact]
+        public async Task HandlesTimeNotValidTimestampingCertificate()
+        {
+            await Target.InitializeAsync();
+            var leaf = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2023.06.14.01.27.35/polly.7.2.4.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "Polly",
+                PackageVersion = "7.2.4",
+            };
+
+            var output = await Target.ProcessLeavesAsync(new[] { leaf });
+
+            var record = output
+                .Result
+                .Sets2
+                .SelectMany(x => x.Records)
+                .Single(x => x.Fingerprint == "7_ZekD9usdyf5KCnVvV-2QoJeampaEDneSpymAkASlY");
+            Assert.Equal(X509ChainStatusFlags.NotTimeValid, record.TimestampingStatusFlags);
+            Assert.Equal(EndCertificateStatus.Invalid, record.TimestampingStatus);
+            Assert.NotNull(record.TimestampingStatusUpdateTime);
+        }
+
+        [Fact]
+        public async Task HandlesRevokedTimestampingCertificate()
+        {
+            await Target.InitializeAsync();
+            var leaf = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2019.11.19.08.01.13/digi21.diging.io.shp.x64.17.0.1.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "Digi21.DigiNG.Io.Shp.x64",
+                PackageVersion = "17.0.1",
+            };
+
+            var output = await Target.ProcessLeavesAsync(new[] { leaf });
+
+            var record = output
+                .Result
+                .Sets2
+                .SelectMany(x => x.Records)
+                .Single(x => x.Fingerprint == "67Fpkkmfe6SfXoiCJsZwHvDV6PmPL5kvhXHdFH7Dr9Q");
+            Assert.Equal(X509ChainStatusFlags.Revoked, record.TimestampingStatusFlags);
+            Assert.Equal(EndCertificateStatus.Revoked, record.TimestampingStatus);
+            Assert.NotNull(record.TimestampingStatusUpdateTime);
+        }
 
         [Fact]
         public async Task HandlesCorruptASN1InAuthorTimestamp()

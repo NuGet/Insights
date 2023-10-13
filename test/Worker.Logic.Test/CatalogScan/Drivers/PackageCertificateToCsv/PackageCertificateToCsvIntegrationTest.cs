@@ -314,7 +314,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         public PackageCertificateToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
             // These values are regularly changing. Don't record them so test data is stable.
-            ConfigureWorkerSettings = x => x.RecordCertificateStatusUpdateTimes = false;
+            ConfigureWorkerSettings = x => x.RecordCertificateStatus = false;
         }
 
         protected override string DestinationContainerName1 => Options.Value.PackageCertificateContainerName;

@@ -371,11 +371,13 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
                 .OrderBy(x => x.Fingerprint, StringComparer.OrdinalIgnoreCase)
                 .Select(x =>
                 {
-                    /// Clear these properties before persisting to Blob Bstorage, since their purpose is handle
-                    /// duplicate records appended to <see cref="AppendResultStorageService"/>.
-                    if (!_options.Value.RecordCertificateStatusUpdateTimes)
+                    if (!_options.Value.RecordCertificateStatus)
                     {
+                        x.CodeSigningStatus = null;
+                        x.CodeSigningStatusFlags = null;
                         x.CodeSigningStatusUpdateTime = null;
+                        x.TimestampingStatus = null;
+                        x.TimestampingStatusFlags = null;
                         x.TimestampingStatusUpdateTime = null;
                     }
                     x.ScanId = null;
