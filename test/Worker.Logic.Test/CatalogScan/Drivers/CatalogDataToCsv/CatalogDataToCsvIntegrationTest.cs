@@ -20,211 +20,147 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         private const string CatalogDataToCsv_WithSpecialK_NLSDir = nameof(CatalogDataToCsv_WithKelvinK_NLS);
         private const string CatalogDataToCsv_WithSpecialK_ICUDir = nameof(CatalogDataToCsv_WithKelvinK_ICU);
 
-        public class CatalogDataToCsv : CatalogDataToCsvIntegrationTest
+        [Fact]
+        public async Task CatalogDataToCsv()
         {
-            public CatalogDataToCsv(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
 
-            [Fact]
-            public async Task Execute()
-            {
-                ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
+            var min0 = DateTimeOffset.Parse("2020-12-27T05:06:30.4180312Z");
+            var max1 = DateTimeOffset.Parse("2020-12-27T05:07:45.7628472Z");
 
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2020-12-27T05:06:30.4180312Z");
-                var max1 = DateTimeOffset.Parse("2020-12-27T05:07:45.7628472Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
-
-                // Assert
-                await AssertOutputAsync(CatalogDataToCsvDir, Step1, 0);
-            }
+            // Assert
+            await AssertOutputAsync(CatalogDataToCsvDir, Step1, 0);
         }
 
-        public class CatalogDataToCsv_Deprecation : CatalogDataToCsvIntegrationTest
+        [Fact]
+        public async Task CatalogDataToCsv_Deprecation()
         {
-            public CatalogDataToCsv_Deprecation(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            var max1 = DateTimeOffset.Parse("2020-07-08T17:12:18.5692562Z");
+            var min0 = max1.AddTicks(-1);
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                var max1 = DateTimeOffset.Parse("2020-07-08T17:12:18.5692562Z");
-                var min0 = max1.AddTicks(-1);
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
-
-                // Assert
-                await AssertBlobCountAsync(DestinationContainerName1, 3);
-                await AssertBlobCountAsync(DestinationContainerName2, 3);
-                await AssertBlobCountAsync(DestinationContainerName3, 3);
-                await AssertOutputAsync(CatalogDataToCsv_DeprecationDir, Step1, 0);
-                await AssertOutputAsync(CatalogDataToCsv_DeprecationDir, Step1, 1);
-                await AssertOutputAsync(CatalogDataToCsv_DeprecationDir, Step1, 2);
-            }
+            // Assert
+            await AssertBlobCountAsync(DestinationContainerName1, 3);
+            await AssertBlobCountAsync(DestinationContainerName2, 3);
+            await AssertBlobCountAsync(DestinationContainerName3, 3);
+            await AssertOutputAsync(CatalogDataToCsv_DeprecationDir, Step1, 0);
+            await AssertOutputAsync(CatalogDataToCsv_DeprecationDir, Step1, 1);
+            await AssertOutputAsync(CatalogDataToCsv_DeprecationDir, Step1, 2);
         }
 
-        public class CatalogDataToCsv_Vulnerabilities : CatalogDataToCsvIntegrationTest
+        [Fact]
+        public async Task CatalogDataToCsv_Vulnerabilities()
         {
-            public CatalogDataToCsv_Vulnerabilities(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            var max1 = DateTimeOffset.Parse("2021-07-01T21:45:03.3861285Z");
+            var min0 = max1.AddTicks(-1);
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                var max1 = DateTimeOffset.Parse("2021-07-01T21:45:03.3861285Z");
-                var min0 = max1.AddTicks(-1);
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
-
-                // Assert
-                await AssertBlobCountAsync(DestinationContainerName1, 3);
-                await AssertBlobCountAsync(DestinationContainerName2, 3);
-                await AssertBlobCountAsync(DestinationContainerName3, 3);
-                await AssertOutputAsync(CatalogDataToCsv_VulnerabilitiesDir, Step1, 0);
-                await AssertOutputAsync(CatalogDataToCsv_VulnerabilitiesDir, Step1, 1);
-                await AssertOutputAsync(CatalogDataToCsv_VulnerabilitiesDir, Step1, 2);
-            }
+            // Assert
+            await AssertBlobCountAsync(DestinationContainerName1, 3);
+            await AssertBlobCountAsync(DestinationContainerName2, 3);
+            await AssertBlobCountAsync(DestinationContainerName3, 3);
+            await AssertOutputAsync(CatalogDataToCsv_VulnerabilitiesDir, Step1, 0);
+            await AssertOutputAsync(CatalogDataToCsv_VulnerabilitiesDir, Step1, 1);
+            await AssertOutputAsync(CatalogDataToCsv_VulnerabilitiesDir, Step1, 2);
         }
 
-        public class CatalogDataToCsv_WithDuplicates : CatalogDataToCsvIntegrationTest
+        [Fact]
+        public async Task CatalogDataToCsv_WithDuplicates()
         {
-            public CatalogDataToCsv_WithDuplicates(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
 
-            [Fact]
-            public async Task Execute()
-            {
-                ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
+            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
+            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
 
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
-                var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
-
-                // Assert
-                await AssertOutputAsync(CatalogDataToCsv_WithDuplicatesDir, Step1, 0);
-            }
+            // Assert
+            await AssertOutputAsync(CatalogDataToCsv_WithDuplicatesDir, Step1, 0);
         }
 
-        public class CatalogDataToCsv_WithDelete : CatalogDataToCsvIntegrationTest
+        [Fact]
+        public async Task CatalogDataToCsv_WithDelete()
         {
-            public CatalogDataToCsv_WithDelete(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            MakeDeletedPackageAvailable();
+            var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
+            var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
+            var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                MakeDeletedPackageAvailable();
-                var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
-                var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
-                var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
+            // Assert
+            await AssertOutputAsync(CatalogDataToCsv_WithDeleteDir, Step1, 0);
+            await AssertOutputAsync(CatalogDataToCsv_WithDeleteDir, Step1, 1);
+            await AssertOutputAsync(CatalogDataToCsv_WithDeleteDir, Step1, 2);
 
-                // Assert
-                await AssertOutputAsync(CatalogDataToCsv_WithDeleteDir, Step1, 0);
-                await AssertOutputAsync(CatalogDataToCsv_WithDeleteDir, Step1, 1);
-                await AssertOutputAsync(CatalogDataToCsv_WithDeleteDir, Step1, 2);
+            // Act
+            await UpdateAsync(max2);
 
-                // Act
-                await UpdateAsync(max2);
-
-                // Assert
-                await AssertOutputAsync(CatalogDataToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-                await AssertOutputAsync(CatalogDataToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
-                await AssertOutputAsync(CatalogDataToCsv_WithDeleteDir, Step2, 2);
-            }
+            // Assert
+            await AssertOutputAsync(CatalogDataToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
+            await AssertOutputAsync(CatalogDataToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
+            await AssertOutputAsync(CatalogDataToCsv_WithDeleteDir, Step2, 2);
         }
 
-        public class CatalogDataToCsv_WithKelvinK_NLS : CatalogDataToCsv_WithKelvinK
+        [OSPlatformFact(OSPlatformType.Windows)]
+        public async Task CatalogDataToCsv_WithKelvinK_NLS()
         {
-            public CatalogDataToCsv_WithKelvinK_NLS(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
-
-            [OSPlatformFact(OSPlatformType.Windows)]
-            public async Task Execute()
-            {
-                await RunTestAsync(CatalogDataToCsv_WithSpecialK_NLSDir);
-            }
+            await RunTestWithKelvinKAsync(CatalogDataToCsv_WithSpecialK_NLSDir);
         }
 
-        public class CatalogDataToCsv_WithKelvinK_ICU : CatalogDataToCsv_WithKelvinK
+        // [OSPlatformFact(OSPlatformType.Linux | OSPlatformType.OSX | OSPlatformType.FreeBSD | OSPlatformType.Windows)]
+        [OSPlatformFact(OSPlatformType.Linux | OSPlatformType.OSX | OSPlatformType.FreeBSD)]
+        public async Task CatalogDataToCsv_WithKelvinK_ICU()
         {
-            public CatalogDataToCsv_WithKelvinK_ICU(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
-
-            // [OSPlatformFact(OSPlatformType.Linux | OSPlatformType.OSX | OSPlatformType.FreeBSD | OSPlatformType.Windows)]
-            [OSPlatformFact(OSPlatformType.Linux | OSPlatformType.OSX | OSPlatformType.FreeBSD)]
-            public async Task Execute()
-            {
-                // Environment.SetEnvironmentVariable("NUGET_INSIGHTS_ALLOW_ICU", "true");
-                await RunTestAsync(CatalogDataToCsv_WithSpecialK_ICUDir);
-            }
+            // Environment.SetEnvironmentVariable("NUGET_INSIGHTS_ALLOW_ICU", "true");
+            await RunTestWithKelvinKAsync(CatalogDataToCsv_WithSpecialK_ICUDir);
         }
 
-        public abstract class CatalogDataToCsv_WithKelvinK : CatalogDataToCsvIntegrationTest
+        protected async Task RunTestWithKelvinKAsync(string dir)
         {
-            public CatalogDataToCsv_WithKelvinK(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
 
-            protected async Task RunTestAsync(string dir)
-            {
-                ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2021-08-11T23:38:05.65091Z");
+            var max1 = DateTimeOffset.Parse("2021-08-11T23:39:31.9024782Z");
 
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2021-08-11T23:38:05.65091Z");
-                var max1 = DateTimeOffset.Parse("2021-08-11T23:39:31.9024782Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
-
-                // Assert
-                await AssertOutputAsync(dir, Step1, 0);
-            }
+            // Assert
+            await AssertOutputAsync(dir, Step1, 0);
         }
 
         public CatalogDataToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)

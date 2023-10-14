@@ -19,201 +19,153 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
         private const string PackageSignatureToCsv_BadTimestampEncodingDir = nameof(PackageSignatureToCsv_BadTimestampEncoding);
         private const string PackageSignatureToCsv_WithDeleteDir = nameof(PackageSignatureToCsv_WithDelete);
 
-        public class PackageSignatureToCsv : PackageSignatureToCsvIntegrationTest
+        [Fact]
+        public async Task PackageSignatureToCsv()
         {
-            public PackageSignatureToCsv(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
+            var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
+            var max2 = DateTimeOffset.Parse("2020-11-27T19:36:50.4909042Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
-                var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
-                var max2 = DateTimeOffset.Parse("2020-11-27T19:36:50.4909042Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
+            // Assert
+            await AssertOutputAsync(PackageSignatureToCsvDir, Step1, 0);
+            await AssertOutputAsync(PackageSignatureToCsvDir, Step1, 1);
+            await AssertOutputAsync(PackageSignatureToCsvDir, Step1, 2);
 
-                // Assert
-                await AssertOutputAsync(PackageSignatureToCsvDir, Step1, 0);
-                await AssertOutputAsync(PackageSignatureToCsvDir, Step1, 1);
-                await AssertOutputAsync(PackageSignatureToCsvDir, Step1, 2);
+            // Act
+            await UpdateAsync(max2);
 
-                // Act
-                await UpdateAsync(max2);
-
-                // Assert
-                await AssertOutputAsync(PackageSignatureToCsvDir, Step2, 0);
-                await AssertOutputAsync(PackageSignatureToCsvDir, Step1, 1); // This file is unchanged.
-                await AssertOutputAsync(PackageSignatureToCsvDir, Step2, 2);
-            }
+            // Assert
+            await AssertOutputAsync(PackageSignatureToCsvDir, Step2, 0);
+            await AssertOutputAsync(PackageSignatureToCsvDir, Step1, 1); // This file is unchanged.
+            await AssertOutputAsync(PackageSignatureToCsvDir, Step2, 2);
         }
 
-        public class PackageSignatureToCsv_WithDuplicatesInCommit : PackageSignatureToCsvIntegrationTest
+        [Fact]
+        public async Task PackageSignatureToCsv_WithDuplicatesInCommit()
         {
-            public PackageSignatureToCsv_WithDuplicatesInCommit(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2018-03-23T08:55:02.1875809Z");
+            var max1 = DateTimeOffset.Parse("2018-03-23T08:55:20.0232708Z");
+            var max2 = DateTimeOffset.Parse("2018-03-23T08:55:38.0342003Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2018-03-23T08:55:02.1875809Z");
-                var max1 = DateTimeOffset.Parse("2018-03-23T08:55:20.0232708Z");
-                var max2 = DateTimeOffset.Parse("2018-03-23T08:55:38.0342003Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
+            // Assert
+            await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step1, 0);
+            await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step1, 1);
+            await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step1, 2);
 
-                // Assert
-                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step1, 0);
-                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step1, 1);
-                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step1, 2);
+            // Act
+            await UpdateAsync(max2);
 
-                // Act
-                await UpdateAsync(max2);
-
-                // Assert
-                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step1, 0); // This file is unchanged.
-                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step2, 1);
-                await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step2, 2);
-            }
+            // Assert
+            await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step1, 0); // This file is unchanged.
+            await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step2, 1);
+            await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step2, 2);
         }
 
-        public class PackageSignatureToCsv_AuthorSignature : PackageSignatureToCsvIntegrationTest
+        [Fact]
+        public async Task PackageSignatureToCsv_AuthorSignature()
         {
-            public PackageSignatureToCsv_AuthorSignature(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
 
-            [Fact]
-            public async Task Execute()
-            {
-                ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
+            var min0 = DateTimeOffset.Parse("2020-03-04T22:55:23.8646211Z");
+            var max1 = DateTimeOffset.Parse("2020-03-04T22:56:51.1816512Z");
 
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2020-03-04T22:55:23.8646211Z");
-                var max1 = DateTimeOffset.Parse("2020-03-04T22:56:51.1816512Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
-
-                // Assert
-                await AssertOutputAsync(PackageSignatureToCsv_AuthorSignatureDir, Step1, 0);
-            }
+            // Assert
+            await AssertOutputAsync(PackageSignatureToCsv_AuthorSignatureDir, Step1, 0);
         }
 
-        public class PackageSignatureToCsv_BadTimestamp : PackageSignatureToCsvIntegrationTest
+        [Fact]
+        public async Task PackageSignatureToCsv_BadTimestamp()
         {
-            public PackageSignatureToCsv_BadTimestamp(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
 
-            [Fact]
-            public async Task Execute()
-            {
-                ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
+            var min0 = DateTimeOffset.Parse("2020-11-04T15:12:14Z");
+            var max1 = DateTimeOffset.Parse("2020-11-04T15:12:15.7221964Z");
 
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2020-11-04T15:12:14Z");
-                var max1 = DateTimeOffset.Parse("2020-11-04T15:12:15.7221964Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
-
-                // Assert
-                await AssertOutputAsync(PackageSignatureToCsv_BadTimestampDir, Step1, 0);
-            }
+            // Assert
+            await AssertOutputAsync(PackageSignatureToCsv_BadTimestampDir, Step1, 0);
         }
 
-        public class PackageSignatureToCsv_BadTimestampEncoding : PackageSignatureToCsvIntegrationTest
+        [Fact]
+        public async Task PackageSignatureToCsv_BadTimestampEncoding()
         {
-            public PackageSignatureToCsv_BadTimestampEncoding(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
 
-            [Fact]
-            public async Task Execute()
-            {
-                ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
+            var min0 = DateTimeOffset.Parse("2022-02-08T11:43:31.00000000Z");
+            var max1 = DateTimeOffset.Parse("2022-02-08T11:43:32.6621038Z");
 
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2022-02-08T11:43:31.00000000Z");
-                var max1 = DateTimeOffset.Parse("2022-02-08T11:43:32.6621038Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
-
-                // Assert
-                // .NET Runtime 6.0.0 fails to read the author signature of Avira.Managed.Remediation 1.2202.701. 6.0.5 succeeds.
-                await AssertOutputAsync(PackageSignatureToCsv_BadTimestampEncodingDir, Step1, 0);
-            }
+            // Assert
+            // .NET Runtime 6.0.0 fails to read the author signature of Avira.Managed.Remediation 1.2202.701. 6.0.5 succeeds.
+            await AssertOutputAsync(PackageSignatureToCsv_BadTimestampEncodingDir, Step1, 0);
         }
 
-        public class PackageSignatureToCsv_WithDelete : PackageSignatureToCsvIntegrationTest
+        [Fact]
+        public async Task PackageSignatureToCsv_WithDelete()
         {
-            public PackageSignatureToCsv_WithDelete(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            MakeDeletedPackageAvailable();
+            var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
+            var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
+            var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                MakeDeletedPackageAvailable();
-                var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
-                var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
-                var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
+            // Assert
+            await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step1, 0);
+            await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step1, 1);
+            await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step1, 2);
 
-                // Assert
-                await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step1, 0);
-                await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step1, 1);
-                await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step1, 2);
+            // Act
+            await UpdateAsync(max2);
 
-                // Act
-                await UpdateAsync(max2);
-
-                // Assert
-                await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-                await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
-                await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step2, 2);
-            }
+            // Assert
+            await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
+            await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
+            await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step2, 2);
         }
 
         public PackageSignatureToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)

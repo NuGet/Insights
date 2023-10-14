@@ -18,69 +18,53 @@ namespace NuGet.Insights.Worker.LoadPackageReadme
         public const string LoadPackageReadmeDir = nameof(LoadPackageReadme);
         public const string LoadPackageReadme_WithDeleteDir = nameof(LoadPackageReadme_WithDelete);
 
-        public class LoadPackageReadme : LoadPackageReadmeIntegrationTest
+        [Fact]
+        public async Task LoadPackageReadme()
         {
-            public LoadPackageReadme(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2022-03-14T23:05:39.6122305Z");
+            var max1 = DateTimeOffset.Parse("2022-03-14T23:06:07.7549588Z");
+            var max2 = DateTimeOffset.Parse("2022-03-14T23:06:36.1633247Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2022-03-14T23:05:39.6122305Z");
-                var max1 = DateTimeOffset.Parse("2022-03-14T23:06:07.7549588Z");
-                var max2 = DateTimeOffset.Parse("2022-03-14T23:06:36.1633247Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
+            // Assert
+            await AssertOutputAsync(LoadPackageReadmeDir, Step1);
 
-                // Assert
-                await AssertOutputAsync(LoadPackageReadmeDir, Step1);
+            // Act
+            await UpdateAsync(max2);
 
-                // Act
-                await UpdateAsync(max2);
-
-                // Assert
-                await AssertOutputAsync(LoadPackageReadmeDir, Step2);
-            }
+            // Assert
+            await AssertOutputAsync(LoadPackageReadmeDir, Step2);
         }
 
-        public class LoadPackageReadme_WithDelete : LoadPackageReadmeIntegrationTest
+        [Fact]
+        public async Task LoadPackageReadme_WithDelete()
         {
-            public LoadPackageReadme_WithDelete(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            MakeDeletedPackageAvailable();
+            var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
+            var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
+            var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                MakeDeletedPackageAvailable();
-                var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
-                var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
-                var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
+            // Assert
+            await AssertOutputAsync(LoadPackageReadme_WithDeleteDir, Step1);
 
-                // Assert
-                await AssertOutputAsync(LoadPackageReadme_WithDeleteDir, Step1);
+            // Act
+            await UpdateAsync(max2);
 
-                // Act
-                await UpdateAsync(max2);
-
-                // Assert
-                await AssertOutputAsync(LoadPackageReadme_WithDeleteDir, Step2);
-            }
+            // Assert
+            await AssertOutputAsync(LoadPackageReadme_WithDeleteDir, Step2);
         }
 
         protected override IEnumerable<string> GetExpectedTableNames()

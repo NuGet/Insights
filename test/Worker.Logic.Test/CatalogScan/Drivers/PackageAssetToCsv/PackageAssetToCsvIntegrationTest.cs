@@ -19,268 +19,184 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
         private const string PackageAssetToCsv_WithDeleteDir = nameof(PackageAssetToCsv_WithDelete);
         private const string PackageAssetToCsv_WithDuplicatesDir = nameof(PackageAssetToCsv_WithDuplicates);
 
-        public class PackageAssetToCsv : PackageAssetToCsvIntegrationTest
+        [Fact]
+        public async Task PackageAssetToCsv()
         {
-            public PackageAssetToCsv(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
+            var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
+            var max2 = DateTimeOffset.Parse("2020-11-27T19:36:50.4909042Z");
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
+            await SetCursorAsync(min0);
+
+            // Act
+            await UpdateAsync(max1);
+
+            // Assert
+            await AssertOutputAsync(PackageAssetToCsvDir, Step1, 0);
+            await AssertOutputAsync(PackageAssetToCsvDir, Step1, 1);
+            await AssertOutputAsync(PackageAssetToCsvDir, Step1, 2);
+
+            // Act
+            await UpdateAsync(max2);
+
+            // Assert
+            await AssertOutputAsync(PackageAssetToCsvDir, Step2, 0);
+            await AssertOutputAsync(PackageAssetToCsvDir, Step1, 1); // This file is unchanged.
+            await AssertOutputAsync(PackageAssetToCsvDir, Step2, 2);
+        }
+
+        [Fact]
+        public async Task PackageAssetToCsv_WithoutBatching()
+        {
+            // Arrange
+            ConfigureWorkerSettings = x => x.AllowBatching = false;
+
+            var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
+            var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
+            await SetCursorAsync(min0);
+
+            // Act
+            await UpdateAsync(max1);
+
+            // Assert
+            await AssertOutputAsync(PackageAssetToCsvDir, Step1, 0);
+            await AssertOutputAsync(PackageAssetToCsvDir, Step1, 1);
+            await AssertOutputAsync(PackageAssetToCsvDir, Step1, 2);
+        }
+
+        [Theory]
+        [InlineData("00:01:00", true, false)]
+        [InlineData("00:01:00", false, false)]
+        [InlineData("00:02:00", true, true)]
+        [InlineData("00:02:00", false, true)]
+        public async Task PackageAssetToCsv_LeafLevelTelemetry(string threshold, bool onlyLatestLeaves, bool expectLogs)
+        {
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2016-07-28T16:12:06.0020479Z");
+            var max1 = DateTimeOffset.Parse("2016-07-28T16:13:37.3231638Z");
+
+            ConfigureWorkerSettings = x =>
             {
+                x.AllowBatching = false;
+                x.LeafLevelTelemetryThreshold = TimeSpan.Parse(threshold);
+            };
+
+            if (!onlyLatestLeaves)
+            {
+                MutableLatestLeavesTypes.Clear();
             }
 
-            [Fact]
-            public async Task Execute()
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
+            await SetCursorAsync(min0);
+
+            // Act
+            await UpdateAsync(DriverType, onlyLatestLeaves, max1);
+
+            // Assert
+            if (expectLogs)
             {
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
-                var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
-                var max2 = DateTimeOffset.Parse("2020-11-27T19:36:50.4909042Z");
-
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
-                await SetCursorAsync(min0);
-
-                // Act
-                await UpdateAsync(max1);
-
-                // Assert
-                await AssertOutputAsync(PackageAssetToCsvDir, Step1, 0);
-                await AssertOutputAsync(PackageAssetToCsvDir, Step1, 1);
-                await AssertOutputAsync(PackageAssetToCsvDir, Step1, 2);
-
-                // Act
-                await UpdateAsync(max2);
-
-                // Assert
-                await AssertOutputAsync(PackageAssetToCsvDir, Step2, 0);
-                await AssertOutputAsync(PackageAssetToCsvDir, Step1, 1); // This file is unchanged.
-                await AssertOutputAsync(PackageAssetToCsvDir, Step2, 2);
+                Assert.Contains(LogMessages, x => x.Contains("Metric emitted: CatalogScanExpandService.EnqueueLeafScansAsync.CatalogLeafScan = 1"));
+                Assert.Contains(LogMessages, x => x.Contains("Metric emitted: CatalogLeafScanMessageProcessor.ToProcess.CatalogLeafScan = 1"));
+                Assert.Contains(LogMessages, x => x.Contains("Metric emitted: CatalogScanStorageService.DeleteAsync.Single.CatalogLeafScan = 1"));
+            }
+            else
+            {
+                Assert.DoesNotContain(LogMessages, x => new Regex("Metric emitted: (.+?)\\.CatalogLeafScan = ").IsMatch(x));
             }
         }
 
-        public class PackageAssetToCsv_WithoutBatching : PackageAssetToCsvIntegrationTest
+        [Fact]
+        public async Task PackageAssetToCsv_WithDelete()
         {
-            public PackageAssetToCsv_WithoutBatching(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            MakeDeletedPackageAvailable();
+            var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
+            var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
+            var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                ConfigureWorkerSettings = x => x.AllowBatching = false;
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
+            await SetCursorAsync(min0);
 
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
-                var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
+            // Act
+            await UpdateAsync(max1);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
-                await SetCursorAsync(min0);
+            // Assert
+            await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step1, 0);
+            await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step1, 1);
+            await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step1, 2);
 
-                // Act
-                await UpdateAsync(max1);
+            // Act
+            await UpdateAsync(max2);
 
-                // Assert
-                await AssertOutputAsync(PackageAssetToCsvDir, Step1, 0);
-                await AssertOutputAsync(PackageAssetToCsvDir, Step1, 1);
-                await AssertOutputAsync(PackageAssetToCsvDir, Step1, 2);
-            }
+            // Assert
+            await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
+            await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
+            await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step2, 2);
         }
 
-        public class PackageAssetToCsv_LeafLevelTelemetry : PackageAssetToCsvIntegrationTest
+        [Fact]
+        public Task PackageAssetToCsv_WithDuplicates_OnlyLatestLeaves()
         {
-            public PackageAssetToCsv_LeafLevelTelemetry(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
-
-            [Theory]
-            [InlineData("00:01:00", true, false)]
-            [InlineData("00:01:00", false, false)]
-            [InlineData("00:02:00", true, true)]
-            [InlineData("00:02:00", false, true)]
-            public async Task Execute(string threshold, bool onlyLatestLeaves, bool expectLogs)
-            {
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2016-07-28T16:12:06.0020479Z");
-                var max1 = DateTimeOffset.Parse("2016-07-28T16:13:37.3231638Z");
-
-                ConfigureWorkerSettings = x =>
-                {
-                    x.AllowBatching = false;
-                    x.LeafLevelTelemetryThreshold = TimeSpan.Parse(threshold);
-                };
-
-                if (onlyLatestLeaves)
-                {
-                    _latestLeavesTypes.Add(DriverType);
-                }
-
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
-                await SetCursorAsync(min0);
-
-                // Act
-                await UpdateAsync(DriverType, onlyLatestLeaves, max1);
-
-                // Assert
-                if (expectLogs)
-                {
-                    Assert.Contains(LogMessages, x => x.Contains("Metric emitted: CatalogScanExpandService.EnqueueLeafScansAsync.CatalogLeafScan = 1"));
-                    Assert.Contains(LogMessages, x => x.Contains("Metric emitted: CatalogLeafScanMessageProcessor.ToProcess.CatalogLeafScan = 1"));
-                    Assert.Contains(LogMessages, x => x.Contains("Metric emitted: CatalogScanStorageService.DeleteAsync.Single.CatalogLeafScan = 1"));
-                }
-                else
-                {
-                    Assert.DoesNotContain(LogMessages, x => new Regex("Metric emitted: (.+?)\\.CatalogLeafScan = ").IsMatch(x));
-                }
-            }
-
-            private readonly List<CatalogScanDriverType> _latestLeavesTypes = new();
-
-            public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => _latestLeavesTypes;
+            return PackageAssetToCsv_WithDuplicates(batchProcessing: false);
         }
 
-        public class PackageAssetToCsv_WithDelete : PackageAssetToCsvIntegrationTest
+        [Fact]
+        public async Task PackageAssetToCsv_WithDuplicates_AllLeaves()
         {
-            public PackageAssetToCsv_WithDelete(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
-
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                MakeDeletedPackageAvailable();
-                var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
-                var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
-                var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
-
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
-                await SetCursorAsync(min0);
-
-                // Act
-                await UpdateAsync(max1);
-
-                // Assert
-                await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step1, 0);
-                await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step1, 1);
-                await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step1, 2);
-
-                // Act
-                await UpdateAsync(max2);
-
-                // Assert
-                await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-                await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
-                await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step2, 2);
-            }
+            MutableLatestLeavesTypes.Clear();
+            await PackageAssetToCsv_WithDuplicates(batchProcessing: false);
         }
 
-        public class PackageAssetToCsv_WithDuplicates_OnlyLatestLeaves : PackageAssetToCsvIntegrationTest
+        [Fact]
+        public Task PackageAssetToCsv_WithDuplicates_BatchProcessing()
         {
-            public PackageAssetToCsv_WithDuplicates_OnlyLatestLeaves(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
-
-            [Fact]
-            public Task Execute()
-            {
-                return PackageAssetToCsv_WithDuplicates(batchProcessing: false);
-            }
+            MutableLatestLeavesTypes.Clear();
+            return PackageAssetToCsv_WithDuplicates(batchProcessing: true);
         }
 
-        public class PackageAssetToCsv_WithDuplicates_AllLeaves : PackageAssetToCsvIntegrationTest
+        [Fact]
+        public Task PackageAssetToCsv_WithDuplicates_OnlyLatestLeaves_FailedRangeRequests()
         {
-            public PackageAssetToCsv_WithDuplicates_AllLeaves(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
-
-            public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => Enumerable.Empty<CatalogScanDriverType>();
-
-            [Fact]
-            public async Task Execute()
-            {
-                await PackageAssetToCsv_WithDuplicates(batchProcessing: false);
-            }
+            FailRangeRequests();
+            return PackageAssetToCsv_WithDuplicates(batchProcessing: false);
         }
 
-        public class PackageAssetToCsv_WithDuplicates_BatchProcessing : PackageAssetToCsvIntegrationTest
+        [Fact]
+        public async Task PackageAssetToCsv_WithDuplicates_AllLeaves_FailedRangeRequests()
         {
-            public PackageAssetToCsv_WithDuplicates_BatchProcessing(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
-
-            public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => Enumerable.Empty<CatalogScanDriverType>();
-
-            [Fact]
-            public Task Execute()
-            {
-                return PackageAssetToCsv_WithDuplicates(batchProcessing: true);
-            }
+            MutableLatestLeavesTypes.Clear();
+            FailRangeRequests();
+            await PackageAssetToCsv_WithDuplicates(batchProcessing: false);
         }
 
-        public class PackageAssetToCsv_WithDuplicates_OnlyLatestLeaves_FailedRangeRequests : PackageAssetToCsvIntegrationTest
+        [Fact]
+        public Task PackageAssetToCsv_WithDuplicates_BatchProcessing_FailedRangeRequests()
         {
-            public PackageAssetToCsv_WithDuplicates_OnlyLatestLeaves_FailedRangeRequests(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
-
-            [Fact]
-            public Task Execute()
-            {
-                FailRangeRequests();
-                return PackageAssetToCsv_WithDuplicates(batchProcessing: false);
-            }
-        }
-
-        public class PackageAssetToCsv_WithDuplicates_AllLeaves_FailedRangeRequests : PackageAssetToCsvIntegrationTest
-        {
-            public PackageAssetToCsv_WithDuplicates_AllLeaves_FailedRangeRequests(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
-
-            public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => Enumerable.Empty<CatalogScanDriverType>();
-
-            [Fact]
-            public async Task Execute()
-            {
-                FailRangeRequests();
-                await PackageAssetToCsv_WithDuplicates(batchProcessing: false);
-            }
-        }
-
-        public class PackageAssetToCsv_WithDuplicates_BatchProcessing_FailedRangeRequests : PackageAssetToCsvIntegrationTest
-        {
-            public PackageAssetToCsv_WithDuplicates_BatchProcessing_FailedRangeRequests(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
-
-            public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => Enumerable.Empty<CatalogScanDriverType>();
-
-            [Fact]
-            public Task Execute()
-            {
-                FailRangeRequests();
-                return PackageAssetToCsv_WithDuplicates(batchProcessing: true);
-            }
+            MutableLatestLeavesTypes.Clear();
+            FailRangeRequests();
+            return PackageAssetToCsv_WithDuplicates(batchProcessing: true);
         }
 
         public PackageAssetToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)
         {
+            MutableLatestLeavesTypes.Add(DriverType);
         }
 
         protected override string DestinationContainerName => Options.Value.PackageAssetContainerName;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageAssetToCsv;
-        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
+
+        private List<CatalogScanDriverType> MutableLatestLeavesTypes { get; } = new();
+
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => MutableLatestLeavesTypes;
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
 
         private async Task PackageAssetToCsv_WithDuplicates(bool batchProcessing)

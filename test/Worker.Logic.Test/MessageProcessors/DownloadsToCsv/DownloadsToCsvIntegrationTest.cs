@@ -38,305 +38,253 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             });
         }
 
-        public class DownloadsToCsv : DownloadsToCsvIntegrationTest
+        [Fact]
+        public async Task DownloadsToCsv()
         {
-            public DownloadsToCsv(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
-            {
-            }
+            // Arrange
+            ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
-                ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
-                await service.InitializeAsync();
-                await service.StartAsync();
+            ConfigureAndSetLastModified();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
+            await service.InitializeAsync();
+            await service.StartAsync();
 
-                // Act
-                await ProcessQueueAsync(service);
+            // Act
+            await ProcessQueueAsync(service);
 
-                // Assert
-                await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "downloads_08585909596854775807.csv.gz");
-                await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
+            // Assert
+            await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "downloads_08585909596854775807.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
 
-                // Arrange
-                SetData(Step2);
-                await service.StartAsync();
+            // Arrange
+            SetData(Step2);
+            await service.StartAsync();
 
-                // Act
-                await ProcessQueueAsync(service);
+            // Act
+            await ProcessQueueAsync(service);
 
-                // Assert
-                await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 3);
-                await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "downloads_08585909596854775807.csv.gz");
-                await AssertCsvBlobAsync(DownloadsToCsvDir, Step2, "downloads_08585908696854775807.csv.gz");
-                await AssertCsvBlobAsync(DownloadsToCsvDir, Step2, "latest_downloads.csv.gz");
-            }
+            // Assert
+            await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 3);
+            await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "downloads_08585909596854775807.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsvDir, Step2, "downloads_08585908696854775807.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsvDir, Step2, "latest_downloads.csv.gz");
         }
 
-        public class DownloadsToCsv_NoOp : DownloadsToCsvIntegrationTest
+        [Fact]
+        public async Task DownloadsToCsv_NoOp()
         {
-            public DownloadsToCsv_NoOp(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
-            {
-            }
+            // Arrange
+            ConfigureAndSetLastModified();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
+            await service.InitializeAsync();
+            await service.StartAsync();
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
-                await service.InitializeAsync();
-                await service.StartAsync();
+            // Act
+            await ProcessQueueAsync(service);
 
-                // Act
-                await ProcessQueueAsync(service);
+            // Assert
+            await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
+            var blobA = await GetBlobAsync(Options.Value.PackageDownloadContainerName, "latest_downloads.csv.gz");
+            var propertiesA = await blobA.GetPropertiesAsync();
 
-                // Assert
-                await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
-                var blobA = await GetBlobAsync(Options.Value.PackageDownloadContainerName, "latest_downloads.csv.gz");
-                var propertiesA = await blobA.GetPropertiesAsync();
+            // Arrange
+            await service.StartAsync();
 
-                // Arrange
-                await service.StartAsync();
+            // Act
+            await ProcessQueueAsync(service);
 
-                // Act
-                await ProcessQueueAsync(service);
-
-                // Assert
-                await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 1);
-                await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
-                var blobB = await GetBlobAsync(Options.Value.PackageDownloadContainerName, "latest_downloads.csv.gz");
-                var propertiesB = await blobB.GetPropertiesAsync();
-                Assert.Equal(propertiesA.Value.ETag, propertiesB.Value.ETag);
-            }
+            // Assert
+            await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 1);
+            await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
+            var blobB = await GetBlobAsync(Options.Value.PackageDownloadContainerName, "latest_downloads.csv.gz");
+            var propertiesB = await blobB.GetPropertiesAsync();
+            Assert.Equal(propertiesA.Value.ETag, propertiesB.Value.ETag);
         }
 
-        public class DownloadsToCsv_DifferentVersionSet : DownloadsToCsvIntegrationTest
+        [Fact]
+        public async Task DownloadsToCsv_DifferentVersionSet()
         {
-            public DownloadsToCsv_DifferentVersionSet(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
-            {
-            }
+            // Arrange
+            ConfigureAndSetLastModified();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
+            await service.InitializeAsync();
+            await service.StartAsync();
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
-                await service.InitializeAsync();
-                await service.StartAsync();
+            // Act
+            await ProcessQueueAsync(service);
 
-                // Act
-                await ProcessQueueAsync(service);
+            // Assert
+            await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
+            var blobA = await GetBlobAsync(Options.Value.PackageDownloadContainerName, "latest_downloads.csv.gz");
+            var propertiesA = await blobA.GetPropertiesAsync();
 
-                // Assert
-                await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
-                var blobA = await GetBlobAsync(Options.Value.PackageDownloadContainerName, "latest_downloads.csv.gz");
-                var propertiesA = await blobA.GetPropertiesAsync();
+            // Arrange
+            await service.StartAsync();
+            MockVersionSet.Setup(x => x.CommitTimestamp).Returns(new DateTimeOffset(2021, 5, 10, 12, 15, 30, TimeSpan.Zero));
 
-                // Arrange
-                await service.StartAsync();
-                MockVersionSet.Setup(x => x.CommitTimestamp).Returns(new DateTimeOffset(2021, 5, 10, 12, 15, 30, TimeSpan.Zero));
+            // Act
+            await ProcessQueueAsync(service);
 
-                // Act
-                await ProcessQueueAsync(service);
-
-                // Assert
-                await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 1);
-                await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
-                var blobB = await GetBlobAsync(Options.Value.PackageDownloadContainerName, "latest_downloads.csv.gz");
-                var propertiesB = await blobB.GetPropertiesAsync();
-                Assert.NotEqual(propertiesA.Value.ETag, propertiesB.Value.ETag);
-            }
+            // Assert
+            await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 1);
+            await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
+            var blobB = await GetBlobAsync(Options.Value.PackageDownloadContainerName, "latest_downloads.csv.gz");
+            var propertiesB = await blobB.GetPropertiesAsync();
+            Assert.NotEqual(propertiesA.Value.ETag, propertiesB.Value.ETag);
         }
 
-        public class DownloadsToCsv_NonExistentId : DownloadsToCsvIntegrationTest
+        [Fact]
+        public async Task DownloadsToCsv_NonExistentId()
         {
-            public DownloadsToCsv_NonExistentId(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
-            {
-            }
+            // Arrange
+            ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
-                ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
-                await service.InitializeAsync();
-                await service.StartAsync();
-                string id;
-                MockVersionSet.Setup(x => x.TryGetId("Knapcode.TorSharp", out id)).Returns(false);
-                MockVersionSet.Setup(x => x.TryGetId("Newtonsoft.Json", out id)).Returns(false);
+            ConfigureAndSetLastModified();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
+            await service.InitializeAsync();
+            await service.StartAsync();
+            string id;
+            MockVersionSet.Setup(x => x.TryGetId("Knapcode.TorSharp", out id)).Returns(false);
+            MockVersionSet.Setup(x => x.TryGetId("Newtonsoft.Json", out id)).Returns(false);
 
-                // Act
-                await ProcessQueueAsync(service);
+            // Act
+            await ProcessQueueAsync(service);
 
-                // Assert
-                await AssertCsvBlobAsync(DownloadsToCsv_NonExistentIdDir, Step1, "downloads_08585909596854775807.csv.gz");
-                await AssertCsvBlobAsync(DownloadsToCsv_NonExistentIdDir, Step1, "latest_downloads.csv.gz");
+            // Assert
+            await AssertCsvBlobAsync(DownloadsToCsv_NonExistentIdDir, Step1, "downloads_08585909596854775807.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsv_NonExistentIdDir, Step1, "latest_downloads.csv.gz");
 
-                // Arrange
-                SetData(Step2);
-                await service.StartAsync();
-                MockVersionSet
-                    .Setup(x => x.TryGetId("Knapcode.TorSharp", out id))
-                    .Returns(true)
-                    .Callback(new TryGetId((string id, out string outId) => outId = "knapcode.TORSHARP"));
+            // Arrange
+            SetData(Step2);
+            await service.StartAsync();
+            MockVersionSet
+                .Setup(x => x.TryGetId("Knapcode.TorSharp", out id))
+                .Returns(true)
+                .Callback(new TryGetId((string id, out string outId) => outId = "knapcode.TORSHARP"));
 
-                // Act
-                await ProcessQueueAsync(service);
+            // Act
+            await ProcessQueueAsync(service);
 
-                // Assert
-                await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 3);
-                await AssertCsvBlobAsync(DownloadsToCsv_NonExistentIdDir, Step1, "downloads_08585909596854775807.csv.gz");
-                await AssertCsvBlobAsync(DownloadsToCsv_NonExistentIdDir, Step2, "downloads_08585908696854775807.csv.gz");
-                await AssertCsvBlobAsync(DownloadsToCsv_NonExistentIdDir, Step2, "latest_downloads.csv.gz");
-            }
+            // Assert
+            await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 3);
+            await AssertCsvBlobAsync(DownloadsToCsv_NonExistentIdDir, Step1, "downloads_08585909596854775807.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsv_NonExistentIdDir, Step2, "downloads_08585908696854775807.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsv_NonExistentIdDir, Step2, "latest_downloads.csv.gz");
         }
 
-        public class DownloadsToCsv_NonExistentVersion : DownloadsToCsvIntegrationTest
+        [Fact]
+        public async Task DownloadsToCsv_NonExistentVersion()
         {
-            public DownloadsToCsv_NonExistentVersion(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
-            {
-            }
+            // Arrange
+            ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
-                ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
-                await service.InitializeAsync();
-                await service.StartAsync();
-                string version;
-                MockVersionSet.Setup(x => x.TryGetVersion("Knapcode.TorSharp", "2.0.7", out version)).Returns(false);
-                MockVersionSet.Setup(x => x.TryGetVersion("Newtonsoft.Json", "10.5.0", out version)).Returns(false);
+            ConfigureAndSetLastModified();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
+            await service.InitializeAsync();
+            await service.StartAsync();
+            string version;
+            MockVersionSet.Setup(x => x.TryGetVersion("Knapcode.TorSharp", "2.0.7", out version)).Returns(false);
+            MockVersionSet.Setup(x => x.TryGetVersion("Newtonsoft.Json", "10.5.0", out version)).Returns(false);
 
-                // Act
-                await ProcessQueueAsync(service);
+            // Act
+            await ProcessQueueAsync(service);
 
-                // Assert
-                await AssertCsvBlobAsync(DownloadsToCsv_NonExistentVersionDir, Step1, "downloads_08585909596854775807.csv.gz");
-                await AssertCsvBlobAsync(DownloadsToCsv_NonExistentVersionDir, Step1, "latest_downloads.csv.gz");
+            // Assert
+            await AssertCsvBlobAsync(DownloadsToCsv_NonExistentVersionDir, Step1, "downloads_08585909596854775807.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsv_NonExistentVersionDir, Step1, "latest_downloads.csv.gz");
 
-                // Arrange
-                SetData(Step2);
-                await service.StartAsync();
-                MockVersionSet
-                    .Setup(x => x.TryGetVersion("Knapcode.TorSharp", "2.0.7", out version))
-                    .Returns(true)
-                    .Callback(new TryGetVersion((string id, string version, out string outVersion) => outVersion = version));
+            // Arrange
+            SetData(Step2);
+            await service.StartAsync();
+            MockVersionSet
+                .Setup(x => x.TryGetVersion("Knapcode.TorSharp", "2.0.7", out version))
+                .Returns(true)
+                .Callback(new TryGetVersion((string id, string version, out string outVersion) => outVersion = version));
 
-                // Act
-                await ProcessQueueAsync(service);
+            // Act
+            await ProcessQueueAsync(service);
 
-                // Assert
-                await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 3);
-                await AssertCsvBlobAsync(DownloadsToCsv_NonExistentVersionDir, Step1, "downloads_08585909596854775807.csv.gz");
-                await AssertCsvBlobAsync(DownloadsToCsv_NonExistentVersionDir, Step2, "downloads_08585908696854775807.csv.gz");
-                await AssertCsvBlobAsync(DownloadsToCsv_NonExistentVersionDir, Step2, "latest_downloads.csv.gz");
-            }
+            // Assert
+            await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 3);
+            await AssertCsvBlobAsync(DownloadsToCsv_NonExistentVersionDir, Step1, "downloads_08585909596854775807.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsv_NonExistentVersionDir, Step2, "downloads_08585908696854775807.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsv_NonExistentVersionDir, Step2, "latest_downloads.csv.gz");
         }
 
-        public class DownloadsToCsv_UncheckedIdAndVersion : DownloadsToCsvIntegrationTest
+        [Fact]
+        public async Task DownloadsToCsv_UncheckedIdAndVersion()
         {
-            public DownloadsToCsv_UncheckedIdAndVersion(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
-            {
-            }
+            // Arrange
+            ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
-                ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
-                await service.InitializeAsync();
-                await service.StartAsync();
-                string version;
-                MockVersionSet.Setup(x => x.TryGetVersion("Knapcode.TorSharp", "2.0.7", out version)).Returns(false);
-                MockVersionSet.Setup(x => x.GetUncheckedIds()).Returns(new[] { "UncheckedB", "UncheckedA", "Knapcode.TorSharp" });
-                MockVersionSet.Setup(x => x.GetUncheckedVersions("UncheckedA")).Returns(new[] { "2.0.0", "1.0.0" });
-                MockVersionSet.Setup(x => x.GetUncheckedVersions("UncheckedB")).Returns(new[] { "3.0.0" });
-                MockVersionSet.Setup(x => x.GetUncheckedVersions("Knapcode.TorSharp")).Returns(new[] { "0.0.1" });
+            ConfigureAndSetLastModified();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
+            await service.InitializeAsync();
+            await service.StartAsync();
+            string version;
+            MockVersionSet.Setup(x => x.TryGetVersion("Knapcode.TorSharp", "2.0.7", out version)).Returns(false);
+            MockVersionSet.Setup(x => x.GetUncheckedIds()).Returns(new[] { "UncheckedB", "UncheckedA", "Knapcode.TorSharp" });
+            MockVersionSet.Setup(x => x.GetUncheckedVersions("UncheckedA")).Returns(new[] { "2.0.0", "1.0.0" });
+            MockVersionSet.Setup(x => x.GetUncheckedVersions("UncheckedB")).Returns(new[] { "3.0.0" });
+            MockVersionSet.Setup(x => x.GetUncheckedVersions("Knapcode.TorSharp")).Returns(new[] { "0.0.1" });
 
-                // Act
-                await ProcessQueueAsync(service);
+            // Act
+            await ProcessQueueAsync(service);
 
-                // Assert
-                await AssertCsvBlobAsync(DownloadsToCsv_UncheckedIdAndVersionDir, Step1, "downloads_08585909596854775807.csv.gz");
-                await AssertCsvBlobAsync(DownloadsToCsv_UncheckedIdAndVersionDir, Step1, "latest_downloads.csv.gz");
-            }
+            // Assert
+            await AssertCsvBlobAsync(DownloadsToCsv_UncheckedIdAndVersionDir, Step1, "downloads_08585909596854775807.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsv_UncheckedIdAndVersionDir, Step1, "latest_downloads.csv.gz");
         }
 
-        public class DownloadsToCsv_UnicodeDuplicates : DownloadsToCsvIntegrationTest
+        [Fact]
+        public async Task DownloadsToCsv_UnicodeDuplicates()
         {
-            public DownloadsToCsv_UnicodeDuplicates(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
-            {
-            }
+            // Arrange
+            ConfigureAndSetLastModified(DownloadsToCsv_UnicodeDuplicatesDir);
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
+            await service.InitializeAsync();
+            await service.StartAsync();
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                ConfigureAndSetLastModified(DownloadsToCsv_UnicodeDuplicatesDir);
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
-                await service.InitializeAsync();
-                await service.StartAsync();
+            // Act
+            await ProcessQueueAsync(service);
 
-                // Act
-                await ProcessQueueAsync(service);
-
-                // Assert
-                await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 1);
-                await AssertCsvBlobAsync(DownloadsToCsv_UnicodeDuplicatesDir, Step1, "latest_downloads.csv.gz");
-            }
+            // Assert
+            await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 1);
+            await AssertCsvBlobAsync(DownloadsToCsv_UnicodeDuplicatesDir, Step1, "latest_downloads.csv.gz");
         }
 
-        public class DownloadsToCsv_JustLatest : DownloadsToCsvIntegrationTest
+        [Fact]
+        public async Task DownloadsToCsv_JustLatest()
         {
-            public DownloadsToCsv_JustLatest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
-            {
-            }
+            // Arrange
+            ConfigureAndSetLastModified();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
+            await service.InitializeAsync();
+            await service.StartAsync();
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
-                await service.InitializeAsync();
-                await service.StartAsync();
+            // Act
+            await ProcessQueueAsync(service);
 
-                // Act
-                await ProcessQueueAsync(service);
+            // Assert
+            await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
+            Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Head && r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json"));
+            Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Get && r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json"));
+            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(r => r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json")));
+            HttpMessageHandlerFactory.Clear();
 
-                // Assert
-                await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
-                Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Head && r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json"));
-                Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Get && r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json"));
-                Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(r => r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json")));
-                HttpMessageHandlerFactory.Clear();
+            // Arrange
+            SetData(Step2);
+            await service.StartAsync();
 
-                // Arrange
-                SetData(Step2);
-                await service.StartAsync();
+            // Act
+            await ProcessQueueAsync(service);
 
-                // Act
-                await ProcessQueueAsync(service);
-
-                // Assert
-                await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 1);
-                await AssertCsvBlobAsync(DownloadsToCsvDir, Step2, "latest_downloads.csv.gz");
-                Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Head && r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json"));
-                Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Get && r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json"));
-                Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(r => r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json")));
-            }
+            // Assert
+            await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 1);
+            await AssertCsvBlobAsync(DownloadsToCsvDir, Step2, "latest_downloads.csv.gz");
+            Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Head && r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json"));
+            Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Get && r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json"));
+            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(r => r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json")));
         }
 
         private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>> service)

@@ -19,43 +19,22 @@ namespace NuGet.Insights.Worker.TableCopy
         {
         }
 
-        public class CopyAsync_Serial : TableCopyDriverIntegrationTest
+        [Fact]
+        public Task CopyAsync_Serial()
         {
-            public CopyAsync_Serial(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
-            {
-            }
-
-            [Fact]
-            public Task Execute()
-            {
-                return CopyAsync(TableScanStrategy.Serial, lowerBound: null, upperBound: null);
-            }
+            return CopyAsync(TableScanStrategy.Serial, lowerBound: null, upperBound: null);
         }
 
-        public class CopyAsync_PrefixScan : TableCopyDriverIntegrationTest
+        [Fact]
+        public Task CopyAsync_PrefixScan()
         {
-            public CopyAsync_PrefixScan(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
-            {
-            }
-
-            [Fact]
-            public Task Execute()
-            {
-                return CopyAsync(TableScanStrategy.PrefixScan, lowerBound: null, upperBound: null);
-            }
+            return CopyAsync(TableScanStrategy.PrefixScan, lowerBound: null, upperBound: null);
         }
 
-        public class CopyAsync_PrefixScan_WithBounds : TableCopyDriverIntegrationTest
+        [Fact]
+        public Task CopyAsync_PrefixScan_WithBounds()
         {
-            public CopyAsync_PrefixScan_WithBounds(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
-            {
-            }
-
-            [Fact]
-            public Task Execute()
-            {
-                return CopyAsync(TableScanStrategy.PrefixScan, lowerBound: "dexih.connections.bbbbb", upperBound: "uuuuu");
-            }
+            return CopyAsync(TableScanStrategy.PrefixScan, lowerBound: "dexih.connections.bbbbb", upperBound: "uuuuu");
         }
 
         private async Task CopyAsync(TableScanStrategy strategy, string lowerBound, string upperBound)

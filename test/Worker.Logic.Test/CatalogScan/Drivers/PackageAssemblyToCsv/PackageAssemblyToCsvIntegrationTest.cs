@@ -20,169 +20,126 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         private const string PackageAssemblyToCsv_WithUnmanagedDir = nameof(PackageAssemblyToCsv_WithUnmanaged);
         private const string PackageAssemblyToCsv_WithDuplicatesDir = nameof(PackageAssemblyToCsv_WithDuplicates);
 
-        public class PackageAssemblyToCsv : PackageAssemblyToCsvIntegrationTest
+        [Fact]
+        public async Task PackageAssemblyToCsv()
         {
-            public PackageAssemblyToCsv(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
+            var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
+            var max2 = DateTimeOffset.Parse("2020-11-27T19:36:50.4909042Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
-                var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
-                var max2 = DateTimeOffset.Parse("2020-11-27T19:36:50.4909042Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
+            // Assert
+            await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 0);
+            await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 1);
+            await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 2);
 
-                // Assert
-                await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 0);
-                await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 1);
-                await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 2);
+            // Act
+            await UpdateAsync(max2);
 
-                // Act
-                await UpdateAsync(max2);
-
-                // Assert
-                await AssertOutputAsync(PackageAssemblyToCsvDir, Step2, 0);
-                await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 1); // This file is unchanged.
-                await AssertOutputAsync(PackageAssemblyToCsvDir, Step2, 2);
-            }
+            // Assert
+            await AssertOutputAsync(PackageAssemblyToCsvDir, Step2, 0);
+            await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 1); // This file is unchanged.
+            await AssertOutputAsync(PackageAssemblyToCsvDir, Step2, 2);
         }
 
-        public class PackageAssemblyToCsv_WithDiskBuffering : PackageAssemblyToCsvIntegrationTest
+        [Fact]
+        public async Task PackageAssemblyToCsv_WithDiskBuffering()
         {
-            public PackageAssemblyToCsv_WithDiskBuffering(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
+            // Arrange
+            ConfigureSettings = x =>
             {
-            }
+                x.MaxTempMemoryStreamSize = 0;
+                x.TempDirectories[0].MaxConcurrentWriters = 1;
+            };
 
-            [Fact]
-            public async Task Execute()
+            AdditionalLeaseNames.Add(TempDirLeaseName);
+
+            var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
+            var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
+
+            // Act
+            await UpdateAsync(max1);
+
+            // Assert
+            await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 0);
+            await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 1);
+            await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 2);
+        }
+
+        public string TempDirLeaseName
+        {
+            get
             {
-                ConfigureSettings = x =>
+                using (var sha256 = SHA256.Create())
                 {
-                    x.MaxTempMemoryStreamSize = 0;
-                    x.TempDirectories[0].MaxConcurrentWriters = 1;
-                };
-
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
-                var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
-
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(min0);
-
-                // Act
-                await UpdateAsync(max1);
-
-                // Assert
-                await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 0);
-                await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 1);
-                await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 2);
-            }
-
-            public string TempDirLeaseName
-            {
-                get
-                {
-                    using (var sha256 = SHA256.Create())
-                    {
-                        var path = Path.GetFullPath(Options.Value.TempDirectories[0].Path);
-                        var bytes = Encoding.UTF8.GetBytes(path.ToLowerInvariant());
-                        return $"TempStreamDirectory-{sha256.ComputeHash(bytes).ToTrimmedBase32()}-Semaphore-0";
-                    }
+                    var path = Path.GetFullPath(Options.Value.TempDirectories[0].Path);
+                    var bytes = Encoding.UTF8.GetBytes(path.ToLowerInvariant());
+                    return $"TempStreamDirectory-{sha256.ComputeHash(bytes).ToTrimmedBase32()}-Semaphore-0";
                 }
             }
-
-            protected override IEnumerable<string> GetExpectedLeaseNames()
-            {
-                return base.GetExpectedLeaseNames().Concat(new[] { TempDirLeaseName });
-            }
         }
 
-        public class PackageAssemblyToCsv_WithDelete : PackageAssemblyToCsvIntegrationTest
+        [Fact]
+        public async Task PackageAssemblyToCsv_WithDelete()
         {
-            public PackageAssemblyToCsv_WithDelete(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            MakeDeletedPackageAvailable();
+            var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
+            var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
+            var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                MakeDeletedPackageAvailable();
-                var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
-                var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
-                var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
+            // Assert
+            await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step1, 0);
+            await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step1, 1);
+            await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step1, 2);
 
-                // Assert
-                await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step1, 0);
-                await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step1, 1);
-                await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step1, 2);
+            // Act
+            await UpdateAsync(max2);
 
-                // Act
-                await UpdateAsync(max2);
-
-                // Assert
-                await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-                await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
-                await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step2, 2);
-            }
+            // Assert
+            await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
+            await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
+            await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step2, 2);
         }
 
-        public class PackageAssemblyToCsv_WithUnmanaged : PackageAssemblyToCsvIntegrationTest
+        [Fact]
+        public async Task PackageAssemblyToCsv_WithUnmanaged()
         {
-            public PackageAssemblyToCsv_WithUnmanaged(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
 
-            [Fact]
-            public async Task Execute()
-            {
-                ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
+            var min0 = DateTimeOffset.Parse("2018-08-29T04:22:56.6184931Z");
+            var max1 = DateTimeOffset.Parse("2018-08-29T04:24:40.3247223Z");
 
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2018-08-29T04:22:56.6184931Z");
-                var max1 = DateTimeOffset.Parse("2018-08-29T04:24:40.3247223Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
-
-                // Assert
-                await AssertOutputAsync(PackageAssemblyToCsv_WithUnmanagedDir, Step1, 0);
-            }
+            // Assert
+            await AssertOutputAsync(PackageAssemblyToCsv_WithUnmanagedDir, Step1, 0);
         }
 
-        public class PackageAssemblyToCsv_WithDuplicates_OnlyLatestLeaves : PackageAssemblyToCsvIntegrationTest
+        [Fact]
+        public Task PackageAssemblyToCsv_WithDuplicates_OnlyLatestLeaves()
         {
-            public PackageAssemblyToCsv_WithDuplicates_OnlyLatestLeaves(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
-
-            [Fact]
-            public Task Execute()
-            {
-                return PackageAssemblyToCsv_WithDuplicates();
-            }
+            return PackageAssemblyToCsv_WithDuplicates();
         }
 
         public class PackageAssemblyToCsv_WithDuplicates_AllLeaves : PackageAssemblyToCsvIntegrationTest
@@ -204,6 +161,13 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         public PackageAssemblyToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)
         {
+        }
+
+        private List<string> AdditionalLeaseNames { get; } = new();
+
+        protected override IEnumerable<string> GetExpectedLeaseNames()
+        {
+            return base.GetExpectedLeaseNames().Concat(AdditionalLeaseNames);
         }
 
         protected override string DestinationContainerName => Options.Value.PackageAssemblyContainerName;

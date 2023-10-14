@@ -16,106 +16,82 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
         private const string PackageReadmeToCsv_WithDeleteDir = nameof(PackageReadmeToCsv_WithDelete);
         private const string PackageReadmeToCsv_WithVeryLargeBufferDir = nameof(PackageReadmeToCsv_WithVeryLargeBuffer);
 
-        public class PackageReadmeToCsv : PackageReadmeToCsvIntegrationTest
+        [Fact]
+        public async Task PackageReadmeToCsv()
         {
-            public PackageReadmeToCsv(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2022-03-14T23:05:39.6122305Z");
+            var max1 = DateTimeOffset.Parse("2022-03-14T23:06:07.7549588Z");
+            var max2 = DateTimeOffset.Parse("2022-03-14T23:06:36.1633247Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2022-03-14T23:05:39.6122305Z");
-                var max1 = DateTimeOffset.Parse("2022-03-14T23:06:07.7549588Z");
-                var max2 = DateTimeOffset.Parse("2022-03-14T23:06:36.1633247Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageReadme, max2);
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.LoadPackageReadme, max2);
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
+            // Assert
+            await AssertOutputAsync(PackageReadmeToCsvDir, Step1, 0);
+            await AssertOutputAsync(PackageReadmeToCsvDir, Step1, 2);
 
-                // Assert
-                await AssertOutputAsync(PackageReadmeToCsvDir, Step1, 0);
-                await AssertOutputAsync(PackageReadmeToCsvDir, Step1, 2);
+            // Act
+            await UpdateAsync(max2);
 
-                // Act
-                await UpdateAsync(max2);
-
-                // Assert
-                await AssertOutputAsync(PackageReadmeToCsvDir, Step1, 0); // This file is unchanged
-                await AssertOutputAsync(PackageReadmeToCsvDir, Step2, 2);
-                await AssertBlobCountAsync(DestinationContainerName, 2);
-            }
+            // Assert
+            await AssertOutputAsync(PackageReadmeToCsvDir, Step1, 0); // This file is unchanged
+            await AssertOutputAsync(PackageReadmeToCsvDir, Step2, 2);
+            await AssertBlobCountAsync(DestinationContainerName, 2);
         }
 
-        public class PackageReadmeToCsv_WithDelete : PackageReadmeToCsvIntegrationTest
+        [Fact]
+        public async Task PackageReadmeToCsv_WithDelete()
         {
-            public PackageReadmeToCsv_WithDelete(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            MakeDeletedPackageAvailable();
+            var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
+            var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
+            var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                MakeDeletedPackageAvailable();
-                var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
-                var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
-                var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageReadme, max2);
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.LoadPackageReadme, max2);
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
+            // Assert
+            await AssertOutputAsync(PackageReadmeToCsv_WithDeleteDir, Step1, 0);
+            await AssertOutputAsync(PackageReadmeToCsv_WithDeleteDir, Step1, 1);
+            await AssertOutputAsync(PackageReadmeToCsv_WithDeleteDir, Step1, 2);
 
-                // Assert
-                await AssertOutputAsync(PackageReadmeToCsv_WithDeleteDir, Step1, 0);
-                await AssertOutputAsync(PackageReadmeToCsv_WithDeleteDir, Step1, 1);
-                await AssertOutputAsync(PackageReadmeToCsv_WithDeleteDir, Step1, 2);
+            // Act
+            await UpdateAsync(max2);
 
-                // Act
-                await UpdateAsync(max2);
-
-                // Assert
-                await AssertOutputAsync(PackageReadmeToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-                await AssertOutputAsync(PackageReadmeToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
-                await AssertOutputAsync(PackageReadmeToCsv_WithDeleteDir, Step2, 2);
-            }
+            // Assert
+            await AssertOutputAsync(PackageReadmeToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
+            await AssertOutputAsync(PackageReadmeToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
+            await AssertOutputAsync(PackageReadmeToCsv_WithDeleteDir, Step2, 2);
         }
 
-        public class PackageReadmeToCsv_WithVeryLargeBuffer : PackageReadmeToCsvIntegrationTest
+        [Fact]
+        public async Task PackageReadmeToCsv_WithVeryLargeBuffer()
         {
-            public PackageReadmeToCsv_WithVeryLargeBuffer(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
 
-            [Fact]
-            public async Task Execute()
-            {
-                ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
+            var max1 = DateTimeOffset.Parse("2022-03-10T21:32:51.8317694Z"); // PodcastAPI 1.1.1
+            var min0 = max1.AddTicks(-1);
 
-                // Arrange
-                var max1 = DateTimeOffset.Parse("2022-03-10T21:32:51.8317694Z"); // PodcastAPI 1.1.1
-                var min0 = max1.AddTicks(-1);
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageReadme, max1);
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.LoadPackageReadme, max1);
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
-
-                // Assert
-                await AssertOutputAsync(PackageReadmeToCsv_WithVeryLargeBufferDir, Step1, 0);
-            }
+            // Assert
+            await AssertOutputAsync(PackageReadmeToCsv_WithVeryLargeBufferDir, Step1, 0);
         }
 
         public PackageReadmeToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)

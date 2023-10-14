@@ -16,52 +16,36 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
         private const string FindLatestCatalogLeafScanDir = nameof(Internal_FindLatestCatalogLeafScan);
         private const string FindLatestCatalogLeafScan_WithDuplicatesDir = nameof(Internal_FindLatestCatalogLeafScan_WithDuplicates);
 
-        public class Internal_FindLatestCatalogLeafScan : FindLatestCatalogLeafScanIntegrationTest
+        [Fact]
+        public async Task Internal_FindLatestCatalogLeafScan()
         {
-            public Internal_FindLatestCatalogLeafScan(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2020-12-27T05:06:30.4180312Z");
+            var max1 = DateTimeOffset.Parse("2020-12-27T05:07:21.9968244Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2020-12-27T05:06:30.4180312Z");
-                var max1 = DateTimeOffset.Parse("2020-12-27T05:07:21.9968244Z");
+            await CatalogScanService.InitializeAsync();
 
-                await CatalogScanService.InitializeAsync();
+            // Act
+            await UpdateAsync(min0, max1);
 
-                // Act
-                await UpdateAsync(min0, max1);
-
-                // Assert
-                await AssertOutputAsync(FindLatestCatalogLeafScanDir);
-            }
+            // Assert
+            await AssertOutputAsync(FindLatestCatalogLeafScanDir);
         }
 
-        public class Internal_FindLatestCatalogLeafScan_WithDuplicates : FindLatestCatalogLeafScanIntegrationTest
+        [Fact]
+        public async Task Internal_FindLatestCatalogLeafScan_WithDuplicates()
         {
-            public Internal_FindLatestCatalogLeafScan_WithDuplicates(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
+            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
-                var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+            await CatalogScanService.InitializeAsync();
 
-                await CatalogScanService.InitializeAsync();
+            // Act
+            await UpdateAsync(min0, max1);
 
-                // Act
-                await UpdateAsync(min0, max1);
-
-                // Assert
-                await AssertOutputAsync(FindLatestCatalogLeafScan_WithDuplicatesDir);
-            }
+            // Assert
+            await AssertOutputAsync(FindLatestCatalogLeafScan_WithDuplicatesDir);
         }
 
         private const string ParentStorageSuffix = "parentstoragesuffix";

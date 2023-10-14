@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,111 +18,79 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
         private const string LoadPackageVersion_WithDuplicatesDir = nameof(LoadPackageVersion_WithDuplicates);
         private const string LoadPackageVersion_SemVer2Dir = nameof(LoadPackageVersion_SemVer2);
 
-        public class LoadPackageVersion : LoadPackageVersionIntegrationTest
+        [Fact]
+        public async Task LoadPackageVersion()
         {
-            public LoadPackageVersion(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2020-12-27T05:06:30.4180312Z");
+            var max1 = DateTimeOffset.Parse("2020-12-27T05:07:21.9968244Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2020-12-27T05:06:30.4180312Z");
-                var max1 = DateTimeOffset.Parse("2020-12-27T05:07:21.9968244Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
-
-                // Assert
-                await AssertOutputAsync(LoadPackageVersionDir, Step1);
-            }
+            // Assert
+            await AssertOutputAsync(LoadPackageVersionDir, Step1);
         }
 
-        public class LoadPackageVersion_WithDelete : LoadPackageVersionIntegrationTest
+        [Fact]
+        public async Task LoadPackageVersion_WithDelete()
         {
-            public LoadPackageVersion_WithDelete(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
+            var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
+            var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
-                var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
-                var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
+            // Assert
+            await AssertOutputAsync(LoadPackageVersion_WithDeleteDir, Step1);
 
-                // Assert
-                await AssertOutputAsync(LoadPackageVersion_WithDeleteDir, Step1);
+            // Act
+            await UpdateAsync(max2);
 
-                // Act
-                await UpdateAsync(max2);
-
-                // Assert
-                await AssertOutputAsync(LoadPackageVersion_WithDeleteDir, Step2);
-            }
+            // Assert
+            await AssertOutputAsync(LoadPackageVersion_WithDeleteDir, Step2);
         }
 
-        public class LoadPackageVersion_WithDuplicates : LoadPackageVersionIntegrationTest
+        [Fact]
+        public async Task LoadPackageVersion_WithDuplicates()
         {
-            public LoadPackageVersion_WithDuplicates(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
+            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
-                var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
-
-                // Assert
-                await AssertOutputAsync(LoadPackageVersion_WithDuplicatesDir, Step1);
-            }
+            // Assert
+            await AssertOutputAsync(LoadPackageVersion_WithDuplicatesDir, Step1);
         }
 
-        public class LoadPackageVersion_SemVer2 : LoadPackageVersionIntegrationTest
+        [Fact]
+        public async Task LoadPackageVersion_SemVer2()
         {
-            public LoadPackageVersion_SemVer2(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2021-02-28T01:06:32.8546849Z").AddTicks(-1);
+            var max1 = DateTimeOffset.Parse("2021-02-28T01:06:32.8546849Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2021-02-28T01:06:32.8546849Z").AddTicks(-1);
-                var max1 = DateTimeOffset.Parse("2021-02-28T01:06:32.8546849Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
-
-                // Assert
-                await AssertOutputAsync(LoadPackageVersion_SemVer2Dir, Step1);
-            }
+            // Assert
+            await AssertOutputAsync(LoadPackageVersion_SemVer2Dir, Step1);
         }
 
         public LoadPackageVersionIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)

@@ -19,239 +19,185 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
         private const string VerifiedPackagesToCsv_NonExistentIdDir = nameof(VerifiedPackagesToCsv_NonExistentId);
         private const string VerifiedPackagesToCsv_UncheckedIdDir = nameof(VerifiedPackagesToCsv_UncheckedId);
 
-        public VerifiedPackagesToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+        [Fact]
+        public async Task VerifiedPackagesToCsv()
         {
-            SetupDefaultMockVersionSet();
+            // Arrange
+            ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
+
+            ConfigureAndSetLastModified();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
+            await service.InitializeAsync();
+            await service.StartAsync();
+
+            // Act
+            await ProcessQueueAsync(service);
+
+            // Assert
+            await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step1, "verified_packages_08585909596854775807.csv.gz");
+            await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step1, "latest_verified_packages.csv.gz");
+
+            // Arrange
+            SetData(Step2);
+            await service.StartAsync();
+
+            // Act
+            await ProcessQueueAsync(service);
+
+            // Assert
+            await AssertBlobCountAsync(Options.Value.VerifiedPackageContainerName, 3);
+            await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step1, "verified_packages_08585909596854775807.csv.gz");
+            await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step2, "verified_packages_08585908696854775807.csv.gz");
+            await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step2, "latest_verified_packages.csv.gz");
         }
 
-        protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
+        [Fact]
+        public async Task VerifiedPackagesToCsv_NoOp()
         {
-            base.ConfigureHostBuilder(hostBuilder);
+            // Arrange
+            ConfigureAndSetLastModified();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
+            await service.InitializeAsync();
+            await service.StartAsync();
 
-            hostBuilder.ConfigureServices(serviceCollection =>
-            {
-                serviceCollection.AddTransient(s => MockVersionSetProvider.Object);
-            });
+            // Act
+            await ProcessQueueAsync(service);
+
+            // Assert
+            await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step1, "latest_verified_packages.csv.gz");
+            var blobA = await GetBlobAsync(Options.Value.VerifiedPackageContainerName, "latest_verified_packages.csv.gz");
+            var propertiesA = await blobA.GetPropertiesAsync();
+
+            // Arrange
+            await service.StartAsync();
+
+            // Act
+            await ProcessQueueAsync(service);
+
+            // Assert
+            await AssertBlobCountAsync(Options.Value.VerifiedPackageContainerName, 1);
+            await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step1, "latest_verified_packages.csv.gz");
+            var blobB = await GetBlobAsync(Options.Value.VerifiedPackageContainerName, "latest_verified_packages.csv.gz");
+            var propertiesB = await blobB.GetPropertiesAsync();
+            Assert.Equal(propertiesA.Value.ETag, propertiesB.Value.ETag);
         }
 
-        public class VerifiedPackagesToCsv : VerifiedPackagesToCsvIntegrationTest
+        [Fact]
+        public async Task VerifiedPackagesToCsv_DifferentVersionSet()
         {
-            public VerifiedPackagesToCsv(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
-            {
-            }
+            // Arrange
+            ConfigureAndSetLastModified();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
+            await service.InitializeAsync();
+            await service.StartAsync();
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
-                ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
-                await service.InitializeAsync();
-                await service.StartAsync();
+            // Act
+            await ProcessQueueAsync(service);
 
-                // Act
-                await ProcessQueueAsync(service);
+            // Assert
+            await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step1, "latest_verified_packages.csv.gz");
+            var blobA = await GetBlobAsync(Options.Value.VerifiedPackageContainerName, "latest_verified_packages.csv.gz");
+            var propertiesA = await blobA.GetPropertiesAsync();
 
-                // Assert
-                await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step1, "verified_packages_08585909596854775807.csv.gz");
-                await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step1, "latest_verified_packages.csv.gz");
+            // Arrange
+            await service.StartAsync();
+            MockVersionSet.Setup(x => x.CommitTimestamp).Returns(new DateTimeOffset(2021, 5, 10, 12, 15, 30, TimeSpan.Zero));
 
-                // Arrange
-                SetData(Step2);
-                await service.StartAsync();
+            // Act
+            await ProcessQueueAsync(service);
 
-                // Act
-                await ProcessQueueAsync(service);
-
-                // Assert
-                await AssertBlobCountAsync(Options.Value.VerifiedPackageContainerName, 3);
-                await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step1, "verified_packages_08585909596854775807.csv.gz");
-                await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step2, "verified_packages_08585908696854775807.csv.gz");
-                await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step2, "latest_verified_packages.csv.gz");
-            }
+            // Assert
+            await AssertBlobCountAsync(Options.Value.VerifiedPackageContainerName, 1);
+            await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step1, "latest_verified_packages.csv.gz");
+            var blobB = await GetBlobAsync(Options.Value.VerifiedPackageContainerName, "latest_verified_packages.csv.gz");
+            var propertiesB = await blobB.GetPropertiesAsync();
+            Assert.NotEqual(propertiesA.Value.ETag, propertiesB.Value.ETag);
         }
 
-        public class VerifiedPackagesToCsv_NoOp : VerifiedPackagesToCsvIntegrationTest
+        [Fact]
+        public async Task VerifiedPackagesToCsv_NonExistentId()
         {
-            public VerifiedPackagesToCsv_NoOp(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
-            {
-            }
+            // Arrange
+            ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
-                await service.InitializeAsync();
-                await service.StartAsync();
+            ConfigureAndSetLastModified();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
+            await service.InitializeAsync();
+            await service.StartAsync();
+            string id;
+            MockVersionSet.Setup(x => x.TryGetId("Knapcode.TorSharp", out id)).Returns(false);
+            MockVersionSet.Setup(x => x.TryGetId("Newtonsoft.Json", out id)).Returns(false);
 
-                // Act
-                await ProcessQueueAsync(service);
+            // Act
+            await ProcessQueueAsync(service);
 
-                // Assert
-                await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step1, "latest_verified_packages.csv.gz");
-                var blobA = await GetBlobAsync(Options.Value.VerifiedPackageContainerName, "latest_verified_packages.csv.gz");
-                var propertiesA = await blobA.GetPropertiesAsync();
+            // Assert
+            await AssertCsvBlobAsync(VerifiedPackagesToCsv_NonExistentIdDir, Step1, "verified_packages_08585909596854775807.csv.gz");
+            await AssertCsvBlobAsync(VerifiedPackagesToCsv_NonExistentIdDir, Step1, "latest_verified_packages.csv.gz");
 
-                // Arrange
-                await service.StartAsync();
+            // Arrange
+            SetData(Step2);
+            await service.StartAsync();
+            MockVersionSet
+                .Setup(x => x.TryGetId("Knapcode.TorSharp", out id))
+                .Returns(true)
+                .Callback(new TryGetId((string id, out string outId) => outId = "knapcode.TORSHARP"));
 
-                // Act
-                await ProcessQueueAsync(service);
+            // Act
+            await ProcessQueueAsync(service);
 
-                // Assert
-                await AssertBlobCountAsync(Options.Value.VerifiedPackageContainerName, 1);
-                await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step1, "latest_verified_packages.csv.gz");
-                var blobB = await GetBlobAsync(Options.Value.VerifiedPackageContainerName, "latest_verified_packages.csv.gz");
-                var propertiesB = await blobB.GetPropertiesAsync();
-                Assert.Equal(propertiesA.Value.ETag, propertiesB.Value.ETag);
-            }
+            // Assert
+            await AssertBlobCountAsync(Options.Value.VerifiedPackageContainerName, 3);
+            await AssertCsvBlobAsync(VerifiedPackagesToCsv_NonExistentIdDir, Step1, "verified_packages_08585909596854775807.csv.gz");
+            await AssertCsvBlobAsync(VerifiedPackagesToCsv_NonExistentIdDir, Step2, "verified_packages_08585908696854775807.csv.gz");
+            await AssertCsvBlobAsync(VerifiedPackagesToCsv_NonExistentIdDir, Step2, "latest_verified_packages.csv.gz");
         }
 
-        public class VerifiedPackagesToCsv_DifferentVersionSet : VerifiedPackagesToCsvIntegrationTest
+        [Fact]
+        public async Task VerifiedPackagesToCsv_UncheckedId()
         {
-            public VerifiedPackagesToCsv_DifferentVersionSet(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
-            {
-            }
+            // Arrange
+            ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
-                await service.InitializeAsync();
-                await service.StartAsync();
+            ConfigureAndSetLastModified();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
+            await service.InitializeAsync();
+            await service.StartAsync();
+            MockVersionSet.Setup(x => x.GetUncheckedIds()).Returns(new[] { "UncheckedB", "UncheckedA" });
 
-                // Act
-                await ProcessQueueAsync(service);
+            // Act
+            await ProcessQueueAsync(service);
 
-                // Assert
-                await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step1, "latest_verified_packages.csv.gz");
-                var blobA = await GetBlobAsync(Options.Value.VerifiedPackageContainerName, "latest_verified_packages.csv.gz");
-                var propertiesA = await blobA.GetPropertiesAsync();
-
-                // Arrange
-                await service.StartAsync();
-                MockVersionSet.Setup(x => x.CommitTimestamp).Returns(new DateTimeOffset(2021, 5, 10, 12, 15, 30, TimeSpan.Zero));
-
-                // Act
-                await ProcessQueueAsync(service);
-
-                // Assert
-                await AssertBlobCountAsync(Options.Value.VerifiedPackageContainerName, 1);
-                await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step1, "latest_verified_packages.csv.gz");
-                var blobB = await GetBlobAsync(Options.Value.VerifiedPackageContainerName, "latest_verified_packages.csv.gz");
-                var propertiesB = await blobB.GetPropertiesAsync();
-                Assert.NotEqual(propertiesA.Value.ETag, propertiesB.Value.ETag);
-            }
+            // Assert
+            await AssertCsvBlobAsync(VerifiedPackagesToCsv_UncheckedIdDir, Step1, "verified_packages_08585909596854775807.csv.gz");
+            await AssertCsvBlobAsync(VerifiedPackagesToCsv_UncheckedIdDir, Step1, "latest_verified_packages.csv.gz");
         }
 
-        public class VerifiedPackagesToCsv_NonExistentId : VerifiedPackagesToCsvIntegrationTest
+        [Fact]
+        public async Task VerifiedPackagesToCsv_JustLatest()
         {
-            public VerifiedPackagesToCsv_NonExistentId(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
-            {
-            }
+            // Arrange
+            ConfigureAndSetLastModified();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
+            await service.InitializeAsync();
+            await service.StartAsync();
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
-                ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
-                await service.InitializeAsync();
-                await service.StartAsync();
-                string id;
-                MockVersionSet.Setup(x => x.TryGetId("Knapcode.TorSharp", out id)).Returns(false);
-                MockVersionSet.Setup(x => x.TryGetId("Newtonsoft.Json", out id)).Returns(false);
+            // Act
+            await ProcessQueueAsync(service);
 
-                // Act
-                await ProcessQueueAsync(service);
+            // Assert
+            await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step1, "latest_verified_packages.csv.gz");
 
-                // Assert
-                await AssertCsvBlobAsync(VerifiedPackagesToCsv_NonExistentIdDir, Step1, "verified_packages_08585909596854775807.csv.gz");
-                await AssertCsvBlobAsync(VerifiedPackagesToCsv_NonExistentIdDir, Step1, "latest_verified_packages.csv.gz");
+            // Arrange
+            SetData(Step2);
+            await service.StartAsync();
 
-                // Arrange
-                SetData(Step2);
-                await service.StartAsync();
-                MockVersionSet
-                    .Setup(x => x.TryGetId("Knapcode.TorSharp", out id))
-                    .Returns(true)
-                    .Callback(new TryGetId((string id, out string outId) => outId = "knapcode.TORSHARP"));
+            // Act
+            await ProcessQueueAsync(service);
 
-                // Act
-                await ProcessQueueAsync(service);
-
-                // Assert
-                await AssertBlobCountAsync(Options.Value.VerifiedPackageContainerName, 3);
-                await AssertCsvBlobAsync(VerifiedPackagesToCsv_NonExistentIdDir, Step1, "verified_packages_08585909596854775807.csv.gz");
-                await AssertCsvBlobAsync(VerifiedPackagesToCsv_NonExistentIdDir, Step2, "verified_packages_08585908696854775807.csv.gz");
-                await AssertCsvBlobAsync(VerifiedPackagesToCsv_NonExistentIdDir, Step2, "latest_verified_packages.csv.gz");
-            }
-        }
-
-        public class VerifiedPackagesToCsv_UncheckedId : VerifiedPackagesToCsvIntegrationTest
-        {
-            public VerifiedPackagesToCsv_UncheckedId(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
-            {
-            }
-
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
-                ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
-                await service.InitializeAsync();
-                await service.StartAsync();
-                MockVersionSet.Setup(x => x.GetUncheckedIds()).Returns(new[] { "UncheckedB", "UncheckedA" });
-
-                // Act
-                await ProcessQueueAsync(service);
-
-                // Assert
-                await AssertCsvBlobAsync(VerifiedPackagesToCsv_UncheckedIdDir, Step1, "verified_packages_08585909596854775807.csv.gz");
-                await AssertCsvBlobAsync(VerifiedPackagesToCsv_UncheckedIdDir, Step1, "latest_verified_packages.csv.gz");
-            }
-        }
-
-        public class VerifiedPackagesToCsv_JustLatest : VerifiedPackagesToCsvIntegrationTest
-        {
-            public VerifiedPackagesToCsv_JustLatest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
-            {
-            }
-
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                ConfigureAndSetLastModified();
-                var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
-                await service.InitializeAsync();
-                await service.StartAsync();
-
-                // Act
-                await ProcessQueueAsync(service);
-
-                // Assert
-                await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step1, "latest_verified_packages.csv.gz");
-
-                // Arrange
-                SetData(Step2);
-                await service.StartAsync();
-
-                // Act
-                await ProcessQueueAsync(service);
-
-                // Assert
-                await AssertBlobCountAsync(Options.Value.VerifiedPackageContainerName, 1);
-                await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step2, "latest_verified_packages.csv.gz");
-            }
+            // Assert
+            await AssertBlobCountAsync(Options.Value.VerifiedPackageContainerName, 1);
+            await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step2, "latest_verified_packages.csv.gz");
         }
 
         private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>> service)
@@ -294,6 +240,21 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
         private Task AssertCsvBlobAsync(string testName, string stepName, string blobName)
         {
             return AssertCsvBlobAsync<VerifiedPackageRecord>(Options.Value.VerifiedPackageContainerName, testName, stepName, "latest_verified_packages.csv", blobName);
+        }
+
+        public VerifiedPackagesToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+        {
+            SetupDefaultMockVersionSet();
+        }
+
+        protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
+        {
+            base.ConfigureHostBuilder(hostBuilder);
+
+            hostBuilder.ConfigureServices(serviceCollection =>
+            {
+                serviceCollection.AddTransient(s => MockVersionSetProvider.Object);
+            });
         }
     }
 }

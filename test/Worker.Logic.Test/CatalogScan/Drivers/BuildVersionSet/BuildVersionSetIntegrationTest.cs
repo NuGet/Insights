@@ -21,202 +21,162 @@ namespace NuGet.Insights.Worker.BuildVersionSet
         private const string BuildVersionSet_WithUnicodeDuplicatesDir = nameof(BuildVersionSet_WithUnicodeDuplicates);
         private const string BuildVersionSet_WithIdCaseChangeDir = nameof(BuildVersionSet_WithIdCaseChange);
 
-        public class BuildVersionSet : BuildVersionSetIntegrationTest
+        [Fact]
+        public async Task BuildVersionSet()
         {
-            public BuildVersionSet(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2020-12-27T05:06:30.4180312Z");
+            var max1 = DateTimeOffset.Parse("2020-12-27T05:07:21.9968244Z");
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
+
+            // Act
+            await UpdateAsync(max1);
+
+            // Assert
+            await AssertOutputAsync(BuildVersionSetDir, Step1);
+        }
+
+        [Fact]
+        public async Task BuildVersionSet_WithDelete()
+        {
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
+            var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
+            var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
+
+            // Act
+            using (var versionSetHandle0 = await VersionSetService.GetOrNullAsync())
             {
+                // Assert
+                Assert.Null(versionSetHandle0.Value);
             }
 
-            [Fact]
-            public async Task Execute()
+
+            // Act
+            await UpdateAsync(max1);
+            using (var versionSetHandle1 = await VersionSetService.GetAsync())
             {
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2020-12-27T05:06:30.4180312Z");
-                var max1 = DateTimeOffset.Parse("2020-12-27T05:07:21.9968244Z");
-
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(min0);
-
-                // Act
-                await UpdateAsync(max1);
-
                 // Assert
-                await AssertOutputAsync(BuildVersionSetDir, Step1);
+                await AssertOutputAsync(BuildVersionSet_WithDeleteDir, Step1);
+
+                Assert.True(versionSetHandle1.Value.TryGetId("Nut.MediatR.ServiceLike.DependencyInjection", out _));
+                Assert.True(versionSetHandle1.Value.TryGetVersion("Nut.MediatR.ServiceLike.DependencyInjection", "0.0.0-PREVIEW.0.44", out _));
+
+                Assert.True(versionSetHandle1.Value.TryGetId("BehaviorSample", out _));
+                Assert.True(versionSetHandle1.Value.TryGetVersion("BehaviorSample", "1.0.0", out _));
+
+                Assert.False(versionSetHandle1.Value.TryGetId("doesnotexist", out _));
+                Assert.False(versionSetHandle1.Value.TryGetVersion("doesnotexist", "1.0.0", out _));
+            }
+
+            // Act
+            await UpdateAsync(max2);
+            using (var versionSetHandle2 = await VersionSetService.GetAsync())
+            {
+                // Assert
+                await AssertOutputAsync(BuildVersionSet_WithDeleteDir, Step2);
+
+                Assert.True(versionSetHandle2.Value.TryGetId("Nut.MediatR.ServiceLike.DependencyInjection", out _));
+                Assert.True(versionSetHandle2.Value.TryGetVersion("Nut.MediatR.ServiceLike.DependencyInjection", "0.0.0-PREVIEW.0.44", out _));
+
+                Assert.True(versionSetHandle2.Value.TryGetId("BehaviorSample", out _));
+                Assert.True(versionSetHandle2.Value.TryGetVersion("BehaviorSample", "1.0.0", out _));
+
+                Assert.False(versionSetHandle2.Value.TryGetId("doesnotexist", out _));
+                Assert.False(versionSetHandle2.Value.TryGetVersion("doesnotexist", "1.0.0", out _));
             }
         }
 
-        public class BuildVersionSet_WithDelete : BuildVersionSetIntegrationTest
+        [Fact]
+        public async Task BuildVersionSet_WithIdCaseChange()
         {
-            public BuildVersionSet_WithDelete(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2018-11-16T04:13:07.3793051Z");
+            var max1 = DateTimeOffset.Parse("2018-11-16T04:13:15.2076282Z");
+            var max2 = DateTimeOffset.Parse("2018-11-16T04:17:16.6086735Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
-                var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
-                var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                using (var versionSetHandle0 = await VersionSetService.GetOrNullAsync())
-                {
-                    // Assert
-                    Assert.Null(versionSetHandle0.Value);
-                }
+            // Assert
+            await AssertOutputAsync(BuildVersionSet_WithIdCaseChangeDir, Step1);
 
+            // Act
+            await UpdateAsync(max2);
 
-                // Act
-                await UpdateAsync(max1);
-                using (var versionSetHandle1 = await VersionSetService.GetAsync())
-                {
-                    // Assert
-                    await AssertOutputAsync(BuildVersionSet_WithDeleteDir, Step1);
-
-                    Assert.True(versionSetHandle1.Value.TryGetId("Nut.MediatR.ServiceLike.DependencyInjection", out _));
-                    Assert.True(versionSetHandle1.Value.TryGetVersion("Nut.MediatR.ServiceLike.DependencyInjection", "0.0.0-PREVIEW.0.44", out _));
-
-                    Assert.True(versionSetHandle1.Value.TryGetId("BehaviorSample", out _));
-                    Assert.True(versionSetHandle1.Value.TryGetVersion("BehaviorSample", "1.0.0", out _));
-
-                    Assert.False(versionSetHandle1.Value.TryGetId("doesnotexist", out _));
-                    Assert.False(versionSetHandle1.Value.TryGetVersion("doesnotexist", "1.0.0", out _));
-                }
-
-                // Act
-                await UpdateAsync(max2);
-                using (var versionSetHandle2 = await VersionSetService.GetAsync())
-                {
-                    // Assert
-                    await AssertOutputAsync(BuildVersionSet_WithDeleteDir, Step2);
-
-                    Assert.True(versionSetHandle2.Value.TryGetId("Nut.MediatR.ServiceLike.DependencyInjection", out _));
-                    Assert.True(versionSetHandle2.Value.TryGetVersion("Nut.MediatR.ServiceLike.DependencyInjection", "0.0.0-PREVIEW.0.44", out _));
-
-                    Assert.True(versionSetHandle2.Value.TryGetId("BehaviorSample", out _));
-                    Assert.True(versionSetHandle2.Value.TryGetVersion("BehaviorSample", "1.0.0", out _));
-
-                    Assert.False(versionSetHandle2.Value.TryGetId("doesnotexist", out _));
-                    Assert.False(versionSetHandle2.Value.TryGetVersion("doesnotexist", "1.0.0", out _));
-                }
-            }
+            // Assert
+            await AssertOutputAsync(BuildVersionSet_WithIdCaseChangeDir, Step2);
         }
 
-        public class BuildVersionSet_WithIdCaseChange : BuildVersionSetIntegrationTest
+        [Fact]
+        public async Task BuildVersionSet_WithDuplicates()
         {
-            public BuildVersionSet_WithIdCaseChange(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2019-01-24T15:03:56.0495104Z");
+            var max1 = DateTimeOffset.Parse("2019-01-24T21:30:58.7012340Z");
+            var max2 = DateTimeOffset.Parse("2019-01-25T01:00:01.5210470Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2018-11-16T04:13:07.3793051Z");
-                var max1 = DateTimeOffset.Parse("2018-11-16T04:13:15.2076282Z");
-                var max2 = DateTimeOffset.Parse("2018-11-16T04:17:16.6086735Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
+            // Assert
+            await AssertOutputAsync(BuildVersionSet_WithDuplicatesDir, Step1);
 
-                // Assert
-                await AssertOutputAsync(BuildVersionSet_WithIdCaseChangeDir, Step1);
+            // Act
+            await UpdateAsync(max2);
 
-                // Act
-                await UpdateAsync(max2);
-
-                // Assert
-                await AssertOutputAsync(BuildVersionSet_WithIdCaseChangeDir, Step2);
-            }
+            // Assert
+            await AssertOutputAsync(BuildVersionSet_WithDuplicatesDir, Step2);
         }
 
-        public class BuildVersionSet_WithDuplicates : BuildVersionSetIntegrationTest
+        [Fact]
+        public async Task BuildVersionSet_WithUnicodeDuplicates()
         {
-            public BuildVersionSet_WithDuplicates(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2022-01-30T01:13:58.2460944Z").AddTicks(-1);
+            var max1 = min0.AddTicks(1);
+            var min2 = DateTimeOffset.Parse("2022-01-30T01:16:40.6957176Z").AddTicks(-1);
+            var max3 = min2.AddTicks(1);
+
+            await CatalogScanService.InitializeAsync();
+
+            // Act
+            await SetCursorAsync(min0);
+            await UpdateAsync(max1);
+
+            // Assert
+            await AssertOutputAsync(BuildVersionSet_WithUnicodeDuplicatesDir, Step1);
+            using (var versionSetHandle1 = await VersionSetService.GetAsync())
             {
+                Assert.True(versionSetHandle1.Value.TryGetId("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tost\u00E3o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of", out _));
+                Assert.False(versionSetHandle1.Value.TryGetId("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tosta\u0303o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of", out _));
+                Assert.True(versionSetHandle1.Value.TryGetId("Christian-Bollmann-Herzensges\u00E4nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo", out _));
+                Assert.False(versionSetHandle1.Value.TryGetId("Christian-Bollmann-Herzensgesa\u0308nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo", out _));
             }
 
-            [Fact]
-            public async Task Execute()
+            // Act
+            await SetCursorAsync(min2);
+            await UpdateAsync(max3);
+
+            // Assert
+            await AssertOutputAsync(BuildVersionSet_WithUnicodeDuplicatesDir, Step2);
+            using (var versionSetHandle2 = await VersionSetService.GetAsync())
             {
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2019-01-24T15:03:56.0495104Z");
-                var max1 = DateTimeOffset.Parse("2019-01-24T21:30:58.7012340Z");
-                var max2 = DateTimeOffset.Parse("2019-01-25T01:00:01.5210470Z");
-
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(min0);
-
-                // Act
-                await UpdateAsync(max1);
-
-                // Assert
-                await AssertOutputAsync(BuildVersionSet_WithDuplicatesDir, Step1);
-
-                // Act
-                await UpdateAsync(max2);
-
-                // Assert
-                await AssertOutputAsync(BuildVersionSet_WithDuplicatesDir, Step2);
-            }
-        }
-
-        public class BuildVersionSet_WithUnicodeDuplicates : BuildVersionSetIntegrationTest
-        {
-            public BuildVersionSet_WithUnicodeDuplicates(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
-
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2022-01-30T01:13:58.2460944Z").AddTicks(-1);
-                var max1 = min0.AddTicks(1);
-                var min2 = DateTimeOffset.Parse("2022-01-30T01:16:40.6957176Z").AddTicks(-1);
-                var max3 = min2.AddTicks(1);
-
-                await CatalogScanService.InitializeAsync();
-
-                // Act
-                await SetCursorAsync(min0);
-                await UpdateAsync(max1);
-
-                // Assert
-                await AssertOutputAsync(BuildVersionSet_WithUnicodeDuplicatesDir, Step1);
-                using (var versionSetHandle1 = await VersionSetService.GetAsync())
-                {
-                    Assert.True(versionSetHandle1.Value.TryGetId("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tost\u00E3o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of", out _));
-                    Assert.False(versionSetHandle1.Value.TryGetId("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tosta\u0303o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of", out _));
-                    Assert.True(versionSetHandle1.Value.TryGetId("Christian-Bollmann-Herzensges\u00E4nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo", out _));
-                    Assert.False(versionSetHandle1.Value.TryGetId("Christian-Bollmann-Herzensgesa\u0308nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo", out _));
-                }
-
-                // Act
-                await SetCursorAsync(min2);
-                await UpdateAsync(max3);
-
-                // Assert
-                await AssertOutputAsync(BuildVersionSet_WithUnicodeDuplicatesDir, Step2);
-                using (var versionSetHandle2 = await VersionSetService.GetAsync())
-                {
-                    Assert.True(versionSetHandle2.Value.TryGetId("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tost\u00E3o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of", out _));
-                    Assert.True(versionSetHandle2.Value.TryGetId("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tosta\u0303o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of", out _));
-                    Assert.True(versionSetHandle2.Value.TryGetId("Christian-Bollmann-Herzensges\u00E4nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo", out _));
-                    Assert.True(versionSetHandle2.Value.TryGetId("Christian-Bollmann-Herzensgesa\u0308nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo", out _));
-                }
+                Assert.True(versionSetHandle2.Value.TryGetId("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tost\u00E3o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of", out _));
+                Assert.True(versionSetHandle2.Value.TryGetId("Cristina-Buarque-Samba-Sensual-Cancoes-De-Noel-Sem-Tosta\u0303o-1-DOWNLOAD-FULL-ALBUM-MP3-ZIP-of", out _));
+                Assert.True(versionSetHandle2.Value.TryGetId("Christian-Bollmann-Herzensges\u00E4nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo", out _));
+                Assert.True(versionSetHandle2.Value.TryGetId("Christian-Bollmann-Herzensgesa\u0308nge-Pearls-of-Love-and-Light-DOWNLOAD-FULL-ALBUM-MP3-ZIP-wo", out _));
             }
         }
 

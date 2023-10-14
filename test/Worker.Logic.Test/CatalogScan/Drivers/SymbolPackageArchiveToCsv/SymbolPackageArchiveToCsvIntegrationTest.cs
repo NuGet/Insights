@@ -15,78 +15,62 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
         private const string SymbolPackageArchiveToCsvDir = nameof(SymbolPackageArchiveToCsv);
         private const string SymbolPackageArchiveToCsv_WithDeleteDir = nameof(SymbolPackageArchiveToCsv_WithDelete);
 
-        public class SymbolPackageArchiveToCsv : SymbolPackageArchiveToCsvIntegrationTest
+        [Fact]
+        public async Task SymbolPackageArchiveToCsv()
         {
-            public SymbolPackageArchiveToCsv(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2021-03-22T20:13:00.3409860Z");
+            var max1 = DateTimeOffset.Parse("2021-03-22T20:13:54.6075418Z");
+            var max2 = DateTimeOffset.Parse("2021-03-22T20:15:23.6403188Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2021-03-22T20:13:00.3409860Z");
-                var max1 = DateTimeOffset.Parse("2021-03-22T20:13:54.6075418Z");
-                var max2 = DateTimeOffset.Parse("2021-03-22T20:15:23.6403188Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadSymbolPackageArchive, max2);
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.LoadSymbolPackageArchive, max2);
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
+            // Assert
+            await AssertOutputAsync(SymbolPackageArchiveToCsvDir, Step1, 0);
+            await AssertBlobCountAsync(1);
 
-                // Assert
-                await AssertOutputAsync(SymbolPackageArchiveToCsvDir, Step1, 0);
-                await AssertBlobCountAsync(1);
+            // Act
+            await UpdateAsync(max2);
 
-                // Act
-                await UpdateAsync(max2);
-
-                // Assert
-                await AssertOutputAsync(SymbolPackageArchiveToCsvDir, Step2, 0);
-                await AssertOutputAsync(SymbolPackageArchiveToCsvDir, Step2, 2);
-                await AssertBlobCountAsync(2);
-            }
+            // Assert
+            await AssertOutputAsync(SymbolPackageArchiveToCsvDir, Step2, 0);
+            await AssertOutputAsync(SymbolPackageArchiveToCsvDir, Step2, 2);
+            await AssertBlobCountAsync(2);
         }
 
-        public class SymbolPackageArchiveToCsv_WithDelete : SymbolPackageArchiveToCsvIntegrationTest
+        [Fact]
+        public async Task SymbolPackageArchiveToCsv_WithDelete()
         {
-            public SymbolPackageArchiveToCsv_WithDelete(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            MakeDeletedPackageAvailable();
+            var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
+            var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
+            var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                MakeDeletedPackageAvailable();
-                var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
-                var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
-                var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadSymbolPackageArchive, max2);
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(CatalogScanDriverType.LoadSymbolPackageArchive, max2);
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
+            // Assert
+            await AssertOutputAsync(SymbolPackageArchiveToCsv_WithDeleteDir, Step1, 0);
+            await AssertOutputAsync(SymbolPackageArchiveToCsv_WithDeleteDir, Step1, 1);
+            await AssertOutputAsync(SymbolPackageArchiveToCsv_WithDeleteDir, Step1, 2);
 
-                // Assert
-                await AssertOutputAsync(SymbolPackageArchiveToCsv_WithDeleteDir, Step1, 0);
-                await AssertOutputAsync(SymbolPackageArchiveToCsv_WithDeleteDir, Step1, 1);
-                await AssertOutputAsync(SymbolPackageArchiveToCsv_WithDeleteDir, Step1, 2);
+            // Act
+            await UpdateAsync(max2);
 
-                // Act
-                await UpdateAsync(max2);
-
-                // Assert
-                await AssertOutputAsync(SymbolPackageArchiveToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-                await AssertOutputAsync(SymbolPackageArchiveToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
-                await AssertOutputAsync(SymbolPackageArchiveToCsv_WithDeleteDir, Step2, 2);
-            }
+            // Assert
+            await AssertOutputAsync(SymbolPackageArchiveToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
+            await AssertOutputAsync(SymbolPackageArchiveToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
+            await AssertOutputAsync(SymbolPackageArchiveToCsv_WithDeleteDir, Step2, 2);
         }
 
         public SymbolPackageArchiveToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)

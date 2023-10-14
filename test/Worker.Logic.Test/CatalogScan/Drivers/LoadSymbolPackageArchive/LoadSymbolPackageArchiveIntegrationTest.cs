@@ -15,69 +15,53 @@ namespace NuGet.Insights.Worker.LoadSymbolPackageArchive
         public const string LoadSymbolPackageArchiveDir = nameof(LoadSymbolPackageArchive);
         public const string LoadSymbolPackageArchive_WithDeleteDir = nameof(LoadSymbolPackageArchive_WithDelete);
 
-        public class LoadSymbolPackageArchive : LoadSymbolPackageArchiveIntegrationTest
+        [Fact]
+        public async Task LoadSymbolPackageArchive()
         {
-            public LoadSymbolPackageArchive(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2021-03-22T20:13:00.3409860Z");
+            var max1 = DateTimeOffset.Parse("2021-03-22T20:13:54.6075418Z");
+            var max2 = DateTimeOffset.Parse("2021-03-22T20:15:23.6403188Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                var min0 = DateTimeOffset.Parse("2021-03-22T20:13:00.3409860Z");
-                var max1 = DateTimeOffset.Parse("2021-03-22T20:13:54.6075418Z");
-                var max2 = DateTimeOffset.Parse("2021-03-22T20:15:23.6403188Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
+            // Assert
+            await AssertSymbolPackageArchiveOutputAsync(LoadSymbolPackageArchiveDir, Step1);
 
-                // Assert
-                await AssertSymbolPackageArchiveOutputAsync(LoadSymbolPackageArchiveDir, Step1);
+            // Act
+            await UpdateAsync(max2);
 
-                // Act
-                await UpdateAsync(max2);
-
-                // Assert
-                await AssertSymbolPackageArchiveOutputAsync(LoadSymbolPackageArchiveDir, Step2);
-            }
+            // Assert
+            await AssertSymbolPackageArchiveOutputAsync(LoadSymbolPackageArchiveDir, Step2);
         }
 
-        public class LoadSymbolPackageArchive_WithDelete : LoadSymbolPackageArchiveIntegrationTest
+        [Fact]
+        public async Task LoadSymbolPackageArchive_WithDelete()
         {
-            public LoadSymbolPackageArchive_WithDelete(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
+            // Arrange
+            MakeDeletedPackageAvailable();
+            var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
+            var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
+            var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
 
-            [Fact]
-            public async Task Execute()
-            {
-                // Arrange
-                MakeDeletedPackageAvailable();
-                var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
-                var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
-                var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
 
-                await CatalogScanService.InitializeAsync();
-                await SetCursorAsync(min0);
+            // Act
+            await UpdateAsync(max1);
 
-                // Act
-                await UpdateAsync(max1);
+            // Assert
+            await AssertSymbolPackageArchiveOutputAsync(LoadSymbolPackageArchive_WithDeleteDir, Step1);
 
-                // Assert
-                await AssertSymbolPackageArchiveOutputAsync(LoadSymbolPackageArchive_WithDeleteDir, Step1);
+            // Act
+            await UpdateAsync(max2);
 
-                // Act
-                await UpdateAsync(max2);
-
-                // Assert
-                await AssertSymbolPackageArchiveOutputAsync(LoadSymbolPackageArchive_WithDeleteDir, Step2);
-            }
+            // Assert
+            await AssertSymbolPackageArchiveOutputAsync(LoadSymbolPackageArchive_WithDeleteDir, Step2);
         }
 
         public LoadSymbolPackageArchiveIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
