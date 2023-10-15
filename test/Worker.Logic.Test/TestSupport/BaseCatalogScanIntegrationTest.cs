@@ -46,14 +46,14 @@ namespace NuGet.Insights.Worker
 
             var containers = await blobServiceClient.GetBlobContainersAsync(prefix: StoragePrefix).ToListAsync();
             Assert.Equal(
-                GetExpectedBlobContainerNames().Concat(new[] { Options.Value.LeaseContainerName }).OrderBy(x => x).ToArray(),
+                GetExpectedBlobContainerNames().Concat(new[] { Options.Value.LeaseContainerName }).OrderBy(x => x, StringComparer.Ordinal).ToArray(),
                 containers.Select(x => x.Name).ToArray());
 
             var leaseBlobs = await blobServiceClient
                 .GetBlobContainerClient(Options.Value.LeaseContainerName)
                 .GetBlobsAsync()
                 .ToListAsync();
-            var expectedLeaseNames = GetExpectedLeaseNames().OrderBy(x => x).ToArray();
+            var expectedLeaseNames = GetExpectedLeaseNames().OrderBy(x => x, StringComparer.Ordinal).ToArray();
             var actualLeaseNames = leaseBlobs.Select(x => x.Name).ToArray();
             Assert.Equal(expectedLeaseNames, actualLeaseNames);
 
@@ -78,7 +78,10 @@ namespace NuGet.Insights.Worker
 
             var tables = await tableServiceClient.QueryAsync(prefix: StoragePrefix).ToListAsync();
             Assert.Equal(
-                GetExpectedTableNames().Concat(new[] { Options.Value.CursorTableName, Options.Value.CatalogIndexScanTableName }).OrderBy(x => x).ToArray(),
+                GetExpectedTableNames()
+                    .Concat(new[] { Options.Value.CursorTableName, Options.Value.CatalogIndexScanTableName })
+                    .OrderBy(x => x, StringComparer.Ordinal)
+                    .ToArray(),
                 tables.Select(x => x.Name).ToArray());
 
             var cursors = await tableServiceClient
@@ -86,7 +89,9 @@ namespace NuGet.Insights.Worker
                 .QueryAsync<CursorTableEntity>()
                 .ToListAsync();
             Assert.Equal(
-                GetExpectedCursorNames().OrderBy(x => x).ToArray(),
+                GetExpectedCursorNames()
+                    .OrderBy(x => x, StringComparer.Ordinal)
+                    .ToArray(),
                 cursors.Select(x => x.Name).ToArray());
 
             var catalogIndexScans = await tableServiceClient
@@ -94,7 +99,10 @@ namespace NuGet.Insights.Worker
                 .QueryAsync<CatalogIndexScan>()
                 .ToListAsync();
             Assert.Equal(
-                ExpectedCatalogIndexScans.Select(x => (x.PartitionKey, x.RowKey)).OrderBy(x => x).ToArray(),
+                ExpectedCatalogIndexScans
+                    .Select(x => (x.PartitionKey, x.RowKey))
+                    .OrderBy(x => x.PartitionKey, StringComparer.Ordinal)
+                    .ThenBy(x => x.RowKey, StringComparer.Ordinal).ToArray(),
                 catalogIndexScans.Select(x => (x.PartitionKey, x.RowKey)).ToArray());
         }
 

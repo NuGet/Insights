@@ -136,7 +136,7 @@ namespace NuGet.Insights
                     .Items
                     .Select(x => x.CommitTimestamp)
                     .Distinct()
-                    .OrderBy(x => x)
+                    .Order()
                     .ToList();
 
                 if (sortedCommits.Last() != page.CommitTimestamp)

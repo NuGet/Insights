@@ -14,7 +14,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
         {
             Assert.Equal(
                 new[] { "DeletedA", "Knapcode.TorSharp", "Newtonsoft.Json", "NoVersions" },
-                Target.GetUncheckedIds().OrderBy(x => x).ToArray());
+                Target.GetUncheckedIds().OrderBy(x => x, StringComparer.Ordinal).ToArray());
         }
 
         [Fact]
@@ -24,7 +24,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
             Assert.Equal(
                 new[] { "DeletedA", "Newtonsoft.Json", "NoVersions" },
-                Target.GetUncheckedIds().OrderBy(x => x).ToArray());
+                Target.GetUncheckedIds().OrderBy(x => x, StringComparer.Ordinal).ToArray());
         }
 
         [Fact]
@@ -34,7 +34,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
             Assert.Equal(
                 new[] { "DeletedA", "Knapcode.TorSharp", "Newtonsoft.Json", "NoVersions" },
-                Target.GetUncheckedIds().OrderBy(x => x).ToArray());
+                Target.GetUncheckedIds().OrderBy(x => x, StringComparer.Ordinal).ToArray());
         }
 
         [Fact]
@@ -42,7 +42,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
         {
             Assert.Equal(
                 new[] { "10.0.1-beta", "11.0.1", "9.0.1" },
-                Target.GetUncheckedVersions("newtonsoft.json").OrderBy(x => x).ToArray());
+                Target.GetUncheckedVersions("newtonsoft.json").OrderBy(x => x, StringComparer.Ordinal).ToArray());
         }
 
         [Fact]
@@ -52,7 +52,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
             Assert.Equal(
                 new[] { "11.0.1", "9.0.1" },
-                Target.GetUncheckedVersions("newtonsoft.json").OrderBy(x => x).ToArray());
+                Target.GetUncheckedVersions("newtonsoft.json").OrderBy(x => x, StringComparer.Ordinal).ToArray());
         }
 
         [Fact]
@@ -62,7 +62,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
             Assert.Equal(
                 new[] { "10.0.1-beta", "11.0.1", "9.0.1" },
-                Target.GetUncheckedVersions("newtonsoft.json").OrderBy(x => x).ToArray());
+                Target.GetUncheckedVersions("newtonsoft.json").OrderBy(x => x, StringComparer.Ordinal).ToArray());
         }
 
         [Theory]

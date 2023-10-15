@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Access Denied";
 }
 
@@ -6,7 +6,7 @@
 
 <p><b>Claims:</b></p>
 <ul>
-    @foreach (var claim in User.Claims.OrderBy(x => x.Type))
+    @foreach (var claim in User.Claims.OrderBy(x => x.Type, StringComparer.Ordinal))
     {
         <li>
             Type: <code>@claim.Type</code>

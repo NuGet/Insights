@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -47,7 +48,7 @@ namespace NuGet.Insights.Worker
                     {
                         State = CatalogIndexScanState.Complete,
                     })
-                    .OrderBy(x => x.ScanId)
+                    .OrderBy(x => x.ScanId, StringComparer.Ordinal)
                     .ToList();
                 await Task.WhenAll(scans.Select(x => Target.InsertAsync(x)));
                 var currentScanId = scans.Skip(3).First().ScanId;
@@ -73,7 +74,7 @@ namespace NuGet.Insights.Worker
                     {
                         State = CatalogIndexScanState.Created,
                     })
-                    .OrderBy(x => x.ScanId)
+                    .OrderBy(x => x.ScanId, StringComparer.Ordinal)
                     .ToList();
                 await Task.WhenAll(scans.Select(x => Target.InsertAsync(x)));
                 var currentScanId = scans.First().ScanId;

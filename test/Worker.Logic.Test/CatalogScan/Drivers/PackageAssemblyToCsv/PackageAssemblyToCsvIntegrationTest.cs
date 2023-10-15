@@ -142,25 +142,17 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             return PackageAssemblyToCsv_WithDuplicates();
         }
 
-        public class PackageAssemblyToCsv_WithDuplicates_AllLeaves : PackageAssemblyToCsvIntegrationTest
+        [Fact]
+        public Task PackageAssemblyToCsv_WithDuplicates_AllLeaves()
         {
-            public PackageAssemblyToCsv_WithDuplicates_AllLeaves(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-                : base(output, factory)
-            {
-            }
-
-            public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => Enumerable.Empty<CatalogScanDriverType>();
-
-            [Fact]
-            public Task Execute()
-            {
-                return PackageAssemblyToCsv_WithDuplicates();
-            }
+            MutableLatestLeavesTypes.Clear();
+            return PackageAssemblyToCsv_WithDuplicates();
         }
 
         public PackageAssemblyToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)
         {
+            MutableLatestLeavesTypes.Add(DriverType);
         }
 
         private List<string> AdditionalLeaseNames { get; } = new();
@@ -172,7 +164,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
         protected override string DestinationContainerName => Options.Value.PackageAssemblyContainerName;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageAssemblyToCsv;
-        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
+        private List<CatalogScanDriverType> MutableLatestLeavesTypes { get; } = new();
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => MutableLatestLeavesTypes;
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
 
         private async Task PackageAssemblyToCsv_WithDuplicates()

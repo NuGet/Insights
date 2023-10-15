@@ -93,7 +93,7 @@ namespace NuGet.Insights.Worker
         {
             var storageContainerLines = new List<string>();
             StorageContainerType? lastType = null;
-            foreach ((var type, var name, var prefix) in containers.OrderBy(x => x.Type).ThenBy(x => x.Name))
+            foreach ((var type, var name, var prefix) in containers.OrderBy(x => x.Type).ThenBy(x => x.Name, StringComparer.Ordinal))
             {
                 if (lastType != type)
                 {

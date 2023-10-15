@@ -341,7 +341,7 @@ namespace NuGet.Insights.Worker
                 results
                     .Where(x => x.Value.Type == CatalogScanServiceResultType.NewStarted)
                     .Select(x => x.Key)
-                    .OrderBy(x => x.ToString())
+                    .OrderBy(x => x.ToString(), StringComparer.Ordinal)
                     .ToArray());
             Assert.Equal(
                 CatalogScanCursorService.StartableDriverTypes,
@@ -375,7 +375,7 @@ namespace NuGet.Insights.Worker
 
             Assert.Equal(
                 CatalogScanCursorService.StartableDriverTypes,
-                finished.Keys.OrderBy(x => x).ToArray());
+                finished.Keys.Order().ToArray());
             Assert.All(finished.Values, x => Assert.Equal(CursorValue, x.Scan.Max.Value));
         }
 

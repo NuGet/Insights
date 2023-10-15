@@ -27,7 +27,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             _options = options;
             _serviceClientFactory = serviceClientFactory;
             _containerNameToStorage = csvResultStorage.ToDictionary(x => x.ContainerName);
-            _containerNames = _containerNameToStorage.Keys.OrderBy(x => x).ToList();
+            _containerNames = _containerNameToStorage.Keys.OrderBy(x => x, StringComparer.Ordinal).ToList();
         }
 
         public async Task<IReadOnlyList<CsvResultBlob>> GetBlobsAsync(string containerName)

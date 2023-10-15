@@ -132,7 +132,7 @@ namespace NuGet.Insights.ReferenceTracking
                 // This removes one of ['aaaaaabbbbbb', 'bbbbbbaaaaaa'] since there are logically equivalent for the test input.
                 .Select(x => x[0] == 'b' ? x.Replace('b', 'x').Replace('a', 'b').Replace('x', 'a') : x)
                 .Distinct()
-                .OrderBy(x => x)
+                .OrderBy(x => x, StringComparer.Ordinal)
                 .Select(x => new object[] { x });
 
             protected const int ParallelTestCount = 8;
@@ -979,7 +979,7 @@ namespace NuGet.Insights.ReferenceTracking
                     RowKey: pair.Key,
                     Data: new OwnerToSubjectEdges
                     {
-                        Committed = pair.Value.OrderBy(x => x.PartitionKey).ThenBy(x => x.RowKey).ToList(),
+                        Committed = pair.Value.OrderBy(x => x.PartitionKey, StringComparer.Ordinal).ThenBy(x => x.RowKey, StringComparer.Ordinal).ToList(),
                         ToAdd = Array.Empty<SubjectReference>(),
                         ToDelete = Array.Empty<SubjectReference>(),
                     }

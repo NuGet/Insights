@@ -82,7 +82,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
                 // Assert
                 Assert.Equal(new[] { "Knapcode.TorSharp" }, handleA.Value.GetUncheckedIds());
                 Assert.Equal(new[] { "Newtonsoft.Json" }, handleB.Value.GetUncheckedIds());
-                Assert.Equal(new[] { "Knapcode.TorSharp", "Newtonsoft.Json" }, handleC.Value.GetUncheckedIds().OrderBy(x => x));
+                Assert.Equal(new[] { "Knapcode.TorSharp", "Newtonsoft.Json" }, handleC.Value.GetUncheckedIds().OrderBy(x => x, StringComparer.Ordinal));
             }
         }
 

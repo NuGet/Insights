@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
@@ -212,7 +213,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             var pc = Assert.Single(output.Result.Sets1).Records;
             var justInChain = pc
                 .Where(x => x.RelationshipTypes == CertificateRelationshipTypes.AuthorTimestampingChainContains)
-                .OrderBy(x => x.Fingerprint)
+                .OrderBy(x => x.Fingerprint, StringComparer.Ordinal)
                 .ToList();
             Assert.InRange(justInChain.Count, 1, 2);
             var justInChainFingerprints = string.Join(' ', justInChain.Select(x => x.Fingerprint));

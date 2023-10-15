@@ -120,7 +120,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 var statusList = await GetIngestionStatusListAsync(blob);
                 var statusSummary = statusList
                     .GroupBy(x => x.Status)
-                    .OrderBy(x => x.Key.ToString())
+                    .OrderBy(x => x.Key.ToString(), StringComparer.Ordinal)
                     .Select(x => $"{x.Key} ({x.Count()}x)")
                     .ToList();
                 _logger.LogInformation("Ingestion status: {Statuses}", statusSummary);

@@ -92,7 +92,7 @@ namespace NuGet.Insights.Worker
                 "flowchart LR",
                 $"    FlatContainer[<a href='https://learn.microsoft.com/en-us/nuget/api/package-base-address-resource'>NuGet.org V3 package content</a>]"
             };
-            foreach (var driverType in CatalogScanCursorService.StartableDriverTypes.OrderBy(x => x.ToString()))
+            foreach (var driverType in CatalogScanCursorService.StartableDriverTypes.OrderBy(x => x.ToString(), StringComparer.Ordinal))
             {
                 // Relative links are not supported.
                 // See: https://github.com/orgs/community/discussions/46096
@@ -104,7 +104,7 @@ namespace NuGet.Insights.Worker
                     expectedLines.Add($"    FlatContainer --> {driverType}");
                 }
 
-                foreach (var dependency in CatalogScanCursorService.GetDependencies(driverType).OrderBy(x => x.ToString()))
+                foreach (var dependency in CatalogScanCursorService.GetDependencies(driverType).OrderBy(x => x.ToString(), StringComparer.Ordinal))
                 {
                     expectedLines.Add($"    {dependency} --> {driverType}");
                 }
@@ -270,7 +270,7 @@ namespace NuGet.Insights.Worker
                         .GetType()
                         .GetGenericArguments()
                         .Select(x => KustoDDL.TypeToDefaultTableName[x])
-                        .OrderBy(x => x)
+                        .OrderBy(x => x, StringComparer.Ordinal)
                         .ToList();
                 }
                 else
@@ -523,13 +523,13 @@ namespace NuGet.Insights.Worker
 
         public static IEnumerable<object[]> DriverTypeTestData => CatalogScanCursorService
             .StartableDriverTypes
-            .OrderBy(x => x.ToString())
+            .OrderBy(x => x.ToString(), StringComparer.Ordinal)
             .Select(x => new object[] { x });
 
         public static IReadOnlyList<string> DriverNames => CatalogScanCursorService
             .StartableDriverTypes
             .Select(x => x.ToString())
-            .OrderBy(x => x)
+            .OrderBy(x => x, StringComparer.Ordinal)
             .ToList();
 
         public static IEnumerable<object[]> DriverNameTestData => DriverNames.Select(x => new object[] { x });

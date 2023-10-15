@@ -37,13 +37,13 @@ namespace NuGet.Insights
                 return 1;
             }
 
-            var partitionKeyCompare = PartitionKey.CompareTo(other.PartitionKey);
+            var partitionKeyCompare = StringComparer.Ordinal.Compare(PartitionKey, other.PartitionKey);
             if (partitionKeyCompare != 0)
             {
                 return partitionKeyCompare;
             }
 
-            return RowKey.CompareTo(other.RowKey);
+            return StringComparer.Ordinal.Compare(RowKey, other.RowKey);
         }
 
         public override string ToString()

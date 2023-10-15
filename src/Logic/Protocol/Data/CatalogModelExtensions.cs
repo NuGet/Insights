@@ -52,7 +52,7 @@ namespace NuGet.Insights
             return catalogIndex
                 .Items
                 .OrderBy(x => x.CommitTimestamp)
-                .ThenBy(x => x.Url)
+                .ThenBy(x => x.Url, StringComparer.Ordinal)
                 .Select((x, i) => new { Item = x, Rank = i })
                 .ToDictionary(x => x.Item, x => x.Rank);
         }
@@ -62,7 +62,7 @@ namespace NuGet.Insights
             return catalogPage
                 .Items
                 .OrderBy(x => x.CommitTimestamp)
-                .ThenBy(x => x.Url)
+                .ThenBy(x => x.Url, StringComparer.Ordinal)
                 .Select((x, i) => new { Item = x, Rank = i })
                 .ToDictionary(x => (ICatalogLeafItem)x.Item, x => x.Rank);
         }

@@ -277,7 +277,7 @@ namespace NuGet.Insights.Worker
         public static IReadOnlyList<string> TableNames => KustoDDL
             .TypeToDefaultTableName
             .Values
-            .OrderBy(x => x)
+            .OrderBy(x => x, StringComparer.Ordinal)
             .ToList();
 
         public static IEnumerable<object[]> TableNameTestData => TableNames.Select(x => new object[] { x });

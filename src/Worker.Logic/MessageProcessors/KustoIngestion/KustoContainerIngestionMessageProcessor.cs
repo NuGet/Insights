@@ -151,7 +151,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 {
                     var stateSummary = blobs
                         .GroupBy(x => x.State)
-                        .OrderBy(x => x.Key.ToString())
+                        .OrderBy(x => x.Key.ToString(), StringComparer.Ordinal)
                         .Select(x => $"{x.Key} ({x.Count()}x)")
                         .ToList();
 

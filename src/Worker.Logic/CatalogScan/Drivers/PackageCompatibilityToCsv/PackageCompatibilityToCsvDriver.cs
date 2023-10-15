@@ -171,7 +171,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                             ProductName = x.Key,
                             Frameworks = x.Value.Select(x => new { Framework = x.Framework.GetShortFolderName(), x.IsComputed }).ToList(),
                         })
-                        .OrderBy(x => x.ProductName), SerializerOptions);
+                        .OrderBy(x => x.ProductName, StringComparer.Ordinal), SerializerOptions);
 
                     output.NuGetGalleryBadges = JsonSerializer.Serialize(new[]
                     {
@@ -199,7 +199,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 output.HasAny = hasAny;
                 output.HasUnsupported = hasUnsupported;
                 output.HasAgnostic = hasAgnostic;
-                output.BrokenFrameworks = JsonSerializer.Serialize(brokenFrameworks.OrderBy(x => x).ToList());
+                output.BrokenFrameworks = JsonSerializer.Serialize(brokenFrameworks.OrderBy(x => x, StringComparer.Ordinal).ToList());
 
                 return new List<PackageCompatibility> { output };
             }

@@ -299,7 +299,7 @@ namespace NuGet.Insights
                 {
                     "CsvRecord",
                     "Record",
-                }.OrderByDescending(x => x.Length).ThenBy(x => x);
+                }.OrderByDescending(x => x.Length).ThenBy(x => x, StringComparer.Ordinal);
 
                 foreach (var suffix in suffixesToRemove)
                 {

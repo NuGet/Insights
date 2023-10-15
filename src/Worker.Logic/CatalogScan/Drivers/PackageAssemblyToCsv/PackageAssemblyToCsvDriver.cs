@@ -307,7 +307,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             assembly.EdgeCases |= info.EdgeCases;
             assembly.CustomAttributesTotalCount = info.TotalCount;
             assembly.CustomAttributesTotalDataLength = info.TotalDataLength;
-            assembly.CustomAttributesFailedDecode = JsonSerializer.Serialize(info.FailedDecode);
+            assembly.CustomAttributesFailedDecode = JsonSerializer.Serialize(info.FailedDecode.OrderBy(x => x, StringComparer.Ordinal).ToList());
             assembly.CustomAttributes = JsonSerializer.Serialize(info.NameToParameters);
         }
 

@@ -104,7 +104,7 @@ namespace NuGet.Insights.Worker
                     .GetRequiredService<IEnumerable<ITimer>>()
                     .GroupBy(x => x.Order)
                     .OrderBy(x => x.Key)
-                    .Select(x => x.OrderBy(x => x.Name).Select(x => x.GetType()).ToList())
+                    .Select(x => x.OrderBy(x => x.Name, StringComparer.Ordinal).Select(x => x.GetType()).ToList())
                     .ToList();
 
                 Assert.Equal(expected.Count, actual.Count);
@@ -216,7 +216,9 @@ namespace NuGet.Insights.Worker
                 var properties = options.GetType().GetProperties();
                 SortedDictionary<string, string> GetNames(IEnumerable<PropertyInfo> properties)
                 {
-                    return new SortedDictionary<string, string>(properties.ToDictionary(x => x.Name, x => (string)x.GetValue(options)));
+                    return new SortedDictionary<string, string>(
+                        properties.ToDictionary(x => x.Name, x => (string)x.GetValue(options)),
+                        StringComparer.Ordinal);
                 }
                 var tables = GetNames(properties.Where(x => x.Name.EndsWith("TableName")));
                 var blobContainers = GetNames(properties.Where(x => x.Name.EndsWith("ContainerName")));
@@ -419,7 +421,7 @@ namespace NuGet.Insights.Worker
                 Assert.All(indexScans, x => Assert.Equal(CatalogIndexScanState.Complete, x.State));
                 Assert.Equal(
                     CatalogScanCursorService.StartableDriverTypes.ToArray(),
-                    indexScans.Select(x => x.DriverType).OrderBy(x => x).ToArray());
+                    indexScans.Select(x => x.DriverType).Order().ToArray());
 
                 // Make sure all of the containers are have ingestions
                 var containerNames = Host.Services.GetRequiredService<CsvResultStorageContainers>().GetContainerNames();
@@ -562,18 +564,18 @@ namespace NuGet.Insights.Worker
                 Assert.Equal(startingReadmeRequestCount, finalReadmeRequestCount);
                 Assert.Equal(intermediateSnupkgRequestCount, finalSnupkgRequestCount);
 
-                var userAgents = HttpMessageHandlerFactory.Responses.Select(r => r.RequestMessage.Headers.UserAgent.ToString()).Distinct().Order().ToList();
+                var userAgents = HttpMessageHandlerFactory.Responses.Select(r => r.RequestMessage.Headers.UserAgent.ToString()).Distinct().OrderBy(x => x, StringComparer.Ordinal).ToList();
                 foreach (var userAgent in userAgents)
                 {
                     Logger.LogInformation("Found User-Agent: {UserAgent}", userAgent);
                 }
 
                 Assert.Equal(4, userAgents.Count); // NuGet Insights, and Blob + Queue + Table Azure SDK.
-                Assert.StartsWith("azsdk-net-Data.Tables/", userAgents[0]);
-                Assert.StartsWith("azsdk-net-Storage.Blobs/", userAgents[1]);
-                Assert.StartsWith("azsdk-net-Storage.Queues/", userAgents[2]);
-                Assert.StartsWith("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0; AppInsights)", userAgents[3]);
-                Assert.Matches(@"(NuGet Test Client)/?(\d+)?\.?(\d+)?\.?(\d+)?", userAgents[3]);
+                Assert.StartsWith("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0; AppInsights)", userAgents[0]);
+                Assert.Matches(@"(NuGet Test Client)/?(\d+)?\.?(\d+)?\.?(\d+)?", userAgents[0]);
+                Assert.StartsWith("azsdk-net-Data.Tables/", userAgents[1]);
+                Assert.StartsWith("azsdk-net-Storage.Blobs/", userAgents[2]);
+                Assert.StartsWith("azsdk-net-Storage.Queues/", userAgents[3]);
             }
         }
 

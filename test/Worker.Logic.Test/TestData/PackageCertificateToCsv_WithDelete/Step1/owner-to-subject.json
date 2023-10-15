@@ -89,19 +89,19 @@
           ]
         },
         {
+          "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
           "PartitionKey": "ulpjCZSyuPVisweioyRZmCMu8KlO6Avs5c6gtc7KYfk",
           "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
-            "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
-          "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
             "RepositoryCodeSigningChainContains"
           ]
         },

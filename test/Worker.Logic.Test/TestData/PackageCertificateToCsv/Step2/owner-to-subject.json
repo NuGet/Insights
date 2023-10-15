@@ -1585,21 +1585,21 @@
           ]
         },
         {
-          "PartitionKey": "qhLaIqSbzn1cGuZMwfPYkvFQ2nYUDyEKvSy__KLBiic",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "IsAuthorCodeSignedBy",
-            "AuthorCodeSigningChainContains"
-          ]
-        },
-        {
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
           "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "AuthorCodeSigningChainContains",
             "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "qhLaIqSbzn1cGuZMwfPYkvFQ2nYUDyEKvSy__KLBiic",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "IsAuthorCodeSignedBy",
+            "AuthorCodeSigningChainContains"
           ]
         },
         {
@@ -1654,15 +1654,6 @@
           ]
         },
         {
-          "PartitionKey": "qhLaIqSbzn1cGuZMwfPYkvFQ2nYUDyEKvSy__KLBiic",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "IsAuthorCodeSignedBy",
-            "AuthorCodeSigningChainContains"
-          ]
-        },
-        {
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
           "RowKey": "",
           "Data": [
@@ -1678,6 +1669,15 @@
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
             "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "qhLaIqSbzn1cGuZMwfPYkvFQ2nYUDyEKvSy__KLBiic",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "IsAuthorCodeSignedBy",
+            "AuthorCodeSigningChainContains"
           ]
         },
         {

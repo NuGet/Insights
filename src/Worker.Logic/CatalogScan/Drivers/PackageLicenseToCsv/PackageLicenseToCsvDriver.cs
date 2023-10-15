@@ -133,9 +133,9 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
                             exception => exceptions.Add(exception.Identifier));
 
                         record.ExpressionParsed = JsonConvert.SerializeObject(parsedExpression, SerializerSettings);
-                        record.ExpressionLicenses = JsonConvert.SerializeObject(licenses.OrderBy(x => x).ToList());
-                        record.ExpressionExceptions = JsonConvert.SerializeObject(exceptions.OrderBy(x => x).ToList());
-                        record.ExpressionNonStandardLicenses = JsonConvert.SerializeObject(nonStandardLicenses.OrderBy(x => x).ToList());
+                        record.ExpressionLicenses = JsonConvert.SerializeObject(licenses.OrderBy(x => x, StringComparer.Ordinal).ToList());
+                        record.ExpressionExceptions = JsonConvert.SerializeObject(exceptions.OrderBy(x => x, StringComparer.Ordinal).ToList());
+                        record.ExpressionNonStandardLicenses = JsonConvert.SerializeObject(nonStandardLicenses.OrderBy(x => x, StringComparer.Ordinal).ToList());
                         record.GeneratedUrl = new LicenseMetadata(
                             LicenseType.Expression,
                             leaf.LicenseExpression,

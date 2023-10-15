@@ -108,7 +108,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     _csvRecordContainers.GetTempKustoTableName(x),
                     _csvRecordContainers.GetKustoTableName(x),
                 })
-                .OrderBy(x => x)
+                .OrderBy(x => x, StringComparer.Ordinal)
                 .ToList();
 
             await ExecuteKustoCommandAsync($".drop tables ({string.Join(", ", tableNames)}) ifexists");

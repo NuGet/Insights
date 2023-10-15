@@ -27,7 +27,7 @@ namespace NuGet.Insights.Worker
             })
             .ToHashSet();
         private static readonly IReadOnlyList<CatalogScanDriverType> SortedDriverTypes = ValidDriverTypes
-            .OrderBy(x => x)
+            .Order()
             .ToList();
 
         private static readonly IReadOnlyDictionary<CatalogScanDriverType, IReadOnlyList<CatalogScanDriverType>> Dependencies = new Dictionary<CatalogScanDriverType, CatalogScanDriverType[]>

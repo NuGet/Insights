@@ -426,7 +426,7 @@ namespace NuGet.Insights.TablePrefixScan
 
             public async Task<(TableClient table, IReadOnlyList<TestEntity> sortedEntities)> SortAndInsertAsync(IEnumerable<TestEntity> entities)
             {
-                IReadOnlyList<TestEntity> sortedEntities = entities.OrderBy(x => x).ToList();
+                IReadOnlyList<TestEntity> sortedEntities = entities.Order().ToList();
 
                 TableClient table = null;
                 foreach (var candidate in _candidates)

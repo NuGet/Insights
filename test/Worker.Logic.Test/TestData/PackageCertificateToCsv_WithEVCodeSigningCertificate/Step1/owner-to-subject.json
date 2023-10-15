@@ -5,19 +5,20 @@
     "Entity": {
       "Committed": [
         {
+          "PartitionKey": "-zLgFv0xfbaMCytbbjMjHukytLIeJ_MrUWVKSDoQrfs",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "IsAuthorCodeSignedBy",
+            "AuthorCodeSigningChainContains"
+          ]
+        },
+        {
           "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
           "RowKey": "",
           "Data": [
             "RepositoryTimestampSignedCmsContains",
             "RepositoryTimestampingChainContains"
-          ]
-        },
-        {
-          "PartitionKey": "dDHl9MPBzkaQd08LYeBUQIg7qaAe0Aumq9eAbtOxGM8",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains"
           ]
         },
         {
@@ -39,15 +40,6 @@
           ]
         },
         {
-          "PartitionKey": "sxCQBrwK2YMHkVcp4EQDQVyD4ykrYU8mlkyNNXHs9ak",
-          "RowKey": "",
-          "Data": [
-            "AuthorTimestampSignedCmsContains",
-            "IsAuthorTimestampedBy",
-            "AuthorTimestampingChainContains"
-          ]
-        },
-        {
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
           "RowKey": "",
           "Data": [
@@ -62,6 +54,23 @@
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
             "RepositoryCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "dDHl9MPBzkaQd08LYeBUQIg7qaAe0Aumq9eAbtOxGM8",
+          "RowKey": "",
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains"
+          ]
+        },
+        {
+          "PartitionKey": "sxCQBrwK2YMHkVcp4EQDQVyD4ykrYU8mlkyNNXHs9ak",
+          "RowKey": "",
+          "Data": [
+            "AuthorTimestampSignedCmsContains",
+            "IsAuthorTimestampedBy",
+            "AuthorTimestampingChainContains"
           ]
         },
         {
@@ -87,15 +96,6 @@
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "AuthorTimestampingChainContains"
-          ]
-        },
-        {
-          "PartitionKey": "-zLgFv0xfbaMCytbbjMjHukytLIeJ_MrUWVKSDoQrfs",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "IsAuthorCodeSignedBy",
-            "AuthorCodeSigningChainContains"
           ]
         }
       ],

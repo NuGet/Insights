@@ -155,7 +155,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
                             output.FrameCount = frames.Count;
                             output.FrameFormats = JsonSerializer.Serialize(frameFormats);
                             output.FrameDimensions = JsonSerializer.Serialize(frameDimensions);
-                            output.FrameAttributeNames = JsonSerializer.Serialize(frameAttributeNames.Except(IgnoredAttributes).OrderBy(x => x).ToList());
+                            output.FrameAttributeNames = JsonSerializer.Serialize(frameAttributeNames.Except(IgnoredAttributes).OrderBy(x => x, StringComparer.Ordinal).ToList());
                         }
                     }
                     catch (Exception ex) when (ex is not OutOfMemoryException)

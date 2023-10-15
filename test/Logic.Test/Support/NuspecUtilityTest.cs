@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -57,7 +58,7 @@ namespace NuGet.Insights
 
             // Assert
             Assert.NotEmpty(output);
-            Assert.Equal(new[] { "authors", "dependencies", "owners" }, output.Keys.OrderBy(x => x));
+            Assert.Equal(new[] { "authors", "dependencies", "owners" }, output.Keys.OrderBy(x => x, StringComparer.Ordinal));
             Assert.Equal(3, output["authors"]);
             Assert.Equal(2, output["dependencies"]);
             Assert.Equal(2, output["owners"]);
@@ -74,7 +75,7 @@ namespace NuGet.Insights
 
             // Assert
             Assert.NotEmpty(output);
-            Assert.Equal(new[] { "authors" }, output.Keys.OrderBy(x => x));
+            Assert.Equal(new[] { "authors" }, output.Keys.OrderBy(x => x, StringComparer.Ordinal));
             Assert.Equal(3, output["authors"]);
         }
 
@@ -89,7 +90,7 @@ namespace NuGet.Insights
 
             // Assert
             Assert.NotEmpty(output);
-            Assert.Equal(new[] { "authors", "dependencies", "description", "owners" }, output.Keys.OrderBy(x => x));
+            Assert.Equal(new[] { "authors", "dependencies", "description", "owners" }, output.Keys.OrderBy(x => x, StringComparer.Ordinal));
             Assert.Equal(3, output["authors"]);
             Assert.Equal(2, output["dependencies"]);
             Assert.Equal(3, output["description"]);
@@ -107,7 +108,7 @@ namespace NuGet.Insights
 
             // Assert
             Assert.NotEmpty(output);
-            Assert.Equal(new[] { "authors", "description" }, output.Keys.OrderBy(x => x));
+            Assert.Equal(new[] { "authors", "description" }, output.Keys.OrderBy(x => x, StringComparer.Ordinal));
             Assert.Equal(3, output["authors"]);
             Assert.Equal(3, output["description"]);
         }
@@ -752,7 +753,7 @@ namespace NuGet.Insights
                 .Select(x => x.GetValue(null))
                 .Cast<string>()
                 .Distinct()
-                .OrderBy(x => x)
+                .OrderBy(x => x, StringComparer.Ordinal)
                 .ToList();
 
             private readonly IReadOnlyDictionary<string, T> _expected;

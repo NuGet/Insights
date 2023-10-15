@@ -67,7 +67,7 @@ namespace NuGet.Insights.Worker
                     builder.AppendLine($"| Enum value | Description |");
                     builder.AppendLine($"| ---------- | ----------- |");
                     TableDocInfo.TryGetEnumType(_info.NameToProperty[name].PropertyType, out var enumType);
-                    var values = Enum.GetNames(enumType).OrderBy(x => x).ToList();
+                    var values = Enum.GetNames(enumType).OrderBy(x => x, StringComparer.Ordinal).ToList();
                     foreach (var value in values)
                     {
                         builder.AppendLine($"| {value} | TODO |");

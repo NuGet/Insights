@@ -358,8 +358,8 @@ namespace NuGet.Insights.ReferenceTracking
             }
 
             return references
-                .OrderBy(x => x.RowKey)
-                .ThenBy(x => x.PartitionKey)
+                .OrderBy(x => x.RowKey, StringComparer.Ordinal)
+                .ThenBy(x => x.PartitionKey, StringComparer.Ordinal)
                 .ToList();
         }
 

@@ -566,7 +566,7 @@ namespace NuGet.Insights.WideEntities
 
             public static IEnumerable<object[]> RoundTripsBytesTestData => ByteArrayLengths
                 .Distinct()
-                .OrderBy(x => x)
+                .Order()
                 .Select(x => new object[] { x });
 
             private static IEnumerable<int> ByteArrayLengths

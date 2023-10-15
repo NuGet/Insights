@@ -450,7 +450,7 @@ namespace NuGet.Insights.Worker
                         return grouping;
                     }
                 })
-                .ToDictionary(x => x.Key, x => x.ToList()));
+                .ToDictionary(x => x.Key, x => x.ToList()), StringComparer.Ordinal);
         }
 
         protected async Task AssertEntityOutputAsync<T>(
