@@ -148,10 +148,11 @@ Each item in the certificate policies array has these properties. This aligns wi
 Each item in the certificate policy qualifiers array has these properties. This aligns with the schema defined in
 [RFC 5280, section 4.2.1.4](https://www.rfc-editor.org/rfc/rfc5280.html#section-4.2.1.4).
 
-| Property name     | Data type | Required | Description                                                  |
-| ----------------- | --------- | -------- | ------------------------------------------------------------ |
-| PolicyQualifierId | string    | true     | An OID (object identifier) for this type of policy qualifier |
-| Qualifier         | string    | true     | A base64 encoded string of the qualifier data                |
+| Property name     | Data type | Required | Description                                                                     |
+| ----------------- | --------- | -------- | ------------------------------------------------------------------------------- |
+| PolicyQualifierId | string    | true     | An OID (object identifier) for this type of policy qualifier                    |
+| Qualifier         | string    | true     | A base64 encoded string of the qualifier data                                   |
+| Recognized        | bool      | true     | Whether or not the policy qualifier is recognized and has additional properties |
 
 When the PolicyQualifierId property is `1.3.6.1.5.5.7.2.1` (CPS qualifier), the object has the following additional
 properties. 

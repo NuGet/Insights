@@ -22,10 +22,11 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
     /// </summary>
     public class X509PolicyQualifierInfo
     {
-        public X509PolicyQualifierInfo(string policyQualifierId, string qualifier)
+        public X509PolicyQualifierInfo(string policyQualifierId, string qualifier, bool recognized)
         {
             PolicyQualifierId = policyQualifierId;
             Qualifier = qualifier;
+            Recognized = recognized;
         }
 
         public string PolicyQualifierId { get; }
@@ -34,5 +35,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         /// Base64 encoded bytes for the qualifier.
         /// </summary>
         public string Qualifier { get; }
+
+        public bool Recognized { get; }
     }
 }

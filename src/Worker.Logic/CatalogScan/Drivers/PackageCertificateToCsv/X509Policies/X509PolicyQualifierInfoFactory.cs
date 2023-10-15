@@ -34,7 +34,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
                 return new X509CpsPolicyQualifierInfo(policyQualifierId, qualifier, cpsUri);
             }
 
-            return new X509PolicyQualifierInfo(policyQualifierId, qualifier);
+            return new X509PolicyQualifierInfo(policyQualifierId, qualifier, recognized: false);
         }
     }
 }

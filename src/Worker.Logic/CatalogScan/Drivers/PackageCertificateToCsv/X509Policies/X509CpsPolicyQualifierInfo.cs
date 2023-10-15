@@ -7,7 +7,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 {
     public class X509CpsPolicyQualifierInfo : X509PolicyQualifierInfo
     {
-        public X509CpsPolicyQualifierInfo(string policyQualifierId, string qualifier, string cpsUri) : base(policyQualifierId, qualifier)
+        public X509CpsPolicyQualifierInfo(string policyQualifierId, string qualifier, string cpsUri) : base(policyQualifierId, qualifier, recognized: true)
         {
             CpsUri = cpsUri;
         }
