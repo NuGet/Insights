@@ -12,7 +12,6 @@ using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Security;
 using System.Security.Cryptography;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -307,8 +306,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             assembly.EdgeCases |= info.EdgeCases;
             assembly.CustomAttributesTotalCount = info.TotalCount;
             assembly.CustomAttributesTotalDataLength = info.TotalDataLength;
-            assembly.CustomAttributesFailedDecode = JsonSerializer.Serialize(info.FailedDecode.OrderBy(x => x, StringComparer.Ordinal).ToList());
-            assembly.CustomAttributes = JsonSerializer.Serialize(info.NameToParameters);
+            assembly.CustomAttributesFailedDecode = KustoDynamicSerializer.Serialize(info.FailedDecode.OrderBy(x => x, StringComparer.Ordinal).ToList());
+            assembly.CustomAttributes = KustoDynamicSerializer.Serialize(info.NameToParameters);
         }
 
         public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageAssembly record)

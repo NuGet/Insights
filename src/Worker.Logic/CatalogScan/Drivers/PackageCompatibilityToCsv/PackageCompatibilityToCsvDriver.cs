@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Knapcode.MiniZip;
 using Microsoft.Extensions.Logging;
@@ -20,10 +18,6 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 {
     public class PackageCompatibilityToCsvDriver : ICatalogLeafToCsvDriver<PackageCompatibility>, ICsvResultStorage<PackageCompatibility>
     {
-        private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        };
         private static readonly NuGetFrameworkSorter Sorter = new NuGetFrameworkSorter();
 
         private readonly CatalogClient _catalogClient;
@@ -164,22 +158,23 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 
                     var compatibility = compatibilityFactory.Create(frameworks);
 
-                    output.NuGetGallerySupported = JsonSerializer.Serialize(compatibility
+                    output.NuGetGallerySupported = KustoDynamicSerializer.Serialize(compatibility
                         .Table
                         .Select(x => new
                         {
                             ProductName = x.Key,
                             Frameworks = x.Value.Select(x => new { Framework = x.Framework.GetShortFolderName(), x.IsComputed }).ToList(),
                         })
-                        .OrderBy(x => x.ProductName, StringComparer.Ordinal), SerializerOptions);
+                        .OrderBy(x => x.ProductName, StringComparer.Ordinal)
+                        .ToList());
 
-                    output.NuGetGalleryBadges = JsonSerializer.Serialize(new[]
+                    output.NuGetGalleryBadges = KustoDynamicSerializer.Serialize(new[]
                     {
                         new { ProductName = FrameworkProductNames.Net, Minimum = compatibility.Badges.Net?.GetShortFolderName() },
                         new { ProductName = FrameworkProductNames.NetFramework, Minimum = compatibility.Badges.NetFramework?.GetShortFolderName() },
                         new { ProductName = FrameworkProductNames.NetCore, Minimum = compatibility.Badges.NetCore?.GetShortFolderName() },
                         new { ProductName = FrameworkProductNames.NetStandard, Minimum = compatibility.Badges.NetStandard?.GetShortFolderName() },
-                    }.Where(x => x.Minimum is not null), SerializerOptions);
+                    }.Where(x => x.Minimum is not null).ToList());
                 }
 
                 output.NuGetGalleryEscaped = GetAndSerializeNested(
@@ -199,7 +194,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 output.HasAny = hasAny;
                 output.HasUnsupported = hasUnsupported;
                 output.HasAgnostic = hasAgnostic;
-                output.BrokenFrameworks = JsonSerializer.Serialize(brokenFrameworks.OrderBy(x => x, StringComparer.Ordinal).ToList());
+                output.BrokenFrameworks = KustoDynamicSerializer.Serialize(brokenFrameworks.OrderBy(x => x, StringComparer.Ordinal).ToList());
 
                 return new List<PackageCompatibility> { output };
             }
@@ -263,7 +258,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 return null;
             }
 
-            return JsonSerializer.Serialize(roundTripShortFolderNames);
+            return KustoDynamicSerializer.Serialize(roundTripShortFolderNames);
         }
 
         public List<PackageCompatibility> Prune(List<PackageCompatibility> records, bool isFinalPrune)

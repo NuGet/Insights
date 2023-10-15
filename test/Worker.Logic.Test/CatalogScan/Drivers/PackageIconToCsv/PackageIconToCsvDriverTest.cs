@@ -20,6 +20,25 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         public ICatalogLeafToCsvDriver<PackageIcon> Target => Host.Services.GetRequiredService<ICatalogLeafToCsvDriver<PackageIcon>>();
 
         [Fact]
+        public async Task SerializesFrameDimensionsInLexOrder()
+        {
+            await Target.InitializeAsync();
+            var leaf = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2023.05.04.04.00.50/microsoft.extensions.primitives.2.2.0.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "Microsoft.Extensions.Primitives",
+                PackageVersion = "2.2.0",
+            };
+
+            var output = await Target.ProcessLeafAsync(leaf);
+
+            Assert.Equal(DriverResultType.Success, output.Type);
+            var record = Assert.Single(output.Value.Records);
+            Assert.Equal("[{\"Height\":512,\"Width\":512}]", record.FrameDimensions);
+        }
+
+        [Fact]
         public async Task Gif_Animated_Opaque()
         {
             await Target.InitializeAsync();
@@ -288,7 +307,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             Assert.Equal(90022, record.FileSize);
             Assert.Equal(128, record.Width);
             Assert.Equal(128, record.Height);
-            Assert.Equal("[{\"Width\":128,\"Height\":128},{\"Width\":64,\"Height\":64},{\"Width\":32,\"Height\":32},{\"Width\":16,\"Height\":16}]", record.FrameDimensions);
+            Assert.Equal("[{\"Height\":128,\"Width\":128},{\"Height\":64,\"Width\":64},{\"Height\":32,\"Width\":32},{\"Height\":16,\"Width\":16}]", record.FrameDimensions);
         }
 
         [Fact]
@@ -316,7 +335,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             Assert.Equal(18406, record.FileSize);
             Assert.Equal(64, record.Width);
             Assert.Equal(64, record.Height);
-            Assert.Equal("[{\"Width\":64,\"Height\":64},{\"Width\":32,\"Height\":32},{\"Width\":16,\"Height\":16}]", record.FrameDimensions);
+            Assert.Equal("[{\"Height\":64,\"Width\":64},{\"Height\":32,\"Width\":32},{\"Height\":16,\"Width\":16}]", record.FrameDimensions);
         }
 
         [Fact]
@@ -344,7 +363,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             Assert.Equal(113018, record.FileSize);
             Assert.Equal(256, record.Width);
             Assert.Equal(256, record.Height);
-            Assert.Equal("[{\"Width\":256,\"Height\":256},{\"Width\":128,\"Height\":128},{\"Width\":64,\"Height\":64},{\"Width\":48,\"Height\":48},{\"Width\":32,\"Height\":32},{\"Width\":16,\"Height\":16}]", record.FrameDimensions);
+            Assert.Equal("[{\"Height\":256,\"Width\":256},{\"Height\":128,\"Width\":128},{\"Height\":64,\"Width\":64},{\"Height\":48,\"Width\":48},{\"Height\":32,\"Width\":32},{\"Height\":16,\"Width\":16}]", record.FrameDimensions);
             Assert.Equal("[\"Png\",\"Ico\"]", record.FrameFormats);
         }
 
@@ -373,7 +392,21 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             Assert.Equal(60724, record.FileSize);
             Assert.Equal(800, record.Width);
             Assert.Equal(450, record.Height);
-            Assert.Equal("[{\"Width\":800,\"Height\":450},{\"Width\":792,\"Height\":440},{\"Width\":795,\"Height\":428},{\"Width\":796,\"Height\":429},{\"Width\":777,\"Height\":428},{\"Width\":773,\"Height\":403},{\"Width\":246,\"Height\":50},{\"Width\":185,\"Height\":49},{\"Width\":104,\"Height\":36},{\"Width\":51,\"Height\":36},{\"Width\":1,\"Height\":1}]", record.FrameDimensions);
+            Assert.Equal(
+                "[" +
+                "{\"Height\":450,\"Width\":800}," +
+                "{\"Height\":440,\"Width\":792}," +
+                "{\"Height\":428,\"Width\":795}," +
+                "{\"Height\":429,\"Width\":796}," +
+                "{\"Height\":428,\"Width\":777}," +
+                "{\"Height\":403,\"Width\":773}," +
+                "{\"Height\":50,\"Width\":246}," +
+                "{\"Height\":49,\"Width\":185}," +
+                "{\"Height\":36,\"Width\":104}," +
+                "{\"Height\":36,\"Width\":51}," +
+                "{\"Height\":1,\"Width\":1}" +
+                "]",
+                record.FrameDimensions);
         }
 
         [Fact]

@@ -3,15 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Services.Metadata.Catalog;
-using NuGet.Versioning;
 
 namespace NuGet.Insights.Worker.PackageManifestToCsv
 {
@@ -90,7 +87,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
                 DevelopmentDependency = nuspecReader.GetDevelopmentDependency(),
                 OriginalId = nuspecReader.GetId(),
                 MinClientVersion = nuspecReader.GetMinClientVersion()?.ToNormalizedString(),
-                PackageTypes = JsonSerialize(nuspecReader.GetPackageTypes()),
+                PackageTypes = KustoDynamicSerializer.Serialize(nuspecReader.GetPackageTypes()),
                 OriginalVersion = nuspecReader.GetVersion().OriginalVersion,
                 IsServiceable = nuspecReader.IsServiceable(),
 
@@ -98,8 +95,8 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
                 Authors = nuspecReader.GetAuthors(),
                 Copyright = nuspecReader.GetCopyright(),
                 Description = nuspecReader.GetDescription(),
-                FrameworkAssemblyGroups = JsonSerialize(nuspecReader.GetFrameworkAssemblyGroups()),
-                FrameworkRefGroups = JsonSerialize(nuspecReader.GetFrameworkRefGroups()),
+                FrameworkAssemblyGroups = KustoDynamicSerializer.Serialize(nuspecReader.GetFrameworkAssemblyGroups().ToList()),
+                FrameworkRefGroups = KustoDynamicSerializer.Serialize(nuspecReader.GetFrameworkRefGroups().ToList()),
                 Icon = nuspecReader.GetIcon(),
                 IconUrl = nuspecReader.GetIconUrl(),
                 Language = nuspecReader.GetLanguage(),
@@ -107,7 +104,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
                 Owners = nuspecReader.GetOwners(),
                 ProjectUrl = nuspecReader.GetProjectUrl(),
                 Readme = nuspecReader.GetReadme(),
-                ReferenceGroups = JsonSerialize(nuspecReader.GetReferenceGroups()),
+                ReferenceGroups = KustoDynamicSerializer.Serialize(nuspecReader.GetReferenceGroups().ToList()),
                 ReleaseNotes = nuspecReader.GetReleaseNotes(),
                 RequireLicenseAcceptance = nuspecReader.GetRequireLicenseAcceptance(),
                 Summary = nuspecReader.GetSummary(),
@@ -127,7 +124,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         private static void SplitTags(PackageManifestRecord record)
         {
             var splitTags = string.IsNullOrWhiteSpace(record.Tags) ? Array.Empty<string>() : Utils.SplitTags(record.Tags);
-            record.SplitTags = JsonSerialize(splitTags);
+            record.SplitTags = KustoDynamicSerializer.Serialize(splitTags);
         }
 
         private static void ReadLicenseMetadata(NuspecReader nuspecReader, PackageManifestRecord record)
@@ -138,7 +135,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
                 return;
             }
 
-            record.LicenseMetadata = JsonSerialize(metadata);
+            record.LicenseMetadata = KustoDynamicSerializer.Serialize(metadata);
         }
 
         private static void ReadRepositoryMetadata(NuspecReader nuspecReader, PackageManifestRecord record)
@@ -153,14 +150,14 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
                 return;
             }
 
-            record.RepositoryMetadata = JsonSerialize(metadata);
+            record.RepositoryMetadata = KustoDynamicSerializer.Serialize(metadata);
         }
 
         private static void ReadContentFiles(NuspecReader nuspecReader, PackageManifestRecord record)
         {
             try
             {
-                record.ContentFiles = JsonSerialize(nuspecReader.GetContentFiles());
+                record.ContentFiles = KustoDynamicSerializer.Serialize(nuspecReader.GetContentFiles().ToList());
             }
             catch (PackagingException ex) when (ex.Message.Contains("The nuspec contains an invalid entry"))
             {
@@ -173,7 +170,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         {
             try
             {
-                record.DependencyGroups = JsonSerialize(nuspecReader.GetDependencyGroups());
+                record.DependencyGroups = KustoDynamicSerializer.Serialize(nuspecReader.GetDependencyGroups().ToList());
             }
             catch (ArgumentException ex) when (ex.Message.Contains("The argument cannot be null or empty.") && ex.ParamName == "id")
             {
@@ -182,90 +179,9 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             }
         }
 
-        private static string JsonSerialize(object input)
-        {
-            return JsonSerializer.Serialize(input, JsonSerializerOptions);
-        }
-
         public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageManifestRecord record)
         {
             throw new NotImplementedException();
-        }
-
-        private static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
-        {
-            Converters =
-            {
-                new JsonStringEnumConverter(),
-                new NuGetFrameworkJsonConverter(),
-                new VersionRangeJsonConverter(),
-                new LicenseMetadataJsonConverter(),
-                new FrameworkSpecificGroupJsonConverter(),
-            },
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        };
-
-        private class NuGetFrameworkJsonConverter : JsonConverter<NuGetFramework>
-        {
-            public override NuGetFramework Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override void Write(Utf8JsonWriter writer, NuGetFramework value, JsonSerializerOptions options)
-            {
-                writer.WriteStringValue(value.GetShortFolderName());
-            }
-        }
-
-        private class VersionRangeJsonConverter : JsonConverter<VersionRange>
-        {
-            public override VersionRange Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override void Write(Utf8JsonWriter writer, VersionRange value, JsonSerializerOptions options)
-            {
-                writer.WriteStringValue(value.ToNormalizedString());
-            }
-        }
-
-        private class LicenseMetadataJsonConverter : JsonConverter<LicenseMetadata>
-        {
-            public override LicenseMetadata Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override void Write(Utf8JsonWriter writer, LicenseMetadata value, JsonSerializerOptions options)
-            {
-                JsonSerializer.Serialize(writer, new
-                {
-                    value.Type,
-                    value.License,
-                    value.WarningsAndErrors,
-                    value.Version,
-                    value.LicenseUrl,
-                }, options);
-            }
-        }
-
-        private class FrameworkSpecificGroupJsonConverter : JsonConverter<FrameworkSpecificGroup>
-        {
-            public override FrameworkSpecificGroup Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override void Write(Utf8JsonWriter writer, FrameworkSpecificGroup value, JsonSerializerOptions options)
-            {
-                JsonSerializer.Serialize(writer, new
-                {
-                    value.TargetFramework,
-                    value.Items,
-                }, options);
-            }
         }
     }
 }

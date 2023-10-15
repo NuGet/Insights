@@ -9,8 +9,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using NuGet.Packaging;
 using NuGet.Packaging.Licenses;
 
@@ -18,14 +16,6 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
 {
     public class PackageLicenseToCsvDriver : ICatalogLeafToCsvDriver<PackageLicense>, ICsvResultStorage<PackageLicense>
     {
-        private static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
-        {
-            Converters =
-            {
-                new StringEnumConverter(),
-            }
-        };
-
         private readonly CatalogClient _catalogClient;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -132,10 +122,10 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
                             },
                             exception => exceptions.Add(exception.Identifier));
 
-                        record.ExpressionParsed = JsonConvert.SerializeObject(parsedExpression, SerializerSettings);
-                        record.ExpressionLicenses = JsonConvert.SerializeObject(licenses.OrderBy(x => x, StringComparer.Ordinal).ToList());
-                        record.ExpressionExceptions = JsonConvert.SerializeObject(exceptions.OrderBy(x => x, StringComparer.Ordinal).ToList());
-                        record.ExpressionNonStandardLicenses = JsonConvert.SerializeObject(nonStandardLicenses.OrderBy(x => x, StringComparer.Ordinal).ToList());
+                        record.ExpressionParsed = KustoDynamicSerializer.Serialize(parsedExpression);
+                        record.ExpressionLicenses = KustoDynamicSerializer.Serialize(licenses.OrderBy(x => x, StringComparer.Ordinal).ToList());
+                        record.ExpressionExceptions = KustoDynamicSerializer.Serialize(exceptions.OrderBy(x => x, StringComparer.Ordinal).ToList());
+                        record.ExpressionNonStandardLicenses = KustoDynamicSerializer.Serialize(nonStandardLicenses.OrderBy(x => x, StringComparer.Ordinal).ToList());
                         record.GeneratedUrl = new LicenseMetadata(
                             LicenseType.Expression,
                             leaf.LicenseExpression,

@@ -3,6 +3,8 @@
 
 #nullable enable
 
+using System.Text.Json.Serialization;
+
 namespace NuGet.Insights.Worker.PackageCertificateToCsv
 {
     /// <summary>
@@ -20,6 +22,8 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
     ///
     ///     PolicyQualifierId ::= OBJECT IDENTIFIER ( id-qt-cps | id-qt-unotice )
     /// </summary>
+    [JsonPolymorphic]
+    [JsonDerivedType(typeof(X509CpsPolicyQualifierInfo))]
     public class X509PolicyQualifierInfo
     {
         public X509PolicyQualifierInfo(string policyQualifierId, string qualifier, bool recognized)

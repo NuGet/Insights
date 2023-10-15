@@ -2,18 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace NuGet.Insights.Worker.CatalogDataToCsv
 {
     public partial record CatalogLeafItemRecord : ICsvRecord
     {
-        private static readonly JsonSerializerOptions DoNotWriteNull = new JsonSerializerOptions
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
-
         public CatalogLeafItemRecord()
         {
         }
@@ -27,8 +20,8 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             PackageSize = leaf.PackageSize;
             PackageHash = leaf.PackageHash;
             PackageHashAlgorithm = leaf.PackageHashAlgorithm;
-            Deprecation = leaf.Deprecation is not null ? JsonSerializer.Serialize(leaf.Deprecation, DoNotWriteNull) : null;
-            Vulnerabilities = leaf.Vulnerabilities is not null ? JsonSerializer.Serialize(leaf.Vulnerabilities, DoNotWriteNull) : null;
+            Deprecation = KustoDynamicSerializer.Serialize(leaf.Deprecation);
+            Vulnerabilities = KustoDynamicSerializer.Serialize(leaf.Vulnerabilities);
         }
 
         public CatalogLeafItemRecord(PackageDeleteCatalogLeaf leaf, string pageUrl) : this((CatalogLeaf)leaf, pageUrl)

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using ImageMagick;
@@ -153,9 +152,9 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
                             output.Height = image.Height;
                             output.IsOpaque = image.IsOpaque;
                             output.FrameCount = frames.Count;
-                            output.FrameFormats = JsonSerializer.Serialize(frameFormats);
-                            output.FrameDimensions = JsonSerializer.Serialize(frameDimensions);
-                            output.FrameAttributeNames = JsonSerializer.Serialize(frameAttributeNames.Except(IgnoredAttributes).OrderBy(x => x, StringComparer.Ordinal).ToList());
+                            output.FrameFormats = KustoDynamicSerializer.Serialize(frameFormats);
+                            output.FrameDimensions = KustoDynamicSerializer.Serialize(frameDimensions);
+                            output.FrameAttributeNames = KustoDynamicSerializer.Serialize(frameAttributeNames.Except(IgnoredAttributes).OrderBy(x => x, StringComparer.Ordinal).ToList());
                         }
                     }
                     catch (Exception ex) when (ex is not OutOfMemoryException)

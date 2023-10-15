@@ -20,6 +20,47 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         public ICatalogLeafToCsvDriver<PackageCompatibility> Target => Host.Services.GetRequiredService<ICatalogLeafToCsvDriver<PackageCompatibility>>();
 
         [Fact]
+        public async Task SerializesFrameworkPropertiesInLexOrder()
+        {
+            await Target.InitializeAsync();
+            var leaf = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2018.10.15.07.08.37/htmlagilitypack.1.4.2.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "HtmlAgilityPack",
+                PackageVersion = "1.4.2",
+            };
+
+            var output = await Target.ProcessLeafAsync(leaf);
+
+            Assert.Equal(DriverResultType.Success, output.Type);
+            var record = Assert.Single(output.Value.Records);
+            Assert.Equal(
+                "[{" +
+                "\"Minimum\":\"net\"," +
+                "\"ProductName\":\".NET Framework\"" +
+                "}]",
+                record.NuGetGalleryBadges);
+            Assert.Equal(
+                "[{" +
+                "\"Frameworks\":[{" +
+                    "\"Framework\":\"net\"," +
+                    "\"IsComputed\":false" +
+                "}]," +
+                "\"ProductName\":\".NET Framework\"" +
+                "},{" +
+                "\"Frameworks\":[{" +
+                    "\"Framework\":\"sl4\"," +
+                    "\"IsComputed\":false" +
+                "},{" +
+                    "\"Framework\":\"sl5\"," +
+                    "\"IsComputed\":true" +
+                "}]," +
+                "\"ProductName\":\"Silverlight\"}]",
+                record.NuGetGallerySupported);
+        }
+
+        [Fact]
         public async Task SimplePackage()
         {
             await Target.InitializeAsync();

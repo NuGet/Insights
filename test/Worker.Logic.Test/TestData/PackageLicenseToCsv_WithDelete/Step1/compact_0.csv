@@ -675,5 +675,5 @@ the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 <https://www.gnu.org/licenses/why-not-lgpl.html>.
 "
-,,nut.mediatr.behaviors,nut.mediatr.behaviors/0.0.0-preview.0.44,Nut.MediatR.Behaviors,0.0.0-preview.0.44,2020-12-20T02:37:52.9649363Z,2020-12-20T02:35:17.08Z,Expression,https://licenses.nuget.org/Apache-2.0,Apache-2.0,,https://licenses.nuget.org/Apache-2.0,"{""Identifier"":""Apache-2.0"",""Plus"":false,""IsStandardLicense"":true,""Type"":""License""}","[""Apache-2.0""]",[],[],false,,,
+,,nut.mediatr.behaviors,nut.mediatr.behaviors/0.0.0-preview.0.44,Nut.MediatR.Behaviors,0.0.0-preview.0.44,2020-12-20T02:37:52.9649363Z,2020-12-20T02:35:17.08Z,Expression,https://licenses.nuget.org/Apache-2.0,Apache-2.0,,https://licenses.nuget.org/Apache-2.0,"{""Identifier"":""Apache-2.0"",""IsStandardLicense"":true,""Plus"":false,""Type"":""License""}","[""Apache-2.0""]",[],[],false,,,
 ,,servicelikesample,servicelikesample/1.0.0,ServiceLikeSample,1.0.0,2020-12-20T02:39:37.8102297Z,2020-12-20T02:35:15.14Z,None,,,,,,,,,,,,

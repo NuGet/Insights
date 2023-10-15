@@ -26,6 +26,67 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         public ICatalogLeafToCsvDriver<PackageAssembly> Target => Host.Services.GetRequiredService<ICatalogLeafToCsvDriver<PackageAssembly>>();
 
         [Fact]
+        public async Task SerializesCustomAttributesFailedDecodeInLexOrder()
+        {
+            var leaf = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2019.05.17.08.05.38/soneta.business.1905.0.1.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "Soneta.Business",
+                PackageVersion = "1905.0.1",
+            };
+            await Target.InitializeAsync();
+
+            var output = await Target.ProcessLeafAsync(leaf);
+
+            Assert.Equal(DriverResultType.Success, output.Type);
+            var record = Assert.Single(output.Value.Records);
+            Assert.Equal(
+                "[" +
+                "\"BusinessRow\"," +
+                "\"DatabaseInit\"," +
+                "\"DictionaryProvider\"," +
+                "\"FolderView\"," +
+                "\"ModuleType\"," +
+                "\"NewRow\"," +
+                "\"Service\"," +
+                "\"SimpleRight\"," +
+                "\"Worker\"" +
+                "]",
+                record.CustomAttributesFailedDecode);
+        }
+
+        [Fact]
+        public async Task SerializesCustomAttributesInLexOrder()
+        {
+            var leaf = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2018.10.15.02.03.42/serilog.0.1.12.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "Serilog",
+                PackageVersion = "0.1.12",
+            };
+            await Target.InitializeAsync();
+
+            var output = await Target.ProcessLeafAsync(leaf);
+
+            Assert.Equal(DriverResultType.Success, output.Type);
+            var record = Assert.Single(output.Value.Records);
+            Assert.Equal(
+                "{" +
+                "\"AssemblyCopyright\":[{\"0\":\"Copyright \\u00A9 Nicholas Blumhardt 2013\"}]," +
+                "\"AssemblyDescription\":[{\"0\":\"Serilog Logging Library\"}]," +
+                "\"AssemblyFileVersion\":[{\"0\":\"0.1.12.0\"}]," +
+                "\"AssemblyTitle\":[{\"0\":\"Serilog\"}]," +
+                "\"CompilationRelaxations\":[{\"0\":8}]," +
+                "\"Debuggable\":[{\"0\":2}]," +
+                "\"InternalsVisibleTo\":[{\"0\":\"Serilog.Tests, PublicKey=0024000004800000940000000602000000240000525341310004000001000100fb8d13fd344a1c6fe0fe83ef33c1080bf30690765bc6eb0df26ebfdf8f21670c64265b30db09f73a0dea5b3db4c9d18dbf6d5a25af5ce9016f281014d79dc3b4201ac646c451830fc7e61a2dfd633d34c39f87b81894191652df5ac63cc40c77f3542f702bda692e6e8a9158353df189007a49da0f3cfd55eb250066b19485ec\"}],\"RuntimeCompatibility\":[{\"WrapNonExceptionThrows\":true}]," +
+                "\"TargetFramework\":[{\"0\":\".NETFramework,Version=v4.5\",\"FrameworkDisplayName\":\".NET Framework 4.5\"}]" +
+                "}",
+                record.CustomAttributes);
+        }
+
+        [Fact]
         public async Task HandlesInvalidPublicKey()
         {
             var leaf = new CatalogLeafScan
@@ -322,7 +383,24 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             Assert.Equal(6, output.Value.Records.Count);
             var record = output.Value.Records[1];
             Assert.Equal("bin/Debug/SockLibNG.dll", record.Path);
-            Assert.Equal("[\"\",\"Runtime.InteropServices\",\"blyDescription\",\"bute\",\"ces\",\"eByte\",\"emblyCopyright\",\"ionRelaxations\",\"ssemblyCompany\",\"ssemblyProduct\",\"ssemblyVersion\",\"stem.Runtime.Versioning\",\"ty\",\"untime.CompilerServices\",\"yConfiguration\"]", record.CustomAttributesFailedDecode);
+            Assert.Equal(
+                "[" +
+                "\"\"," +
+                "\"Runtime.InteropServices\"," +
+                "\"blyDescription\"," +
+                "\"bute\"," +
+                "\"ces\"," +
+                "\"eByte\"," +
+                "\"emblyCopyright\"," +
+                "\"ionRelaxations\"," +
+                "\"ssemblyCompany\"," +
+                "\"ssemblyProduct\"," +
+                "\"ssemblyVersion\"," +
+                "\"stem.Runtime.Versioning\"," +
+                "\"ty\"," +
+                "\"untime.CompilerServices\"," +
+                "\"yConfiguration\"]",
+                record.CustomAttributesFailedDecode);
         }
 
         [Fact]

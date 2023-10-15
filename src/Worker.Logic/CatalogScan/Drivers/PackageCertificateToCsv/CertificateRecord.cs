@@ -4,7 +4,6 @@
 using System;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
-using Newtonsoft.Json;
 using NuGet.Services.Validation;
 
 namespace NuGet.Insights.Worker.PackageCertificateToCsv
@@ -32,16 +31,11 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             SerialNumber = info.Certificate.SerialNumber;
             SignatureAlgorithmOid = info.Certificate.SignatureAlgorithm.Value;
             Version = info.Certificate.Version;
-            Extensions = JsonConvert.SerializeObject(info.Certificate.GetExtensions());
+            Extensions = KustoDynamicSerializer.Serialize(info.Certificate.GetExtensions());
             PublicKeyOid = info.Certificate.PublicKey.Oid.Value;
             RawDataLength = info.Certificate.RawData.Length;
             RawData = info.Certificate.RawData.ToBase64();
-
-            var policies = info.Certificate.GetPolicies();
-            if (policies is not null)
-            {
-                Policies = JsonConvert.SerializeObject(policies);
-            }
+            Policies = KustoDynamicSerializer.Serialize(info.Certificate.GetPolicies());
 
             if (info.Issuer is not null)
             {

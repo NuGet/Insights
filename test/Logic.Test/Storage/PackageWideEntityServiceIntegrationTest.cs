@@ -329,6 +329,14 @@ namespace NuGet.Insights
             Item = new PackageIdentityWithoutCommit("NuGet.Versioning", "6.0.0", CommitTimestamp);
         }
 
+        protected async override Task DisposeInternalAsync()
+        {
+            var client = await Host.Services.GetRequiredService<ServiceClientFactory>().GetTableServiceClientAsync();
+            await client.DeleteTableAsync(TableName);
+
+            await base.DisposeInternalAsync();
+        }
+
         public PackageWideEntityService Target => Host.Services.GetRequiredService<PackageWideEntityService>();
         public string TableName { get; }
         public DateTimeOffset CommitTimestamp { get; set; }

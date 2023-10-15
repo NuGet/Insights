@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text.Json;
+using System.Linq;
 using NuGet.Insights.Worker.LoadPackageVersion;
 using NuGet.Versioning;
 
@@ -44,7 +44,7 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
             Patch = parsedVersion.Patch;
             Revision = parsedVersion.Revision;
             Release = parsedVersion.Release;
-            ReleaseLabels = JsonSerializer.Serialize(parsedVersion.ReleaseLabels);
+            ReleaseLabels = KustoDynamicSerializer.Serialize(parsedVersion.ReleaseLabels.ToList());
             Metadata = parsedVersion.Metadata;
             IsPrerelease = parsedVersion.IsPrerelease;
         }

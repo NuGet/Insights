@@ -25,8 +25,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
     {
         public static AssemblyAttributes Read(MetadataReader metadata, PackageAssembly assembly, ILogger logger)
         {
-            var nameToArguments = new SortedDictionary<string, List<IDictionary<string, object>>>(StringComparer.Ordinal);
-            var failedDecode = new SortedSet<string>(StringComparer.Ordinal);
+            var nameToArguments = new Dictionary<string, List<IDictionary<string, object>>>();
+            var failedDecode = new HashSet<string>();
             var edgeCases = PackageAssemblyEdgeCases.None;
             var totalCount = 0;
             var addedAttributeLength = 0;
@@ -177,7 +177,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                     continue;
                 }
 
-                var arguments = new SortedDictionary<string, object>(StringComparer.Ordinal);
+                var arguments = new Dictionary<string, object>();
                 for (var i = 0; i < value.FixedArguments.Length; i++)
                 {
                     arguments.Add(i.ToString(), value.FixedArguments[i].Value);

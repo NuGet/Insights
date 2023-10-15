@@ -5,10 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using NuGet.Services.Validation;
 using Xunit;
 using Xunit.Abstractions;
@@ -24,6 +24,102 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         }
 
         public ICatalogLeafToCsvBatchDriver<PackageCertificateRecord, CertificateRecord> Target => Host.Services.GetRequiredService<ICatalogLeafToCsvBatchDriver<PackageCertificateRecord, CertificateRecord>>();
+
+        [Fact]
+        public async Task SerializesExtensionsInLexOrder()
+        {
+            await Target.InitializeAsync();
+            var leaf = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2019.04.07.03.15.40/coderushserver.18.2.7.19970609.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "CodeRushServer",
+                PackageVersion = "18.2.7.19970609",
+            };
+
+            var output = await Target.ProcessLeavesAsync(new[] { leaf });
+
+            var certificate = Assert.Single(
+                output.Result.Sets2.SelectMany(x => x.Records),
+                x => x.Fingerprint == "b_945ACnDBEBHNhZd8RZ-1r5aj3wVAgg0PS4YHh15Y8");
+            Assert.Equal(
+                "[{" +
+                    "\"Critical\":false," +
+                    "\"KeyUsages\":\"CrlSign, KeyCertSign, NonRepudiation, DigitalSignature\"," +
+                    "\"Oid\":\"2.5.29.15\"," +
+                    "\"RawData\":\"AwIBxg==\"," +
+                    "\"RawDataLength\":4," +
+                    "\"Recognized\":true" +
+                "},{" +
+                    "\"CertificateAuthority\":true," +
+                    "\"Critical\":true," +
+                    "\"HasPathLengthConstraint\":false," +
+                    "\"Oid\":\"2.5.29.19\"," +
+                    "\"PathLengthConstraint\":0," +
+                    "\"RawData\":\"MAMBAf8=\"," +
+                    "\"RawDataLength\":5," +
+                    "\"Recognized\":true" +
+                "},{" +
+                    "\"Critical\":false," +
+                    "\"Oid\":\"2.5.29.14\"," +
+                    "\"RawData\":\"BBTa7WR0FJwUPKvdmam9WyhNizzJ2A==\"," +
+                    "\"RawDataLength\":22," +
+                    "\"Recognized\":true," +
+                    "\"SubjectKeyIdentifier\":\"DAED6474149C143CABDD99A9BD5B284D8B3CC9D8\"" +
+                "},{" +
+                    "\"Critical\":false," +
+                    "\"Oid\":\"2.5.29.31\"," +
+                    "\"RawData\":\"MDkwN6A1oDOGMWh0dHA6Ly9jcmwudXNlcnRydXN0LmNvbS9VVE4tVVNFUkZpcnN0LU9iamVjdC5jcmw=\"," +
+                    "\"RawDataLength\":59," +
+                    "\"Recognized\":false" +
+                "},{" +
+                    "\"Critical\":false," +
+                    "\"EnhancedKeyUsageOids\":[\"1.3.6.1.5.5.7.3.3\",\"1.3.6.1.5.5.7.3.8\",\"1.3.6.1.4.1.311.10.3.4\"]," +
+                    "\"Oid\":\"2.5.29.37\"," +
+                    "\"RawData\":\"MCAGCCsGAQUFBwMDBggrBgEFBQcDCAYKKwYBBAGCNwoDBA==\"," +
+                    "\"RawDataLength\":34," +
+                    "\"Recognized\":true" +
+                "}]",
+                certificate.Extensions);
+        }
+
+        [Fact]
+        public async Task SerializesPoliciesInLexOrder()
+        {
+            await Target.InitializeAsync();
+            var leaf = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2019.01.03.10.04.23/flexlabs.entityframeworkcore.upsert.2.0.4.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "FlexLabs.EntityFrameworkCore.Upsert",
+                PackageVersion = "2.0.4",
+            };
+
+            var output = await Target.ProcessLeavesAsync(new[] { leaf });
+
+            var certificate = Assert.Single(
+                output.Result.Sets2.SelectMany(x => x.Records),
+                x => x.Fingerprint == "x2apvvLUBxyGOjGqSSDoE7LRmGCMt7fP4hFDuDbfCeo");
+            Assert.Equal(
+                "[{" +
+                "\"PolicyIdentifier\":\"1.3.6.1.4.1.23223.1.1.1\"," +
+                "\"PolicyQualifiers\":[{" +
+                    "\"CpsUri\":\"http://cert.startcom.org/policy.pdf\"," +
+                    "\"PolicyQualifierId\":\"1.3.6.1.5.5.7.2.1\"," +
+                    "\"Qualifier\":\"FiNodHRwOi8vY2VydC5zdGFydGNvbS5vcmcvcG9saWN5LnBkZg==\"," +
+                    "\"Recognized\":true" +
+                "},{" +
+                    "\"CpsUri\":\"http://cert.startcom.org/intermediate.pdf\"," +
+                    "\"PolicyQualifierId\":\"1.3.6.1.5.5.7.2.1\"," +
+                    "\"Qualifier\":\"FilodHRwOi8vY2VydC5zdGFydGNvbS5vcmcvaW50ZXJtZWRpYXRlLnBkZg==\"," +
+                    "\"Recognized\":true" +
+                "},{" +
+                    "\"PolicyQualifierId\":\"1.3.6.1.5.5.7.2.2\"," +
+                    "\"Qualifier\":\"MIHDMCcWIFN0YXJ0IENvbW1lcmNpYWwgKFN0YXJ0Q29tKSBMdGQuMAMCAQEagZdMaW1pdGVkIExpYWJpbGl0eSwgcmVhZCB0aGUgc2VjdGlvbiAqTGVnYWwgTGltaXRhdGlvbnMqIG9mIHRoZSBTdGFydENvbSBDZXJ0aWZpY2F0aW9uIEF1dGhvcml0eSBQb2xpY3kgYXZhaWxhYmxlIGF0IGh0dHA6Ly9jZXJ0LnN0YXJ0Y29tLm9yZy9wb2xpY3kucGRm\"," +
+                    "\"Recognized\":false" +
+                "}]}]",
+                certificate.Policies);
+        }
 
         [Fact]
         public async Task HandlesTimeNotValidCodeSigningCertificate()
@@ -185,7 +281,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             var certificate = Assert.Single(certificates, x => x.FingerprintSHA256Hex == "FB32E016FD317DB68C0B2B5B6E33231EE932B4B21E27F32B51654A483A10ADFB");
             Assert.NotNull(certificate.Policies);
             Assert.Contains("https://www.digicert.com/CPS", certificate.Policies);
-            var genericPolicies = JsonConvert.DeserializeObject<List<X509PolicyInfo>>(certificate.Policies);
+            var genericPolicies = JsonSerializer.Deserialize<List<X509PolicyInfo>>(certificate.Policies);
             Assert.Equal(2, genericPolicies.Count);
             Assert.Equal("2.16.840.1.114412.3.2", genericPolicies[0].PolicyIdentifier);
             Assert.Single(genericPolicies[0].PolicyQualifiers);

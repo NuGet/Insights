@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
@@ -95,7 +94,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             {
                 ResultType = PackageDeprecationResultType.Deprecated,
                 Message = leaf.Deprecation.Message,
-                Reasons = leaf.Deprecation.Reasons != null ? JsonSerializer.Serialize(leaf.Deprecation.Reasons) : null,
+                Reasons = KustoDynamicSerializer.Serialize(leaf.Deprecation.Reasons),
                 AlternatePackageId = leaf.Deprecation.AlternatePackage?.Id,
                 AlternateVersionRange = leaf.Deprecation.AlternatePackage?.Range,
             };

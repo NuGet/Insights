@@ -176,24 +176,24 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
                 {
                     new
                     {
+                        BuildAction = "Content",
+                        CopyToOutput = (bool?)null,
+                        Flatten = (bool?)null,
                         Include = "**/images/*.*",
-                        BuildAction = "Content",
-                        CopyToOutput = (bool?)null,
-                        Flatten = (bool?)null,
                     },
                     new
                     {
+                        BuildAction = "Content",
+                        CopyToOutput = (bool?)null,
+                        Flatten = (bool?)null,
                         Include = "**/data.txt",
-                        BuildAction = "Content",
-                        CopyToOutput = (bool?)null,
-                        Flatten = (bool?)null,
                     },
                     new
                     {
-                        Include = "**/tools/*",
                         BuildAction = "None",
                         CopyToOutput = (bool?)true,
                         Flatten = (bool?)false,
+                        Include = "**/tools/*",
                     },
                 }, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull }),
                 record.ContentFiles);
@@ -219,10 +219,10 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             Assert.Equal(
                 JsonSerializer.Serialize(new
                 {
-                    Type = "Expression",
                     License = "MS-PL OR Apache-2.0",
-                    Version = "1.0.0",
                     LicenseUrl = "https://licenses.nuget.org/MS-PL%20OR%20Apache-2.0",
+                    Type = "Expression",
+                    Version = "1.0.0",
                 }),
                 record.LicenseMetadata);
         }
@@ -248,37 +248,37 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             {
                 new
                 {
-                    TargetFramework = "net45",
                     Packages = new object[0],
+                    TargetFramework = "net45",
                 },
                 new
                 {
-                    TargetFramework = "netstandard2.0",
                     Packages = new object[]
                     {
                         new
                         {
-                            Id = "System.ServiceModel.Syndication",
-                            Include = new string[0],
                             Exclude = new[]
                             {
                                 "Analyzers",
                                 "Build"
                             },
+                            Id = "System.ServiceModel.Syndication",
+                            Include = new string[0],
                             VersionRange = "[4.5.0, )"
                         },
                         new
                         {
-                            Id = "sharpcompress",
-                            Include = new string[0],
                             Exclude = new[]
                             {
                                 "Analyzers",
                                 "Build"
                             },
+                            Id = "sharpcompress",
+                            Include = new string[0],
                             VersionRange = "[0.24.0, )"
                       }
-                    }
+                    },
+                    TargetFramework = "netstandard2.0",
                 },
             }), record.DependencyGroups);
         }
@@ -304,13 +304,13 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             {
                 new
                 {
-                    TargetFramework = "net45",
                     Items = new[]
                     {
                         "System.IO.Compression",
                         "System.Net.Http",
                         "System.ServiceModel",
                     },
+                    TargetFramework = "net45",
                 },
             }), record.FrameworkAssemblyGroups);
         }
@@ -336,11 +336,11 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             {
                 new
                 {
-                    TargetFramework = "any",
                     Items = new[]
                     {
                         "BundleTransformer.Core.dll",
                     },
+                    TargetFramework = "any",
                 },
             }), record.ReferenceGroups);
         }
@@ -364,10 +364,10 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(JsonSerializer.Serialize(new
             {
-                Type = "git",
-                Url = "https://github.com/emgarten/Sleet",
                 Branch = "HEAD",
                 Commit = "5d483588c1f3e3f09426ffad1b45020ec09ec1d5",
+                Type = "git",
+                Url = "https://github.com/emgarten/Sleet",
             }), record.RepositoryMetadata);
         }
 
@@ -392,11 +392,11 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             {
                 new
                 {
-                    TargetFramework = "netcoreapp3.0",
                     FrameworkReferences = new[]
                     {
                         new { Name = "Microsoft.WindowsDesktop.App.WPF" },
                     },
+                    TargetFramework = "netcoreapp3.0",
                 },
             }), record.FrameworkRefGroups);
         }

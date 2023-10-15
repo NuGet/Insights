@@ -71,7 +71,42 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             Assert.Equal("(Apache-2.0 OR MS-PL) AND MIT AND BSD-3-Clause", record.Expression);
             Assert.Null(record.File);
             Assert.Equal("https://licenses.nuget.org/(Apache-2.0%20OR%20MS-PL)%20AND%20MIT%20AND%20BSD-3-Clause", record.GeneratedUrl);
-            Assert.Equal("{\"LogicalOperatorType\":\"And\",\"Left\":{\"LogicalOperatorType\":\"And\",\"Left\":{\"LogicalOperatorType\":\"Or\",\"Left\":{\"Identifier\":\"Apache-2.0\",\"Plus\":false,\"IsStandardLicense\":true,\"Type\":\"License\"},\"Right\":{\"Identifier\":\"MS-PL\",\"Plus\":false,\"IsStandardLicense\":true,\"Type\":\"License\"},\"OperatorType\":\"LogicalOperator\",\"Type\":\"Operator\"},\"Right\":{\"Identifier\":\"MIT\",\"Plus\":false,\"IsStandardLicense\":true,\"Type\":\"License\"},\"OperatorType\":\"LogicalOperator\",\"Type\":\"Operator\"},\"Right\":{\"Identifier\":\"BSD-3-Clause\",\"Plus\":false,\"IsStandardLicense\":true,\"Type\":\"License\"},\"OperatorType\":\"LogicalOperator\",\"Type\":\"Operator\"}", record.ExpressionParsed);
+            Assert.Equal(
+                "{" +
+                "\"Left\":{" +
+                    "\"Left\":{" +
+                        "\"Left\":{" +
+                            "\"Identifier\":\"Apache-2.0\"," +
+                            "\"IsStandardLicense\":true," +
+                            "\"Plus\":false," +
+                            "\"Type\":\"License\"}," +
+                        "\"LogicalOperatorType\":\"Or\"," +
+                        "\"OperatorType\":\"LogicalOperator\"," +
+                        "\"Right\":{" +
+                            "\"Identifier\":\"MS-PL\"," +
+                            "\"IsStandardLicense\":true," +
+                            "\"Plus\":false," +
+                            "\"Type\":\"License\"" +
+                        "}," +
+                        "\"Type\":\"Operator\"}," +
+                    "\"LogicalOperatorType\":\"And\"," +
+                    "\"OperatorType\":\"LogicalOperator\"," +
+                    "\"Right\":{" +
+                        "\"Identifier\":\"MIT\"," +
+                        "\"IsStandardLicense\":true," +
+                        "\"Plus\":false," +
+                        "\"Type\":\"License\"" +
+                    "}," +
+                    "\"Type\":\"Operator\"}," +
+                "\"LogicalOperatorType\":\"And\"," +
+                "\"OperatorType\":\"LogicalOperator\"," +
+                "\"Right\":{" +
+                    "\"Identifier\":\"BSD-3-Clause\"," +
+                    "\"IsStandardLicense\":true," +
+                    "\"Plus\":false," +
+                    "\"Type\":\"License\"}," +
+                "\"Type\":\"Operator\"}",
+                record.ExpressionParsed);
             Assert.Equal("[\"Apache-2.0\",\"BSD-3-Clause\",\"MIT\",\"MS-PL\"]", record.ExpressionLicenses);
             Assert.Equal("[]", record.ExpressionExceptions);
             Assert.Equal("[]", record.ExpressionNonStandardLicenses);
@@ -133,7 +168,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             Assert.Equal("MIT", record.Expression);
             Assert.Null(record.File);
             Assert.Equal("https://licenses.nuget.org/MIT", record.GeneratedUrl);
-            Assert.Equal("{\"Identifier\":\"MIT\",\"Plus\":false,\"IsStandardLicense\":true,\"Type\":\"License\"}", record.ExpressionParsed);
+            Assert.Equal("{\"Identifier\":\"MIT\",\"IsStandardLicense\":true,\"Plus\":false,\"Type\":\"License\"}", record.ExpressionParsed);
             Assert.Equal("[\"MIT\"]", record.ExpressionLicenses);
             Assert.Equal("[]", record.ExpressionExceptions);
             Assert.Equal("[]", record.ExpressionNonStandardLicenses);
@@ -164,7 +199,18 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             Assert.Equal("Apache-2.0 WITH LLVM-exception", record.Expression);
             Assert.Null(record.File);
             Assert.Equal("https://licenses.nuget.org/Apache-2.0%20WITH%20LLVM-exception", record.GeneratedUrl);
-            Assert.Equal("{\"License\":{\"Identifier\":\"Apache-2.0\",\"Plus\":false,\"IsStandardLicense\":true,\"Type\":\"License\"},\"Exception\":{\"Identifier\":\"LLVM-exception\"},\"OperatorType\":\"WithOperator\",\"Type\":\"Operator\"}", record.ExpressionParsed);
+            Assert.Equal(
+                "{" +
+                "\"Exception\":{" +
+                    "\"Identifier\":\"LLVM-exception\"}," +
+                "\"License\":{" +
+                    "\"Identifier\":\"Apache-2.0\"," +
+                    "\"IsStandardLicense\":true," +
+                    "\"Plus\":false," +
+                    "\"Type\":\"License\"}," +
+                "\"OperatorType\":\"WithOperator\"," +
+                "\"Type\":\"Operator\"}",
+                record.ExpressionParsed);
             Assert.Equal("[\"Apache-2.0\"]", record.ExpressionLicenses);
             Assert.Equal("[\"LLVM-exception\"]", record.ExpressionExceptions);
             Assert.Equal("[]", record.ExpressionNonStandardLicenses);
