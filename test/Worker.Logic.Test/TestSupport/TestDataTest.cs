@@ -90,7 +90,7 @@ namespace NuGet.Insights.Worker
             await CleanUpStorageContainers(IsOldStoragePrefix);
         }
 
-        [KustoFact]
+        [KustoFact(Timeout = 5 * 60 * 1000)]
         public async Task DeleteOldKustoTables()
         {
             await CleanUpKustoTablesAsync(IsOldStoragePrefix);
