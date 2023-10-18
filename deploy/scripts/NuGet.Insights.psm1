@@ -290,6 +290,9 @@ class ResourceSettings {
             $this.AutoRegenerateStorageKey = $true
         }
 
+        # It's okay to leave this as a default since it is generated at deployment time by default.
+        $defaults.Remove("SpotWorkerAdminPassword")
+
         if ($DeploymentConfig.RejectDefaults -and $defaults) {
             throw "Defaults are not allowed for config '$ConfigName'. Specify the following properties on the object at JSON path $.deployment: $defaults"
         }
