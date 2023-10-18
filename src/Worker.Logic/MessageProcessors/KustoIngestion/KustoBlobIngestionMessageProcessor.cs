@@ -127,6 +127,20 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
                 var duration = DateTimeOffset.UtcNow - blob.Started.Value;
 
+                if (statusSummary.Count > 1)
+                {
+                    _telemetryClient.TrackMetric(
+                        nameof(KustoBlobIngestionMessageProcessor) + ".MixedStatus.ElapsedMs",
+                        duration.TotalMilliseconds,
+                        new Dictionary<string, string>
+                        {
+                            { "ContainerName", blob.ContainerName },
+                            { "BlobName", blob.BlobName },
+                            { "SourceId", blob.SourceId.ToString() },
+                            { "StatusSummary", string.Join(", ", statusSummary) },
+                        });
+                }
+
                 if (duration > _options.Value.KustoBlobIngestionTimeout)
                 {
                     _telemetryClient.TrackMetric(
