@@ -6,7 +6,7 @@
   <ItemGroup>
     <PackageVersion Include="AngleSharp" Version="1.0.4" />
     <PackageVersion Include="Azure.Data.Tables" Version="12.8.1" />
-    <PackageVersion Include="Azure.Identity" Version="1.10.1" />
+    <PackageVersion Include="Azure.Identity" Version="1.10.3" />
     <PackageVersion Include="Azure.Storage.Blobs" Version="12.18.0" />
     <PackageVersion Include="Azure.Storage.Queues" Version="12.16.0" />
     <PackageVersion Include="Ben.StringIntern" Version="0.1.8" />
