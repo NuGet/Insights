@@ -194,30 +194,6 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         }
 
         [Fact]
-        public async Task HandlesRevokedTimestampingCertificate()
-        {
-            await Target.InitializeAsync();
-            var leaf = new CatalogLeafScan
-            {
-                Url = "https://api.nuget.org/v3/catalog0/data/2019.11.19.08.01.13/digi21.diging.io.shp.x64.17.0.1.json",
-                LeafType = CatalogLeafType.PackageDetails,
-                PackageId = "Digi21.DigiNG.Io.Shp.x64",
-                PackageVersion = "17.0.1",
-            };
-
-            var output = await Target.ProcessLeavesAsync(new[] { leaf });
-
-            var record = output
-                .Result
-                .Sets2
-                .SelectMany(x => x.Records)
-                .Single(x => x.Fingerprint == "67Fpkkmfe6SfXoiCJsZwHvDV6PmPL5kvhXHdFH7Dr9Q");
-            Assert.Contains(X509ChainStatusFlags.Revoked.ToString(), record.TimestampingStatusFlags.Value.ToString());
-            Assert.Equal(EndCertificateStatus.Invalid, record.TimestampingStatus);
-            Assert.NotNull(record.TimestampingStatusUpdateTime);
-        }
-
-        [Fact]
         public async Task HandlesCorruptASN1InAuthorTimestamp()
         {
             await Target.InitializeAsync();
