@@ -8,123 +8,31 @@ namespace NuGet.Insights.Worker
 {
     public class NuGetInsightsWorkerSettings : NuGetInsightsSettings
     {
-        public NuGetInsightsWorkerSettings()
-        {
-            UseBulkEnqueueStrategy = true;
-            BulkEnqueueThreshold = 10;
-            EnqueueWorkers = 1;
-            AppendResultStorageBucketCount = 1000; // Azure Data Explorer can only import up to 1000 blobs.
-            AllowBatching = true;
-            DisableMessageDelay = false;
-            RunAllCatalogScanDriversAsBatch = false;
-            OnlyKeepLatestInAuxiliaryFileUpdater = true;
-            RecordCertificateStatus = true;
-            MoveTempToHome = false;
-            DisabledDrivers = new List<CatalogScanDriverType>();
-            OldCatalogIndexScansToKeep = 49;
-            OldWorkflowRunsToKeep = 49;
-            WorkflowMaxAttempts = 5;
+        public bool UseBulkEnqueueStrategy { get; set; } = true;
+        public int BulkEnqueueThreshold { get; set; } = 10;
+        public int EnqueueWorkers { get; set; } = 1;
+        public int AppendResultStorageBucketCount { get; set; } = 1000; // Azure Data Explorer can only import up to 1000 blobs.
+        public bool AllowBatching { get; set; } = true;
+        public bool DisableMessageDelay { get; set; } = false;
+        public bool RunAllCatalogScanDriversAsBatch { get; set; } = false;
+        public bool OnlyKeepLatestInAuxiliaryFileUpdater { get; set; } = true;
+        public bool RecordCertificateStatus { get; set; } = true;
+        public bool MoveTempToHome { get; set; } = false;
+        public List<CatalogScanDriverType> DisabledDrivers { get; set; } = new List<CatalogScanDriverType>();
+        public int OldCatalogIndexScansToKeep { get; set; } = 49;
+        public int OldWorkflowRunsToKeep { get; set; } = 49;
+        public int WorkflowMaxAttempts { get; set; } = 5;
 
-            AutoStartCatalogScanUpdate = false;
-            AutoStartDownloadToCsv = false;
-            AutoStartOwnersToCsv = false;
-            AutoStartVerifiedPackagesToCsv = false;
-            CatalogScanUpdateFrequency = TimeSpan.FromHours(6);
-            DownloadToCsvFrequency = TimeSpan.FromHours(3);
-            OwnersToCsvFrequency = TimeSpan.FromHours(3);
-            VerifiedPackagesToCsvFrequency = TimeSpan.FromHours(3);
-            WorkflowFrequency = TimeSpan.FromDays(1);
-            KustoBlobIngestionTimeout = TimeSpan.FromHours(6);
-
-            LeafLevelTelemetryThreshold = CatalogScanUpdateFrequency * 2;
-
-            PackageContentFileExtensions = new List<string>();
-            PackageContentMaxSizePerPackage = 1024 * 16;
-            PackageContentMaxSizePerFile = 1024 * 16;
-
-            WorkQueueName = "work";
-            ExpandQueueName = "expand";
-            CursorTableName = "cursors";
-            CatalogIndexScanTableName = "catalogindexscans";
-            CatalogPageScanTableName = "catalogpagescans";
-            CatalogLeafScanTableName = "catalogleafscans";
-            TaskStateTableName = "taskstate";
-            CsvRecordTableName = "csvrecords";
-            VersionSetAggregateTableName = "versionset";
-            VersionSetContainerName = "versionset";
-            KustoIngestionTableName = "kustoingestions";
-            WorkflowRunTableName = "workflowruns";
-
-            LatestPackageLeafTableName = "latestpackageleaves";
-            PackageAssetContainerName = "packageassets";
-            PackageAssemblyContainerName = "packageassemblies";
-            PackageManifestContainerName = "packagemanifests";
-            PackageReadmeContainerName = "packagereadmes";
-            PackageLicenseContainerName = "packagelicenses";
-            PackageSignatureContainerName = "packagesignatures";
-            CatalogLeafItemContainerName = "catalogleafitems";
-            PackageDownloadContainerName = "packagedownloads";
-            PackageOwnerContainerName = "packageowners";
-            VerifiedPackageContainerName = "verifiedpackages";
-            PackageArchiveContainerName = "packagearchives";
-            PackageArchiveEntryContainerName = "packagearchiveentries";
-            SymbolPackageArchiveContainerName = "symbolpackagearchives";
-            SymbolPackageArchiveEntryContainerName = "symbolpackagearchiveentries";
-            PackageVersionTableName = "packageversions";
-            PackageVersionContainerName = "packageversions";
-            NuGetPackageExplorerContainerName = "nugetpackageexplorer";
-            NuGetPackageExplorerFileContainerName = "nugetpackageexplorerfiles";
-            PackageDeprecationContainerName = "packagedeprecations";
-            PackageVulnerabilityContainerName = "packagevulnerabilities";
-            PackageIconContainerName = "packageicons";
-            PackageCompatibilityContainerName = "packagecompatibilities";
-            PackageToCertificateTableName = "packagetocertificates";
-            CertificateToPackageTableName = "certificatetopackages";
-            PackageCertificateContainerName = "packagecertificates";
-            CertificateContainerName = "certificates";
-            PackageContentContainerName = "packagecontents";
-
-            KustoConnectionString = null;
-            KustoDatabaseName = null;
-            KustoUseUserManagedIdentity = true;
-            KustoApplyPartitioningPolicy = true;
-            KustoTableNameFormat = "{0}";
-            KustoTableFolder = string.Empty;
-            KustoTableDocstringFormat = "See https://github.com/NuGet/Insights/blob/main/docs/tables/{0}.md";
-            KustoTempTableNameFormat = "{0}_Temp";
-            KustoOldTableNameFormat = "{0}_Old";
-            OldKustoIngestionsToKeep = 9;
-            KustoIngestionMaxAttempts = 10;
-            KustoValidationMaxAttempts = 3;
-
-            EnableDiagnosticTracingToLogger = false;
-        }
-
-        public bool UseBulkEnqueueStrategy { get; set; }
-        public int BulkEnqueueThreshold { get; set; }
-        public int EnqueueWorkers { get; set; }
-        public int AppendResultStorageBucketCount { get; set; }
-        public bool AllowBatching { get; set; }
-        public bool DisableMessageDelay { get; set; }
-        public bool RunAllCatalogScanDriversAsBatch { get; set; }
-        public bool OnlyKeepLatestInAuxiliaryFileUpdater { get; set; }
-        public bool RecordCertificateStatus { get; set; }
-        public bool MoveTempToHome { get; set; }
-        public List<CatalogScanDriverType> DisabledDrivers { get; set; }
-        public int OldCatalogIndexScansToKeep { get; set; }
-        public int OldWorkflowRunsToKeep { get; set; }
-        public int WorkflowMaxAttempts { get; set; }
-
-        public bool AutoStartCatalogScanUpdate { get; set; }
-        public bool AutoStartDownloadToCsv { get; set; }
-        public bool AutoStartOwnersToCsv { get; set; }
-        public bool AutoStartVerifiedPackagesToCsv { get; set; }
-        public TimeSpan CatalogScanUpdateFrequency { get; set; }
-        public TimeSpan DownloadToCsvFrequency { get; set; }
-        public TimeSpan OwnersToCsvFrequency { get; set; }
-        public TimeSpan VerifiedPackagesToCsvFrequency { get; set; }
-        public TimeSpan WorkflowFrequency { get; set; }
-        public TimeSpan KustoBlobIngestionTimeout { get; set; }
+        public bool AutoStartCatalogScanUpdate { get; set; } = false;
+        public bool AutoStartDownloadToCsv { get; set; } = false;
+        public bool AutoStartOwnersToCsv { get; set; } = false;
+        public bool AutoStartVerifiedPackagesToCsv { get; set; } = false;
+        public TimeSpan CatalogScanUpdateFrequency { get; set; } = TimeSpan.FromHours(6);
+        public TimeSpan DownloadToCsvFrequency { get; set; } = TimeSpan.FromHours(3);
+        public TimeSpan OwnersToCsvFrequency { get; set; } = TimeSpan.FromHours(3);
+        public TimeSpan VerifiedPackagesToCsvFrequency { get; set; } = TimeSpan.FromHours(3);
+        public TimeSpan WorkflowFrequency { get; set; } = TimeSpan.FromDays(1);
+        public TimeSpan KustoBlobIngestionTimeout { get; set; } = TimeSpan.FromHours(6);
 
         /// <summary>
         /// If the duration that the catalog scan covers (max cursor minus min cursor) is less than or equal to this
@@ -134,79 +42,79 @@ namespace NuGet.Insights.Worker
         /// telemetry when you are reprocessing the entire catalog. Set this to "00:00:00" if you want to disable this
         /// kind of telemetry. If you are not sure, set it to twice the value of <see cref="CatalogScanUpdateFrequency"/>.
         /// </summary>
-        public TimeSpan LeafLevelTelemetryThreshold { get; set; }
+        public TimeSpan LeafLevelTelemetryThreshold { get; set; } = TimeSpan.FromHours(12);
 
         /// <summary>
         /// The types of package content to index in <see cref="PackageContentToCsv.PackageContentToCsvDriver"/>. The
         /// order of this list is significant (entries are processed in the matching order). The values are treated as
         /// file path suffixes so be sure to include a dot (".") if you want file extension behavior.
         /// </summary>
-        public List<string> PackageContentFileExtensions { get; set; }
-        public int PackageContentMaxSizePerPackage { get; set; }
-        public int PackageContentMaxSizePerFile { get; set; }
+        public List<string> PackageContentFileExtensions { get; set; } = new List<string>();
+        public int PackageContentMaxSizePerPackage { get; set; } = 1024 * 16;
+        public int PackageContentMaxSizePerFile { get; set; } = 1024 * 16;
 
-        public string WorkQueueName { get; set; }
-        public string ExpandQueueName { get; set; }
-        public string CursorTableName { get; set; }
-        public string CatalogIndexScanTableName { get; set; }
-        public string CatalogPageScanTableName { get; set; }
-        public string CatalogLeafScanTableName { get; set; }
-        public string TaskStateTableName { get; set; }
-        public string CsvRecordTableName { get; set; }
-        public string VersionSetAggregateTableName { get; set; }
-        public string VersionSetContainerName { get; set; }
-        public string KustoIngestionTableName { get; set; }
-        public string WorkflowRunTableName { get; set; }
+        public string WorkQueueName { get; set; } = "work";
+        public string ExpandQueueName { get; set; } = "expand";
+        public string CursorTableName { get; set; } = "cursors";
+        public string CatalogIndexScanTableName { get; set; } = "catalogindexscans";
+        public string CatalogPageScanTableName { get; set; } = "catalogpagescans";
+        public string CatalogLeafScanTableName { get; set; } = "catalogleafscans";
+        public string TaskStateTableName { get; set; } = "taskstate";
+        public string CsvRecordTableName { get; set; } = "csvrecords";
+        public string VersionSetAggregateTableName { get; set; } = "versionset";
+        public string VersionSetContainerName { get; set; } = "versionset";
+        public string KustoIngestionTableName { get; set; } = "kustoingestions";
+        public string WorkflowRunTableName { get; set; } = "workflowruns";
 
-        public string LatestPackageLeafTableName { get; set; }
-        public string PackageAssetContainerName { get; set; }
-        public string PackageAssemblyContainerName { get; set; }
-        public string PackageManifestContainerName { get; set; }
-        public string PackageReadmeContainerName { get; set; }
-        public string PackageLicenseContainerName { get; set; }
-        public string PackageSignatureContainerName { get; set; }
-        public string CatalogLeafItemContainerName { get; set; }
-        public string PackageDownloadContainerName { get; set; }
-        public string PackageOwnerContainerName { get; set; }
-        public string VerifiedPackageContainerName { get; set; }
-        public string PackageArchiveContainerName { get; set; }
-        public string PackageArchiveEntryContainerName { get; set; }
-        public string SymbolPackageArchiveContainerName { get; set; }
-        public string SymbolPackageArchiveEntryContainerName { get; set; }
-        public string PackageVersionTableName { get; set; }
-        public string PackageVersionContainerName { get; set; }
-        public string NuGetPackageExplorerContainerName { get; set; }
-        public string NuGetPackageExplorerFileContainerName { get; set; }
-        public string PackageDeprecationContainerName { get; set; }
-        public string PackageVulnerabilityContainerName { get; set; }
-        public string PackageIconContainerName { get; set; }
-        public string PackageCompatibilityContainerName { get; set; }
-        public string PackageToCertificateTableName { get; set; }
-        public string CertificateToPackageTableName { get; set; }
-        public string PackageCertificateContainerName { get; set; }
-        public string CertificateContainerName { get; set; }
-        public string PackageContentContainerName { get; set; }
+        public string LatestPackageLeafTableName { get; set; } = "latestpackageleaves";
+        public string PackageAssetContainerName { get; set; } = "packageassets";
+        public string PackageAssemblyContainerName { get; set; } = "packageassemblies";
+        public string PackageManifestContainerName { get; set; } = "packagemanifests";
+        public string PackageReadmeContainerName { get; set; } = "packagereadmes";
+        public string PackageLicenseContainerName { get; set; } = "packagelicenses";
+        public string PackageSignatureContainerName { get; set; } = "packagesignatures";
+        public string CatalogLeafItemContainerName { get; set; } = "catalogleafitems";
+        public string PackageDownloadContainerName { get; set; } = "packagedownloads";
+        public string PackageOwnerContainerName { get; set; } = "packageowners";
+        public string VerifiedPackageContainerName { get; set; } = "verifiedpackages";
+        public string PackageArchiveContainerName { get; set; } = "packagearchives";
+        public string PackageArchiveEntryContainerName { get; set; } = "packagearchiveentries";
+        public string SymbolPackageArchiveContainerName { get; set; } = "symbolpackagearchives";
+        public string SymbolPackageArchiveEntryContainerName { get; set; } = "symbolpackagearchiveentries";
+        public string PackageVersionTableName { get; set; } = "packageversions";
+        public string PackageVersionContainerName { get; set; } = "packageversions";
+        public string NuGetPackageExplorerContainerName { get; set; } = "nugetpackageexplorer";
+        public string NuGetPackageExplorerFileContainerName { get; set; } = "nugetpackageexplorerfiles";
+        public string PackageDeprecationContainerName { get; set; } = "packagedeprecations";
+        public string PackageVulnerabilityContainerName { get; set; } = "packagevulnerabilities";
+        public string PackageIconContainerName { get; set; } = "packageicons";
+        public string PackageCompatibilityContainerName { get; set; } = "packagecompatibilities";
+        public string PackageToCertificateTableName { get; set; } = "packagetocertificates";
+        public string CertificateToPackageTableName { get; set; } = "certificatetopackages";
+        public string PackageCertificateContainerName { get; set; } = "packagecertificates";
+        public string CertificateContainerName { get; set; } = "certificates";
+        public string PackageContentContainerName { get; set; } = "packagecontents";
 
-        public string KustoConnectionString { get; set; }
-        public string KustoDatabaseName { get; set; }
-        public bool KustoUseUserManagedIdentity { get; set; }
+        public string KustoConnectionString { get; set; } = null;
+        public string KustoDatabaseName { get; set; } = null;
+        public bool KustoUseUserManagedIdentity { get; set; } = true;
 
         /// <summary>
         /// A path to a certificate that will be loaded as a <see cref="System.Security.Cryptography.X509Certificates.X509Certificate2"/>
         /// for Kusto AAD client app authentication.
         /// </summary>
-        public string KustoClientCertificateContent { get; set; }
+        public string KustoClientCertificateContent { get; set; } = null;
 
-        public bool KustoApplyPartitioningPolicy { get; set; }
-        public string KustoTableNameFormat { get; set; }
-        public string KustoTableFolder { get; set; }
-        public string KustoTableDocstringFormat { get; set; }
-        public string KustoTempTableNameFormat { get; set; }
-        public string KustoOldTableNameFormat { get; set; }
-        public int OldKustoIngestionsToKeep { get; set; }
-        public int KustoIngestionMaxAttempts { get; set; }
-        public int KustoValidationMaxAttempts { get; set; }
+        public bool KustoApplyPartitioningPolicy { get; set; } = true;
+        public string KustoTableNameFormat { get; set; } = "{0}";
+        public string KustoTableFolder { get; set; } = string.Empty;
+        public string KustoTableDocstringFormat { get; set; } = "See https://github.com/NuGet/Insights/blob/main/docs/tables/{0}.md";
+        public string KustoTempTableNameFormat { get; set; } = "{0}_Temp";
+        public string KustoOldTableNameFormat { get; set; } = "{0}_Old";
+        public int OldKustoIngestionsToKeep { get; set; } = 9;
+        public int KustoIngestionMaxAttempts { get; set; } = 10;
+        public int KustoValidationMaxAttempts { get; set; } = 3;
 
-        public bool EnableDiagnosticTracingToLogger { get; set; }
+        public bool EnableDiagnosticTracingToLogger { get; set; } = false;
     }
 }
