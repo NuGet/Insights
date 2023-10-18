@@ -198,14 +198,14 @@ process {
             if (-not $env:path.Contains($installPath)) { $env:path += ";$installPath" }
         }
     }
-    
-    # Compile the Bicep templates to raw ARM JSON.
-    New-Bicep "main"
-    New-Bicep "storage-and-kv"
 
     if (Test-Path $ev2) {
         Remove-Item $ev2 -Recurse -Force
     }
+    
+    # Compile the Bicep templates to raw ARM JSON.
+    New-Bicep "main"
+    New-Bicep "storage-and-kv"
     
     $bin = Join-Path $ev2 "bin"
     New-Item $bin -ItemType Directory | Out-Null
