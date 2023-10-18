@@ -46,6 +46,11 @@ namespace NuGet.Insights.Worker
                         clsm.PageId,
                         clsm.LeafId);
 
+                    if (catalogLeafScan is null)
+                    {
+                        return null;
+                    }
+
 #if ENABLE_NPE
                     if (catalogLeafScan.DriverType == CatalogScanDriverType.NuGetPackageExplorerToCsv)
                     {
