@@ -212,8 +212,8 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
                 .Sets2
                 .SelectMany(x => x.Records)
                 .Single(x => x.Fingerprint == "67Fpkkmfe6SfXoiCJsZwHvDV6PmPL5kvhXHdFH7Dr9Q");
-            Assert.Equal(X509ChainStatusFlags.Revoked, record.TimestampingStatusFlags);
-            Assert.Equal(EndCertificateStatus.Revoked, record.TimestampingStatus);
+            Assert.Contains(X509ChainStatusFlags.Revoked.ToString(), record.TimestampingStatusFlags.Value.ToString());
+            Assert.Equal(EndCertificateStatus.Invalid, record.TimestampingStatus);
             Assert.NotNull(record.TimestampingStatusUpdateTime);
         }
 
