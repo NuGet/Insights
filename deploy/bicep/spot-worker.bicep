@@ -144,7 +144,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-03-01' = {
       {
         name: 'default'
         properties: {
-          addressPrefix: '172.27.0.0/16'
+          addressPrefix: '172.27.0.0/17'
           networkSecurityGroup: {
             id: nsg.id
           }
