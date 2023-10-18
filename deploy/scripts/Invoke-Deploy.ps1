@@ -19,18 +19,23 @@ param (
     [string]$AzureFunctionsHostZipPath,
 
     [Parameter(Mandatory = $true)]
-    [string]$RuntimeIdentifier
+    [string]$RuntimeIdentifier,
+    
+    [Parameter(Mandatory = $false)]
+    [switch]$SkipPrepare
 )
 
 Import-Module (Join-Path $PSScriptRoot "NuGet.Insights.psm1")
 
 $DeploymentLabel, $DeploymentDir = Get-DeploymentLocals $DeploymentLabel $DeploymentDir
 
-# Prepare the storage and Key Vault
-. (Join-Path $PSScriptRoot "Invoke-Prepare.ps1") `
-    -ResourceSettings $ResourceSettings `
-    -DeploymentLabel $DeploymentLabel `
-    -DeploymentDir $DeploymentDir
+if (!$SkipPrepare) {
+    # Prepare the storage and Key Vault
+    . (Join-Path $PSScriptRoot "Invoke-Prepare.ps1") `
+        -ResourceSettings $ResourceSettings `
+        -DeploymentLabel $DeploymentLabel `
+        -DeploymentDir $DeploymentDir
+}
 
 # Verify the number of function app is not decreasing. This is not supported by the script.
 Write-Status "Counting existing function apps..."

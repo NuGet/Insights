@@ -22,7 +22,10 @@ param (
     [string]$AzureFunctionsHostZipPath,
 
     [Parameter(Mandatory = $false)]
-    [switch]$UseExistingBuild
+    [switch]$UseExistingBuild,
+
+    [Parameter(Mandatory = $false)]
+    [switch]$SkipPrepare
 )
 
 dynamicparam {
@@ -140,6 +143,7 @@ process {
         WorkerZipPath             = $WorkerZipPath;
         AzureFunctionsHostZipPath = $AzureFunctionsHostZipPath;
         RuntimeIdentifier         = $RuntimeIdentifier;
+        SkipPrepare               = $SkipPrepare
     }
     
     Write-Status "Using the following deployment parameters:"
