@@ -18,7 +18,7 @@ foreach ($path in Get-ChildItem $parametersPattern -Recurse) {
         $parameters.parameters.deploymentLabel.value = $DeploymentLabel
     }
 
-    if ($parameters.parameters.spotWorkerAdminPassword -and $parameters.parameters.spotWorkerAdminPassword.value -eq "PLACEHOLDER") {
+    if ($parameters.parameters.spotWorkerAdminPassword -and $parameters.parameters.spotWorkerAdminPassword.value -eq "") {
         Write-Host "  Setting spotWorkerAdminPassword to a random value"
         $random = New-Object System.Security.Cryptography.RNGCryptoServiceProvider
         $buffer = New-Object byte[](32)

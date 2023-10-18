@@ -113,7 +113,7 @@ $mainParameters = New-MainParameters `
     -WorkerStandaloneEnvUrl $workerStandaloneEnvUrl `
     -InstallWorkerStandaloneUrl $installWorkerStandaloneUrl
 
-if ($mainParameters.spotWorkerAdminPassword -eq "PLACEHOLDER") {
+if ($mainParameters.spotWorkerAdminPassword -eq "") {
     Write-Host "Setting spotWorkerAdminPassword to a random value"
     $mainParameters.spotWorkerAdminPassword = Get-RandomPassword
 }

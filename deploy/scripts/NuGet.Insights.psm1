@@ -209,9 +209,7 @@ class ResourceSettings {
         # Spot worker settings
         if ($this.UseSpotWorkers) {
             Set-OrDefault SpotWorkerAdminUsername "insights"
-
-            $password = Get-RandomPassword
-            Set-OrDefault SpotWorkerAdminPassword $password
+            Set-OrDefault SpotWorkerAdminPassword ""
             Set-OrDefault SpotWorkerSpecs @(@{})
 
             if (!$this.SpotWorkerSpecs) {
