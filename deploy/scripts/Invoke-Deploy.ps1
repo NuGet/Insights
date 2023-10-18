@@ -102,22 +102,29 @@ if ($ResourceSettings.UseSpotWorkers) {
 
 # Deploy the resources using the main ARM template
 Write-Status "Deploying the main resources..."
+
+$mainParameters = New-MainParameters `
+    -ResourceSettings $ResourceSettings `
+    -DeploymentLabel $DeploymentLabel `
+    -WebsiteZipUrl $websiteZipUrl `
+    -WorkerZipUrl $workerZipUrl `
+    -AzureFunctionsHostZipUrl $azureFunctionsHostZipUrl `
+    -SpotWorkerUploadScriptUrl $spotWorkerUploadScriptUrl `
+    -WorkerStandaloneEnvUrl $workerStandaloneEnvUrl `
+    -InstallWorkerStandaloneUrl $installWorkerStandaloneUrl
+
+if ($mainParameters.spotWorkerAdminPassword -eq "PLACEHOLDER") {
+    Write-Host "Setting spotWorkerAdminPassword to a random value"
+    $mainParameters.spotWorkerAdminPassword = Get-RandomPassword
+}
+
 New-Deployment `
     -ResourceGroupName $ResourceSettings.ResourceGroupName `
     -DeploymentDir $DeploymentDir `
     -DeploymentLabel $DeploymentLabel `
     -DeploymentName "main" `
     -BicepPath "../bicep/main.bicep" `
-    -Parameters (New-MainParameters `
-        -ResourceSettings $ResourceSettings `
-        -WebsiteZipUrl $websiteZipUrl `
-        -WorkerZipUrl $workerZipUrl `
-        -RuntimeIdentifier $RuntimeIdentifier `
-        -SpotWorkerUploadScriptUrl $spotWorkerUploadScriptUrl `
-        -AzureFunctionsHostZipUrl $azureFunctionsHostZipUrl `
-        -WorkerStandaloneEnvUrl $workerStandaloneEnvUrl `
-        -InstallWorkerStandaloneUrl $installWorkerStandaloneUrl `
-        -DeploymentLabel $DeploymentLabel)
+    -Parameters $mainParameters
 
 # Warm up the workers, since initial deployment appears to leave them in a hibernation state.
 Write-Status "Warming up the website and workers..."

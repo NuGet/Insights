@@ -168,8 +168,8 @@ process {
     $workerStandaloneEnvPathPattern = "bin/WorkerStandalone.{0}.env"
     $installWorkerStandaloneSourcePath = Join-Path $PSScriptRoot "scripts/Install-WorkerStandalone.ps1"
     $installWorkerStandalonePath = "bin/Install-WorkerStandalone.ps1"
-    $setDeploymentLabelSourcePath = Join-Path $PSScriptRoot "scripts/Set-DeploymentLabel.ps1"
-    $setDeploymentLabelPath = "Set-DeploymentLabel.ps1"
+    $setDeploymentParametersSourcePath = Join-Path $PSScriptRoot "scripts/Set-DeploymentParameters.ps1"
+    $setDeploymentParametersPath = "Set-DeploymentParameters.ps1"
     
     # Install Bicep, if needed.
     if (!(Get-Command bicep -CommandType Application -ErrorAction Ignore)) {
@@ -200,11 +200,13 @@ process {
     # Compile the Bicep templates to raw ARM JSON.
     New-Bicep "main"
     New-Bicep "storage-and-kv"
+
+    if (Test-Path $ev2) {
+        Remove-Item $ev2 -Recurse -Force
+    }
     
     $bin = Join-Path $ev2 "bin"
-    if (!(Test-Path $bin)) {
-        New-Item $bin -ItemType Directory | Out-Null
-    }
+    New-Item $bin -ItemType Directory | Out-Null
     
     # Build the Ev2 artifacts
     $anyUseSpotWorkers = $false
@@ -231,7 +233,12 @@ process {
             throw "A website AAD client ID is required for generating Ev2 artifacts. You can use the prepare.ps1 script to create the AAD app registration for the first time. Specify a value in file $configPath at JSON path $.deployment.WebsiteAadAppClientId."
         }
     
-        $parameters = New-MainParameters $resourceSettings $websiteBinPath $workerBinPath "PLACEHOLDER"
+        $parameters = New-MainParameters `
+            -ResourceSettings $resourceSettings `
+            -DeploymentLabel "PLACEHOLDER" `
+            -WebsiteZipUrl $websiteBinPath `
+            -WorkerZipUrl $workerBinPath `
+            -AzureFunctionsHostZipUrl $azureFunctionsHostBinPath
         $parametersPath = Join-Path $ev2 (Get-ParametersPath $resourceSettings.ConfigName)
         New-ParameterFile $parameters @("websiteZipUrl", "workerZipUrl") $parametersPath
         New-ServiceModelFile $resourceSettings
@@ -258,5 +265,5 @@ process {
     Copy-Item $installWorkerStandaloneSourcePath -Destination (Join-Path $ev2 $installWorkerStandalonePath) -Verbose
     Write-Host "Wrote Ev2 files to: $ev2"
     
-    Copy-Item $setDeploymentLabelSourcePath -Destination (Join-Path $ev2 $setDeploymentLabelPath) -Verbose    
+    Copy-Item $setDeploymentParametersSourcePath -Destination (Join-Path $ev2 $setDeploymentParametersPath) -Verbose    
 }

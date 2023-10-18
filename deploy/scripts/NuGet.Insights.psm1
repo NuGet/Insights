@@ -210,10 +210,7 @@ class ResourceSettings {
         if ($this.UseSpotWorkers) {
             Set-OrDefault SpotWorkerAdminUsername "insights"
 
-            $random = New-Object System.Security.Cryptography.RNGCryptoServiceProvider
-            $buffer = New-Object byte[](32)
-            $random.GetBytes($buffer)
-            $password = "N1!" + [Convert]::ToBase64String($buffer)
+            $password = Get-RandomPassword
             Set-OrDefault SpotWorkerAdminPassword $password
             Set-OrDefault SpotWorkerSpecs @(@{})
 
@@ -513,15 +510,23 @@ function Out-EnvFile() {
     }
 }
 
+function Get-RandomPassword() {
+    $random = New-Object System.Security.Cryptography.RNGCryptoServiceProvider
+    $buffer = New-Object byte[](32)
+    $random.GetBytes($buffer)
+    $password = "N1!" + [Convert]::ToBase64String($buffer)
+    return $password
+}
+
 function New-MainParameters(
     $ResourceSettings,
+    $DeploymentLabel,
     $WebsiteZipUrl,
     $WorkerZipUrl,
     $SpotWorkerUploadScriptUrl,
     $AzureFunctionsHostZipUrl,
     $WorkerStandaloneEnvUrl,
-    $InstallWorkerStandaloneUrl,
-    $DeploymentLabel) {
+    $InstallWorkerStandaloneUrl) {
 
     if ($ResourceSettings.RuntimeIdentifier -eq "linux-x64") {
         $isDeploymentLinux = $true
