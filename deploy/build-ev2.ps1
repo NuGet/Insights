@@ -166,10 +166,12 @@ process {
     $workerBinPath = "bin/Worker.zip"
     $azureFunctionsHostBinPath = "bin/AzureFunctionsHost.zip"
     $workerStandaloneEnvPathPattern = "bin/WorkerStandalone.{0}.env"
-    $installWorkerStandaloneSourcePath = Join-Path $PSScriptRoot "scripts/Install-WorkerStandalone.ps1"
-    $installWorkerStandalonePath = "bin/Install-WorkerStandalone.ps1"
-    $setDeploymentParametersSourcePath = Join-Path $PSScriptRoot "scripts/Set-DeploymentParameters.ps1"
-    $setDeploymentParametersPath = "Set-DeploymentParameters.ps1"
+
+    $scriptsToCopy = [ordered]@{
+        "scripts/Install-WorkerStandalone.ps1" = "bin/Install-WorkerStandalone.ps1";
+        "scripts/NuGet.Insights.psm1"          = "NuGet.Insights.psm1";
+        "scripts/Set-DeploymentParameters.ps1" = "Set-DeploymentParameters.ps1";
+    }
     
     # Install Bicep, if needed.
     if (!(Get-Command bicep -CommandType Application -ErrorAction Ignore)) {
@@ -262,8 +264,12 @@ process {
     elseif ($anyUseSpotWorkers) {
         throw "No AzureFunctionsHostZipPath parameter was provided but at least one of the configurations has UseSpotWorkers set to true."
     }
-    Copy-Item $installWorkerStandaloneSourcePath -Destination (Join-Path $ev2 $installWorkerStandalonePath) -Verbose
+
+    foreach ($pair in $scriptsToCopy.GetEnumerator()) {
+        $source = Join-Path $PSScriptRoot $pair.Key
+        $destination = Join-Path $ev2 $pair.Value
+        Copy-Item -Path $source -Destination $destination -Verbose
+    }
+
     Write-Host "Wrote Ev2 files to: $ev2"
-    
-    Copy-Item $setDeploymentParametersSourcePath -Destination (Join-Path $ev2 $setDeploymentParametersPath) -Verbose    
 }
