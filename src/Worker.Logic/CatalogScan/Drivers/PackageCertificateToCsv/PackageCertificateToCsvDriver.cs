@@ -313,11 +313,11 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             }
         }
 
-        List<CertificateRecord> ICsvResultStorage<CertificateRecord>.Prune(List<CertificateRecord> records, bool removeDeleted)
+        List<CertificateRecord> ICsvResultStorage<CertificateRecord>.Prune(List<CertificateRecord> records, bool isFinalPrune)
         {
-            return records
+            var pruned = records
                 .GroupBy(x => x.Fingerprint) // Group by SHA-256 fingerprint
-                .Where(g => !removeDeleted || g.All(x => x.ResultType != PackageCertificateResultType.Deleted))
+                .Where(g => !isFinalPrune || g.All(x => x.ResultType != PackageCertificateResultType.Deleted))
                 .Select(g =>
                 {
                     // Prefer the most recent results (scan timestamp).
@@ -369,22 +369,25 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
                     return aggregate;
                 })
                 .OrderBy(x => x.Fingerprint, StringComparer.OrdinalIgnoreCase)
-                .Select(x =>
-                {
-                    if (!_options.Value.RecordCertificateStatus)
-                    {
-                        x.CodeSigningStatus = null;
-                        x.CodeSigningStatusFlags = null;
-                        x.CodeSigningStatusUpdateTime = null;
-                        x.TimestampingStatus = null;
-                        x.TimestampingStatusFlags = null;
-                        x.TimestampingStatusUpdateTime = null;
-                    }
-                    x.ScanId = null;
-                    x.ScanTimestamp = null;
-                    return x;
-                })
                 .ToList();
+
+            foreach (var record in pruned)
+            {
+                if (!_options.Value.RecordCertificateStatus)
+                {
+                    record.CodeSigningStatus = null;
+                    record.CodeSigningStatusFlags = null;
+                    record.CodeSigningStatusUpdateTime = null;
+                    record.TimestampingStatus = null;
+                    record.TimestampingStatusFlags = null;
+                    record.TimestampingStatusUpdateTime = null;
+                }
+
+                record.ScanId = null;
+                record.ScanTimestamp = null;
+            }
+
+            return pruned;
         }
 
         public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageCertificateRecord record)

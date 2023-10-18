@@ -132,9 +132,9 @@ namespace NuGet.Insights.Worker
                     }
                     catch (RequestFailedException ex) when (attempt < 3 && ex.Status == (int)HttpStatusCode.Conflict)
                     {
-                        // I've seen some conflicts on this insert before, shockingly! I don't believe in GUID
-                        // collisions! But let's try again with a new ID just in case.
-                        _logger.LogWarning(
+                        // These conflicts can occur if there is an internal retry on the insert. Just in case, we'll
+                        // insert the data again and allow the in-memory pruning to remove duplicates later.
+                        _logger.LogTransientWarning(
                             ex,
                             "Conflict when inserting {Count} CSV records into bucket {Bucket} with row key {RowKey}.",
                             records.Count,

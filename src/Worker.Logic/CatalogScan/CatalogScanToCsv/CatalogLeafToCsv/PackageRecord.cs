@@ -55,7 +55,7 @@ namespace NuGet.Insights.Worker
 
         public static List<T> Prune<T>(List<T> records, bool isFinalPrune) where T : PackageRecord, IEquatable<T>
         {
-            return records
+            var pruned = records
                 .GroupBy(x => x, PackageRecordIdVersionComparer.Instance) // Group by unique package version
                 .Select(g => g
                     .GroupBy(x => new { x.ScanId, x.CatalogCommitTimestamp }) // Group package version records by scan and catalog commit timestamp
@@ -66,17 +66,18 @@ namespace NuGet.Insights.Worker
                 .OrderBy(x => x.Id, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(x => x.Version, StringComparer.OrdinalIgnoreCase)
                 .Distinct()
-                .Select(x =>
-                {
-                    if (isFinalPrune)
-                    {
-                        x.ScanId = null;
-                        x.ScanTimestamp = null;
-                    }
-
-                    return x;
-                })
                 .ToList();
+
+            if (isFinalPrune)
+            {
+                foreach (var record in pruned)
+                {
+                    record.ScanId = null;
+                    record.ScanTimestamp = null;
+                }
+            }
+
+            return pruned;
         }
 
         public static string GetBucketKey(ICatalogLeafItem item)
