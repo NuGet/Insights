@@ -29,8 +29,10 @@ namespace NuGet.Insights
             _requestQueue.Enqueue(request);
 
             var response = await _onSendAsync(request, base.SendAsync, token);
+
             if (response != null)
             {
+                token.ThrowIfCancellationRequested();
                 _responseQueue.Enqueue(response);
                 return response;
             }

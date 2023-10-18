@@ -102,6 +102,7 @@ namespace NuGet.Insights
             // Assert
             Assert.Equal(CommitTimestamps.Count, timestamps.Count);
             Assert.Equal(CommitTimestamps, timestamps);
+            HttpMessageHandlerFactory.LogResponses(Output);
             Assert.Equal(4, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.Host == "api.nuget.org"));
             Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == IndexUrl));
             Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page0Url));
@@ -126,6 +127,7 @@ namespace NuGet.Insights
             // Assert
             Assert.Equal(CommitTimestamps.Count, timestamps.Count);
             Assert.Equal(CommitTimestamps, timestamps);
+            HttpMessageHandlerFactory.LogResponses(Output);
             Assert.Equal(4, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.Host == "api.nuget.org"));
             Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == IndexUrl));
             Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page0Url));
@@ -205,6 +207,7 @@ namespace NuGet.Insights
 
             // Assert
             Assert.Equal(DateTimeOffset.Parse("2015-02-01T06:30:42.5921094Z"), min);
+            HttpMessageHandlerFactory.LogResponses(Output);
             Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page1Url));
         }
     }

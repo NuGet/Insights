@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Concurrent;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Threading;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Xunit.Abstractions;
 
 namespace NuGet.Insights
 {
@@ -25,6 +27,23 @@ namespace NuGet.Insights
         public IEnumerable<HttpRequestMessage> SuccessRequests => Responses
             .Where(x => x.IsSuccessStatusCode && x.RequestMessage is not null)
             .Select(x => x.RequestMessage);
+
+        public void LogResponses(ITestOutputHelper output)
+        {
+            var logger = output.GetLogger<TestHttpMessageHandler>();
+            logger.LogInformation("Responses captured by {ClassName}: {ResponseCount}x", nameof(TestHttpMessageHandlerFactory), Responses.Count);
+            foreach (var response in Responses)
+            {
+                logger.LogInformation(
+                    "  - HTTP/{RequestVersion} {Method} {Url} -> HTTP/{ResponseVersion} {StatusCode} {ReasonPhrase}",
+                    response.RequestMessage?.Version,
+                    response.RequestMessage?.Method,
+                    response.RequestMessage?.RequestUri.AbsoluteUri,
+                    response.Version,
+                    (int)response.StatusCode,
+                    response.ReasonPhrase);
+            }
+        }
 
         public void Clear()
         {
