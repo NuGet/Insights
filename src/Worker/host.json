@@ -3,6 +3,7 @@
   "logging": {
     "logLevel": {
       "default": "Information",
+      "LoggerTraceListener": "Information",
       "Azure.Core": "Error"
     },
     "applicationInsights": {
