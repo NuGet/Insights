@@ -15,6 +15,8 @@ param adminUsername string
 param adminPassword string
 param specs array // An array of objects with these properties: "namePrefix", "location", "sku", "minInstances", "maxInstances"
 
+param deploymentTimestamp string = utcNow()
+
 resource userManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
   name: userManagedIdentityName
 }
@@ -31,6 +33,9 @@ resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' existing = {
     properties: {
       contentType: 'text/plain'
       value: adminPassword
+      attributes: {
+        nbf: dateTimeToEpoch(deploymentTimestamp) // makes it easier to see old secret versions sorted by time
+      }
     }
   }
 }
