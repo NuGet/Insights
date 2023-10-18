@@ -91,6 +91,8 @@ namespace NuGet.Insights.Worker
             KustoTableNameFormat = "{0}";
             KustoTableFolder = string.Empty;
             KustoTableDocstringFormat = "See https://github.com/NuGet/Insights/blob/main/docs/tables/{0}.md";
+            KustoTempTableNameFormat = "{0}_Temp";
+            KustoOldTableNameFormat = "{0}_Old";
             OldKustoIngestionsToKeep = 9;
             KustoIngestionMaxAttempts = 10;
             KustoValidationMaxAttempts = 3;
@@ -199,6 +201,8 @@ namespace NuGet.Insights.Worker
         public string KustoTableNameFormat { get; set; }
         public string KustoTableFolder { get; set; }
         public string KustoTableDocstringFormat { get; set; }
+        public string KustoTempTableNameFormat { get; set; }
+        public string KustoOldTableNameFormat { get; set; }
         public int OldKustoIngestionsToKeep { get; set; }
         public int KustoIngestionMaxAttempts { get; set; }
         public int KustoValidationMaxAttempts { get; set; }

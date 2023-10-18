@@ -66,12 +66,12 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
         public string GetTempKustoTableName(string containerName)
         {
-            return GetKustoTableName(containerName) + "_Temp";
+            return string.Format(_options.Value.KustoTempTableNameFormat, GetKustoTableName(containerName));
         }
 
         public string GetOldKustoTableName(string containerName)
         {
-            return GetKustoTableName(containerName) + "_Old";
+            return string.Format(_options.Value.KustoOldTableNameFormat, GetKustoTableName(containerName));
         }
 
         public string GetKustoTableName(string containerName)
