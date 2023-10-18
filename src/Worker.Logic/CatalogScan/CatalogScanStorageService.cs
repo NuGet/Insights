@@ -321,20 +321,20 @@ namespace NuGet.Insights.Worker
         public async Task ReplaceAsync(CatalogIndexScan indexScan)
         {
             _logger.LogInformation("Replacing catalog index scan {ScanId}, state: {State}.", indexScan.ScanId, indexScan.State);
-            var response = await (await GetIndexScanTableAsync()).UpdateEntityAsync(indexScan, indexScan.ETag);
+            var response = await (await GetIndexScanTableAsync()).UpdateEntityAsync(indexScan, indexScan.ETag, TableUpdateMode.Replace);
             indexScan.UpdateETag(response);
         }
 
         public async Task ReplaceAsync(CatalogPageScan pageScan)
         {
             _logger.LogInformation("Replacing catalog page scan {ScanId}, page {PageId}, state: {State}.", pageScan.ScanId, pageScan.PageId, pageScan.State);
-            var response = await (await GetPageScanTableAsync(pageScan.StorageSuffix)).UpdateEntityAsync(pageScan, pageScan.ETag);
+            var response = await (await GetPageScanTableAsync(pageScan.StorageSuffix)).UpdateEntityAsync(pageScan, pageScan.ETag, TableUpdateMode.Replace);
             pageScan.UpdateETag(response);
         }
 
         public async Task ReplaceAsync(CatalogLeafScan leafScan)
         {
-            var response = await (await GetLeafScanTableAsync(leafScan.StorageSuffix)).UpdateEntityAsync(leafScan, leafScan.ETag);
+            var response = await (await GetLeafScanTableAsync(leafScan.StorageSuffix)).UpdateEntityAsync(leafScan, leafScan.ETag, TableUpdateMode.Replace);
             leafScan.UpdateETag(response);
         }
 

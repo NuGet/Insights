@@ -100,7 +100,7 @@ namespace NuGet.Insights.Worker
         {
             var table = await GetTableAsync();
             _logger.LogInformation("Updating cursor {Name} to timestamp {NewValue:O}.", cursor.Name, cursor.Value);
-            var response = await table.UpdateEntityAsync(cursor, cursor.ETag);
+            var response = await table.UpdateEntityAsync(cursor, cursor.ETag, TableUpdateMode.Replace);
             cursor.UpdateETag(response);
         }
 
