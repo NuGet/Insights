@@ -44,7 +44,11 @@ param useSpotWorkers bool
 @secure()
 param spotWorkerUploadScriptUrl string = ''
 @secure()
-param spotWorkerDeploymentUrls object = {}
+param spotWorkerHostZipUrl string = ''
+@secure()
+param spotWorkerEnvUrl string = ''
+@secure()
+param spotWorkerInstallScriptUrl string = ''
 param spotWorkerDeploymentContainerName string = ''
 param spotWorkerAdminUsername string = ''
 @secure()
@@ -235,7 +239,14 @@ module spotWorkers './spot-workers.bicep' = if (useSpotWorkers) {
     keyVaultName: keyVaultName
     userManagedIdentityName: userManagedIdentityName
     uploadScriptUrl: spotWorkerUploadScriptUrl
-    deploymentUrls: spotWorkerDeploymentUrls
+    deploymentUrls: {
+      files: [
+        workerZipUrl
+        spotWorkerHostZipUrl
+        spotWorkerEnvUrl
+        spotWorkerInstallScriptUrl
+      ]
+    }
     deploymentLabel: deploymentLabel
     spotWorkerDeploymentContainerName: spotWorkerDeploymentContainerName
     appInsightsName: appInsightsName

@@ -166,11 +166,14 @@ process {
     $workerBinPath = "bin/Worker.zip"
     $azureFunctionsHostBinPath = "bin/AzureFunctionsHost.zip"
     $workerStandaloneEnvPathPattern = "bin/WorkerStandalone.{0}.env"
+    $spotWorkerUploadBinPath = "bin/Set-SpotWorkerDeploymentFiles.ps1"
+    $installWorkerStandaloneBinPath = "bin/Install-WorkerStandalone.ps1"
 
     $scriptsToCopy = [ordered]@{
-        "scripts/Install-WorkerStandalone.ps1" = "bin/Install-WorkerStandalone.ps1";
-        "scripts/NuGet.Insights.psm1"          = "NuGet.Insights.psm1";
-        "scripts/Set-DeploymentParameters.ps1" = "Set-DeploymentParameters.ps1";
+        "scripts/Install-WorkerStandalone.ps1"      = $installWorkerStandaloneBinPath;
+        "scripts/NuGet.Insights.psm1"               = "NuGet.Insights.psm1";
+        "scripts/Set-DeploymentParameters.ps1"      = "Set-DeploymentParameters.ps1";
+        "scripts/Set-SpotWorkerDeploymentFiles.ps1" = $spotWorkerUploadBinPath;
     }
     
     # Install Bicep, if needed.
@@ -234,21 +237,40 @@ process {
             $configPath = Get-ConfigPath $resourceSettings.ConfigName
             throw "A website AAD client ID is required for generating Ev2 artifacts. You can use the prepare.ps1 script to create the AAD app registration for the first time. Specify a value in file $configPath at JSON path $.deployment.WebsiteAadAppClientId."
         }
+
+        $pathReferences = @(
+            "websiteZipUrl"
+            "workerZipUrl"
+        )
+
+        if ($resourceSettings.UseSpotWorkers) {
+            $standaloneEnv = New-WorkerStandaloneEnv $resourceSettings
+            $standaloneEnvFileName = $workerStandaloneEnvPathPattern -f $resourceSettings.ConfigName
+            $standaloneEnv | Out-EnvFile -FilePath (Join-Path $ev2 $standaloneEnvFileName)
+            
+            $pathReferences += @(
+                "spotWorkerEnvUrl"
+                "spotWorkerHostZipUrl"
+                "spotWorkerInstallScriptUrl"
+                "spotWorkerUploadScriptUrl"
+            )
+        }
     
         $parameters = New-MainParameters `
             -ResourceSettings $resourceSettings `
             -DeploymentLabel "PLACEHOLDER" `
             -WebsiteZipUrl $websiteBinPath `
             -WorkerZipUrl $workerBinPath `
-            -AzureFunctionsHostZipUrl $azureFunctionsHostBinPath
+            -AzureFunctionsHostZipUrl $azureFunctionsHostBinPath `
+            -SpotWorkerUploadScriptUrl $spotWorkerUploadBinPath `
+            -WorkerStandaloneEnvUrl $standaloneEnvFileName `
+            -InstallWorkerStandaloneUrl $installWorkerStandaloneBinPath
+
         $parametersPath = Join-Path $ev2 (Get-ParametersPath $resourceSettings.ConfigName)
-        New-ParameterFile $parameters @("websiteZipUrl", "workerZipUrl") $parametersPath
+
+        New-ParameterFile $parameters $pathReferences $parametersPath
         New-ServiceModelFile $resourceSettings
         New-RolloutSpecFile $resourceSettings
-    
-        $standaloneEnv = New-WorkerStandaloneEnv $resourceSettings
-        $standaloneEnvFileName = $workerStandaloneEnvPathPattern -f $resourceSettings.ConfigName
-        $standaloneEnv | Out-EnvFile -FilePath (Join-Path $ev2 $standaloneEnvFileName)
     
         $anyUseSpotWorkers = $anyUseSpotWorkers -or $resourceSettings.UseSpotWorkers
     }

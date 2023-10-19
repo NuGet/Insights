@@ -584,13 +584,9 @@ function New-MainParameters(
 
     if ($ResourceSettings.UseSpotWorkers) {
         $parameters.spotWorkerUploadScriptUrl = $SpotWorkerUploadScriptUrl;
-        $parameters.spotWorkerDeploymentUrls = @{ files = @(
-                $WorkerZipUrl,
-                $AzureFunctionsHostZipUrl,
-                $WorkerStandaloneEnvUrl,
-                $InstallWorkerStandaloneUrl
-            )
-        };
+        $parameters.spotWorkerHostZipUrl = $AzureFunctionsHostZipUrl;
+        $parameters.spotWorkerEnvUrl = $WorkerStandaloneEnvUrl;
+        $parameters.spotWorkerInstallScriptUrl = $InstallWorkerStandaloneUrl;
         $parameters.spotWorkerDeploymentContainerName = $ResourceSettings.SpotWorkerDeploymentContainerName
         $parameters.spotWorkerAdminUsername = $ResourceSettings.SpotWorkerAdminUsername;
         $parameters.spotWorkerAdminPassword = $ResourceSettings.SpotWorkerAdminPassword;
