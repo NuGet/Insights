@@ -162,6 +162,10 @@ if (!$StorageSas) {
         --expiry ((Get-Date).ToUniversalTime().AddDays(1).ToString("yyyy-MM-dd'T'HH:mm'Z'")) `
         --output tsv `
         --only-show-errors
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "Could not get a storage SAS using az CLI. Check the error output."
+    }
 }
 
 $StorageSas = "?" + $StorageSas.TrimStart("?")
