@@ -118,7 +118,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public async Task AddIngestionAsync(KustoIngestionEntity ingestion)
         {
             var table = await GetKustoIngestionTableAsync();
-            await table.AddEntityAsync(ingestion);
+            var response = await table.AddEntityAsync(ingestion);
+            ingestion.UpdateETag(response);
         }
 
         public async Task<KustoContainerIngestion> GetContainerAsync(string storageSuffix, string containerName)

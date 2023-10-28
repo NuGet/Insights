@@ -71,7 +71,8 @@ namespace NuGet.Insights.Worker
             var table = await GetIndexScanTableAsync();
             try
             {
-                await table.AddEntityAsync(indexScan);
+                var response = await table.AddEntityAsync(indexScan);
+                indexScan.UpdateETag(response);
             }
             catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.Conflict && ex.ErrorCode == TableErrorCode.EntityAlreadyExists)
             {
