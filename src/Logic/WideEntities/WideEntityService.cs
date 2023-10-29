@@ -343,7 +343,7 @@ namespace NuGet.Insights.WideEntities
                     && segmentsList.Sum(x => x != null ? x.Sum(y => y.GetEntitySize()) : 0) > MaxTotalEntitySize)
                 {
                     // Remove the table operations added by this wide entity operation since it made the batch too large.
-                    var addedOperations = new Stack<TableTransactionalOperation>();
+                    var addedOperations = new Stack<TableTransactionOperation>();
                     while (tableBatch.Count > previousOperationCount)
                     {
                         addedOperations.Push(tableBatch.Last());

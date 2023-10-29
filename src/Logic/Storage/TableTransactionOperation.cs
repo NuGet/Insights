@@ -8,9 +8,9 @@ using Azure.Data.Tables;
 
 namespace NuGet.Insights
 {
-    public class TableTransactionalOperation
+    public class TableTransactionOperation
     {
-        public TableTransactionalOperation(ITableEntity entity, TableTransactionAction transactionAction, Func<TableClient, Task<Response>> singleAct)
+        public TableTransactionOperation(ITableEntity entity, TableTransactionAction transactionAction, Func<TableClient, Task<Response>> singleAct)
         {
             Entity = entity;
             TransactionAction = transactionAction;

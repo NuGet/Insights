@@ -11,7 +11,7 @@ using Azure.Data.Tables;
 
 namespace NuGet.Insights
 {
-    public class MutableTableTransactionalBatch : List<TableTransactionalOperation>
+    public class MutableTableTransactionalBatch : List<TableTransactionOperation>
     {
         private string _partitionKey;
 
@@ -33,7 +33,7 @@ namespace NuGet.Insights
         public void AddEntity<T>(T entity) where T : class, ITableEntity, new()
         {
             SetPartitionKey(entity.PartitionKey);
-            Add(new TableTransactionalOperation(
+            Add(new TableTransactionOperation(
                 entity,
                 new TableTransactionAction(TableTransactionActionType.Add, entity),
                 table => table.AddEntityAsync(entity)));
@@ -42,7 +42,7 @@ namespace NuGet.Insights
         public void DeleteEntity(string partitionKey, string rowKey, ETag ifMatch)
         {
             SetPartitionKey(partitionKey);
-            Add(new TableTransactionalOperation(
+            Add(new TableTransactionOperation(
                 entity: null,
                 new TableTransactionAction(TableTransactionActionType.Delete, new TableEntity(partitionKey, rowKey), ifMatch),
                 table => table.DeleteEntityAsync(partitionKey, rowKey, ifMatch)));
@@ -57,7 +57,7 @@ namespace NuGet.Insights
                 TableUpdateMode.Replace => TableTransactionActionType.UpdateReplace,
                 _ => throw new NotImplementedException(),
             };
-            Add(new TableTransactionalOperation(
+            Add(new TableTransactionOperation(
                 entity,
                 new TableTransactionAction(actionType, entity, ifMatch),
                 table => table.UpdateEntityAsync(entity, ifMatch, mode)));
@@ -72,7 +72,7 @@ namespace NuGet.Insights
                 TableUpdateMode.Replace => TableTransactionActionType.UpsertReplace,
                 _ => throw new NotImplementedException(),
             };
-            Add(new TableTransactionalOperation(
+            Add(new TableTransactionOperation(
                 entity,
                 new TableTransactionAction(actionType, entity),
                 table => table.UpsertEntityAsync(entity, mode)));
