@@ -4,13 +4,14 @@
 using System;
 using System.Collections.Generic;
 using Azure;
-using Azure.Data.Tables;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights.WideEntities
 {
-    public class WideEntitySegment : Dictionary<string, object>, ITableEntity
+    public class WideEntitySegment : Dictionary<string, object>, ITableEntityWithClientRequestId
     {
         internal const string SegmentCountPropertyName = "C";
+        internal const string ClientRequestIdPropertyName = "T";
 
         /// <summary>
         /// The separator between the user-provided wide entity row key and the wide entity index suffix.
@@ -52,6 +53,9 @@ namespace NuGet.Insights.WideEntities
             {
                 this[SegmentCountPropertyName] = 0;
             }
+
+            // This ID will be set to a real value by the HTTP pipeline.
+            this[ClientRequestIdPropertyName] = null;
         }
 
         public string PartitionKey
@@ -183,7 +187,30 @@ namespace NuGet.Insights.WideEntities
             }
         }
 
-        private int NonDataPropertyCount => Index == 0 ? 5 : 4;
+        public Guid? ClientRequestId
+        {
+            get
+            {
+                if (TryGetValue(ClientRequestIdPropertyName, out var changeIdObj))
+                {
+                    return (Guid)changeIdObj;
+                }
+
+                return null;
+            }
+
+            set
+            {
+                if (value == Guid.Empty)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), value, $"The client request ID must not be an empty GUID.");
+                }
+
+                this[ClientRequestIdPropertyName] = value;
+            }
+        }
+
+        private int NonDataPropertyCount => Index == 0 ? 6 : 5;
 
         public IEnumerable<ReadOnlyMemory<byte>> GetChunks()
         {

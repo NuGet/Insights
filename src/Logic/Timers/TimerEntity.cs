@@ -4,11 +4,11 @@
 using System;
 using System.Runtime.Serialization;
 using Azure;
-using Azure.Data.Tables;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights
 {
-    public class TimerEntity : ITableEntity
+    public class TimerEntity : ITableEntityWithClientRequestId
     {
         public TimerEntity()
         {
@@ -27,6 +27,7 @@ namespace NuGet.Insights
         public string RowKey { get; set; }
         public DateTimeOffset? Timestamp { get; set; }
         public ETag ETag { get; set; }
+        public Guid? ClientRequestId { get; set; }
 
         public DateTimeOffset? LastExecuted { get; set; }
         public bool IsEnabled { get; set; }

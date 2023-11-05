@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Azure.Data.Tables;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
 {
@@ -14,7 +14,7 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
         private readonly string _pageUrl;
 
         public LatestPackageLeafStorage(
-            TableClient table,
+            TableClientWithRetryContext table,
             IReadOnlyDictionary<ICatalogLeafItem, int> leafItemToRank,
             int pageRank,
             string pageUrl)
@@ -25,7 +25,7 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
             _pageUrl = pageUrl;
         }
 
-        public TableClient Table { get; }
+        public TableClientWithRetryContext Table { get; }
 
         public string GetPartitionKey(ICatalogLeafItem item)
         {

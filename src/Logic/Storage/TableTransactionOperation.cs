@@ -1,16 +1,17 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights
 {
     public class TableTransactionOperation
     {
-        public TableTransactionOperation(ITableEntity entity, TableTransactionAction transactionAction, Func<TableClient, Task<Response>> singleAct)
+        public TableTransactionOperation(ITableEntity entity, TableTransactionAction transactionAction, Func<TableClientWithRetryContext, Task<Response>> singleAct)
         {
             Entity = entity;
             TransactionAction = transactionAction;
@@ -19,6 +20,6 @@ namespace NuGet.Insights
 
         public ITableEntity Entity { get; }
         public TableTransactionAction TransactionAction { get; }
-        public Func<TableClient, Task<Response>> SingleAct { get; }
+        public Func<TableClientWithRetryContext, Task<Response>> SingleAct { get; }
     }
 }

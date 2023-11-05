@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
+using NuGet.Insights.StorageNoOpRetry;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -666,7 +667,7 @@ namespace NuGet.Insights.WideEntities
                 await (await GetTableAsync(NullLoggerFactory.Instance)).DeleteAsync();
             }
 
-            public async Task<TableClient> GetTableAsync(ILoggerFactory loggerFactory)
+            public async Task<TableClientWithRetryContext> GetTableAsync(ILoggerFactory loggerFactory)
             {
                 var table = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync())
                     .GetTableClient(TableName);

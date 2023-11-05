@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
 using Microsoft.Extensions.Options;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights.WideEntities
 {
@@ -54,6 +55,10 @@ namespace NuGet.Insights.WideEntities
             // Add the segment size property.
             calculator.AddPropertyOverhead(1);
             calculator.AddInt32Data();
+
+            // Add the client request ID property.
+            calculator.AddPropertyOverhead(1);
+            calculator.AddGuidData();
 
             // We can have up to 16 chunks per entity.
             for (var i = 0; i < WideEntitySegment.ChunkPropertyNames.Count; i++)
@@ -158,7 +163,7 @@ namespace NuGet.Insights.WideEntities
             }
         }
 
-        private async IAsyncEnumerable<WideEntity> RetrieveAsync(string tableName, TableClient table, string partitionKey, string minRowKey, string maxRowKey, bool includeData, int maxPerPage)
+        private async IAsyncEnumerable<WideEntity> RetrieveAsync(string tableName, TableClientWithRetryContext table, string partitionKey, string minRowKey, string maxRowKey, bool includeData, int maxPerPage)
         {
             using var metrics = _telemetryClient.StartQueryLoopMetrics(dimension1Name: "TableName", dimension1Value: tableName);
 
@@ -248,7 +253,7 @@ namespace NuGet.Insights.WideEntities
         }
 
         private static async IAsyncEnumerable<WideEntitySegment> QueryEntitiesAsync(
-            TableClient table,
+            TableClientWithRetryContext table,
             QueryLoopMetrics metrics,
             IList<string> selectColumns,
             Expression<Func<WideEntitySegment, bool>> filter,
@@ -598,7 +603,7 @@ namespace NuGet.Insights.WideEntities
 
             if (index == 0)
             {
-                // Account for the segment count entity: property name plus the integer
+                // Account for the segment count property: property name plus the integer
                 remainingEntitySize -= propertyOverhead + 4;
             }
 
@@ -631,14 +636,14 @@ namespace NuGet.Insights.WideEntities
                 var actual = segment.GetEntitySize();
                 if (actual != segmentSize)
                 {
-                    throw new InvalidOperationException($"The segment size calculation is incorrect. Expected: {segment}. Actual: {actual}.");
+                    throw new InvalidOperationException($"The segment size calculation is incorrect. Expected: {segmentSize}. Actual: {actual}.");
                 }
             }
 
             return (segment, segmentSize);
         }
 
-        private async Task<TableClient> GetTableAsync(string tableName)
+        private async Task<TableClientWithRetryContext> GetTableAsync(string tableName)
         {
             return (await _serviceClientFactory.GetTableServiceClientAsync())
                 .GetTableClient(tableName);

@@ -91,8 +91,10 @@ namespace NuGet.Insights.Worker.TableCopy
             {
                 pair.First.Timestamp = default;
                 pair.First.ETag = default;
+                pair.First.ClientRequestId = default;
                 pair.Second.Timestamp = default;
                 pair.Second.ETag = default;
+                pair.Second.ClientRequestId = default;
                 Assert.Equal(JsonSerializer.Serialize(pair.First), JsonSerializer.Serialize(pair.Second));
             });
 

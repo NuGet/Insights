@@ -3,8 +3,8 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Azure.Data.Tables;
 using Microsoft.Extensions.Options;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights.Worker.LoadPackageVersion
 {
@@ -49,7 +49,7 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
                 .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
         }
 
-        internal async Task<TableClient> GetTableAsync()
+        internal async Task<TableClientWithRetryContext> GetTableAsync()
         {
             return (await _serviceClientFactory.GetTableServiceClientAsync())
                 .GetTableClient(_options.Value.PackageVersionTableName);

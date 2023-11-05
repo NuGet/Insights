@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
+using NuGet.Insights.StorageNoOpRetry;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -51,7 +52,7 @@ namespace NuGet.Insights
 
                 var entities = await GetEntitiesAsync<TableEntity>();
                 var entity = Assert.Single(entities);
-                Assert.Equal(new[] { "IsEnabled", "PartitionKey", "RowKey", "Timestamp", "odata.etag" }, entity.Keys.OrderBy(x => x, StringComparer.Ordinal).ToArray());
+                Assert.Equal(new[] { "ClientRequestId", "IsEnabled", "PartitionKey", "RowKey", "Timestamp", "odata.etag" }, entity.Keys.OrderBy(x => x, StringComparer.Ordinal).ToArray());
                 Assert.Equal(isEnabled, entity.GetBoolean("IsEnabled"));
             }
 
@@ -68,7 +69,7 @@ namespace NuGet.Insights
 
                 var entities = await GetEntitiesAsync<TableEntity>();
                 var entity = Assert.Single(entities);
-                Assert.Equal(new[] { "IsEnabled", "LastExecuted", "PartitionKey", "RowKey", "Timestamp", "odata.etag" }, entity.Keys.OrderBy(x => x, StringComparer.Ordinal).ToArray());
+                Assert.Equal(new[] { "ClientRequestId", "IsEnabled", "LastExecuted", "PartitionKey", "RowKey", "Timestamp", "odata.etag" }, entity.Keys.OrderBy(x => x, StringComparer.Ordinal).ToArray());
                 Assert.Equal(isEnabled, entity.GetBoolean("IsEnabled"));
                 Assert.InRange(entity.GetDateTimeOffset("LastExecuted").Value, before, after);
             }
@@ -383,7 +384,7 @@ namespace NuGet.Insights
                 return Task.CompletedTask;
             }
 
-            public async Task<TableClient> GetTableAsync(ILoggerFactory loggerFactory)
+            public async Task<TableClientWithRetryContext> GetTableAsync(ILoggerFactory loggerFactory)
             {
                 var serviceClientFactory = GetServiceClientFactory(loggerFactory);
                 var table = (await serviceClientFactory.GetTableServiceClientAsync())

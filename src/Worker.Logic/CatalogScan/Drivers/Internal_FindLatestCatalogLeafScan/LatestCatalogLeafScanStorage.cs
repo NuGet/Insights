@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Azure.Data.Tables;
+using NuGet.Insights.StorageNoOpRetry;
 using NuGet.Versioning;
 
 namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
@@ -12,14 +12,14 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
         private readonly CatalogIndexScan _indexScan;
         private readonly string _pageUrl;
 
-        public LatestCatalogLeafScanStorage(TableClient table, CatalogIndexScan indexScan, string pageUrl)
+        public LatestCatalogLeafScanStorage(TableClientWithRetryContext table, CatalogIndexScan indexScan, string pageUrl)
         {
             Table = table;
             _indexScan = indexScan;
             _pageUrl = pageUrl;
         }
 
-        public TableClient Table { get; }
+        public TableClientWithRetryContext Table { get; }
         public string CommitTimestampColumnName => nameof(CatalogLeafScan.CommitTimestamp);
 
         public string GetPartitionKey(ICatalogLeafItem item)

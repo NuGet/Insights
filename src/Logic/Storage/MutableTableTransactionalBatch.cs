@@ -8,6 +8,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights
 {
@@ -15,12 +16,12 @@ namespace NuGet.Insights
     {
         private string _partitionKey;
 
-        public MutableTableTransactionalBatch(TableClient tableClient)
+        public MutableTableTransactionalBatch(TableClientWithRetryContext tableClient)
         {
             TableClient = tableClient;
         }
 
-        public TableClient TableClient { get; }
+        public TableClientWithRetryContext TableClient { get; }
 
         public void AddEntities<T>(IEnumerable<T> entities) where T : class, ITableEntity, new()
         {

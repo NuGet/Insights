@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights.Worker.TableCopy
 {
@@ -50,7 +51,7 @@ namespace NuGet.Insights.Worker.TableCopy
             await batch.SubmitBatchIfNotEmptyAsync();
         }
 
-        private async Task<List<T>> GetSourceRowsAsync(TableClient sourceTable, TableRowCopyMessage<T> message)
+        private async Task<List<T>> GetSourceRowsAsync(TableClientWithRetryContext sourceTable, TableRowCopyMessage<T> message)
         {
             using var metrics = _telemetryClient.StartQueryLoopMetrics();
 

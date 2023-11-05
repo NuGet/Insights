@@ -27,6 +27,11 @@ namespace NuGet.Insights.StorageNoOpRetry
             return new TableClientWithRetryContext(_client.GetTableClient(tableName));
         }
 
+        public AsyncPageable<TableItem> QueryAsync(string? filter = null, int? maxPerPage = null, CancellationToken cancellationToken = default)
+        {
+            return _client.QueryAsync(filter, maxPerPage, cancellationToken);
+        }
+
         public AsyncPageable<TableItem> QueryAsync(
             Expression<Func<TableItem, bool>> filter,
             int? maxPerPage = null,

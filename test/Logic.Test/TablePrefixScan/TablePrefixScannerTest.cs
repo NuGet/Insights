@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
+using NuGet.Insights.StorageNoOpRetry;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -415,21 +416,21 @@ namespace NuGet.Insights.TablePrefixScan
 
         public class Fixture : IAsyncLifetime
         {
-            private static readonly List<(IReadOnlyList<TestEntity> sortedEntities, TableClient table)> _candidates = new List<(IReadOnlyList<TestEntity> sortedEntities, TableClient table)>();
+            private static readonly List<(IReadOnlyList<TestEntity> sortedEntities, TableClientWithRetryContext table)> Candidates = new();
 
             public Fixture()
             {
-                Client = new TableServiceClient(TestSettings.StorageConnectionString);
+                Client = new TableServiceClientWithRetryContext(new TableServiceClient(TestSettings.StorageConnectionString));
             }
 
-            public TableServiceClient Client { get; }
+            public TableServiceClientWithRetryContext Client { get; }
 
-            public async Task<(TableClient table, IReadOnlyList<TestEntity> sortedEntities)> SortAndInsertAsync(IEnumerable<TestEntity> entities)
+            public async Task<(TableClientWithRetryContext table, IReadOnlyList<TestEntity> sortedEntities)> SortAndInsertAsync(IEnumerable<TestEntity> entities)
             {
                 IReadOnlyList<TestEntity> sortedEntities = entities.Order().ToList();
 
-                TableClient table = null;
-                foreach (var candidate in _candidates)
+                TableClientWithRetryContext table = null;
+                foreach (var candidate in Candidates)
                 {
                     if (candidate.sortedEntities.SequenceEqual(sortedEntities, new PartitionKeyRowKeyComparer<TestEntity>()))
                     {
@@ -450,7 +451,7 @@ namespace NuGet.Insights.TablePrefixScan
                         batch.AddEntities(group);
                         await batch.SubmitBatchAsync();
                     }
-                    _candidates.Add((sortedEntities, table));
+                    Candidates.Add((sortedEntities, table));
                 }
 
                 return (table, sortedEntities);
@@ -463,11 +464,11 @@ namespace NuGet.Insights.TablePrefixScan
 
             public Task DisposeAsync()
             {
-                return Task.WhenAll(_candidates.Select(x => x.table.DeleteAsync()));
+                return Task.WhenAll(Candidates.Select(x => x.table.DeleteAsync()));
             }
         }
 
-        public class PartitionKeyRowKeyComparer<T> : IEqualityComparer<T> where T : ITableEntity
+        public class PartitionKeyRowKeyComparer<T> : IEqualityComparer<T> where T : ITableEntityWithClientRequestId
         {
             public bool Equals([AllowNull] T x, [AllowNull] T y)
             {

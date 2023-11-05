@@ -48,6 +48,7 @@ namespace NuGet.Insights.Worker
         public string RowKey { get; set; }
         public DateTimeOffset? Timestamp { get; set; }
         public ETag ETag { get; set; }
+        public Guid? ClientRequestId { get; set; }
 
         CatalogLeafType ICatalogLeafItem.Type => LeafType;
         DateTimeOffset? IPackageIdentityCommit.CommitTimestamp => CommitTimestamp;

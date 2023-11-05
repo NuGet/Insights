@@ -22,8 +22,7 @@ namespace NuGet.Insights.StorageNoOpRetry
             public async Task DoesNotSwallowConflictWhenAnotherThreadAdded()
             {
                 // Arrange
-                var innerTableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
-                var tableServiceClient = new TableServiceClientWithRetryContext(innerTableServiceClient);
+                var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
                 var table = tableServiceClient.GetTableClient(ContainerName);
                 await table.CreateIfNotExistsAsync();
 
@@ -64,8 +63,7 @@ namespace NuGet.Insights.StorageNoOpRetry
             public async Task SwallowsConflictForAdd()
             {
                 // Arrange
-                var innerTableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
-                var tableServiceClient = new TableServiceClientWithRetryContext(innerTableServiceClient);
+                var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
                 var table = tableServiceClient.GetTableClient(ContainerName);
                 await table.CreateIfNotExistsAsync();
 
@@ -102,8 +100,7 @@ namespace NuGet.Insights.StorageNoOpRetry
             public async Task DoesNotSwallowConflictWhenAnotherThreadUpdated()
             {
                 // Arrange
-                var innerTableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
-                var tableServiceClient = new TableServiceClientWithRetryContext(innerTableServiceClient);
+                var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
                 var table = tableServiceClient.GetTableClient(ContainerName);
                 await table.CreateIfNotExistsAsync();
 
@@ -149,8 +146,7 @@ namespace NuGet.Insights.StorageNoOpRetry
             public async Task SwallowsConflictForUpdate()
             {
                 // Arrange
-                var innerTableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
-                var tableServiceClient = new TableServiceClientWithRetryContext(innerTableServiceClient);
+                var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
                 var table = tableServiceClient.GetTableClient(ContainerName);
                 await table.CreateIfNotExistsAsync();
 
@@ -200,8 +196,7 @@ namespace NuGet.Insights.StorageNoOpRetry
             public async Task SwallowsConflictForSmallBatchUpdate()
             {
                 // Arrange
-                var innerTableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
-                var tableServiceClient = new TableServiceClientWithRetryContext(innerTableServiceClient);
+                var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
                 var table = tableServiceClient.GetTableClient(ContainerName);
                 await table.CreateIfNotExistsAsync();
 
@@ -265,8 +260,7 @@ namespace NuGet.Insights.StorageNoOpRetry
                 FailFastLogLevel = LogLevel.Error;
                 AssertLogLevel = LogLevel.Error;
 
-                var innerTableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
-                var tableServiceClient = new TableServiceClientWithRetryContext(innerTableServiceClient);
+                var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
                 var table = tableServiceClient.GetTableClient(ContainerName);
                 await table.CreateIfNotExistsAsync();
 
@@ -341,8 +335,7 @@ namespace NuGet.Insights.StorageNoOpRetry
                 FailFastLogLevel = LogLevel.Error;
                 AssertLogLevel = LogLevel.Error;
 
-                var innerTableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
-                var tableServiceClient = new TableServiceClientWithRetryContext(innerTableServiceClient);
+                var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
                 var table = tableServiceClient.GetTableClient(ContainerName);
                 await table.CreateIfNotExistsAsync();
 
@@ -410,8 +403,7 @@ namespace NuGet.Insights.StorageNoOpRetry
             public async Task DoesNotSwallowConflictWhenAnotherThreadUpdatedAllEntities()
             {
                 // Arrange
-                var innerTableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
-                var tableServiceClient = new TableServiceClientWithRetryContext(innerTableServiceClient);
+                var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
                 var table = tableServiceClient.GetTableClient(ContainerName);
                 await table.CreateIfNotExistsAsync();
 
@@ -477,8 +469,7 @@ namespace NuGet.Insights.StorageNoOpRetry
             public async Task DoesNotSwallowConflictWhenAnotherThreadDeletedAllEntities()
             {
                 // Arrange
-                var innerTableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
-                var tableServiceClient = new TableServiceClientWithRetryContext(innerTableServiceClient);
+                var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
                 var table = tableServiceClient.GetTableClient(ContainerName);
                 await table.CreateIfNotExistsAsync();
 
@@ -528,9 +519,7 @@ namespace NuGet.Insights.StorageNoOpRetry
             public async Task SwallowsConflictForLargeBatchUpdate()
             {
                 // Arrange
-                var innerTableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
-                var tableServiceClient = new TableServiceClientWithRetryContext(innerTableServiceClient);
-                var innerTableClient = innerTableServiceClient.GetTableClient(ContainerName);
+                var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
                 var table = tableServiceClient.GetTableClient(ContainerName);
                 await table.CreateIfNotExistsAsync();
 
@@ -540,7 +529,7 @@ namespace NuGet.Insights.StorageNoOpRetry
                     RowKey = "rk" + i.ToString("D4"),
                     MyProperty = "foo",
                 }).ToList();
-                var mutableBatch = new MutableTableTransactionalBatch(innerTableClient);
+                var mutableBatch = new MutableTableTransactionalBatch(table);
                 foreach (var entity in allEntities)
                 {
                     mutableBatch.AddEntity(entity);
@@ -600,9 +589,7 @@ namespace NuGet.Insights.StorageNoOpRetry
                 FailFastLogLevel = LogLevel.Error;
                 AssertLogLevel = LogLevel.Error;
 
-                var innerTableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
-                var tableServiceClient = new TableServiceClientWithRetryContext(innerTableServiceClient);
-                var innerTableClient = innerTableServiceClient.GetTableClient(ContainerName);
+                var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
                 var table = tableServiceClient.GetTableClient(ContainerName);
                 await table.CreateIfNotExistsAsync();
 
@@ -612,7 +599,7 @@ namespace NuGet.Insights.StorageNoOpRetry
                     RowKey = "rk" + i.ToString("D4"),
                     MyProperty = "foo",
                 }).ToList();
-                var mutableBatch = new MutableTableTransactionalBatch(innerTableClient);
+                var mutableBatch = new MutableTableTransactionalBatch(table);
                 foreach (var entity in allEntities)
                 {
                     mutableBatch.AddEntity(entity);

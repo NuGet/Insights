@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Azure.Data.Tables;
+using NuGet.Insights.StorageNoOpRetry;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -114,7 +114,7 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
                 cleanEntity: x => x.Created = DateTimeOffset.Parse("2020-01-03T00:00:00Z"));
         }
 
-        private async Task<TableClient> GetLeafScanTableAsync()
+        private async Task<TableClientWithRetryContext> GetLeafScanTableAsync()
         {
             return await CatalogScanStorageService.GetLeafScanTableAsync(ParentStorageSuffix);
         }

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Azure.Data.Tables;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights.Worker.LoadPackageVersion
 {
@@ -11,14 +11,14 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
         private readonly CatalogClient _catalogClient;
 
         public PackageVersionStorage(
-            TableClient tableClient,
+            TableClientWithRetryContext tableClient,
             CatalogClient catalogClient)
         {
             Table = tableClient;
             _catalogClient = catalogClient;
         }
 
-        public TableClient Table { get; }
+        public TableClientWithRetryContext Table { get; }
         public string CommitTimestampColumnName => nameof(PackageVersionEntity.CommitTimestamp);
 
         public string GetPartitionKey(ICatalogLeafItem item)

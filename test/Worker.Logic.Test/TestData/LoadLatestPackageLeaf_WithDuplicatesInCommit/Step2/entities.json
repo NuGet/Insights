@@ -14,7 +14,8 @@
     "PartitionKey": "bridgearduinoserialtomqttsplitcsv",
     "RowKey": "1.0.0.25",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "crewcloud.platform",
@@ -31,7 +32,8 @@
     "PartitionKey": "crewcloud.platform",
     "RowKey": "1.2.4",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "helpers.common",
@@ -48,7 +50,8 @@
     "PartitionKey": "helpers.common",
     "RowKey": "1.0.1",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "microting.outlookaddon",
@@ -65,7 +68,8 @@
     "PartitionKey": "microting.outlookaddon",
     "RowKey": "2.1.51",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "swiftprotocol",
@@ -82,7 +86,8 @@
     "PartitionKey": "swiftprotocol",
     "RowKey": "1.0.1-alpha1",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "syncfusion.themes.office2016colorful.wpf46",
@@ -99,7 +104,8 @@
     "PartitionKey": "syncfusion.themes.office2016colorful.wpf46",
     "RowKey": "15.4.0.17",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "syncfusion.themes.office2016colorful.wpf46",
@@ -116,7 +122,8 @@
     "PartitionKey": "syncfusion.themes.office2016colorful.wpf46",
     "RowKey": "15.4.0.20",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "syncfusion.themes.office2016colorful.wpf46",
@@ -133,7 +140,8 @@
     "PartitionKey": "syncfusion.themes.office2016colorful.wpf46",
     "RowKey": "16.1.0.24",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "syncfusion.themes.office2016darkgray.wpf46",
@@ -150,7 +158,8 @@
     "PartitionKey": "syncfusion.themes.office2016darkgray.wpf46",
     "RowKey": "15.4.0.17",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "syncfusion.themes.office2016darkgray.wpf46",
@@ -167,7 +176,8 @@
     "PartitionKey": "syncfusion.themes.office2016darkgray.wpf46",
     "RowKey": "15.4.0.20",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "syncfusion.themes.office2016darkgray.wpf46",
@@ -184,7 +194,8 @@
     "PartitionKey": "syncfusion.themes.office2016darkgray.wpf46",
     "RowKey": "16.1.0.24",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "syncfusion.themes.office2016white.wpf46",
@@ -201,7 +212,8 @@
     "PartitionKey": "syncfusion.themes.office2016white.wpf46",
     "RowKey": "15.4.0.17",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "syncfusion.themes.office2016white.wpf46",
@@ -218,7 +230,8 @@
     "PartitionKey": "syncfusion.themes.office2016white.wpf46",
     "RowKey": "15.4.0.20",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "syncfusion.themes.office2016white.wpf46",
@@ -235,7 +248,8 @@
     "PartitionKey": "syncfusion.themes.office2016white.wpf46",
     "RowKey": "16.1.0.24",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "syncfusion.themes.office365.wpf46",
@@ -252,7 +266,8 @@
     "PartitionKey": "syncfusion.themes.office365.wpf46",
     "RowKey": "15.4.0.17",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "syncfusion.themes.office365.wpf46",
@@ -269,7 +284,8 @@
     "PartitionKey": "syncfusion.themes.office365.wpf46",
     "RowKey": "15.4.0.20",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "syncfusion.themes.office365.wpf46",
@@ -286,7 +302,8 @@
     "PartitionKey": "syncfusion.themes.office365.wpf46",
     "RowKey": "16.1.0.24",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "syncfusion.themes.saffron.wpf46",
@@ -303,7 +320,8 @@
     "PartitionKey": "syncfusion.themes.saffron.wpf46",
     "RowKey": "15.4.0.17",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "syncfusion.themes.saffron.wpf46",
@@ -320,7 +338,8 @@
     "PartitionKey": "syncfusion.themes.saffron.wpf46",
     "RowKey": "15.4.0.20",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "syncfusion.themes.saffron.wpf46",
@@ -337,7 +356,8 @@
     "PartitionKey": "syncfusion.themes.saffron.wpf46",
     "RowKey": "16.1.0.24",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "syncfusion.themes.visualstudio2013.wpf46",
@@ -354,7 +374,8 @@
     "PartitionKey": "syncfusion.themes.visualstudio2013.wpf46",
     "RowKey": "15.4.0.17",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "syncfusion.themes.visualstudio2013.wpf46",
@@ -371,7 +392,8 @@
     "PartitionKey": "syncfusion.themes.visualstudio2013.wpf46",
     "RowKey": "15.4.0.20",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "syncfusion.themes.visualstudio2013.wpf46",
@@ -388,6 +410,7 @@
     "PartitionKey": "syncfusion.themes.visualstudio2013.wpf46",
     "RowKey": "16.1.0.24",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   }
 ]

@@ -75,12 +75,14 @@ namespace NuGet.Insights.StorageNoOpRetry
             return _client.GetEntityAsync<T>(partitionKey, rowKey, select, cancellationToken);
         }
 
-        public Task<Response> UpsertEntityAsync<T>(
+        public async Task<Response> UpsertEntityAsync<T>(
             T entity,
             TableUpdateMode mode = TableUpdateMode.Merge,
             CancellationToken cancellationToken = default) where T : ITableEntity
         {
-            return _client.UpsertEntityAsync(entity, mode, cancellationToken);
+            return await ExecuteWithClientRequestIdAsync(
+                entity,
+                () => _client.UpsertEntityAsync(entity, mode, cancellationToken));
         }
 
         public async Task<Response> UpdateEntityAsync<T>(
@@ -90,7 +92,7 @@ namespace NuGet.Insights.StorageNoOpRetry
             string clientRequestIdColumn = nameof(ITableEntityWithClientRequestId.ClientRequestId),
             CancellationToken cancellationToken = default) where T : ITableEntity
         {
-            return await ExecuteWithClientRequestIdAsync(
+            return await ExecuteWithEntityRetryContextAsync(
                 entity,
                 clientRequestIdColumn,
                 () => _client.UpdateEntityAsync(entity, ifMatch, mode, cancellationToken));
@@ -101,7 +103,7 @@ namespace NuGet.Insights.StorageNoOpRetry
             string clientRequestIdColumn = nameof(ITableEntityWithClientRequestId.ClientRequestId),
             CancellationToken cancellationToken = default) where T : ITableEntity
         {
-            return await ExecuteWithClientRequestIdAsync(
+            return await ExecuteWithEntityRetryContextAsync(
                 entity,
                 clientRequestIdColumn,
                 () => _client.AddEntityAsync(entity, cancellationToken));
@@ -146,7 +148,31 @@ namespace NuGet.Insights.StorageNoOpRetry
             return _client.GetSasBuilder(permissions, expiresOn);
         }
 
+        public Uri GenerateSasUri(TableSasPermissions permissions, DateTimeOffset expiresOn)
+        {
+            return _client.GenerateSasUri(permissions, expiresOn);
+        }
+
         private async Task<Response> ExecuteWithClientRequestIdAsync<T>(
+            T entity,
+            Func<Task<Response>> executeAsync)
+            where T : ITableEntity
+        {
+            if (entity is ITableEntityWithClientRequestId entityWithClientRequestId)
+            {
+                var clientRequestId = Guid.NewGuid();
+                entityWithClientRequestId.ClientRequestId = clientRequestId;
+                var tableContext = new RetryContext(clientRequestId);
+                using (StorageNoOpRetryPolicy.CreateScope(tableContext))
+                {
+                    return await executeAsync();
+                }
+            }
+
+            return await executeAsync();
+        }
+
+        private async Task<Response> ExecuteWithEntityRetryContextAsync<T>(
             T entity,
             string clientRequestIdColumn,
             Func<Task<Response>> executeAsync)

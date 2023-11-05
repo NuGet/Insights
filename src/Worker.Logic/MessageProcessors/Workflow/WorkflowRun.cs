@@ -4,11 +4,11 @@
 using System;
 using System.Runtime.Serialization;
 using Azure;
-using Azure.Data.Tables;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights.Worker.Workflow
 {
-    public class WorkflowRun : ITableEntity
+    public class WorkflowRun : ITableEntityWithClientRequestId
     {
         public static readonly string DefaultPartitionKey = string.Empty;
 
@@ -29,6 +29,7 @@ namespace NuGet.Insights.Worker.Workflow
         public string RowKey { get; set; }
         public DateTimeOffset? Timestamp { get; set; }
         public ETag ETag { get; set; }
+        public Guid? ClientRequestId { get; set; }
 
         public WorkflowRunState State { get; set; }
         public DateTimeOffset Created { get; set; }

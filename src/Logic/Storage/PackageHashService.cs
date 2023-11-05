@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
 using Microsoft.Extensions.Options;
+using NuGet.Insights.StorageNoOpRetry;
 using NuGet.Versioning;
 
 #nullable enable
@@ -78,7 +79,7 @@ namespace NuGet.Insights
             return entity;
         }
 
-        private async Task<TableClient> GetTableAsync()
+        private async Task<TableClientWithRetryContext> GetTableAsync()
         {
             return (await _serviceClientFactory.GetTableServiceClientAsync())
                 .GetTableClient(_options.Value.PackageHashesTableName);

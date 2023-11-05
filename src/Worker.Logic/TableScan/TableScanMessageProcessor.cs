@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
+using NuGet.Insights.StorageNoOpRetry;
 using NuGet.Insights.TablePrefixScan;
 
 namespace NuGet.Insights.Worker
@@ -282,7 +283,7 @@ namespace NuGet.Insights.Worker
             };
         }
 
-        private async Task<TableClient> GetTableAsync(string name)
+        private async Task<TableClientWithRetryContext> GetTableAsync(string name)
         {
             return (await _serviceClientFactory.GetTableServiceClientAsync()).GetTableClient(name);
         }

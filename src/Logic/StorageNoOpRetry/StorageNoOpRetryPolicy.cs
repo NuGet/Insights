@@ -59,7 +59,9 @@ namespace NuGet.Insights.StorageNoOpRetry
 
         public override void Process(HttpMessage message, ReadOnlyMemory<HttpPipelinePolicy> pipeline)
         {
-            throw new NotImplementedException();
+            // Ideally this would be blocked with a NotImplementedException, but we have some sync paths still
+            // https://github.com/azure/azure-sdk-for-net/issues/35548
+            base.Process(message, pipeline);
         }
 
         public override ValueTask ProcessAsync(HttpMessage message, ReadOnlyMemory<HttpPipelinePolicy> pipeline)

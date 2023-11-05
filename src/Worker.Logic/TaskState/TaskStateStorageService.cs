@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Azure.Data.Tables;
 using Microsoft.Extensions.Options;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights.Worker
 {
@@ -169,7 +170,7 @@ namespace NuGet.Insights.Worker
             await batch.SubmitBatchIfNotEmptyAsync();
         }
 
-        private async Task<TableClient> GetTableAsync(string suffix)
+        private async Task<TableClientWithRetryContext> GetTableAsync(string suffix)
         {
             return (await _serviceClientFactory.GetTableServiceClientAsync())
                 .GetTableClient($"{_options.Value.TaskStateTableName}{suffix}");

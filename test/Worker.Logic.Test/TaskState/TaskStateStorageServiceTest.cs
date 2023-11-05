@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
+using NuGet.Insights.StorageNoOpRetry;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -85,7 +86,7 @@ namespace NuGet.Insights.Worker
 
                 var entities = await GetEntitiesAsync<TableEntity>();
                 var entity = Assert.Single(entities);
-                Assert.Equal(new[] { "PartitionKey", "RowKey", "StorageSuffix", "Timestamp", "odata.etag" }, entity.Keys.OrderBy(x => x, StringComparer.Ordinal).ToArray());
+                Assert.Equal(new[] { "ClientRequestId", "PartitionKey", "RowKey", "StorageSuffix", "Timestamp", "odata.etag" }, entity.Keys.OrderBy(x => x, StringComparer.Ordinal).ToArray());
             }
 
             [Fact]
@@ -95,7 +96,7 @@ namespace NuGet.Insights.Worker
 
                 var entities = await GetEntitiesAsync<TableEntity>();
                 var entity = Assert.Single(entities);
-                Assert.Equal(new[] { "Parameters", "PartitionKey", "RowKey", "StorageSuffix", "Timestamp", "odata.etag" }, entity.Keys.OrderBy(x => x, StringComparer.Ordinal).ToArray());
+                Assert.Equal(new[] { "ClientRequestId", "Parameters", "PartitionKey", "RowKey", "StorageSuffix", "Timestamp", "odata.etag" }, entity.Keys.OrderBy(x => x, StringComparer.Ordinal).ToArray());
             }
 
             [Fact]
@@ -277,7 +278,7 @@ namespace NuGet.Insights.Worker
                 await (await GetTableAsync(NullLoggerFactory.Instance)).DeleteAsync();
             }
 
-            public async Task<TableClient> GetTableAsync(ILoggerFactory loggerFactory)
+            public async Task<TableClientWithRetryContext> GetTableAsync(ILoggerFactory loggerFactory)
             {
                 var table = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync())
                     .GetTableClient(Options.Object.Value.TaskStateTableName + StorageSuffix);

@@ -4,11 +4,11 @@
 using System;
 using System.Runtime.Serialization;
 using Azure;
-using Azure.Data.Tables;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights.Worker
 {
-    public class CursorTableEntity : ITableEntity
+    public class CursorTableEntity : ITableEntityWithClientRequestId
     {
         public static readonly DateTimeOffset Min = new DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
@@ -29,6 +29,7 @@ namespace NuGet.Insights.Worker
         public string RowKey { get; set; }
         public DateTimeOffset? Timestamp { get; set; }
         public ETag ETag { get; set; }
+        public Guid? ClientRequestId { get; set; }
 
         public DateTimeOffset Value { get; set; } = Min;
     }

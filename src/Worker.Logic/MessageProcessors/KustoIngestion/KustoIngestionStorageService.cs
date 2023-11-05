@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights.Worker.KustoIngestion
 {
@@ -264,7 +265,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             return await GetBlobsAsync(table, container);
         }
 
-        private static async Task<List<KustoBlobIngestion>> GetBlobsAsync(TableClient table, KustoContainerIngestion container)
+        private static async Task<List<KustoBlobIngestion>> GetBlobsAsync(TableClientWithRetryContext table, KustoContainerIngestion container)
         {
             var query = table.QueryAsync<KustoBlobIngestion>(filter: x => x.PartitionKey == container.RowKey);
             return await query.ToListAsync();
@@ -273,7 +274,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public async Task AddContainersAsync(KustoIngestionEntity ingestion, IReadOnlyList<string> allContainerNames)
         {
             var table = await GetKustoIngestionTableAsync(ingestion.StorageSuffix);
-            var containers = await GetContainersAsync(table, ingestion);
+            var containers = await GetContainersAsync(table);
 
             var existingContainerNames = containers.Select(x => x.ContainerName).ToList();
             var missingContainerNames = allContainerNames.Except(existingContainerNames).ToList();
@@ -326,22 +327,22 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public async Task<IReadOnlyList<KustoContainerIngestion>> GetContainersAsync(KustoIngestionEntity ingestion)
         {
             var table = await GetKustoIngestionTableAsync(ingestion.StorageSuffix);
-            return await GetContainersAsync(table, ingestion);
+            return await GetContainersAsync(table);
         }
 
-        private static async Task<List<KustoContainerIngestion>> GetContainersAsync(TableClient table, KustoIngestionEntity ingestion)
+        private static async Task<List<KustoContainerIngestion>> GetContainersAsync(TableClientWithRetryContext table)
         {
             var query = table.QueryAsync<KustoContainerIngestion>(filter: x => x.PartitionKey == KustoContainerIngestion.DefaultPartitionKey);
             return await query.ToListAsync();
         }
 
-        private async Task<TableClient> GetKustoIngestionTableAsync()
+        private async Task<TableClientWithRetryContext> GetKustoIngestionTableAsync()
         {
             return (await _serviceClientFactory.GetTableServiceClientAsync())
                 .GetTableClient(_options.Value.KustoIngestionTableName);
         }
 
-        private async Task<TableClient> GetKustoIngestionTableAsync(string storageSuffix)
+        private async Task<TableClientWithRetryContext> GetKustoIngestionTableAsync(string storageSuffix)
         {
             return (await _serviceClientFactory.GetTableServiceClientAsync())
                 .GetTableClient(_options.Value.KustoIngestionTableName + storageSuffix);

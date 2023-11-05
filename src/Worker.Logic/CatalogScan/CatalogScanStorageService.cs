@@ -11,6 +11,7 @@ using Azure.Data.Tables;
 using Azure.Data.Tables.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights.Worker
 {
@@ -94,7 +95,7 @@ namespace NuGet.Insights.Worker
             return await GetLeafScansAsync(table, scanId, pageId);
         }
 
-        private async Task<IReadOnlyList<CatalogLeafScan>> GetLeafScansAsync(TableClient table, string scanId, string pageId)
+        private async Task<IReadOnlyList<CatalogLeafScan>> GetLeafScansAsync(TableClientWithRetryContext table, string scanId, string pageId)
         {
             return await table
                 .QueryAsync<CatalogLeafScan>(x => x.PartitionKey == CatalogLeafScan.GetPartitionKey(scanId, pageId))
@@ -186,7 +187,7 @@ namespace NuGet.Insights.Worker
 
         private async Task SubmitBatchesAsync<T>(
             string storageSuffix,
-            TableClient table,
+            TableClientWithRetryContext table,
             IEnumerable<T> entities,
             Action<MutableTableTransactionalBatch, T> doOperation) where T : class, ITableEntity, new()
         {
@@ -452,13 +453,13 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        private async Task<TableClient> GetIndexScanTableAsync()
+        private async Task<TableClientWithRetryContext> GetIndexScanTableAsync()
         {
             return (await _serviceClientFactory.GetTableServiceClientAsync())
                 .GetTableClient(_options.Value.CatalogIndexScanTableName);
         }
 
-        private async Task<TableClient> GetPageScanTableAsync(string suffix)
+        private async Task<TableClientWithRetryContext> GetPageScanTableAsync(string suffix)
         {
             return (await _serviceClientFactory.GetTableServiceClientAsync())
                 .GetTableClient($"{_options.Value.CatalogPageScanTableName}{suffix}");
@@ -469,7 +470,7 @@ namespace NuGet.Insights.Worker
             return $"{_options.Value.CatalogLeafScanTableName}{suffix}";
         }
 
-        public async Task<TableClient> GetLeafScanTableAsync(string suffix)
+        public async Task<TableClientWithRetryContext> GetLeafScanTableAsync(string suffix)
         {
             return (await _serviceClientFactory.GetTableServiceClientAsync())
                 .GetTableClient(GetLeafScanTableName(suffix));

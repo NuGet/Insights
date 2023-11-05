@@ -16,7 +16,8 @@
     "PartitionKey": "amazonks3",
     "RowKey": "1.5.0",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "behaviorsample",
@@ -35,7 +36,8 @@
     "PartitionKey": "behaviorsample",
     "RowKey": "1.0.0",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "lunabot.commands.public",
@@ -54,7 +56,8 @@
     "PartitionKey": "lunabot.commands.public",
     "RowKey": "1.2.0",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "lunabot.core",
@@ -73,7 +76,8 @@
     "PartitionKey": "lunabot.core",
     "RowKey": "1.0.4",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "nut.mediatr.behaviors",
@@ -92,7 +96,8 @@
     "PartitionKey": "nut.mediatr.behaviors",
     "RowKey": "0.0.0-preview.0.44",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "nut.mediatr.behaviors.fluentvalidation",
@@ -111,7 +116,8 @@
     "PartitionKey": "nut.mediatr.behaviors.fluentvalidation",
     "RowKey": "0.0.0-preview.0.44",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "nut.mediatr.servicelike.dependencyinjection",
@@ -130,7 +136,8 @@
     "PartitionKey": "nut.mediatr.servicelike.dependencyinjection",
     "RowKey": "0.0.0-preview.0.44",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "servicelikesample",
@@ -149,6 +156,7 @@
     "PartitionKey": "servicelikesample",
     "RowKey": "1.0.0",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   }
 ]

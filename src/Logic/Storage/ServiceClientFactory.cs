@@ -15,6 +15,7 @@ using Azure.Storage.Queues;
 using Azure.Storage.Sas;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights
 {
@@ -88,9 +89,9 @@ namespace NuGet.Insights
                 .GenerateSasUri(BlobSasPermissions.Read, serviceClients.SharedAccessSignatureExpiry);
         }
 
-        public async Task<TableServiceClient> GetTableServiceClientAsync()
+        public async Task<TableServiceClientWithRetryContext> GetTableServiceClientAsync()
         {
-            return (await GetCachedServiceClientsAsync()).TableServiceClient;
+            return (await GetCachedServiceClientsAsync()).TableServiceClientWithRetryContext;
         }
 
         private async Task<ServiceClients> GetCachedServiceClientsAsync(CancellationToken token = default)
@@ -153,8 +154,12 @@ namespace NuGet.Insights
                 options.Transport = transport;
             };
 
-            options.Retry.MaxRetries = 2;
+            const int maxRetries = 2;
+            options.Retry.MaxRetries = maxRetries;
             options.Retry.NetworkTimeout = ServiceCollectionExtensions.HttpClientTimeout;
+            options.RetryPolicy = new StorageNoOpRetryPolicy(
+                _loggerFactory.CreateLogger<StorageNoOpRetryPolicy>(),
+                maxRetries);
 
             return options;
         }
@@ -223,7 +228,8 @@ namespace NuGet.Insights
                 sasExpiry,
                 blob,
                 queue,
-                table);
+                table,
+                new TableServiceClientWithRetryContext(table));
         }
 
         protected virtual HttpPipelineTransport GetHttpPipelineTransport()
@@ -243,6 +249,7 @@ namespace NuGet.Insights
             DateTimeOffset SharedAccessSignatureExpiry,
             BlobServiceClient BlobServiceClient,
             QueueServiceClient QueueServiceClient,
-            TableServiceClient TableServiceClient);
+            TableServiceClient TableServiceClient,
+            TableServiceClientWithRetryContext TableServiceClientWithRetryContext);
     }
 }

@@ -14,7 +14,8 @@
     "PartitionKey": "aiwins.blogging.admin.application.contracts",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.clientsimulation.web",
@@ -31,7 +32,8 @@
     "PartitionKey": "aiwins.clientsimulation.web",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.docs.admin.httpapi.client",
@@ -48,7 +50,8 @@
     "PartitionKey": "aiwins.docs.admin.httpapi.client",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.docs.domain.shared",
@@ -65,7 +68,8 @@
     "PartitionKey": "aiwins.docs.domain.shared",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.rocket.featuremanagement.application.contracts",
@@ -82,7 +86,8 @@
     "PartitionKey": "aiwins.rocket.featuremanagement.application.contracts",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.rocket.identity.application.contracts",
@@ -99,7 +104,8 @@
     "PartitionKey": "aiwins.rocket.identity.application.contracts",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.rocket.identityserver.application",
@@ -116,7 +122,8 @@
     "PartitionKey": "aiwins.rocket.identityserver.application",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.rocket.identityserver.domain",
@@ -133,7 +140,8 @@
     "PartitionKey": "aiwins.rocket.identityserver.domain",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.rocket.permissionmanagement.domain.shared",
@@ -150,7 +158,8 @@
     "PartitionKey": "aiwins.rocket.permissionmanagement.domain.shared",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.rocket.permissionmanagement.entityframeworkcore",
@@ -167,7 +176,8 @@
     "PartitionKey": "aiwins.rocket.permissionmanagement.entityframeworkcore",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.rocket.permissionmanagement.httpapi.client",
@@ -184,7 +194,8 @@
     "PartitionKey": "aiwins.rocket.permissionmanagement.httpapi.client",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.rocket.settingmanagement.domain.shared",
@@ -201,7 +212,8 @@
     "PartitionKey": "aiwins.rocket.settingmanagement.domain.shared",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.rocket.storage.database.domain",
@@ -218,7 +230,8 @@
     "PartitionKey": "aiwins.rocket.storage.database.domain",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.rocket.storage.database.mongodb",
@@ -235,7 +248,8 @@
     "PartitionKey": "aiwins.rocket.storage.database.mongodb",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.rocket.tenantmanagement.application",
@@ -252,7 +266,8 @@
     "PartitionKey": "aiwins.rocket.tenantmanagement.application",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.rocket.tenantmanagement.application.contracts",
@@ -269,7 +284,8 @@
     "PartitionKey": "aiwins.rocket.tenantmanagement.application.contracts",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.rocket.tenantmanagement.domain",
@@ -286,7 +302,8 @@
     "PartitionKey": "aiwins.rocket.tenantmanagement.domain",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.rocket.tenantmanagement.entityframeworkcore",
@@ -303,7 +320,8 @@
     "PartitionKey": "aiwins.rocket.tenantmanagement.entityframeworkcore",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.rocket.tenantmanagement.httpapi.client",
@@ -320,7 +338,8 @@
     "PartitionKey": "aiwins.rocket.tenantmanagement.httpapi.client",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.rocket.tenantmanagement.web",
@@ -337,7 +356,8 @@
     "PartitionKey": "aiwins.rocket.tenantmanagement.web",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.rocket.users.abstractions",
@@ -354,7 +374,8 @@
     "PartitionKey": "aiwins.rocket.users.abstractions",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.rocket.users.domain",
@@ -371,7 +392,8 @@
     "PartitionKey": "aiwins.rocket.users.domain",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.rocket.users.domain.shared",
@@ -388,7 +410,8 @@
     "PartitionKey": "aiwins.rocket.users.domain.shared",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.rocket.users.mongodb",
@@ -405,7 +428,8 @@
     "PartitionKey": "aiwins.rocket.users.mongodb",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.rocket.virtualfileexplorer.web",
@@ -422,7 +446,8 @@
     "PartitionKey": "aiwins.rocket.virtualfileexplorer.web",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.saas.domain",
@@ -439,7 +464,8 @@
     "PartitionKey": "aiwins.saas.domain",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.saas.host.httpapi",
@@ -456,7 +482,8 @@
     "PartitionKey": "aiwins.saas.host.httpapi",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.saas.tenant.application",
@@ -473,7 +500,8 @@
     "PartitionKey": "aiwins.saas.tenant.application",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "aiwins.saas.tenant.httpapi.client",
@@ -490,7 +518,8 @@
     "PartitionKey": "aiwins.saas.tenant.httpapi.client",
     "RowKey": "4.9.9",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "cloudmersive.apiclient.netcore.documentanddataconvert",
@@ -507,6 +536,7 @@
     "PartitionKey": "cloudmersive.apiclient.netcore.documentanddataconvert",
     "RowKey": "2.1.8",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   }
 ]

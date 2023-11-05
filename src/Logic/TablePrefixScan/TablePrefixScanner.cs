@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
+using NuGet.Insights.StorageNoOpRetry;
 using static NuGet.Insights.StorageUtility;
 
 namespace NuGet.Insights.TablePrefixScan
@@ -27,7 +28,7 @@ namespace NuGet.Insights.TablePrefixScan
         }
 
         public async Task<List<T>> ListAsync<T>(
-            TableClient table,
+            TableClientWithRetryContext table,
             string partitionKeyPrefix)
             where T : class, ITableEntity, new()
         {
@@ -39,7 +40,7 @@ namespace NuGet.Insights.TablePrefixScan
         }
 
         public async Task<List<T>> ListAsync<T>(
-            TableClient table,
+            TableClientWithRetryContext table,
             string partitionKeyPrefix,
             IList<string> selectColumns,
             int takeCount)
@@ -56,7 +57,7 @@ namespace NuGet.Insights.TablePrefixScan
         }
 
         public async Task<List<T>> ListAsync<T>(
-            TableClient table,
+            TableClientWithRetryContext table,
             string partitionKeyPrefix,
             string partitionKeyLowerBound,
             string partitionKeyUpperBound,
@@ -77,7 +78,7 @@ namespace NuGet.Insights.TablePrefixScan
         }
 
         public async Task<List<T>> ListAsync<T>(
-            TableClient table,
+            TableClientWithRetryContext table,
             string partitionKeyPrefix,
             IList<string> selectColumns,
             int takeCount,
@@ -104,7 +105,7 @@ namespace NuGet.Insights.TablePrefixScan
         }
 
         public async Task<List<T>> ListAsync<T>(
-            TableClient table,
+            TableClientWithRetryContext table,
             string partitionKeyPrefix,
             string partitionKeyLowerBound,
             string partitionKeyUpperBound,
@@ -133,7 +134,7 @@ namespace NuGet.Insights.TablePrefixScan
         }
 
         public async Task<List<IReadOnlyList<T>>> ListSegmentsAsync<T>(
-            TableClient table,
+            TableClientWithRetryContext table,
             string partitionKeyPrefix,
             IList<string> selectColumns,
             int takeCount,
@@ -160,7 +161,7 @@ namespace NuGet.Insights.TablePrefixScan
         }
 
         private async Task<List<TOutput>> ListAsync<T, TOutput>(
-            TableClient table,
+            TableClientWithRetryContext table,
             string partitionKeyPrefix,
             string partitionKeyLowerBound,
             string partitionKeyUpperBound,

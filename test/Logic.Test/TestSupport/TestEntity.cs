@@ -4,11 +4,11 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Azure;
-using Azure.Data.Tables;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights
 {
-    public class TestEntity : ITableEntity, IEquatable<TestEntity>, IComparable<TestEntity>
+    public class TestEntity : ITableEntityWithClientRequestId, IEquatable<TestEntity>, IComparable<TestEntity>
     {
         public TestEntity()
         {
@@ -26,6 +26,7 @@ namespace NuGet.Insights
         public string RowKey { get; set; }
         public DateTimeOffset? Timestamp { get; set; }
         public ETag ETag { get; set; }
+        public Guid? ClientRequestId { get; set; }
 
         public string FieldA { get; set; }
         public string FieldB { get; set; }

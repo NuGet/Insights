@@ -58,6 +58,7 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
         public string RowKey { get; set; }
         public DateTimeOffset? Timestamp { get; set; }
         public ETag ETag { get; set; }
+        public Guid? ClientRequestId { get; set; }
 
         public static string GetPartitionKey(string id)
         {

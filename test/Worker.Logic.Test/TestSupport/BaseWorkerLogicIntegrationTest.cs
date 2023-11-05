@@ -32,6 +32,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Insights.ReferenceTracking;
+using NuGet.Insights.StorageNoOpRetry;
 using NuGet.Insights.WideEntities;
 using NuGet.Insights.Worker.BuildVersionSet;
 using NuGet.Insights.Worker.KustoIngestion;
@@ -454,7 +455,7 @@ namespace NuGet.Insights.Worker
         }
 
         protected async Task AssertEntityOutputAsync<T>(
-            TableClient table,
+            TableClientWithRetryContext table,
             string dir,
             Action<T> cleanEntity = null,
             string fileName = "entities.json") where T : class, ITableEntity, new()
@@ -467,6 +468,10 @@ namespace NuGet.Insights.Worker
             foreach (var entity in entities)
             {
                 entity.ETag = default;
+                if (entity is ITableEntityWithClientRequestId withClientRequestId)
+                {
+                    withClientRequestId.ClientRequestId = default;
+                }
                 setTimestamp.SetValue(entity, DateTimeOffset.MinValue);
                 cleanEntity?.Invoke(entity);
             }

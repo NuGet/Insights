@@ -16,7 +16,8 @@
     "PartitionKey": "basetestpackage.searchfilters",
     "RowKey": "1.1.0",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "basetestpackage.searchfilters",
@@ -35,7 +36,8 @@
     "PartitionKey": "basetestpackage.searchfilters",
     "RowKey": "1.2.0-beta",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "basetestpackage.searchfilters",
@@ -54,7 +56,8 @@
     "PartitionKey": "basetestpackage.searchfilters",
     "RowKey": "1.3.0",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "basetestpackage.searchfilters",
@@ -73,7 +76,8 @@
     "PartitionKey": "basetestpackage.searchfilters",
     "RowKey": "1.4.0-delta.4",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   },
   {
     "LowerId": "booolean.platform.services",
@@ -92,6 +96,7 @@
     "PartitionKey": "booolean.platform.services",
     "RowKey": "1.1.3",
     "Timestamp": "0001-01-01T00:00:00+00:00",
-    "ETag": null
+    "ETag": null,
+    "ClientRequestId": null
   }
 ]

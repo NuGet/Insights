@@ -6,11 +6,11 @@ using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
 using Azure;
-using Azure.Data.Tables;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights
 {
@@ -36,7 +36,7 @@ namespace NuGet.Insights
                 BlobErrorCode.ContainerBeingDeleted.ToString());
         }
 
-        public static async Task CreateIfNotExistsAsync(this TableClient tableClient, bool retry)
+        public static async Task CreateIfNotExistsAsync(this TableClientWithRetryContext tableClient, bool retry)
         {
             await CreateIfNotExistsAsync(
                 () => tableClient.ExistsAsync(),

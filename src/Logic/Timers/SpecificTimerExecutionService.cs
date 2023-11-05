@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Azure.Data.Tables;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights
 {
@@ -205,7 +206,7 @@ namespace NuGet.Insights
             return executed;
         }
 
-        private async Task<TableClient> GetTableAsync()
+        private async Task<TableClientWithRetryContext> GetTableAsync()
         {
             return (await _serviceClientFactory.GetTableServiceClientAsync())
                 .GetTableClient(_options.Value.TimerTableName);

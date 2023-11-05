@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
-using Azure.Data.Tables;
 using Kusto.Cloud.Platform.Utils;
 using Kusto.Data;
 using Kusto.Data.Common;
@@ -14,6 +13,7 @@ using Kusto.Ingest;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NuGet.Insights.StorageNoOpRetry;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.BuildVersionSet;
 using NuGet.Insights.Worker.EnqueueCatalogLeafScan;
@@ -439,7 +439,7 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient(typeof(TableCopyDriver<>));
         }
 
-        private static void AddTableScan<T>(IServiceCollection serviceCollection) where T : ITableEntity, new()
+        private static void AddTableScan<T>(IServiceCollection serviceCollection) where T : ITableEntityWithClientRequestId, new()
         {
             var entityType = typeof(T);
             serviceCollection.AddTransient(

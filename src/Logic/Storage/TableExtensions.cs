@@ -9,19 +9,20 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
 using Azure.Data.Tables.Models;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights
 {
     public static class TableExtensions
     {
-        public static AsyncPageable<TableItem> QueryAsync(this TableServiceClient client, string prefix)
+        public static AsyncPageable<TableItem> QueryAsync(this TableServiceClientWithRetryContext client, string prefix)
         {
             return client.QueryAsync(
                 x => x.Name.CompareTo(prefix) >= 0
                 && x.Name.CompareTo(prefix + char.MaxValue) <= 0);
         }
 
-        public static async Task<T> GetEntityOrNullAsync<T>(this TableClient table, string partitionKey, string rowKey) where T : class, ITableEntity, new()
+        public static async Task<T> GetEntityOrNullAsync<T>(this TableClientWithRetryContext table, string partitionKey, string rowKey) where T : class, ITableEntity, new()
         {
             try
             {
@@ -33,7 +34,7 @@ namespace NuGet.Insights
             }
         }
 
-        public static async Task<bool> ExistsAsync(this TableClient table)
+        public static async Task<bool> ExistsAsync(this TableClientWithRetryContext table)
         {
             try
             {
@@ -48,12 +49,12 @@ namespace NuGet.Insights
             }
         }
 
-        public static async Task DeleteEntityAsync<T>(this TableClient table, T entity, ETag ifMatch) where T : class, ITableEntity, new()
+        public static async Task DeleteEntityAsync<T>(this TableClientWithRetryContext table, T entity, ETag ifMatch) where T : class, ITableEntity, new()
         {
             await table.DeleteEntityAsync(entity.PartitionKey, entity.RowKey, ifMatch);
         }
 
-        public static async Task<int> GetEntityCountLowerBoundAsync(this TableClient table, QueryLoopMetrics metrics)
+        public static async Task<int> GetEntityCountLowerBoundAsync(this TableClientWithRetryContext table, QueryLoopMetrics metrics)
         {
             return await GetEntityCountLowerBoundAsync<TableEntity>(
                 table,
@@ -61,7 +62,7 @@ namespace NuGet.Insights
                 metrics);
         }
 
-        public static async Task<int> GetEntityCountLowerBoundAsync(this TableClient table, string partitionKey, QueryLoopMetrics metrics)
+        public static async Task<int> GetEntityCountLowerBoundAsync(this TableClientWithRetryContext table, string partitionKey, QueryLoopMetrics metrics)
         {
             return await GetEntityCountLowerBoundAsync<TableEntity>(
                 table,
@@ -69,7 +70,7 @@ namespace NuGet.Insights
                 metrics);
         }
 
-        public static async Task<int> GetEntityCountLowerBoundAsync(this TableClient table, string minPartitionKey, string maxPartitionKey, QueryLoopMetrics metrics)
+        public static async Task<int> GetEntityCountLowerBoundAsync(this TableClientWithRetryContext table, string minPartitionKey, string maxPartitionKey, QueryLoopMetrics metrics)
         {
             return await GetEntityCountLowerBoundAsync<TableEntity>(
                 table,
@@ -77,7 +78,7 @@ namespace NuGet.Insights
                 metrics);
         }
 
-        private static async Task<int> GetEntityCountLowerBoundAsync<T>(TableClient table, Expression<Func<T, bool>> filter, QueryLoopMetrics metrics)
+        private static async Task<int> GetEntityCountLowerBoundAsync<T>(TableClientWithRetryContext table, Expression<Func<T, bool>> filter, QueryLoopMetrics metrics)
             where T : class, ITableEntity, new()
         {
             using (metrics)

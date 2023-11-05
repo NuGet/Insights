@@ -10,6 +10,7 @@ using Azure;
 using Azure.Data.Tables;
 using MessagePack;
 using Microsoft.Extensions.Options;
+using NuGet.Insights.StorageNoOpRetry;
 using NuGet.Insights.WideEntities;
 using NuGet.Packaging;
 
@@ -46,12 +47,12 @@ namespace NuGet.Insights.ReferenceTracking
             await (await GetSubjectToOwnerTableAsync(subjectToOwnerTableName)).DeleteAsync();
         }
 
-        private async Task<TableClient> GetOwnerToSubjectTableAsync(string ownerToSubjectTableName)
+        private async Task<TableClientWithRetryContext> GetOwnerToSubjectTableAsync(string ownerToSubjectTableName)
         {
             return (await _clientFactory.GetTableServiceClientAsync()).GetTableClient(ownerToSubjectTableName);
         }
 
-        private async Task<TableClient> GetSubjectToOwnerTableAsync(string subjectToOwnerTableName)
+        private async Task<TableClientWithRetryContext> GetSubjectToOwnerTableAsync(string subjectToOwnerTableName)
         {
             return (await _clientFactory.GetTableServiceClientAsync()).GetTableClient(subjectToOwnerTableName);
         }
@@ -475,7 +476,7 @@ namespace NuGet.Insights.ReferenceTracking
         {
             public SetReferencesContext(
                 string ownerToSubjectTableName,
-                TableClient subjectToOwnerTable,
+                TableClientWithRetryContext subjectToOwnerTable,
                 string ownerType,
                 string subjectType,
                 string ownerPartitionKey,
@@ -490,7 +491,7 @@ namespace NuGet.Insights.ReferenceTracking
             }
 
             public string OwnerToSubjectTableName { get; }
-            public TableClient SubjectToOwnerTable { get; }
+            public TableClientWithRetryContext SubjectToOwnerTable { get; }
             public string OwnerType { get; }
             public string SubjectType { get; }
             public string OwnerPartitionKey { get; }

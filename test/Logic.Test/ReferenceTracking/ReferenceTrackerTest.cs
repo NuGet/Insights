@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 using Nito.AsyncEx;
+using NuGet.Insights.StorageNoOpRetry;
 using NuGet.Insights.WideEntities;
 using Xunit;
 using Xunit.Abstractions;
@@ -1163,7 +1164,7 @@ namespace NuGet.Insights.ReferenceTracking
                 await subjectToOwner.DeleteAsync();
             }
 
-            public async Task<(TableClient OwnerToSubject, TableClient SubjectToOwner)> GetTablesAsync(ILoggerFactory loggerFactory)
+            public async Task<(TableClientWithRetryContext OwnerToSubject, TableClientWithRetryContext SubjectToOwner)> GetTablesAsync(ILoggerFactory loggerFactory)
             {
                 var ownerToSubject = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync())
                     .GetTableClient(OwnerToSubjectTableName);

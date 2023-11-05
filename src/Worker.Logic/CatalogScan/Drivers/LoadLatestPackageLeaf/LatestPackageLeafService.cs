@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Azure.Data.Tables;
 using Microsoft.Extensions.Options;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
 {
@@ -37,7 +37,7 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
                 LatestPackageLeaf.GetRowKey(version));
         }
 
-        internal async Task<TableClient> GetTableAsync()
+        internal async Task<TableClientWithRetryContext> GetTableAsync()
         {
             return (await _serviceClientFactory.GetTableServiceClientAsync())
                 .GetTableClient(_options.Value.LatestPackageLeafTableName);

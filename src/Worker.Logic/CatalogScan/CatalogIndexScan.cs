@@ -4,11 +4,11 @@
 using System;
 using System.Runtime.Serialization;
 using Azure;
-using Azure.Data.Tables;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights.Worker
 {
-    public class CatalogIndexScan : ITableEntity
+    public class CatalogIndexScan : ITableEntityWithClientRequestId
     {
         public CatalogIndexScan()
         {
@@ -44,5 +44,6 @@ namespace NuGet.Insights.Worker
         public string RowKey { get; set; }
         public DateTimeOffset? Timestamp { get; set; }
         public ETag ETag { get; set; }
+        public Guid? ClientRequestId { get; set; }
     }
 }

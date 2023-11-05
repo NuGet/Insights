@@ -4,11 +4,11 @@
 using System;
 using System.Runtime.Serialization;
 using Azure;
-using Azure.Data.Tables;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights.Worker.KustoIngestion
 {
-    public class KustoIngestionEntity : ITableEntity
+    public class KustoIngestionEntity : ITableEntityWithClientRequestId
     {
         public static readonly string DefaultPartitionKey = string.Empty;
 
@@ -32,6 +32,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public string RowKey { get; set; }
         public DateTimeOffset? Timestamp { get; set; }
         public ETag ETag { get; set; }
+        public Guid? ClientRequestId { get; set; }
 
         public string StorageSuffix { get; set; }
         public int AttemptCount { get; set; }
