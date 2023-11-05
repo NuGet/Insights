@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -78,6 +78,16 @@ namespace NuGet.Insights
                 table => table.UpsertEntityAsync(entity, mode)));
         }
 
+        public async Task SubmitBatchIfFullAsync()
+        {
+            if (Count < StorageUtility.MaxBatchSize)
+            {
+                return;
+            }
+
+            await SubmitBatchAsync();
+        }
+
         public async Task SubmitBatchIfNotEmptyAsync()
         {
             if (Count == 0)
@@ -123,6 +133,9 @@ namespace NuGet.Insights
                     }
                 }
             }
+
+            Clear();
+            _partitionKey = null;
         }
 
         private void SetPartitionKey(string partitionKey)
