@@ -430,7 +430,7 @@ namespace NuGet.Insights
 
         public async Task<IReadOnlyList<TestEntity>> GetEntitiesAsync()
         {
-            var table = await _fixture.GetTableAsync(_output.GetLogger<ServiceClientFactory>());
+            var table = await _fixture.GetTableAsync(_output.GetLoggerFactory());
             return await table
                 .QueryAsync<TestEntity>(x => x.PartitionKey == PartitionKey)
                 .ToListAsync();
@@ -443,7 +443,7 @@ namespace NuGet.Insights
                 FieldA = fieldA,
                 FieldB = fieldB,
             };
-            var table = await _fixture.GetTableAsync(_output.GetLogger<ServiceClientFactory>());
+            var table = await _fixture.GetTableAsync(_output.GetLoggerFactory());
             var response = await table.AddEntityAsync(entity);
             entity.UpdateETag(response);
             return entity;
@@ -451,7 +451,7 @@ namespace NuGet.Insights
 
         public async Task<MutableTableTransactionalBatch> GetTargetAsync()
         {
-            var table = await _fixture.GetTableAsync(_output.GetLogger<ServiceClientFactory>());
+            var table = await _fixture.GetTableAsync(_output.GetLoggerFactory());
             return new MutableTableTransactionalBatch(table);
         }
 
@@ -479,19 +479,19 @@ namespace NuGet.Insights
                 return Task.CompletedTask;
             }
 
-            public ServiceClientFactory GetServiceClientFactory(ILogger<ServiceClientFactory> logger)
+            public ServiceClientFactory GetServiceClientFactory(ILoggerFactory loggerFactory)
             {
-                return new ServiceClientFactory(Options.Object, logger);
+                return new ServiceClientFactory(Options.Object, loggerFactory);
             }
 
             public async Task DisposeAsync()
             {
-                await (await GetTableAsync(NullLogger<ServiceClientFactory>.Instance)).DeleteAsync();
+                await (await GetTableAsync(NullLoggerFactory.Instance)).DeleteAsync();
             }
 
-            public async Task<TableClient> GetTableAsync(ILogger<ServiceClientFactory> logger)
+            public async Task<TableClient> GetTableAsync(ILoggerFactory loggerFactory)
             {
-                var table = (await GetServiceClientFactory(logger).GetTableServiceClientAsync())
+                var table = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync())
                     .GetTableClient(TableName);
 
                 if (!_created)

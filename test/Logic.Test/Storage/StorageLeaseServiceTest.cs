@@ -367,7 +367,7 @@ namespace NuGet.Insights
                     () => new LoggingHandler(output.GetLogger<LoggingHandler>()),
                     HttpClientHandler,
                     Options.Object,
-                    output.GetLogger<ServiceClientFactory>());
+                    output.GetLoggerFactory());
                 Target = new StorageLeaseService(ServiceClientFactory, Options.Object);
             }
 

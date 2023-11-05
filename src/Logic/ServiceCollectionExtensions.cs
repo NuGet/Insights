@@ -159,7 +159,7 @@ namespace NuGet.Insights
                 return new ServiceClientFactory(
                     () => httpClient,
                     x.GetRequiredService<IOptions<NuGetInsightsSettings>>(),
-                    x.GetRequiredService<ILogger<ServiceClientFactory>>());
+                    x.GetRequiredService<ILoggerFactory>());
             });
 
             serviceCollection.AddSingleton<IThrottle>(NullThrottle.Instance);

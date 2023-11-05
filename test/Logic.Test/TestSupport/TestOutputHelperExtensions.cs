@@ -20,11 +20,16 @@ namespace NuGet.Insights
             output.WriteLine(new string('-', 80));
         }
 
-        public static ILogger<T> GetLogger<T>(this ITestOutputHelper output)
+        public static ILoggerFactory GetLoggerFactory(this ITestOutputHelper output)
         {
             var factory = new LoggerFactory();
             factory.AddXunit(output);
-            return factory.CreateLogger<T>();
+            return factory;
+        }
+
+        public static ILogger<T> GetLogger<T>(this ITestOutputHelper output)
+        {
+            return output.GetLoggerFactory().CreateLogger<T>();
         }
 
         public static ITelemetryClient GetTelemetryClient(this ITestOutputHelper output)

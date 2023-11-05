@@ -66,7 +66,7 @@ namespace NuGet.Insights.Worker
             public async Task ReturnsExistingCursor()
             {
                 var value = new DateTimeOffset(2020, 1, 1, 12, 30, 0, TimeSpan.Zero);
-                var table = await _fixture.GetTableAsync(_output.GetLogger<ServiceClientFactory>());
+                var table = await _fixture.GetTableAsync(_output.GetLoggerFactory());
                 await table.AddEntityAsync(new CursorTableEntity(CursorName) { Value = value });
 
                 var cursor = await Target.GetOrCreateAsync(CursorName);
@@ -164,13 +164,13 @@ namespace NuGet.Insights.Worker
         public string CursorNamePrefix { get; }
         public string CursorName { get; }
         public CursorStorageService Target => new CursorStorageService(
-            _fixture.GetServiceClientFactory(_output.GetLogger<ServiceClientFactory>()),
+            _fixture.GetServiceClientFactory(_output.GetLoggerFactory()),
             _fixture.Options.Object,
             _output.GetLogger<CursorStorageService>());
 
         protected async Task<IReadOnlyList<T>> GetEntitiesAsync<T>() where T : class, ITableEntity, new()
         {
-            var table = await _fixture.GetTableAsync(_output.GetLogger<ServiceClientFactory>());
+            var table = await _fixture.GetTableAsync(_output.GetLoggerFactory());
             return await table
                 .QueryAsync<T>(x => x.PartitionKey == string.Empty
                                  && x.RowKey.CompareTo(CursorNamePrefix) >= 0
@@ -180,7 +180,7 @@ namespace NuGet.Insights.Worker
 
         public async Task InitializeAsync()
         {
-            await _fixture.GetTableAsync(_output.GetLogger<ServiceClientFactory>());
+            await _fixture.GetTableAsync(_output.GetLoggerFactory());
         }
 
         public Task DisposeAsync()
@@ -211,19 +211,19 @@ namespace NuGet.Insights.Worker
                 return Task.CompletedTask;
             }
 
-            public ServiceClientFactory GetServiceClientFactory(ILogger<ServiceClientFactory> logger)
+            public ServiceClientFactory GetServiceClientFactory(ILoggerFactory loggerFactory)
             {
-                return new ServiceClientFactory(Options.Object, logger);
+                return new ServiceClientFactory(Options.Object, loggerFactory);
             }
 
             public async Task DisposeAsync()
             {
-                await (await GetTableAsync(NullLogger<ServiceClientFactory>.Instance)).DeleteAsync();
+                await (await GetTableAsync(NullLoggerFactory.Instance)).DeleteAsync();
             }
 
-            public async Task<TableClient> GetTableAsync(ILogger<ServiceClientFactory> logger)
+            public async Task<TableClient> GetTableAsync(ILoggerFactory loggerFactory)
             {
-                var table = (await GetServiceClientFactory(logger).GetTableServiceClientAsync())
+                var table = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync())
                     .GetTableClient(Options.Object.Value.CursorTableName);
 
                 if (!_created)

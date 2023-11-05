@@ -24,22 +24,24 @@ namespace NuGet.Insights
         private ServiceClients _serviceClients;
         private readonly Func<HttpClient> _httpClientFactory;
         private readonly IOptions<NuGetInsightsSettings> _options;
+        private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger<ServiceClientFactory> _logger;
 
         public ServiceClientFactory(
             IOptions<NuGetInsightsSettings> options,
-            ILogger<ServiceClientFactory> logger) : this(httpClientFactory: null, options, logger)
+            ILoggerFactory loggerFactory) : this(httpClientFactory: null, options, loggerFactory)
         {
         }
 
         public ServiceClientFactory(
             Func<HttpClient> httpClientFactory,
             IOptions<NuGetInsightsSettings> options,
-            ILogger<ServiceClientFactory> logger)
+            ILoggerFactory loggerFactory)
         {
             _httpClientFactory = httpClientFactory;
             _options = options;
-            _logger = logger;
+            _loggerFactory = loggerFactory;
+            _logger = loggerFactory.CreateLogger<ServiceClientFactory>();
         }
 
         public async Task<QueueServiceClient> GetQueueServiceClientAsync()
@@ -144,7 +146,7 @@ namespace NuGet.Insights
             return untilRefresh > TimeSpan.Zero ? untilRefresh : TimeSpan.Zero;
         }
 
-        private static T GetOptions<T>(T options, HttpPipelineTransport transport) where T : ClientOptions
+        private T GetOptions<T>(T options, HttpPipelineTransport transport) where T : ClientOptions
         {
             if (transport is not null)
             {

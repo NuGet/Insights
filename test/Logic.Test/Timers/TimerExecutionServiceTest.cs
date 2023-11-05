@@ -326,7 +326,7 @@ namespace NuGet.Insights
         {
             get
             {
-                var serviceClientFactory = _fixture.GetServiceClientFactory(_output.GetLogger<ServiceClientFactory>());
+                var serviceClientFactory = _fixture.GetServiceClientFactory(_output.GetLoggerFactory());
                 return new TimerExecutionService(
                     Timers,
                     _fixture.GetLeaseService(serviceClientFactory),
@@ -341,7 +341,7 @@ namespace NuGet.Insights
 
         protected async Task<IReadOnlyList<T>> GetEntitiesAsync<T>() where T : class, ITableEntity, new()
         {
-            var table = await _fixture.GetTableAsync(_output.GetLogger<ServiceClientFactory>());
+            var table = await _fixture.GetTableAsync(_output.GetLoggerFactory());
             return await table
                 .QueryAsync<T>(x => x.PartitionKey == TimerExecutionService.PartitionKey
                                  && x.RowKey.CompareTo(TimerNamePrefix) >= 0
@@ -351,7 +351,7 @@ namespace NuGet.Insights
 
         public async Task InitializeAsync()
         {
-            await _fixture.GetTableAsync(_output.GetLogger<ServiceClientFactory>());
+            await _fixture.GetTableAsync(_output.GetLoggerFactory());
         }
 
         public Task DisposeAsync()
@@ -383,9 +383,9 @@ namespace NuGet.Insights
                 return Task.CompletedTask;
             }
 
-            public async Task<TableClient> GetTableAsync(ILogger<ServiceClientFactory> logger)
+            public async Task<TableClient> GetTableAsync(ILoggerFactory loggerFactory)
             {
-                var serviceClientFactory = GetServiceClientFactory(logger);
+                var serviceClientFactory = GetServiceClientFactory(loggerFactory);
                 var table = (await serviceClientFactory.GetTableServiceClientAsync())
                     .GetTableClient(Options.Object.Value.TimerTableName);
 
@@ -404,21 +404,19 @@ namespace NuGet.Insights
                 return new AutoRenewingStorageLeaseService(new StorageLeaseService(serviceClientFactory, Options.Object));
             }
 
-            public ServiceClientFactory GetServiceClientFactory(ILogger<ServiceClientFactory> logger)
+            public ServiceClientFactory GetServiceClientFactory(ILoggerFactory logger)
             {
                 return new ServiceClientFactory(Options.Object, logger);
             }
 
             public async Task DisposeAsync()
             {
-                var logger = NullLogger<ServiceClientFactory>.Instance;
-
-                var blobServiceClient = await GetServiceClientFactory(logger).GetBlobServiceClientAsync();
+                var blobServiceClient = await GetServiceClientFactory(NullLoggerFactory.Instance).GetBlobServiceClientAsync();
                 await blobServiceClient
                     .GetBlobContainerClient(Options.Object.Value.LeaseContainerName)
                     .DeleteIfExistsAsync();
 
-                var table = await GetTableAsync(logger);
+                var table = await GetTableAsync(NullLoggerFactory.Instance);
                 await table.DeleteAsync();
             }
         }

@@ -971,7 +971,7 @@ namespace NuGet.Insights.ReferenceTracking
             string ownerPartitionKey,
             IReadOnlyDictionary<string, IReadOnlySet<SubjectEdge>> ownerRowKeyToSubjects)
         {
-            (var ownerToSubject, var subjectToOwner) = await _fixture.GetTablesAsync(Output.GetLogger<ServiceClientFactory>());
+            (var ownerToSubject, var subjectToOwner) = await _fixture.GetTablesAsync(Output.GetLoggerFactory());
 
             var expectedOwnerToSubject = ownerRowKeyToSubjects
                 .Select(pair => (
@@ -1081,13 +1081,13 @@ namespace NuGet.Insights.ReferenceTracking
                 () => new LoggingHandler(output.GetLogger<LoggingHandler>()),
                 _fixture.HttpClientHandler,
                 _fixture.Options.Object,
-                Output.GetLogger<ServiceClientFactory>());
+                Output.GetLoggerFactory());
 
             ServiceClientFactoryB = new TestServiceClientFactory(
                 () => new LoggingHandler(output.GetLogger<LoggingHandler>()),
                 _fixture.HttpClientHandler,
                 _fixture.Options.Object,
-                Output.GetLogger<ServiceClientFactory>());
+                Output.GetLoggerFactory());
 
             WideEntityServiceA = new WideEntityService(
                 ServiceClientFactoryA,
@@ -1148,26 +1148,26 @@ namespace NuGet.Insights.ReferenceTracking
 
             public async Task InitializeAsync()
             {
-                await GetTablesAsync(NullLogger<ServiceClientFactory>.Instance);
+                await GetTablesAsync(NullLoggerFactory.Instance);
             }
 
-            public ServiceClientFactory GetServiceClientFactory(ILogger<ServiceClientFactory> logger)
+            public ServiceClientFactory GetServiceClientFactory(ILoggerFactory loggerFactory)
             {
-                return new ServiceClientFactory(Options.Object, logger);
+                return new ServiceClientFactory(Options.Object, loggerFactory);
             }
 
             public async Task DisposeAsync()
             {
-                (var ownerToSubject, var subjectToOwner) = await GetTablesAsync(NullLogger<ServiceClientFactory>.Instance);
+                (var ownerToSubject, var subjectToOwner) = await GetTablesAsync(NullLoggerFactory.Instance);
                 await ownerToSubject.DeleteAsync();
                 await subjectToOwner.DeleteAsync();
             }
 
-            public async Task<(TableClient OwnerToSubject, TableClient SubjectToOwner)> GetTablesAsync(ILogger<ServiceClientFactory> logger)
+            public async Task<(TableClient OwnerToSubject, TableClient SubjectToOwner)> GetTablesAsync(ILoggerFactory loggerFactory)
             {
-                var ownerToSubject = (await GetServiceClientFactory(logger).GetTableServiceClientAsync())
+                var ownerToSubject = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync())
                     .GetTableClient(OwnerToSubjectTableName);
-                var subjectToOwner = (await GetServiceClientFactory(logger).GetTableServiceClientAsync())
+                var subjectToOwner = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync())
                     .GetTableClient(SubjectToOwnerTableName);
 
                 if (!_created)

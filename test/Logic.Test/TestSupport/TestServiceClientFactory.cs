@@ -15,7 +15,7 @@ namespace NuGet.Insights
             Func<LoggingHandler> loggingHandlerFactory,
             HttpClientHandler httpClientHandler,
             IOptions<NuGetInsightsSettings> options,
-            ILogger<ServiceClientFactory> logger) : base(options, logger)
+            ILoggerFactory logger) : base(options, logger)
         {
             LoggingHandlerFactory = loggingHandlerFactory;
             HttpClientHandler = httpClientHandler;

@@ -608,7 +608,7 @@ namespace NuGet.Insights.WideEntities
             _fixture = fixture;
             _output = output;
             Target = new WideEntityService(
-                _fixture.GetServiceClientFactory(output.GetLogger<ServiceClientFactory>()),
+                _fixture.GetServiceClientFactory(output.GetLoggerFactory()),
                 output.GetTelemetryClient(),
                 _fixture.Options.Object);
         }
@@ -619,7 +619,7 @@ namespace NuGet.Insights.WideEntities
 
         public async Task InitializeAsync()
         {
-            await _fixture.GetTableAsync(_output.GetLogger<ServiceClientFactory>());
+            await _fixture.GetTableAsync(_output.GetLoggerFactory());
         }
 
         public Task DisposeAsync()
@@ -656,19 +656,19 @@ namespace NuGet.Insights.WideEntities
                 return Task.CompletedTask;
             }
 
-            public ServiceClientFactory GetServiceClientFactory(ILogger<ServiceClientFactory> logger)
+            public ServiceClientFactory GetServiceClientFactory(ILoggerFactory loggerFactory)
             {
-                return new ServiceClientFactory(Options.Object, logger);
+                return new ServiceClientFactory(Options.Object, loggerFactory);
             }
 
             public async Task DisposeAsync()
             {
-                await (await GetTableAsync(NullLogger<ServiceClientFactory>.Instance)).DeleteAsync();
+                await (await GetTableAsync(NullLoggerFactory.Instance)).DeleteAsync();
             }
 
-            public async Task<TableClient> GetTableAsync(ILogger<ServiceClientFactory> logger)
+            public async Task<TableClient> GetTableAsync(ILoggerFactory loggerFactory)
             {
-                var table = (await GetServiceClientFactory(logger).GetTableServiceClientAsync())
+                var table = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync())
                     .GetTableClient(TableName);
 
                 if (!_created)
