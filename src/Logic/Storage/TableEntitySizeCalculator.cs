@@ -61,6 +61,11 @@ namespace NuGet.Insights
             Size += GetInt32DataSize();
         }
 
+        public void AddGuidData()
+        {
+            Size += GetGuidDataSize();
+        }
+
         public void AddProperty(string name, object value)
         {
             Size += GetEntityPropertySize(name.Length, value);
@@ -119,6 +124,11 @@ namespace NuGet.Insights
         private static int GetInt32DataSize()
         {
             return 4;
+        }
+
+        private static int GetGuidDataSize()
+        {
+            return 16;
         }
 
         private static int GetBinaryDataSize(int binaryLength)
