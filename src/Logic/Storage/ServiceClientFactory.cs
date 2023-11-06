@@ -50,9 +50,14 @@ namespace NuGet.Insights
             return (await GetCachedServiceClientsAsync()).QueueServiceClient;
         }
 
-        public async Task<BlobServiceClient> GetBlobServiceClientAsync()
+        public async Task<BlobServiceClient> GetBlobServiceClientWithoutRetryContextAsync()
         {
             return (await GetCachedServiceClientsAsync()).BlobServiceClient;
+        }
+
+        public async Task<BlobServiceClientWithRetryContext> GetBlobServiceClientAsync()
+        {
+            return (await GetCachedServiceClientsAsync()).BlobServiceClientWithRetryContext;
         }
 
         public async Task<Uri> GetBlobReadUrlAsync(string containerName, string blobName)
@@ -227,6 +232,7 @@ namespace NuGet.Insights
                 userDelegationKey,
                 sasExpiry,
                 blob,
+                new BlobServiceClientWithRetryContext(blob),
                 queue,
                 table,
                 new TableServiceClientWithRetryContext(table));
@@ -248,6 +254,7 @@ namespace NuGet.Insights
             UserDelegationKey UserDelegationKey,
             DateTimeOffset SharedAccessSignatureExpiry,
             BlobServiceClient BlobServiceClient,
+            BlobServiceClientWithRetryContext BlobServiceClientWithRetryContext,
             QueueServiceClient QueueServiceClient,
             TableServiceClient TableServiceClient,
             TableServiceClientWithRetryContext TableServiceClientWithRetryContext);

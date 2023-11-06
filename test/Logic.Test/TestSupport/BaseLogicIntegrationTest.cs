@@ -14,12 +14,12 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Azure;
-using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NuGet.Insights.StorageNoOpRetry;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -188,7 +188,7 @@ namespace NuGet.Insights
             Assert.StartsWith(stringWriter.ToString(), actual);
         }
 
-        protected async Task<BlobClient> GetBlobAsync(string containerName, string blobName)
+        protected async Task<BlobClientWithRetryContext> GetBlobAsync(string containerName, string blobName)
         {
             var client = await ServiceClientFactory.GetBlobServiceClientAsync();
             var container = client.GetBlobContainerClient(containerName);

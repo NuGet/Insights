@@ -36,6 +36,15 @@ namespace NuGet.Insights
                 BlobErrorCode.ContainerBeingDeleted.ToString());
         }
 
+        public static async Task CreateIfNotExistsAsync(this BlobContainerClientWithRetryContext containerClient, bool retry)
+        {
+            await CreateIfNotExistsAsync(
+                async () => await containerClient.ExistsAsync(),
+                () => containerClient.CreateIfNotExistsAsync(),
+                retry,
+                BlobErrorCode.ContainerBeingDeleted.ToString());
+        }
+
         public static async Task CreateIfNotExistsAsync(this TableClientWithRetryContext tableClient, bool retry)
         {
             await CreateIfNotExistsAsync(

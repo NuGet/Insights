@@ -14,10 +14,10 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Azure;
-using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using MessagePack;
 using Microsoft.Extensions.Logging;
+using NuGet.Insights.StorageNoOpRetry;
 using NuGet.Insights.WideEntities;
 
 namespace NuGet.Insights.Worker
@@ -308,7 +308,7 @@ namespace NuGet.Insights.Worker
                 });
         }
 
-        private async Task<(List<T> records, ETag etag)> DeserializeBlobAsync<T>(BlobClient blob) where T : ICsvRecord
+        private async Task<(List<T> records, ETag etag)> DeserializeBlobAsync<T>(BlobClientWithRetryContext blob) where T : ICsvRecord
         {
             var bufferSize = 32 * 1024;
             do
@@ -332,7 +332,7 @@ namespace NuGet.Insights.Worker
             throw new InvalidOperationException($"Could not deserialize blob after trying buffers up to {bufferSize} bytes in size.");
         }
 
-        private async Task<(CsvReaderResult<T> result, ETag etag)> DeserializeBlobAsync<T>(BlobClient blob, int bufferSize)
+        private async Task<(CsvReaderResult<T> result, ETag etag)> DeserializeBlobAsync<T>(BlobClientWithRetryContext blob, int bufferSize)
             where T : ICsvRecord
         {
             using BlobDownloadInfo info = await blob.DownloadAsync();
@@ -397,7 +397,7 @@ namespace NuGet.Insights.Worker
             return blob.Uri;
         }
 
-        private async Task<BlobClient> GetCompactBlobAsync(string destContainer, int bucket)
+        private async Task<BlobClientWithRetryContext> GetCompactBlobAsync(string destContainer, int bucket)
         {
             return (await GetContainerAsync(destContainer)).GetBlobClient($"{CompactPrefix}{bucket}.csv.gz");
         }
@@ -468,7 +468,7 @@ namespace NuGet.Insights.Worker
             return bucket;
         }
 
-        private async Task<BlobContainerClient> GetContainerAsync(string name)
+        private async Task<BlobContainerClientWithRetryContext> GetContainerAsync(string name)
         {
             var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
             return serviceClient.GetBlobContainerClient(name);

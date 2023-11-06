@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Azure.Storage.Blobs;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 {
@@ -51,7 +51,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
             await _taskStateStorageService.DeleteAsync(taskStates);
         }
 
-        private async Task<BlobContainerClient> GetContainerAsync()
+        private async Task<BlobContainerClientWithRetryContext> GetContainerAsync()
         {
             var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
             var container = serviceClient.GetBlobContainerClient(_updater.ContainerName);

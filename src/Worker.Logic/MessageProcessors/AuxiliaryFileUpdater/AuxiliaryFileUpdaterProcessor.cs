@@ -8,10 +8,10 @@ using System.IO.Compression;
 using System.Net;
 using System.Threading.Tasks;
 using Azure;
-using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NuGet.Insights.StorageNoOpRetry;
 using NuGet.Insights.Worker.BuildVersionSet;
 
 namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
@@ -106,7 +106,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
             return TaskStateProcessResult.Complete;
         }
 
-        private async Task<(long uncompressedLength, ETag etag)> WriteDataAsync(IVersionSet versionSet, T data, BlobClient destBlob)
+        private async Task<(long uncompressedLength, ETag etag)> WriteDataAsync(IVersionSet versionSet, T data, BlobClientWithRetryContext destBlob)
         {
             (var stream, var uncompressedLength) = await SerializeDataAsync(versionSet, data);
 
@@ -158,9 +158,9 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
             long uncompressedLength,
             DateTimeOffset asOfTimestamp,
             DateTimeOffset versionSetCommitTimestamp,
-            BlobClient dataBlob,
+            BlobClientWithRetryContext dataBlob,
             BlobRequestConditions dataRequestConditions,
-            BlobClient latestBlob,
+            BlobClientWithRetryContext latestBlob,
             BlobRequestConditions latestRequestConditions)
         {
             var operation = await latestBlob.StartCopyFromUriAsync(
@@ -194,12 +194,12 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
             };
         }
 
-        private async Task<BlobClient> GetBlobAsync(string blobName)
+        private async Task<BlobClientWithRetryContext> GetBlobAsync(string blobName)
         {
             return (await GetContainerAsync()).GetBlobClient(blobName);
         }
 
-        private async Task<BlobContainerClient> GetContainerAsync()
+        private async Task<BlobContainerClientWithRetryContext> GetContainerAsync()
         {
             return (await _serviceClientFactory.GetBlobServiceClientAsync()).GetBlobContainerClient(_updater.ContainerName);
         }

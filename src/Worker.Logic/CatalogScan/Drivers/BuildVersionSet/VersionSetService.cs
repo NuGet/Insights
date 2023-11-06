@@ -7,12 +7,12 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using MessagePack;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NuGet.Insights.StorageNoOpRetry;
 using VersionListData = NuGet.Insights.CaseInsensitiveDictionary<NuGet.Insights.ReadableKey<NuGet.Insights.CaseInsensitiveDictionary<NuGet.Insights.ReadableKey<bool>>>>;
 
 namespace NuGet.Insights.Worker.BuildVersionSet
@@ -234,17 +234,17 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             _telemetryClient.TrackMetric(nameof(VersionSetService) + ".Save.ElapsedMs", sw.Elapsed.TotalMilliseconds);
         }
 
-        private async Task<BlockBlobClient> GetBlobAsync()
+        private async Task<BlockBlobClientWithRetryContext> GetBlobAsync()
         {
             return (await GetContainerAsync()).GetBlockBlobClient("version-set.dat");
         }
 
-        private async Task<BlockBlobClient> GetTempBlobAsync()
+        private async Task<BlockBlobClientWithRetryContext> GetTempBlobAsync()
         {
             return (await GetContainerAsync()).GetBlockBlobClient("version-set.dat.temp");
         }
 
-        private async Task<BlobContainerClient> GetContainerAsync()
+        private async Task<BlobContainerClientWithRetryContext> GetContainerAsync()
         {
             return (await _serviceClientFactory.GetBlobServiceClientAsync())
                 .GetBlobContainerClient(_options.Value.VersionSetContainerName);
