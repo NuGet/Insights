@@ -11,7 +11,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Markdig.Extensions.Tables;
 using Markdig.Helpers;
+#if DEBUG
 using Markdig.Renderers.Roundtrip;
+#endif
 using Markdig.Syntax;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
