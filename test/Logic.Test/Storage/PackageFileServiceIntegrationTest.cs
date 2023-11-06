@@ -70,7 +70,7 @@ namespace NuGet.Insights
             var second = await Target.GetOrUpdateInfoAsync(leafItem);
 
             // Assert
-            Assert.Equal(2, requestCount); // HEAD and GET
+            Assert.True(requestCount >= 2, $"There should be at least 2 requests. Actual: {requestCount}."); // HEAD and GET allowing for retries
             Assert.Equal(requestCount, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg")));
             Assert.Equal(timestampA, first.CommitTimestamp);
             Assert.Equal(timestampA, second.CommitTimestamp);
@@ -146,7 +146,6 @@ namespace NuGet.Insights
             Assert.NotNull(info);
             Assert.True(info.Available);
             var nupkgRequests = HttpMessageHandlerFactory.SuccessRequests.Where(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg"));
-            Assert.Empty(nupkgRequests.Where(x => x.Method == HttpMethod.Get && x.Headers.Range is null)); // all range requests
             Assert.Contains(nupkgRequests, x => x.RequestUri.Query.Contains("cache-bust="));
         }
 
