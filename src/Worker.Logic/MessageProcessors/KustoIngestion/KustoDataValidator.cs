@@ -15,8 +15,8 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 #if ENABLE_CRYPTOAPI
 using NuGet.Insights.Worker.PackageCertificateToCsv;
-#endif
 using NuGet.Insights.Worker.PackageSignatureToCsv;
+#endif
 
 namespace NuGet.Insights.Worker.KustoIngestion
 {
