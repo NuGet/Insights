@@ -62,7 +62,7 @@ namespace NuGet.Insights
             public async Task SetsIsEnabledOnExistingEntity(bool isEnabled)
             {
                 var before = DateTimeOffset.UtcNow;
-                await Target.ExecuteAsync();
+                Assert.True(await Target.ExecuteAsync());
                 var after = DateTimeOffset.UtcNow;
 
                 await Target.SetIsEnabledAsync(TimerName, isEnabled);
@@ -84,10 +84,10 @@ namespace NuGet.Insights
             [Fact]
             public async Task IgnoresFrequency()
             {
-                await Target.ExecuteNowAsync(TimerName);
+                Assert.True(await Target.ExecuteNowAsync(TimerName));
 
                 var before = DateTimeOffset.UtcNow;
-                await Target.ExecuteNowAsync(TimerName);
+                Assert.True(await Target.ExecuteNowAsync(TimerName));
                 var after = DateTimeOffset.UtcNow;
 
                 var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
@@ -101,7 +101,7 @@ namespace NuGet.Insights
                 Timer.Setup(x => x.IsRunningAsync()).ReturnsAsync(true);
 
                 var before = DateTimeOffset.UtcNow;
-                await Target.ExecuteNowAsync(TimerName);
+                Assert.True(await Target.ExecuteNowAsync(TimerName));
                 var after = DateTimeOffset.UtcNow;
 
                 var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
@@ -138,7 +138,7 @@ namespace NuGet.Insights
             {
                 Timer.Setup(x => x.AutoStart).Returns(autoStart);
 
-                await Target.ExecuteAsync();
+                Assert.True(await Target.ExecuteAsync());
 
                 var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
                 Assert.Equal(autoStart, entity.IsEnabled);
@@ -148,7 +148,7 @@ namespace NuGet.Insights
             public async Task CanExecuteNewTimerByDefault()
             {
                 var before = DateTimeOffset.UtcNow;
-                await Target.ExecuteAsync();
+                Assert.True(await Target.ExecuteAsync());
                 var after = DateTimeOffset.UtcNow;
 
                 var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
@@ -165,7 +165,7 @@ namespace NuGet.Insights
                 Timer.Setup(x => x.IsRunningAsync()).ReturnsAsync(true);
 
                 var before = DateTimeOffset.UtcNow;
-                await Target.ExecuteAsync();
+                Assert.True(await Target.ExecuteAsync());
                 var after = DateTimeOffset.UtcNow;
 
                 var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
@@ -178,7 +178,7 @@ namespace NuGet.Insights
             {
                 await Target.SetIsEnabledAsync(TimerName, isEnabled: false);
 
-                await Target.ExecuteAsync();
+                Assert.True(await Target.ExecuteAsync());
 
                 var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
                 Timer.Verify(x => x.ExecuteAsync(), Times.Never);
@@ -192,7 +192,7 @@ namespace NuGet.Insights
                 Timer.Setup(x => x.AutoStart).Returns(false);
 
                 var before = DateTimeOffset.UtcNow;
-                await Target.ExecuteAsync();
+                Assert.True(await Target.ExecuteAsync());
                 var after = DateTimeOffset.UtcNow;
 
                 var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
@@ -206,7 +206,7 @@ namespace NuGet.Insights
                 Timer.Setup(x => x.ExecuteAsync()).ThrowsAsync(new InvalidOperationException());
 
                 var before = DateTimeOffset.UtcNow;
-                await Target.ExecuteAsync();
+                Assert.True(await Target.ExecuteAsync());
                 var after = DateTimeOffset.UtcNow;
 
                 var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
@@ -219,7 +219,7 @@ namespace NuGet.Insights
             {
                 Timer.Setup(x => x.ExecuteAsync()).ReturnsAsync(false);
 
-                await Target.ExecuteAsync();
+                Assert.True(await Target.ExecuteAsync());
 
                 Assert.Empty(await GetEntitiesAsync<TimerEntity>());
                 Timer.Verify(x => x.ExecuteAsync(), Times.Once);
@@ -229,12 +229,12 @@ namespace NuGet.Insights
             public async Task DoesNotUpdateLastExecutedWhenExecuteReturnsFalse()
             {
                 var before = DateTimeOffset.UtcNow;
-                await Target.ExecuteAsync();
+                Assert.True(await Target.ExecuteAsync());
                 var after = DateTimeOffset.UtcNow;
                 Timer.Setup(x => x.ExecuteAsync()).ReturnsAsync(false);
                 Timer.Setup(x => x.Frequency).Returns(TimeSpan.Zero);
 
-                await Target.ExecuteAsync();
+                Assert.True(await Target.ExecuteAsync());
 
                 var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
                 Timer.Verify(x => x.ExecuteAsync(), Times.Exactly(2));
@@ -245,10 +245,10 @@ namespace NuGet.Insights
             public async Task DoesNotRunATimerThatHasRunRecently()
             {
                 var before = DateTimeOffset.UtcNow;
-                await Target.ExecuteAsync();
+                Assert.True(await Target.ExecuteAsync());
                 var after = DateTimeOffset.UtcNow;
 
-                await Target.ExecuteAsync();
+                Assert.True(await Target.ExecuteAsync());
 
                 var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
                 Timer.Verify(x => x.ExecuteAsync(), Times.Once);
@@ -258,12 +258,12 @@ namespace NuGet.Insights
             [Fact]
             public async Task RunsATimerAgainIfTheFrequencyAllows()
             {
-                await Target.ExecuteAsync();
+                Assert.True(await Target.ExecuteAsync());
 
                 Timer.Setup(x => x.Frequency).Returns(TimeSpan.Zero);
 
                 var before = DateTimeOffset.UtcNow;
-                await Target.ExecuteAsync();
+                Assert.True(await Target.ExecuteAsync());
                 var after = DateTimeOffset.UtcNow;
 
                 var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
@@ -276,7 +276,7 @@ namespace NuGet.Insights
             {
                 Timer.Setup(x => x.IsEnabled).Returns(false);
 
-                await Target.ExecuteAsync();
+                Assert.True(await Target.ExecuteAsync());
 
                 Assert.Empty(await GetEntitiesAsync<TimerEntity>());
                 Timer.Verify(x => x.ExecuteAsync(), Times.Never);
@@ -285,12 +285,12 @@ namespace NuGet.Insights
             [Fact]
             public async Task DoesNotExecuteExistingTimerDisabledFromConfig()
             {
-                await Target.ExecuteAsync();
+                Assert.True(await Target.ExecuteAsync());
                 var existingEntity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
                 Timer.Invocations.Clear();
                 Timer.Setup(x => x.IsEnabled).Returns(false);
 
-                await Target.ExecuteAsync();
+                Assert.True(await Target.ExecuteAsync());
 
                 var newEntity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
                 Assert.Equal(existingEntity.ETag, newEntity.ETag);
@@ -330,7 +330,7 @@ namespace NuGet.Insights
                 var serviceClientFactory = _fixture.GetServiceClientFactory(_output.GetLoggerFactory());
                 return new TimerExecutionService(
                     Timers,
-                    _fixture.GetLeaseService(serviceClientFactory),
+                    _fixture.GetLeaseService(serviceClientFactory, _output.GetLoggerFactory()),
                     new SpecificTimerExecutionService(
                         serviceClientFactory,
                         _fixture.Options.Object,
@@ -392,7 +392,7 @@ namespace NuGet.Insights
 
                 if (!_created)
                 {
-                    await GetLeaseService(serviceClientFactory).InitializeAsync();
+                    await GetLeaseService(serviceClientFactory, loggerFactory).InitializeAsync();
                     await table.CreateIfNotExistsAsync(retry: true);
                     _created = true;
                 }
@@ -400,9 +400,11 @@ namespace NuGet.Insights
                 return table;
             }
 
-            public AutoRenewingStorageLeaseService GetLeaseService(ServiceClientFactory serviceClientFactory)
+            public AutoRenewingStorageLeaseService GetLeaseService(ServiceClientFactory serviceClientFactory, ILoggerFactory loggerFactory)
             {
-                return new AutoRenewingStorageLeaseService(new StorageLeaseService(serviceClientFactory, Options.Object));
+                return new AutoRenewingStorageLeaseService(
+                    new StorageLeaseService(serviceClientFactory, Options.Object),
+                    loggerFactory.CreateLogger<AutoRenewingStorageLeaseService>());
             }
 
             public ServiceClientFactory GetServiceClientFactory(ILoggerFactory logger)

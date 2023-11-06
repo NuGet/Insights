@@ -461,7 +461,7 @@ namespace NuGet.Insights.Worker
                 return new CatalogScanServiceResult(CatalogScanServiceResultType.FullyCaughtUpWithDependency, dependencyName, scan: null);
             }
 
-            await using (var lease = await _leaseService.TryAcquireAsync($"Start-{driverType}"))
+            await using (var lease = await _leaseService.TryAcquireWithRetryAsync($"Start-{driverType}"))
             {
                 if (!lease.Acquired)
                 {
@@ -506,7 +506,7 @@ namespace NuGet.Insights.Worker
             }
 
             // Use a rather generic lease, to simplify clean-up.
-            await using (var lease = await _leaseService.TryAcquireAsync($"Start-{driverType}-{scanId}"))
+            await using (var lease = await _leaseService.TryAcquireWithRetryAsync($"Start-{driverType}-{scanId}"))
             {
                 if (!lease.Acquired)
                 {

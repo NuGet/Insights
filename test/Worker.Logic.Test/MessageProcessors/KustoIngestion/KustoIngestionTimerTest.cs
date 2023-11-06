@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
@@ -43,10 +43,11 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public async Task DoesNotStartKustoIngestionWhenIngestionIsAlreadyRunningAsync()
         {
             await Target.InitializeAsync();
-            await KustoIngestionService.StartAsync();
+            var initialRun = await KustoIngestionService.StartAsync();
 
             var result = await Target.ExecuteAsync();
 
+            Assert.NotNull(initialRun);
             var ingestions = await KustoIngestionStorageService.GetIngestionsAsync();
             Assert.Single(ingestions);
             Assert.False(result);

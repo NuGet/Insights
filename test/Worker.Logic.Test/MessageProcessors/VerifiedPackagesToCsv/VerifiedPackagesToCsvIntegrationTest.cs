@@ -28,7 +28,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             ConfigureAndSetLastModified();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
             await service.InitializeAsync();
-            await service.StartAsync();
+            Assert.True(await service.StartAsync());
 
             // Act
             await ProcessQueueAsync(service);
@@ -39,7 +39,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
 
             // Arrange
             SetData(Step2);
-            await service.StartAsync();
+            Assert.True(await service.StartAsync());
 
             // Act
             await ProcessQueueAsync(service);
@@ -58,7 +58,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             ConfigureAndSetLastModified();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
             await service.InitializeAsync();
-            await service.StartAsync();
+            Assert.True(await service.StartAsync());
 
             // Act
             await ProcessQueueAsync(service);
@@ -69,7 +69,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             var propertiesA = await blobA.GetPropertiesAsync();
 
             // Arrange
-            await service.StartAsync();
+            Assert.True(await service.StartAsync());
 
             // Act
             await ProcessQueueAsync(service);
@@ -89,7 +89,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             ConfigureAndSetLastModified();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
             await service.InitializeAsync();
-            await service.StartAsync();
+            Assert.True(await service.StartAsync());
 
             // Act
             await ProcessQueueAsync(service);
@@ -100,7 +100,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             var propertiesA = await blobA.GetPropertiesAsync();
 
             // Arrange
-            await service.StartAsync();
+            Assert.True(await service.StartAsync());
             MockVersionSet.Setup(x => x.CommitTimestamp).Returns(new DateTimeOffset(2021, 5, 10, 12, 15, 30, TimeSpan.Zero));
 
             // Act
@@ -123,7 +123,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             ConfigureAndSetLastModified();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
             await service.InitializeAsync();
-            await service.StartAsync();
+            Assert.True(await service.StartAsync());
             string id;
             MockVersionSet.Setup(x => x.TryGetId("Knapcode.TorSharp", out id)).Returns(false);
             MockVersionSet.Setup(x => x.TryGetId("Newtonsoft.Json", out id)).Returns(false);
@@ -137,7 +137,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
 
             // Arrange
             SetData(Step2);
-            await service.StartAsync();
+            Assert.True(await service.StartAsync());
             MockVersionSet
                 .Setup(x => x.TryGetId("Knapcode.TorSharp", out id))
                 .Returns(true)
@@ -162,7 +162,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             ConfigureAndSetLastModified();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
             await service.InitializeAsync();
-            await service.StartAsync();
+            Assert.True(await service.StartAsync());
             MockVersionSet.Setup(x => x.GetUncheckedIds()).Returns(new[] { "UncheckedB", "UncheckedA" });
 
             // Act
@@ -180,7 +180,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             ConfigureAndSetLastModified();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
             await service.InitializeAsync();
-            await service.StartAsync();
+            Assert.True(await service.StartAsync());
 
             // Act
             await ProcessQueueAsync(service);
@@ -190,7 +190,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
 
             // Arrange
             SetData(Step2);
-            await service.StartAsync();
+            Assert.True(await service.StartAsync());
 
             // Act
             await ProcessQueueAsync(service);

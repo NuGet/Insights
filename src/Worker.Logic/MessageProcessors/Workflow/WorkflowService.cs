@@ -86,7 +86,7 @@ namespace NuGet.Insights.Worker.Workflow
 
         public async Task<WorkflowRun> StartAsync()
         {
-            await using var lease = await _leaseService.TryAcquireAsync("Start-Workflow");
+            await using var lease = await _leaseService.TryAcquireWithRetryAsync("Start-Workflow");
             if (!lease.Acquired)
             {
                 return null;

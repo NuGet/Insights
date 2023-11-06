@@ -50,7 +50,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
         public async Task<KustoIngestionEntity> StartAsync()
         {
-            await using (var lease = await _leaseService.TryAcquireAsync("Start-KustoIngestion"))
+            await using (var lease = await _leaseService.TryAcquireWithRetryAsync("Start-KustoIngestion"))
             {
                 if (!lease.Acquired)
                 {

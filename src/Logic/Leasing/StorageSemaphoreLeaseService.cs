@@ -26,7 +26,7 @@ namespace NuGet.Insights
             await _leaseService.InitializeAsync();
         }
 
-        public async Task<AutoRenewingStorageLeaseResult> WaitAsync(string name, int count, TimeSpan timeout)
+        public async Task<AutoRenewingStorageLeaseResult> WaitAsync(string name, int count, TimeSpan retryFor)
         {
             var attempt = 0;
             var sw = Stopwatch.StartNew();
@@ -43,7 +43,7 @@ namespace NuGet.Insights
                 attempt++;
                 result = await TryAcquireAsync(name, count);
             }
-            while (!result.Acquired && (timeout == Timeout.InfiniteTimeSpan || sw.Elapsed < timeout));
+            while (!result.Acquired && (retryFor == Timeout.InfiniteTimeSpan || sw.Elapsed < retryFor));
 
             if (result.Acquired)
             {

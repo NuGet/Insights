@@ -62,7 +62,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 
         public async Task<bool> StartAsync()
         {
-            await using (var lease = await _leaseService.TryAcquireAsync($"Start-AuxiliaryFileUpdater-{_updater.OperationName}"))
+            await using (var lease = await _leaseService.TryAcquireWithRetryAsync($"Start-AuxiliaryFileUpdater-{_updater.OperationName}"))
             {
                 if (!lease.Acquired)
                 {
@@ -70,6 +70,11 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
                 }
 
                 await CreateContainerAsync();
+
+                if (await IsRunningAsync())
+                {
+                    return false;
+                }
 
                 var taskStateKey = new TaskStateKey(
                     StorageSuffix,

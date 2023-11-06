@@ -47,7 +47,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 
         public async Task<bool> StartAsync()
         {
-            await using (var lease = await _leaseService.TryAcquireAsync(OperationName))
+            await using (var lease = await _leaseService.TryAcquireWithRetryAsync(OperationName))
             {
                 if (!lease.Acquired)
                 {

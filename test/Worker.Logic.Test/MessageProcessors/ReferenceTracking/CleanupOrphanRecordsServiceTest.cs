@@ -156,7 +156,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
         private async Task CleanupOrphanRecordsAsync()
         {
             await Target.InitializeAsync();
-            await Target.StartAsync();
+            Assert.True(await Target.StartAsync());
             await ProcessQueueAsync(async () => !await Target.IsRunningAsync());
         }
 

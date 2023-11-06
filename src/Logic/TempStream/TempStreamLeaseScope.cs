@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -91,14 +91,14 @@ namespace NuGet.Insights
             return lease.Acquired;
         }
 
-        private Lazy<Task<AutoRenewingStorageLeaseResult>> GetLazyLease(string name, int count, TimeSpan timeout)
+        private Lazy<Task<AutoRenewingStorageLeaseResult>> GetLazyLease(string name, int count, TimeSpan retryFor)
         {
             return new Lazy<Task<AutoRenewingStorageLeaseResult>>(async () =>
             {
                 Interlocked.Increment(ref _inProgressCount);
                 try
                 {
-                    var result = await _semaphoreService.WaitAsync(name, count, timeout);
+                    var result = await _semaphoreService.WaitAsync(name, count, retryFor);
                     if (result.Acquired)
                     {
                         Interlocked.Increment(ref _acquiredCount);

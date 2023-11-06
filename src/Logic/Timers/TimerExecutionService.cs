@@ -86,17 +86,18 @@ namespace NuGet.Insights
             await timer.DestroyAsync();
         }
 
-        public async Task ExecuteAsync()
+        public async Task<bool> ExecuteAsync()
         {
-            await using (var lease = await _leaseService.TryAcquireAsync("TimerExecutionService"))
+            await using (var lease = await _leaseService.TryAcquireWithRetryAsync("TimerExecutionService"))
             {
                 if (!lease.Acquired)
                 {
                     _logger.LogInformation("Another thread is executing this method.");
-                    return;
+                    return false;
                 }
 
                 await _timerExecutionService.ExecuteAsync(_nameToTimer.Values, executeNow: false);
+                return true;
             }
         }
     }

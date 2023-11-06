@@ -32,10 +32,11 @@ namespace NuGet.Insights.Worker.Workflow
         public async Task DoesNotStartWhenAlreadyStarted()
         {
             await WorkflowService.InitializeAsync();
-            await WorkflowService.StartAsync();
+            var initialRun = await WorkflowService.StartAsync();
 
             var run = await WorkflowService.StartAsync();
 
+            Assert.NotNull(initialRun);
             Assert.Null(run);
             Assert.Single(await WorkflowStorageService.GetRunsAsync());
         }
@@ -45,10 +46,11 @@ namespace NuGet.Insights.Worker.Workflow
         {
             await WorkflowService.InitializeAsync();
             await CatalogScanService.InitializeAsync();
-            await CatalogScanService.UpdateAsync(CatalogScanDriverType.BuildVersionSet);
+            var initialRun = await CatalogScanService.UpdateAsync(CatalogScanDriverType.BuildVersionSet);
 
             var run = await WorkflowService.StartAsync();
 
+            Assert.NotNull(initialRun);
             Assert.Null(run);
             Assert.Empty(await WorkflowStorageService.GetRunsAsync());
         }
@@ -59,7 +61,7 @@ namespace NuGet.Insights.Worker.Workflow
             await WorkflowService.InitializeAsync();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>>>();
             await service.InitializeAsync();
-            await service.StartAsync();
+            Assert.True(await service.StartAsync());
 
             var run = await WorkflowService.StartAsync();
 
@@ -73,7 +75,7 @@ namespace NuGet.Insights.Worker.Workflow
             await WorkflowService.InitializeAsync();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
             await service.InitializeAsync();
-            await service.StartAsync();
+            Assert.True(await service.StartAsync());
 
             var run = await WorkflowService.StartAsync();
 
@@ -86,10 +88,11 @@ namespace NuGet.Insights.Worker.Workflow
         {
             await WorkflowService.InitializeAsync();
             await KustoIngestionService.InitializeAsync();
-            await KustoIngestionService.StartAsync();
+            var initialRun = await KustoIngestionService.StartAsync();
 
             var run = await WorkflowService.StartAsync();
 
+            Assert.NotNull(initialRun);
             Assert.Null(run);
             Assert.Empty(await WorkflowStorageService.GetRunsAsync());
         }

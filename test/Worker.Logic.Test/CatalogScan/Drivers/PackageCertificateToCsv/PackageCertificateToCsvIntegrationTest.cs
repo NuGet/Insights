@@ -286,7 +286,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         {
             var cleanup = Host.Services.GetRequiredService<ICleanupOrphanRecordsService<CertificateRecord>>();
             await cleanup.InitializeAsync();
-            await cleanup.StartAsync();
+            Assert.True(await cleanup.StartAsync());
             await ProcessQueueAsync(async () => !await cleanup.IsRunningAsync());
         }
 
