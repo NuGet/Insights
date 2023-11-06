@@ -20,7 +20,6 @@
     <!-- Workaround: https://github.com/dotnet/roslyn/issues/41640 -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
-    <CopyDocumentationFileToOutputDirectory>false</CopyDocumentationFileToOutputDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <EnableNPE Condition="'$(EnableNPE)' == '' and $([MSBuild]::IsOSPlatform('Windows'))">true</EnableNPE>
