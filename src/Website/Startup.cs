@@ -146,11 +146,13 @@ namespace NuGet.Insights.Website
                 _next = next;
             }
 
+            /// <summary>
+            /// These are produced by the Azure SDK integration in the Application Insights client.
+            /// We don't want to totally disable the telemetry with <code>DependencyTrackingTelemetryModule.EnableAzureSdkTelemetryListener</code>
+            /// but we do want to reduce the verbosity.
+            /// </summary>
             public void Process(ITelemetry item)
             {
-                /// These are produced by the Azure SDK integration in the Application Insights client.
-                /// We don't want to totally disable the telemetry with <code>DependencyTrackingTelemetryModule.EnableAzureSdkTelemetryListener</code>
-                /// but we do want to reduce the verbosity.
                 if (item is DependencyTelemetry dependency
                     && dependency.Type != null
                     && dependency.Type.StartsWith("InProc | ", StringComparison.Ordinal))

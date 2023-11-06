@@ -61,15 +61,17 @@ namespace NuGet.Insights
             await table.UpsertEntityAsync(entity, mode: TableUpdateMode.Replace);
         }
 
+        /// <summary>
+        /// This will throw an exception if the entity does not exist. This is expected because the called should
+        /// have a dependency on the cursor of the driver that populates this table (i.e. the caller of the
+        /// <see cref="SetHashesAsync(ICatalogLeafItem, HashOutput)"/> method).
+        /// </summary>
         public async Task<HashOutput?> GetHashesOrNullAsync(string id, string version)
         {
             var table = await GetTableAsync();
             var pk = GetPartitionKey(id);
             var rk = GetRowKey(version);
 
-            /// This will throw an exception if the entity does not exist. This is expected because the called should
-            /// have a dependency on the cursor of the driver that populates this table (i.e. the caller of the
-            /// <see cref="SetHashesAsync(CatalogLeafItem, HashOutput)"/> method).
             HashesEntity entity = await table.GetEntityAsync<HashesEntity>(pk, rk);
             if (!entity.Available)
             {

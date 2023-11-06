@@ -17,7 +17,7 @@ namespace NuGet.Insights.Worker
         /// This bucket key will be hashed and used to select a large CSV blob to append results to.
         /// Typically this is a concatenation of the normalized, lowercase package ID and version. This key should be
         /// consistent per package ID or package ID + version to allow for proper data pruning with
-        /// <see cref="ICsvResultStorage{T}.Prune(List{T})"/>.
+        /// <see cref="ICsvResultStorage{T}.Prune(List{T}, bool)"/>.
         /// </summary>
         /// <returns>The key used for bucketing returned CSV records.</returns>
         public string BucketKey { get; }

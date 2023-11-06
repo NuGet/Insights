@@ -91,7 +91,7 @@ namespace NuGet.Insights.Worker
 
 #if ENABLE_CRYPTOAPI
         /// <summary>
-        /// Implemented by <see cref="LoadPackageCertificate.LoadPackageCertificateDriver"/>. Loads all certificate
+        /// Implemented by <see cref="PackageCertificateToCsv.PackageCertificateToCsvDriver"/>. Loads all certificate
         /// chain information from the package signature into storage and tracks the many-to-many relationship between
         /// packages and certificates.
         /// </summary>

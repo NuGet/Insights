@@ -34,7 +34,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
         /// <summary>
         /// A mapping from URL-safe base64 encoded SHA-256 fingerprint to certificate info for all certificates found in this batch of
-        /// packages (catalog leaf scans). The fingerprint is produced using <see cref="X509Certificate2Extensions.GetSHA256Base64UrlFingerprint(X509Certificate2)"/>.
+        /// packages (catalog leaf scans). The fingerprint is produced using <see cref="Worker.X509Certificate2Extensions.GetSHA256Base64UrlFingerprint(X509Certificate2)"/>.
         /// </summary>
         public Dictionary<string, CertificateInfo> FingerprintToInfo { get; } = new();
 

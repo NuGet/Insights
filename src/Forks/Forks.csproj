@@ -3,6 +3,8 @@
     <AssemblyName>NuGet.Insights.Forks</AssemblyName>
     <RootNamespace>NuGet.Insights</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);IDE0005</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="NuGet.Commands" />

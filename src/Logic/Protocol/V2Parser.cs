@@ -14,7 +14,7 @@ namespace NuGet.Insights
 {
     /// <summary>
     /// Based off of:
-    /// <see cref="https://github.com/NuGet/NuGet.Client/blob/572962f1b1ee890533e5a75163264bd021426dc7/src/NuGet.Core/NuGet.Protocol/LegacyFeed/V2FeedParser.cs"/>
+    /// https://github.com/NuGet/NuGet.Client/blob/572962f1b1ee890533e5a75163264bd021426dc7/src/NuGet.Core/NuGet.Protocol/LegacyFeed/V2FeedParser.cs
     /// </summary>
     public class V2Parser
     {
@@ -22,14 +22,14 @@ namespace NuGet.Insights
         private const string MetadataNS = "http://schemas.microsoft.com/ado/2007/08/dataservices/metadata";
         private const string DataServicesNS = "http://schemas.microsoft.com/ado/2007/08/dataservices";
 
-        private static readonly XName _xnameEntry = XName.Get("entry", W3Atom);
-        private static readonly XName _xnameProperties = XName.Get("properties", MetadataNS);
-        private static readonly XName _xnameId = XName.Get("Id", DataServicesNS);
-        private static readonly XName _xnameVersion = XName.Get("Version", DataServicesNS);
-        private static readonly XName _xnameCreated = XName.Get("Created", DataServicesNS);
-        private static readonly XName _xnameLastEdited = XName.Get("LastEdited", DataServicesNS);
-        private static readonly XName _xnameLastUpdated = XName.Get("LastUpdated", DataServicesNS);
-        private static readonly XName _xnamePublished = XName.Get("Published", DataServicesNS);
+        private static readonly XName XnameEntry = XName.Get("entry", W3Atom);
+        private static readonly XName XnameProperties = XName.Get("properties", MetadataNS);
+        private static readonly XName XnameId = XName.Get("Id", DataServicesNS);
+        private static readonly XName XnameVersion = XName.Get("Version", DataServicesNS);
+        private static readonly XName XnameCreated = XName.Get("Created", DataServicesNS);
+        private static readonly XName XnameLastEdited = XName.Get("LastEdited", DataServicesNS);
+        private static readonly XName XnameLastUpdated = XName.Get("LastUpdated", DataServicesNS);
+        private static readonly XName XnamePublished = XName.Get("Published", DataServicesNS);
 
         public IReadOnlyList<V2Package> ParsePage(XDocument doc)
         {
@@ -38,7 +38,7 @@ namespace NuGet.Insights
                 throw new ArgumentException("The provided XML document must have a root element.");
             }
 
-            if (doc.Root.Name == _xnameEntry)
+            if (doc.Root.Name == XnameEntry)
             {
                 return new[] { ParsePackage(doc.Root) };
             }
@@ -46,7 +46,7 @@ namespace NuGet.Insights
             {
                 return doc
                     .Root
-                    .Elements(_xnameEntry)
+                    .Elements(XnameEntry)
                     .Select(x => ParsePackage(x))
                     .ToList();
             }
@@ -54,14 +54,14 @@ namespace NuGet.Insights
 
         private V2Package ParsePackage(XElement element)
         {
-            var properties = element.Element(_xnameProperties)!;
+            var properties = element.Element(XnameProperties)!;
 
-            var id = properties.Element(_xnameId)!.Value.Trim();
-            var version = properties.Element(_xnameVersion)!.Value.Trim();
-            var created = properties.Element(_xnameCreated)!.Value.Trim();
-            var lastEdited = properties.Element(_xnameLastEdited)!.Value.Trim();
-            var lastUpdated = properties.Element(_xnameLastUpdated)!.Value.Trim();
-            var published = properties.Element(_xnamePublished)!.Value.Trim();
+            var id = properties.Element(XnameId)!.Value.Trim();
+            var version = properties.Element(XnameVersion)!.Value.Trim();
+            var created = properties.Element(XnameCreated)!.Value.Trim();
+            var lastEdited = properties.Element(XnameLastEdited)!.Value.Trim();
+            var lastUpdated = properties.Element(XnameLastUpdated)!.Value.Trim();
+            var published = properties.Element(XnamePublished)!.Value.Trim();
 
             var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
 
