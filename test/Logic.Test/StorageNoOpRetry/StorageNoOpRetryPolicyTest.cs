@@ -36,8 +36,11 @@ namespace NuGet.Insights.StorageNoOpRetry
                         requestCount++;
                         if (requestCount == 1)
                         {
+                            Logger.LogInformation("Adding entity.");
                             var response = await table.AddEntityAsync(fasterAdd);
                             fasterAdd.UpdateETag(response);
+
+                            Logger.LogInformation("Faking HTTP 500.");
                             return new HttpResponseMessage(HttpStatusCode.InternalServerError) { RequestMessage = r };
                         }
                     }
@@ -75,7 +78,10 @@ namespace NuGet.Insights.StorageNoOpRetry
                         requestCount++;
                         if (requestCount == 1)
                         {
+                            Logger.LogInformation("Allowing request to go through.");
                             await b(r, t);
+
+                            Logger.LogInformation("Faking HTTP 500.");
                             return new HttpResponseMessage(HttpStatusCode.InternalServerError) { RequestMessage = r };
                         }
                     }
@@ -119,9 +125,14 @@ namespace NuGet.Insights.StorageNoOpRetry
                         requestCount++;
                         if (requestCount == 1)
                         {
-                            var response = await table.UpdateEntityAsync(fasterUpdate, etagBeforeA, TableUpdateMode.Replace);
+                            Logger.LogInformation("Allowing request to go through.");
+                            await b(r, t);
+
+                            Logger.LogInformation("Updating entity.");
+                            var response = await table.UpdateEntityAsync(fasterUpdate, ETag.All, TableUpdateMode.Replace);
                             fasterUpdate.UpdateETag(response);
 
+                            Logger.LogInformation("Faking HTTP 500.");
                             return new HttpResponseMessage(HttpStatusCode.InternalServerError) { RequestMessage = r };
                         }
                     }
@@ -158,7 +169,10 @@ namespace NuGet.Insights.StorageNoOpRetry
                         requestCount++;
                         if (requestCount == 1)
                         {
+                            Logger.LogInformation("Allowing request to go through.");
                             await b(r, t);
+
+                            Logger.LogInformation("Faking HTTP 500.");
                             return new HttpResponseMessage(HttpStatusCode.InternalServerError) { RequestMessage = r };
                         }
                     }
@@ -208,7 +222,10 @@ namespace NuGet.Insights.StorageNoOpRetry
                         requestCount++;
                         if (requestCount == 1)
                         {
+                            Logger.LogInformation("Allowing request to go through.");
                             var response = await b(r, t);
+
+                            Logger.LogInformation("Faking HTTP 500.");
                             return new HttpResponseMessage(HttpStatusCode.InternalServerError) { RequestMessage = r };
                         }
                     }
@@ -281,11 +298,14 @@ namespace NuGet.Insights.StorageNoOpRetry
                         requestCount++;
                         if (requestCount == 1)
                         {
+                            Logger.LogInformation("Allowing request to go through.");
                             await b(r, t);
 
+                            Logger.LogInformation("Updating entity.");
                             var responseA = await table.UpdateEntityAsync(fasterUpdateA, ETag.All, TableUpdateMode.Replace);
                             fasterUpdateA.UpdateETag(responseA);
 
+                            Logger.LogInformation("Faking HTTP 500.");
                             return new HttpResponseMessage(HttpStatusCode.InternalServerError) { RequestMessage = r };
                         }
                     }
@@ -354,10 +374,13 @@ namespace NuGet.Insights.StorageNoOpRetry
                         requestCount++;
                         if (requestCount == 1)
                         {
+                            Logger.LogInformation("Allowing request to go through.");
                             await b(r, t);
 
+                            Logger.LogInformation("Deleting entity.");
                             await table.DeleteEntityAsync(entityA.PartitionKey, entityA.RowKey);
 
+                            Logger.LogInformation("Faking HTTP 500.");
                             return new HttpResponseMessage(HttpStatusCode.InternalServerError) { RequestMessage = r };
                         }
                     }
@@ -425,13 +448,16 @@ namespace NuGet.Insights.StorageNoOpRetry
                         requestCount++;
                         if (requestCount == 1)
                         {
+                            Logger.LogInformation("Allowing request to go through.");
                             await b(r, t);
 
+                            Logger.LogInformation("Updating entities.");
                             var responseA = await table.UpdateEntityAsync(fasterUpdateA, ETag.All, TableUpdateMode.Replace);
                             fasterUpdateA.UpdateETag(responseA);
                             var responseB = await table.UpdateEntityAsync(fasterUpdateB, ETag.All, TableUpdateMode.Replace);
                             fasterUpdateB.UpdateETag(responseB);
 
+                            Logger.LogInformation("Faking HTTP 500.");
                             return new HttpResponseMessage(HttpStatusCode.InternalServerError) { RequestMessage = r };
                         }
                     }
@@ -488,10 +514,14 @@ namespace NuGet.Insights.StorageNoOpRetry
                         requestCount++;
                         if (requestCount == 1)
                         {
+                            Logger.LogInformation("Allowing request to go through.");
                             await b(r, t);
+
+                            Logger.LogInformation("Deleting entities.");
                             await table.DeleteEntityAsync(slowerUpdateA.PartitionKey, slowerUpdateA.RowKey);
                             await table.DeleteEntityAsync(slowerUpdateB.PartitionKey, slowerUpdateB.RowKey);
 
+                            Logger.LogInformation("Faking HTTP 500.");
                             return new HttpResponseMessage(HttpStatusCode.InternalServerError) { RequestMessage = r };
                         }
                     }
@@ -546,7 +576,10 @@ namespace NuGet.Insights.StorageNoOpRetry
                         requestCount++;
                         if (requestCount == 1)
                         {
-                            var response = await b(r, t);
+                            Logger.LogInformation("Allowing request to go through.");
+                            await b(r, t);
+
+                            Logger.LogInformation("Faking HTTP 500.");
                             return new HttpResponseMessage(HttpStatusCode.InternalServerError) { RequestMessage = r };
                         }
                     }
@@ -616,12 +649,15 @@ namespace NuGet.Insights.StorageNoOpRetry
                         requestCount++;
                         if (requestCount == 1)
                         {
+                            Logger.LogInformation("Allowing request to go through.");
                             var response = await b(r, t);
 
+                            Logger.LogInformation("Deleting entities.");
                             await table.DeleteEntityAsync(allEntities[4].PartitionKey, allEntities[4].RowKey); // in first page of batch
                             await table.DeleteEntityAsync(allEntities[5].PartitionKey, allEntities[5].RowKey); // not in batch
                             await table.DeleteEntityAsync(allEntities[6].PartitionKey, allEntities[6].RowKey); // in first page of batch
 
+                            Logger.LogInformation("Faking HTTP 500.");
                             return new HttpResponseMessage(HttpStatusCode.InternalServerError) { RequestMessage = r };
                         }
                     }
