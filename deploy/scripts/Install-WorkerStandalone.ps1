@@ -65,6 +65,25 @@ Function Expand-Pattern($type, $pattern) {
     return $destDir
 }
 
+# Stop any existing instance to allow .NET install during the next step.
+# It's possible install will fail with this error otherise:
+#
+#   The process cannot access the file 'C:\Program Files\dotnet\dotnet.exe'
+#   because it is being used by another process.
+#
+$existingTasks = Get-ScheduledTask -TaskName $scheduledTaskName -ErrorAction Ignore
+if ($existingTasks) { 
+    Write-Host "Stopping any existing scheduled tasks and waiting for dotnet stop"
+    $existingTasks | Stop-ScheduledTask
+    $timer = [Diagnostics.Stopwatch]::StartNew()
+    while ((Get-Process -Name "dotnet" -ErrorAction Ignore) -and ($timer.Elapsed -lt [TimeSpan]::FromSeconds(60))) {
+        Write-Host "." -NoNewline
+        Start-Sleep -Milliseconds 500
+    }
+    Write-Host ""
+    Write-Host ""
+}
+
 # Download and install the .NET runtime
 if (!(Test-Path $installDir)) { New-Item $installDir -ItemType Directory | Out-Null }
 $dotnetInstallPath = Get-Pattern $dotnetInstallPattern
@@ -140,23 +159,11 @@ $scriptPath = Join-Path $installDir "run.ps1"
 $logPath = Join-Path $installDir "log.txt"
 $scriptContent += "$([Environment]::NewLine)Write-Host 'Starting host'$([Environment]::NewLine)& `"$dotnet`" `"$hostPath`""
 
-# Initialized the scheduled task and stop any existing instance
+# Initialized the scheduled task
 $trigger = New-ScheduledTaskTrigger -AtStartup
 $action = New-ScheduledTaskAction -Execute "cmd" -Argument "/c powershell -File $scriptPath > $logPath 2>&1" -WorkingDirectory $appRoot
 $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit ([TimeSpan]::Zero) -MultipleInstances IgnoreNew
 $principal = New-ScheduledTaskPrincipal -UserID "NT AUTHORITY\LocalService" -LogonType ServiceAccount
-$existingTasks = Get-ScheduledTask -TaskName $scheduledTaskName -ErrorAction Ignore
-if ($existingTasks) { 
-    Write-Host "Stopping any existing scheduled tasks and waiting for dotnet stop"
-    $existingTasks | Stop-ScheduledTask
-    $timer = [Diagnostics.Stopwatch]::StartNew()
-    while ((Get-Process -Name "dotnet" -ErrorAction Ignore) -and ($timer.Elapsed -lt [TimeSpan]::FromSeconds(10))) {
-        Write-Host "." -NoNewline
-        Start-Sleep -Milliseconds 500
-    }
-    Write-Host ""
-    Write-Host ""
-}
 
 # Write out the script file
 Write-Host "Writing script file"
