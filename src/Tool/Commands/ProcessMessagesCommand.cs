@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Storage.Queues;
@@ -20,6 +21,7 @@ namespace NuGet.Insights.Tool
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<ProcessMessagesCommand> _logger;
         private CommandOption<int> _workerCount;
+        private CommandOption<string> _messageBody;
 
         public ProcessMessagesCommand(
             IWorkerQueueFactory workerQueueFactory,
@@ -37,9 +39,37 @@ namespace NuGet.Insights.Tool
                 "--worker-count",
                 "number of worker tasks processing messages in parallel",
                 CommandOptionType.SingleValue);
+            _messageBody = app.Option<string>(
+                "--message-body",
+                "a arbitrary message body to process",
+                CommandOptionType.SingleValue);
         }
 
         public async Task ExecuteAsync(CancellationToken token)
+        {
+            if (_messageBody.HasValue())
+            {
+                await ProcessMessageBodyAsync(_messageBody.Value(), token);
+            }
+            else
+            {
+                await ProcessWithWorkersAsync(token);
+            }
+        }
+
+        private async Task ProcessMessageBodyAsync(string value, CancellationToken token)
+        {
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var leaseScope = scope.ServiceProvider.GetRequiredService<TempStreamLeaseScope>();
+                await using var scopeOwnership = leaseScope.TakeOwnership();
+                var messageProcessor = scope.ServiceProvider.GetRequiredService<IGenericMessageProcessor>();
+                var messageBytes = Encoding.UTF8.GetBytes(value);
+                await messageProcessor.ProcessSingleAsync(QueueType.Work, messageBytes, 0);
+            }
+        }
+
+        private async Task ProcessWithWorkersAsync(CancellationToken token)
         {
             int workerCount = _workerCount.HasValue() ? _workerCount.ParsedValue : 1;
 

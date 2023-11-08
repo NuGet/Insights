@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
+using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -181,6 +182,7 @@ namespace NuGet.Insights.Tool
         {
             var serviceCollection = new ServiceCollection();
 
+            serviceCollection.AddSingleton<TelemetryClient>();
             serviceCollection.AddNuGetInsights("NuGet.Insights.Tool");
             serviceCollection.AddNuGetInsightsWorker();
             AddNuGetInsightsSettings<Program>(serviceCollection);
