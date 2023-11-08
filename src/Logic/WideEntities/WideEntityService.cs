@@ -42,6 +42,14 @@ namespace NuGet.Insights.WideEntities
         /// </summary>
         public static readonly int MaxTotalDataSize;
 
+        private static IReadOnlyList<string> NoDataColumns = new[]
+        {
+            StorageUtility.PartitionKey,
+            StorageUtility.RowKey,
+            StorageUtility.Timestamp,
+            WideEntitySegment.SegmentCountPropertyName,
+        };
+
         static WideEntityService()
         {
             // We calculate the max total data size by subtracting the largest possible entity overhead size times the
@@ -190,8 +198,9 @@ namespace NuGet.Insights.WideEntities
                 throw new ArgumentNullException(nameof(maxRowKey));
             }
 
-            IList<string> selectColumns;
+            IReadOnlyList<string> selectColumns;
             Expression<Func<WideEntitySegment, bool>> filter;
+            string singleRowKey;
             if (includeData)
             {
                 selectColumns = null;
@@ -199,10 +208,12 @@ namespace NuGet.Insights.WideEntities
                 if (partitionKey == null)
                 {
                     filter = x => true;
+                    singleRowKey = null;
                 }
                 else if (noRowKeys)
                 {
                     filter = x => x.PartitionKey == partitionKey;
+                    singleRowKey = null;
                 }
                 else
                 {
@@ -210,31 +221,27 @@ namespace NuGet.Insights.WideEntities
                         x.PartitionKey == partitionKey
                         && x.RowKey.CompareTo($"{minRowKey}{WideEntitySegment.RowKeySeparator}") >= 0 // Minimum possible row key with this prefix.
                         && x.RowKey.CompareTo($"{maxRowKey}{WideEntitySegment.RowKeySeparator}{char.MaxValue}") <= 0;  // Maximum possible row key with this prefix.
+                    singleRowKey = minRowKey == maxRowKey ? minRowKey : null;
                 }
             }
             else
             {
-                selectColumns = new[]
-                {
-                    StorageUtility.PartitionKey,
-                    StorageUtility.RowKey,
-                    StorageUtility.Timestamp,
-                    WideEntitySegment.SegmentCountPropertyName,
-                };
+                selectColumns = NoDataColumns;
 
                 if (partitionKey == null)
                 {
                     filter = x => true;
+                    singleRowKey = null;
                 }
                 else if (noRowKeys)
                 {
                     filter = x => x.PartitionKey == partitionKey;
+                    singleRowKey = null;
                 }
                 else if (minRowKey == maxRowKey)
                 {
-                    filter = x =>
-                        x.PartitionKey == partitionKey
-                        && x.RowKey == $"{minRowKey}{WideEntitySegment.RowKeySeparator}{WideEntitySegment.Index0Suffix}";
+                    filter = null;
+                    singleRowKey = minRowKey;
                 }
                 else
                 {
@@ -242,6 +249,32 @@ namespace NuGet.Insights.WideEntities
                         x.PartitionKey == partitionKey
                         && x.RowKey.CompareTo($"{minRowKey}{WideEntitySegment.RowKeySeparator}") >= 0
                         && x.RowKey.CompareTo($"{maxRowKey}{WideEntitySegment.RowKeySeparator}{WideEntitySegment.Index0Suffix}") <= 0;
+                    singleRowKey = null;
+                }
+            }
+
+            // This is an optimization. Most usages of the WideEntityService result in only a single segment row per
+            // wide entity. Since queries are more expensive than point reads, try to read a single wide entity segment
+            // using a point read and only perform a query if there more than 1 segment.
+            if (singleRowKey is not null)
+            {
+                var index0RowKey = $"{singleRowKey}{WideEntitySegment.RowKeySeparator}{WideEntitySegment.Index0Suffix}";
+                var segment = await table.GetEntityOrNullAsync<WideEntitySegment>(partitionKey, index0RowKey, selectColumns);
+                if (segment is null)
+                {
+                    yield break;
+                }
+
+                if (segment.SegmentCount == 1 || !includeData)
+                {
+                    var segments = new List<WideEntitySegment> { segment };
+                    yield return MakeWideEntity(includeData, segments);
+                    yield break;
+                }
+
+                if (filter is null)
+                {
+                    yield break;
                 }
             }
 
@@ -255,7 +288,7 @@ namespace NuGet.Insights.WideEntities
         private static async IAsyncEnumerable<WideEntitySegment> QueryEntitiesAsync(
             TableClientWithRetryContext table,
             QueryLoopMetrics metrics,
-            IList<string> selectColumns,
+            IReadOnlyList<string> selectColumns,
             Expression<Func<WideEntitySegment, bool>> filter,
             int maxPerPage)
         {

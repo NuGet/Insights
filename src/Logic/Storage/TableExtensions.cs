@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
@@ -22,11 +23,15 @@ namespace NuGet.Insights
                 && x.Name.CompareTo(prefix + char.MaxValue) <= 0);
         }
 
-        public static async Task<T> GetEntityOrNullAsync<T>(this TableClientWithRetryContext table, string partitionKey, string rowKey) where T : class, ITableEntity, new()
+        public static async Task<T> GetEntityOrNullAsync<T>(
+            this TableClientWithRetryContext table,
+            string partitionKey,
+            string rowKey,
+            IEnumerable<string> select = null) where T : class, ITableEntity, new()
         {
             try
             {
-                return await table.GetEntityAsync<T>(partitionKey, rowKey);
+                return await table.GetEntityAsync<T>(partitionKey, rowKey, select);
             }
             catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
             {

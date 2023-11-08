@@ -117,7 +117,29 @@ namespace NuGet.Insights.WideEntities
             }
 
             [Fact]
-            public async Task ReplacesExistingEntity()
+            public async Task ReplacesExistingEntityWithSmallData()
+            {
+                // Arrange
+                var existingContent = Bytes.Slice(0, 1024);
+                var newContent = Bytes.Slice(1024, 2 * 1024);
+                var partitionKey = StorageUtility.GenerateDescendingId().ToString();
+                var rowKey = StorageUtility.GenerateDescendingId().ToString();
+                var existingEntity = await Target.InsertAsync(TableName, partitionKey, rowKey, existingContent);
+
+                // Act
+                var newEntity = await Target.InsertOrReplaceAsync(TableName, partitionKey, rowKey, newContent);
+
+                // Assert
+                Assert.NotEqual(existingEntity.ETag, newEntity.ETag);
+                Assert.NotEqual(existingEntity.ToByteArray(), newEntity.ToByteArray());
+
+                var retrieved = await Target.RetrieveAsync(TableName, partitionKey, rowKey);
+                Assert.Equal(retrieved.ETag, newEntity.ETag);
+                Assert.Equal(retrieved.ToByteArray(), newEntity.ToByteArray());
+            }
+
+            [Fact]
+            public async Task ReplacesExistingEntityWithBigData()
             {
                 // Arrange
                 var existingContent = Bytes.Slice(0, 1024 * 1024);
