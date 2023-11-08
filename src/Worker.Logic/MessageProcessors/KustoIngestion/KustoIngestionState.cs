@@ -12,6 +12,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         Working,
         Validating,
         FailedValidation,
+        ConfirmingNewerData,
         SwappingTables,
         DroppingOldTables,
         Finalizing,

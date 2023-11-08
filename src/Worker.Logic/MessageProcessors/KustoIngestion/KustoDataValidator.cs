@@ -13,6 +13,8 @@ using Kusto.Data.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
+using NuGet.Insights.Worker.CatalogDataToCsv;
+
 #if ENABLE_CRYPTOAPI
 using NuGet.Insights.Worker.PackageCertificateToCsv;
 using NuGet.Insights.Worker.PackageSignatureToCsv;
@@ -45,6 +47,126 @@ namespace NuGet.Insights.Worker.KustoIngestion
             _logger = logger;
         }
 
+        public async Task<bool?> IsIngestedDataNewerAsync()
+        {
+            var tableNames = await GetTableNamesAsync();
+
+            if (_typeToStorage.TryGetValue(typeof(CatalogLeafItemRecord), out var storage))
+            {
+                var newTable = _containers.GetTempKustoTableName(storage.ContainerName);
+                var existingTable = _containers.GetKustoTableName(storage.ContainerName);
+
+                if (tableNames.Contains(existingTable) && tableNames.Contains(newTable))
+                {
+                    return await DoesTableHaveNewerDataAsync(newTable, existingTable, nameof(CatalogLeafItemRecord.CommitTimestamp));
+                }
+            }
+
+            var recordTypesWithCatalogCommitTimestamp = _typeToStorage
+                .Where(x => x.Value.RecordType.GetProperty(nameof(PackageRecord.CatalogCommitTimestamp)) != null)
+                .Select(x => x.Key);
+
+            foreach (var recordType in recordTypesWithCatalogCommitTimestamp)
+            {
+                storage = _typeToStorage[recordType];
+                var newTable = _containers.GetTempKustoTableName(storage.ContainerName);
+                var existingTable = _containers.GetKustoTableName(storage.ContainerName);
+
+                if (tableNames.Contains(existingTable) && tableNames.Contains(newTable))
+                {
+                    return await DoesTableHaveNewerDataAsync(newTable, existingTable, nameof(PackageRecord.CatalogCommitTimestamp));
+                }
+            }
+
+            return null;
+        }
+
+        private async Task<bool> DoesTableHaveNewerDataAsync(string newTable, string existingTable, string column)
+        {
+            var clientRequestId = Guid.NewGuid().ToString();
+            _logger.LogInformation(
+                "Getting max {Column} timestamp values in table {NewTable} and {ExistingTable} with client request ID {ClientRequestId}.",
+                column,
+                newTable,
+                existingTable,
+                clientRequestId);
+
+            var query =
+                $"""          
+                {existingTable}
+                | summarize MaxCommitTimestamp = max({column})
+                | extend MaxCommitTimestamp = iff(isempty(MaxCommitTimestamp), todatetime("2000-01-10"), MaxCommitTimestamp)
+                | project TableName = "{existingTable}", MaxCommitTimestamp
+                | union (
+                    {newTable}
+                    | summarize MaxCommitTimestamp = max({column})
+                    | extend MaxCommitTimestamp = iff(isempty(MaxCommitTimestamp), todatetime("2000-01-10"), MaxCommitTimestamp)
+                    | project TableName = "{newTable}", MaxCommitTimestamp
+                )
+                """;
+
+            using var dataReader = await _queryProvider.ExecuteQueryAsync(
+                _options.Value.KustoDatabaseName,
+                query,
+                new ClientRequestProperties { ClientRequestId = clientRequestId });
+
+            var now = DateTime.UtcNow;
+
+            var tableNameToMaxCommitTimestamp = new Dictionary<string, DateTime>();
+            while (dataReader.Read())
+            {
+                var tableName = dataReader.GetString(0);
+                var maxCommitTimestamp = dataReader.GetDateTime(1);
+
+                _telemetryClient.TrackMetric(
+                    nameof(KustoDataValidator) + ".CommitTimestampAgeInHours",
+                    (now - maxCommitTimestamp).TotalHours,
+                    new Dictionary<string, string>
+                    {
+                        { "Table", tableName },
+                        { "Column", column },
+                    });
+
+                tableNameToMaxCommitTimestamp.Add(tableName, maxCommitTimestamp);
+            }
+
+            var newTableValue = tableNameToMaxCommitTimestamp[newTable];
+            var existingTableValue = tableNameToMaxCommitTimestamp[existingTable];
+
+            _telemetryClient.TrackMetric(
+                nameof(KustoDataValidator) + ".MaxCommitTimestampDeltaInHours",
+                (newTableValue - existingTableValue).TotalHours,
+                new Dictionary<string, string>
+                {
+                    { "NewTable", newTable },
+                    { "ExistingTable", existingTable },
+                    { "Column", column },
+                });
+
+            return newTableValue > existingTableValue;
+        }
+
+        private async Task<IReadOnlySet<string>> GetTableNamesAsync()
+        {
+            var clientRequestId = Guid.NewGuid().ToString();
+            _logger.LogInformation(
+                "Getting table list in Kusto with client request ID {ClientRequestId}.",
+                clientRequestId);
+
+            using var dataReader = await _queryProvider.ExecuteQueryAsync(
+                _options.Value.KustoDatabaseName,
+                ".show tables | project TableName",
+                new ClientRequestProperties { ClientRequestId = clientRequestId });
+
+            var tableNames = new HashSet<string>();
+            while (dataReader.Read())
+            {
+                tableNames.Add(dataReader.GetString(0));
+            }
+
+            return tableNames;
+        }
+
         public async Task<bool> ValidateAsync()
         {
             var validations = new ConcurrentBag<Validation>(Enumerable
@@ -70,7 +192,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                             validation.Label,
                             clientRequestId);
                         var stopwatch = Stopwatch.StartNew();
-                        var dataReader = await _queryProvider.ExecuteQueryAsync(
+                        using var dataReader = await _queryProvider.ExecuteQueryAsync(
                             _options.Value.KustoDatabaseName,
                             validation.Query,
                             new ClientRequestProperties { ClientRequestId = clientRequestId });

@@ -203,8 +203,26 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     return;
                 }
 
-                ingestion.State = KustoIngestionState.SwappingTables;
+                ingestion.State = KustoIngestionState.ConfirmingNewerData;
                 await _storageService.ReplaceIngestionAsync(ingestion);
+            }
+
+            if (ingestion.State == KustoIngestionState.ConfirmingNewerData)
+            {
+                var newer = await _kustoDataValidator.IsIngestedDataNewerAsync();
+                if (newer == false)
+                {
+                    _logger.LogWarning("The ingested data is older than the existing data. No table swap will occur.");
+                    await DropTempTablesAsync(ingestion);
+
+                    ingestion.State = KustoIngestionState.Finalizing;
+                    await _storageService.ReplaceIngestionAsync(ingestion);
+                }
+                else
+                {
+                    ingestion.State = KustoIngestionState.SwappingTables;
+                    await _storageService.ReplaceIngestionAsync(ingestion);
+                }
             }
 
             if (ingestion.State == KustoIngestionState.SwappingTables)
@@ -262,6 +280,14 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
             var swapCommand = $".rename tables {string.Join(", ", swaps)}";
             await ExecuteKustoCommandAsync(swapCommand);
+        }
+
+        private async Task DropTempTablesAsync(KustoIngestionEntity ingestion)
+        {
+            var ingestedContainers = await _storageService.GetContainersAsync(ingestion);
+            var allTemp = ingestedContainers.Select(x => _csvRecordContainers.GetTempKustoTableName(x.ContainerName));
+            var dropOldCommand = $".drop tables ({string.Join(", ", allTemp)}) ifexists";
+            await ExecuteKustoCommandAsync(dropOldCommand);
         }
 
         private async Task DropOldTablesAsync(KustoIngestionEntity ingestion)
