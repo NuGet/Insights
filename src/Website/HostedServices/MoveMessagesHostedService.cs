@@ -24,6 +24,7 @@ namespace NuGet.Insights.Website
         private readonly SchemaCollection _schemaCollection;
         private readonly IWorkerQueueFactory _workerQueueFactory;
         private readonly IMessageEnqueuer _messageEnqueuer;
+        private readonly CatalogScanStorageService _catalogScanStorageService;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<MoveMessagesHostedService> _logger;
 
@@ -34,6 +35,7 @@ namespace NuGet.Insights.Website
             SchemaCollection schemaCollection,
             IWorkerQueueFactory workerQueueFactory,
             IMessageEnqueuer messageEnqueuer,
+            CatalogScanStorageService catalogScanStorageService,
             ITelemetryClient telemetryClient,
             ILogger<MoveMessagesHostedService> logger)
         {
@@ -43,6 +45,7 @@ namespace NuGet.Insights.Website
             _schemaCollection = schemaCollection;
             _workerQueueFactory = workerQueueFactory;
             _messageEnqueuer = messageEnqueuer;
+            _catalogScanStorageService = catalogScanStorageService;
             _telemetryClient = telemetryClient;
             _logger = logger;
         }
@@ -141,6 +144,7 @@ namespace NuGet.Insights.Website
                 var skip = new Stack<QueueMessage>();
                 var bulkMove = new List<(QueueMessage Raw, JsonElement Serialized)>();
                 var individualMove = new List<(QueueMessage Raw, Type Type, string Serialized)>();
+                var leafScansToReset = new List<CatalogLeafScanMessage>();
                 foreach (var raw in messages)
                 {
                     if (!messagesIds.Add(raw.MessageId))
@@ -164,6 +168,11 @@ namespace NuGet.Insights.Website
                         var serializer = _serializer.GetGenericSerializer(dataType);
                         var serialized = serializer.SerializeMessage(deserialized.Data);
 
+                        if (deserialized.Data is CatalogLeafScanMessage leafScan)
+                        {
+                            leafScansToReset.Add(leafScan);
+                        }
+
                         if (dataType == typeof(HeterogeneousBulkEnqueueMessage)
                             || dataType == typeof(HomogeneousBulkEnqueueMessage))
                         {
@@ -179,6 +188,36 @@ namespace NuGet.Insights.Website
                         _logger.LogWarning(ex, "Failed to deserialize message {MessageId}. Skipping.", raw.MessageId);
                         skip.Push(raw);
                         continue;
+                    }
+                }
+
+                foreach (var group in leafScansToReset.GroupBy(x => new { x.StorageSuffix, x.ScanId, x.PageId }))
+                {
+                    try
+                    {
+                        var leafScans = await _catalogScanStorageService.GetLeafScansAsync(
+                            group.Key.StorageSuffix,
+                            group.Key.ScanId,
+                            group.Key.PageId,
+                            group.Select(x => x.LeafId));
+
+                        foreach (var leafScan in leafScans.Values)
+                        {
+                            leafScan.AttemptCount = 0;
+                            leafScan.NextAttempt = DateTimeOffset.UtcNow;
+                        }
+
+                        await _catalogScanStorageService.ReplaceAsync(leafScans.Values);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(
+                            ex,
+                            "Failed to reset attempts on leaf scan batch for storage suffix {StorageSuffix}, scan ID {ScanId}, page ID {PageId}, and leaf IDs {LeafIds}.",
+                            group.Key.StorageSuffix,
+                            group.Key.ScanId,
+                            group.Key.PageId,
+                            group.Select(x => x.LeafId).ToList());
                     }
                 }
 
