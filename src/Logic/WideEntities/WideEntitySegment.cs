@@ -220,7 +220,15 @@ namespace NuGet.Insights.WideEntities
                 throw new InvalidOperationException($"For segment index {Index}, there cannot be more than {ChunkPropertyNames.Count + NonDataPropertyCount} properties.");
             }
 
-            for (var i = 0; i < Count - NonDataPropertyCount; i++)
+            var chunkCount = Count - NonDataPropertyCount;
+
+            // This handles wide entities that do not have a client request ID column (backwards compatibility).
+            if (!ContainsKey(ClientRequestIdPropertyName))
+            {
+                chunkCount++;
+            }
+
+            for (var i = 0; i < chunkCount; i++)
             {
                 if (!TryGetValue(ChunkPropertyNames[i], out var property))
                 {

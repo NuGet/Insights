@@ -496,15 +496,42 @@ namespace NuGet.Insights.WideEntities
             }
 
             [Fact]
+            public async Task HandlesMissingClientRequestId()
+            {
+                // Arrange
+                var src = Bytes.Slice(0, 1024);
+                var partitionKey = StorageUtility.GenerateDescendingId().ToString();
+                var rowKey = StorageUtility.GenerateDescendingId().ToString();
+                await Target.InsertAsync(TableName, partitionKey, rowKey, src);
+
+                var table = await _fixture.GetTableAsync(_output.GetLoggerFactory());
+                var rawEntities = await table.QueryAsync<TableEntity>().ToListAsync();
+                foreach (var entity in rawEntities)
+                {
+                    entity.Remove(WideEntitySegment.ClientRequestIdPropertyName);
+                    await table.UpdateEntityAsync(entity, entity.ETag, TableUpdateMode.Replace);
+                }
+
+                // Act
+                var wideEntity = await Target.RetrieveAsync(TableName, partitionKey, rowKey, includeData: true);
+
+                // Assert
+                Assert.Equal(partitionKey, wideEntity.PartitionKey);
+                Assert.Equal(rowKey, wideEntity.RowKey);
+                Assert.NotEqual(default, wideEntity.ETag);
+                Assert.Equal(1, wideEntity.SegmentCount);
+                var bytes = wideEntity.ToByteArray();
+                Assert.Equal(src.ToArray(), bytes);
+            }
+
+            [Fact]
             public async Task AllowsNotFetchingData()
             {
                 // Arrange
                 var src = Bytes.Slice(0, 1024);
                 var partitionKey = StorageUtility.GenerateDescendingId().ToString();
                 var rowKey = StorageUtility.GenerateDescendingId().ToString();
-                var before = DateTimeOffset.UtcNow;
                 await Target.InsertAsync(TableName, partitionKey, rowKey, src);
-                var after = DateTimeOffset.UtcNow;
 
                 // Act
                 var wideEntity = await Target.RetrieveAsync(TableName, partitionKey, rowKey, includeData: false);
