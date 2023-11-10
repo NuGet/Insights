@@ -14,7 +14,7 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
     public class LoadLatestPackageLeafIntegrationTest : BaseCatalogScanIntegrationTest
     {
         private const string LoadLatestPackageLeavesDir = nameof(LoadLatestPackageLeaf);
-        private const string LoadLatestPackageLeaves_WithDuplicatesWithDuplicatesInCommitDir = nameof(LoadLatestPackageLeaf_WithDuplicatesInCommit);
+        private const string LoadLatestPackageLeaves_WithDuplicatesInCommitDir = nameof(LoadLatestPackageLeaf_WithDuplicatesInCommit);
 
         [Fact]
         public async Task LoadLatestPackageLeaf()
@@ -48,13 +48,13 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
             await UpdateAsync(max1);
 
             // Assert
-            await AssertOutputAsync(LoadLatestPackageLeaves_WithDuplicatesWithDuplicatesInCommitDir, Step1);
+            await AssertOutputAsync(LoadLatestPackageLeaves_WithDuplicatesInCommitDir, Step1);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertOutputAsync(LoadLatestPackageLeaves_WithDuplicatesWithDuplicatesInCommitDir, Step2);
+            await AssertOutputAsync(LoadLatestPackageLeaves_WithDuplicatesInCommitDir, Step2);
         }
 
         public LoadLatestPackageLeafIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
