@@ -1,6 +1,6 @@
 # LoadBucketedPackage
 
-This driver records the latest catalog leaf document per package ID and version. The packages are partitioned by a bucket number (`000` to `999`). This allows other components to process some percentage of all packages by performing a range query on the bucket numbers. The primary purpose is to enable the [timed reprocess system](../../src/Worker.Logic/MessageProcessors/TimedReprocess).
+This driver records the latest catalog leaf document per package ID and version. The packages are partitioned by a bucket number (`000` to `999`). This allows other components to process some percentage of all packages by performing a range query on the bucket numbers. The primary purpose is to enable the timed reprocess system.
 
 |                                    |                                                                                                                                                                                                                                             |
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
