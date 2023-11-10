@@ -265,10 +265,5 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         {
             return PackageRecord.Prune(records, isFinalPrune);
         }
-
-        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageCompatibility record)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

@@ -114,10 +114,5 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
 
             return record;
         }
-
-        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageReadme record)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

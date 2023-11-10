@@ -309,10 +309,5 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             assembly.CustomAttributesFailedDecode = KustoDynamicSerializer.Serialize(info.FailedDecode.OrderBy(x => x, StringComparer.Ordinal).ToList());
             assembly.CustomAttributes = KustoDynamicSerializer.Serialize(info.NameToParameters);
         }
-
-        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageAssembly record)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

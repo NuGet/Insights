@@ -389,15 +389,5 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
             return pruned;
         }
-
-        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageCertificateRecord record)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(CertificateRecord record)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

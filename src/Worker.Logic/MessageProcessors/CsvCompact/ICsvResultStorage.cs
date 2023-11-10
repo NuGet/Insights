@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace NuGet.Insights.Worker
 {
@@ -27,13 +26,5 @@ namespace NuGet.Insights.Worker
         /// <param name="isFinalPrune">Whether or not this prune invocation is the last one prior to saving the CSV file.</param>
         /// <returns>The records, after pruning out undesired records.</returns>
         List<T> Prune(List<T> records, bool isFinalPrune);
-
-        /// <summary>
-        /// Given a previously persisted CSV record, a catalog leaf item is returned if the record should be reprocessed.
-        /// This method is only invoked during a special "reprocess" flow started by <see cref="CatalogScanService.ReprocessAsync(CatalogScanDriverType)"/>.
-        /// </summary>
-        /// <param name="record">The record to test for reprocessing.</param>
-        /// <returns>A catalog leaf item that should be reprocessing, null if the record should not be reprocessed.</returns>
-        Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(T record);
     }
 }

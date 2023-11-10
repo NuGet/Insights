@@ -97,16 +97,6 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             await _aggregateStorageService.DeleteTableAsync(indexScan.StorageSuffix);
         }
 
-        public Task StartCustomExpandAsync(CatalogIndexScan indexScan)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> IsCustomExpandCompleteAsync(CatalogIndexScan indexScan)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task DestroyOutputAsync()
         {
             await _versionSetService.DestroyAsync();

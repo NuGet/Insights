@@ -207,10 +207,5 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
                 ex.Message.StartsWith("Invalid portable frameworks '")
                 && ex.Message.EndsWith("'. A hyphen may not be in any of the portable framework names.");
         }
-
-        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageAsset record)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

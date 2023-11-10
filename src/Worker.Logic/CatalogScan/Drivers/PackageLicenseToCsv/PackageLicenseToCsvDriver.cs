@@ -183,10 +183,5 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
                 );
             }
         }
-
-        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageLicense record)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

@@ -137,46 +137,6 @@ namespace NuGet.Insights.Worker
                 return countLowerBound == 0;
             }
 
-            public async Task StartCustomExpandAsync(CatalogIndexScan indexScan)
-            {
-                var buckets = await _parent._storageService.GetCompactedBucketsAsync(_resultsContainerName);
-
-                var partitionKey = GetCustomExpandPartitionKey(indexScan);
-
-                await _parent._taskStateStorageService.AddAsync(
-                    indexScan.StorageSuffix,
-                    partitionKey,
-                    buckets.Select(x => x.ToString()).ToList());
-
-                var messages = buckets
-                    .Select(b => new CsvExpandReprocessMessage<T>
-                    {
-                        DriverType = indexScan.DriverType,
-                        ScanId = indexScan.ScanId,
-                        Bucket = b,
-                        TaskStateKey = new TaskStateKey(
-                            indexScan.StorageSuffix,
-                            partitionKey,
-                            b.ToString()),
-                    })
-                    .ToList();
-                await _parent._messageEnqueuer.EnqueueAsync(messages);
-            }
-
-            public async Task<bool> IsCustomExpandCompleteAsync(CatalogIndexScan indexScan)
-            {
-                var countLowerBound = await _parent._taskStateStorageService.GetCountLowerBoundAsync(
-                    indexScan.StorageSuffix,
-                    GetCustomExpandPartitionKey(indexScan));
-                _parent._logger.LogInformation("There are at least {Count} expand custom tasks pending.", countLowerBound);
-                return countLowerBound == 0;
-            }
-
-            private string GetCustomExpandPartitionKey(CatalogIndexScan indexScan)
-            {
-                return $"{indexScan.ScanId}-{nameof(CatalogScanToCsvStorage<T>)}-custom-expand-{_setIndex}";
-            }
-
             private string GetAggregateTasksPartitionKey(string aggregatePartitionKeyPrefix)
             {
                 return $"{aggregatePartitionKeyPrefix}-{nameof(CatalogScanToCsvStorage<T>)}-aggregate-{_setIndex}";

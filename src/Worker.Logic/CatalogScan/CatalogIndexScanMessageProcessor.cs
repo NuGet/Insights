@@ -99,7 +99,6 @@ namespace NuGet.Insights.Worker
                         break;
                     case CatalogIndexScanResult.ExpandLatestLeaves:
                     case CatalogIndexScanResult.ExpandLatestLeavesPerId:
-                    case CatalogIndexScanResult.CustomExpand:
                         await _storageService.InitializeLeafScanTableAsync(scan.StorageSuffix);
                         break;
                     case CatalogIndexScanResult.Processed:
@@ -121,9 +120,6 @@ namespace NuGet.Insights.Worker
                     break;
                 case CatalogIndexScanResult.ExpandLatestLeavesPerId:
                     await ExpandLatestLeavesAsync(message, scan, driver, perId: true);
-                    break;
-                case CatalogIndexScanResult.CustomExpand:
-                    await CustomExpandAsync(message, scan, driver);
                     break;
                 case CatalogIndexScanResult.Processed:
                     await CompleteAsync(scan);
@@ -257,46 +253,6 @@ namespace NuGet.Insights.Worker
             // Also, I implemented this partition key scanning logic and I want to leverage it here ^_^
             var enqueuePerId = perId;
 
-            await HandleEnqueueAggregateAndFinalizeStatesAsync(message, scan, driver, taskStateKey, enqueuePerId);
-        }
-
-        private async Task CustomExpandAsync(CatalogIndexScanMessage message, CatalogIndexScan scan, ICatalogScanDriver driver)
-        {
-            var taskStateKey = new TaskStateKey(scan.StorageSuffix, $"{scan.ScanId}-{TableScanDriverType.EnqueueCatalogLeafScans}", "start");
-
-            await HandleInitializedStateAsync(scan, nextState: CatalogIndexScanState.StartingExpand);
-
-            // StartingExpand: start the custom expand flow provided by the driver
-            if (scan.State == CatalogIndexScanState.StartingExpand)
-            {
-                await driver.StartCustomExpandAsync(scan);
-
-                scan.State = CatalogIndexScanState.Expanding;
-                await _storageService.ReplaceAsync(scan);
-            }
-
-            // Expanding: wait for the custom expand flow to complete
-            if (scan.State == CatalogIndexScanState.Expanding)
-            {
-                if (!await driver.IsCustomExpandCompleteAsync(scan))
-                {
-                    _logger.LogInformation("The custom expand is still running.");
-                    message.AttemptCount++;
-                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
-                    return;
-                }
-                else
-                {
-                    await _taskStateStorageService.InitializeAsync(scan.StorageSuffix);
-                    await _taskStateStorageService.AddAsync(taskStateKey);
-                    scan.State = CatalogIndexScanState.Enqueuing;
-                    await _storageService.ReplaceAsync(scan);
-                }
-            }
-
-            // NOTE: we never need to enqueue per ID since the custom expand logic can create any granularity of leaf
-            // item that it wants.
-            var enqueuePerId = false;
             await HandleEnqueueAggregateAndFinalizeStatesAsync(message, scan, driver, taskStateKey, enqueuePerId);
         }
 

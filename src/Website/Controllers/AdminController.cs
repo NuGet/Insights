@@ -168,7 +168,6 @@ namespace NuGet.Insights.Website.Controllers
             CatalogScanDriverType driverType,
             bool useCustomCursor,
             bool? onlyLatestLeaves,
-            bool reprocess,
             string cursor,
             bool start,
             bool abort,
@@ -186,11 +185,6 @@ namespace NuGet.Insights.Website.Controllers
             DateTimeOffset? parsedCursor = null;
             if (useCustomCursor)
             {
-                if (reprocess)
-                {
-                    return Redirect(false, "Unable to reprocess with a custom max value.", fragment);
-                }
-
                 if (!DateTimeOffset.TryParse(cursor, out var parsedCursorValue))
                 {
                     return Redirect(false, "Unable to parse the custom max value.", fragment);
@@ -201,7 +195,7 @@ namespace NuGet.Insights.Website.Controllers
 
             if (start)
             {
-                (var success, var message) = await UpdateCatalogScanAsync(driverType, onlyLatestLeaves, reprocess, parsedCursor);
+                (var success, var message) = await UpdateCatalogScanAsync(driverType, onlyLatestLeaves, parsedCursor);
                 return Redirect(success, message, fragment);
             }
             else if (abort)
@@ -236,18 +230,9 @@ namespace NuGet.Insights.Website.Controllers
         private async Task<(bool Success, string Message)> UpdateCatalogScanAsync(
             CatalogScanDriverType driverType,
             bool? onlyLatestLeaves,
-            bool reprocess,
             DateTimeOffset? max)
         {
-            CatalogScanServiceResult result;
-            if (reprocess)
-            {
-                result = await _catalogScanService.ReprocessAsync(driverType);
-            }
-            else
-            {
-                result = await _catalogScanService.UpdateAsync(driverType, max, onlyLatestLeaves);
-            }
+            var result = await _catalogScanService.UpdateAsync(driverType, max, onlyLatestLeaves);
 
             switch (result.Type)
             {

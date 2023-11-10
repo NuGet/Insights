@@ -13,7 +13,5 @@ namespace NuGet.Insights.Worker
         Task InitializeAsync(string storageSuffix);
         Task<bool> IsAggregateCompleteAsync(string aggregatePartitionKeyPrefix, string storageSuffix);
         Task StartAggregateAsync(string aggregatePartitionKeyPrefix, string storageSuffix);
-        Task<bool> IsCustomExpandCompleteAsync(CatalogIndexScan indexScan);
-        Task StartCustomExpandAsync(CatalogIndexScan indexScan);
     }
 }

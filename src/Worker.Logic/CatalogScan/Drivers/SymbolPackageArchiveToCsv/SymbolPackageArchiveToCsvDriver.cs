@@ -45,16 +45,6 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             return PackageRecord.Prune(records, isFinalPrune);
         }
 
-        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(SymbolPackageArchiveRecord record)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(SymbolPackageArchiveEntry record)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task InitializeAsync()
         {
             await _symbolPackageFileService.InitializeAsync();

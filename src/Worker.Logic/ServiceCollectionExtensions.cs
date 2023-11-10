@@ -318,11 +318,6 @@ namespace NuGet.Insights.Worker
                 serviceCollection.AddTransient(
                     typeof(IMessageProcessor<>).MakeGenericType(typeof(CsvCompactMessage<>).MakeGenericType(recordType)),
                     typeof(CsvCompactorProcessor<>).MakeGenericType(recordType));
-
-                // Add custom expand processor
-                serviceCollection.AddTransient(
-                    typeof(IMessageProcessor<>).MakeGenericType(typeof(CsvExpandReprocessMessage<>).MakeGenericType(recordType)),
-                    typeof(CsvExpandReprocessProcessor<>).MakeGenericType(recordType));
             }
 
             AddCsvNonBatchDrivers(serviceCollection);

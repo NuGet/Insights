@@ -63,15 +63,6 @@ namespace NuGet.Insights.Worker
             return _options.Value.DisabledDrivers == null || !_options.Value.DisabledDrivers.Contains(type);
         }
 
-        public bool SupportsReprocess(CatalogScanDriverType driverType)
-        {
-            switch (driverType)
-            {
-                default:
-                    return false;
-            }
-        }
-
         /// <summary>
         /// The tri-state return type has the following meanings:
         /// - null: the driver type supports run with or without the latest leaves scan
@@ -119,20 +110,6 @@ namespace NuGet.Insights.Worker
 
                 default:
                     throw new NotSupportedException();
-            }
-        }
-
-        public Task<CatalogScanServiceResult> ReprocessAsync(CatalogScanDriverType driverType)
-        {
-            if (!SupportsReprocess(driverType))
-            {
-                throw new ArgumentException("Reprocessing is not support for this driver type.", nameof(driverType));
-            }
-
-            switch (driverType)
-            {
-                default:
-                    throw new NotImplementedException();
             }
         }
 

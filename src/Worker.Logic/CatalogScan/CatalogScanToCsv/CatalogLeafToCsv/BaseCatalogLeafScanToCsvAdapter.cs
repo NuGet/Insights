@@ -42,27 +42,6 @@ namespace NuGet.Insights.Worker
             await _driver.InitializeAsync();
         }
 
-        public async Task StartCustomExpandAsync(CatalogIndexScan indexScan)
-        {
-            foreach (var storage in _storage)
-            {
-                await storage.StartCustomExpandAsync(indexScan);
-            }
-        }
-
-        public async Task<bool> IsCustomExpandCompleteAsync(CatalogIndexScan indexScan)
-        {
-            foreach (var storage in _storage)
-            {
-                if (!await storage.IsCustomExpandCompleteAsync(indexScan))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
         public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
         {
             var parameters = DeserializeParameters(indexScan.DriverParameters);
@@ -75,9 +54,6 @@ namespace NuGet.Insights.Worker
                     break;
                 case CatalogLeafToCsvMode.LatestLeaves:
                     result = _driver.SingleMessagePerId ? CatalogIndexScanResult.ExpandLatestLeavesPerId : CatalogIndexScanResult.ExpandLatestLeaves;
-                    break;
-                case CatalogLeafToCsvMode.Reprocess:
-                    result = CatalogIndexScanResult.CustomExpand;
                     break;
                 default:
                     throw new NotImplementedException();

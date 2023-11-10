@@ -80,16 +80,6 @@ namespace NuGet.Insights.Worker
             return _inner.FinalizeAsync(indexScan);
         }
 
-        public Task StartCustomExpandAsync(CatalogIndexScan indexScan)
-        {
-            return _inner.StartCustomExpandAsync(indexScan);
-        }
-
-        public Task<bool> IsCustomExpandCompleteAsync(CatalogIndexScan indexScan)
-        {
-            return _inner.IsCustomExpandCompleteAsync(indexScan);
-        }
-
         public Task DestroyOutputAsync()
         {
             return _inner.DestroyOutputAsync();

@@ -77,9 +77,6 @@ namespace NuGet.Insights.Worker
 #if ENABLE_NPE
             new SchemaV1<CsvCompactMessage<NuGetPackageExplorerRecord>>("cc.npe2c"),
             new SchemaV1<CsvCompactMessage<NuGetPackageExplorerFile>>("cc.npef2c"),
-
-            new SchemaV1<CsvExpandReprocessMessage<NuGetPackageExplorerRecord>>("cer.npe2c"),
-            new SchemaV1<CsvExpandReprocessMessage<NuGetPackageExplorerFile>>("cer.npef2c"),
 #endif
 
             new SchemaV1<TableScanMessage<CatalogLeafScan>>("ts.cls"),

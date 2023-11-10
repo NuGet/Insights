@@ -70,11 +70,6 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             return Task.CompletedTask;
         }
 
-        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageContent record)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<DriverResult<CsvRecordSet<PackageContent>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();

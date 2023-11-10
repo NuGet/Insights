@@ -192,10 +192,5 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         {
             return PackageRecord.Prune(records, isFinalPrune);
         }
-
-        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageIcon record)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

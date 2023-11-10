@@ -174,11 +174,6 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
             };
         }
 
-        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageSignature record)
-        {
-            throw new NotImplementedException();
-        }
-
         private record SignatureInfo
         {
             public bool TimestampHasASN1Error { get; init; }

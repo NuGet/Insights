@@ -102,10 +102,5 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
 
             return records;
         }
-
-        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageVersionRecord record)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

@@ -48,16 +48,6 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             return PackageRecord.Prune(records, isFinalPrune);
         }
 
-        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageArchiveRecord record)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageArchiveEntry record)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task InitializeAsync()
         {
             await _packageFileService.InitializeAsync();

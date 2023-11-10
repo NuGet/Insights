@@ -60,16 +60,6 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             return Task.CompletedTask;
         }
 
-        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(NuGetPackageExplorerRecord record)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(NuGetPackageExplorerFile record)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<DriverResult<CsvRecordSets<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             (var record, var files) = await ProcessLeafInternalAsync(leafScan);

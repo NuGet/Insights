@@ -151,20 +151,5 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
                 .ThenBy(x => x.Identity, StringComparer.OrdinalIgnoreCase)
                 .ToList();
         }
-
-        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageDeprecationRecord record)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageVulnerabilityRecord record)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(CatalogLeafItemRecord record)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

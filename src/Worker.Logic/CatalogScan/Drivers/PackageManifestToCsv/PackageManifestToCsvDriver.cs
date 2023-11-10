@@ -178,10 +178,5 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
                 record.ResultType = PackageManifestRecordResultType.Error;
             }
         }
-
-        public Task<(ICatalogLeafItem LeafItem, string PageUrl)> MakeReprocessItemOrNullAsync(PackageManifestRecord record)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
