@@ -19,7 +19,7 @@ namespace NuGet.Insights.Worker
         private readonly CursorStorageService _cursorStorageService;
         private readonly CatalogScanService _catalogScanService;
         private readonly TaskStateStorageService _taskStateStorageService;
-        private readonly TableScanService<CatalogLeafScan> _tableScanService;
+        private readonly TableScanService _tableScanService;
         private readonly ILogger<CatalogIndexScanMessageProcessor> _logger;
 
         public CatalogIndexScanMessageProcessor(
@@ -30,7 +30,7 @@ namespace NuGet.Insights.Worker
             CursorStorageService cursorStorageService,
             CatalogScanService catalogScanService,
             TaskStateStorageService taskStateStorageService,
-            TableScanService<CatalogLeafScan> tableScanService,
+            TableScanService tableScanService,
             ILogger<CatalogIndexScanMessageProcessor> logger)
         {
             _catalogClient = catalogClient;
@@ -298,7 +298,7 @@ namespace NuGet.Insights.Worker
 
         private async Task<Lazy<Task<CatalogIndex>>> HandleInitializedStateAsync(CatalogIndexScan scan, CatalogIndexScanState nextState)
         {
-            var lazyIndexTask = new Lazy<Task<CatalogIndex>>(() => GetCatalogIndexAsync());
+            var lazyIndexTask = new Lazy<Task<CatalogIndex>>(GetCatalogIndexAsync);
 
             // Initialized: determine the real time bounds for the scan.
             if (scan.State == CatalogIndexScanState.Initialized)
@@ -343,7 +343,7 @@ namespace NuGet.Insights.Worker
                 await _storageService.ReplaceAsync(scan);
             }
 
-            // Waiting: wait for the table scan and subsequent leaf scans to complete
+            // Working: wait for the table scan and subsequent leaf scans to complete
             if (scan.State == CatalogIndexScanState.Working)
             {
                 if (!await AreTableScanStepsCompleteAsync(taskStateKey) || !await AreLeafScansCompleteAsync(scan))
@@ -364,7 +364,7 @@ namespace NuGet.Insights.Worker
 
         private async Task HandleAggregateAndFinalizeStatesAsync(CatalogIndexScanMessage message, CatalogIndexScan scan, ICatalogScanDriver driver)
         {
-            // StartAggregating: call into the driver to start aggregating.
+            // StartingAggregate: call into the driver to start aggregating.
             if (scan.State == CatalogIndexScanState.StartingAggregate)
             {
                 await driver.StartAggregateAsync(scan);

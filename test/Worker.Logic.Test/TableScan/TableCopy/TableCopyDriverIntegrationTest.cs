@@ -53,7 +53,7 @@ namespace NuGet.Insights.Worker.TableCopy
             var sourceTable = tableServiceClient.GetTableClient(Options.Value.LatestPackageLeafTableName);
             var destinationTable = tableServiceClient.GetTableClient(destTableName);
 
-            var tableScanService = Host.Services.GetRequiredService<TableScanService<LatestPackageLeaf>>();
+            var tableScanService = Host.Services.GetRequiredService<TableScanService>();
 
             var taskStateStorageSuffix = "copy";
             await TaskStateStorageService.InitializeAsync(taskStateStorageSuffix);
@@ -61,7 +61,7 @@ namespace NuGet.Insights.Worker.TableCopy
             await TaskStateStorageService.AddAsync(taskStateKey);
 
             // Act
-            await tableScanService.StartTableCopyAsync(
+            await tableScanService.StartTableCopyAsync<LatestPackageLeaf>(
                 taskStateKey,
                 Options.Value.LatestPackageLeafTableName,
                 destTableName,

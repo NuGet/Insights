@@ -10,7 +10,7 @@ using NuGet.Insights.Worker.TableCopy;
 
 namespace NuGet.Insights.Worker
 {
-    public class TableScanService<T> where T : class, ITableEntity, new()
+    public class TableScanService
     {
         private readonly IMessageEnqueuer _enqueuer;
         private readonly SchemaSerializer _serializer;
@@ -28,7 +28,7 @@ namespace NuGet.Insights.Worker
             string tableName,
             bool oneMessagePerId)
         {
-            await StartTableScanAsync(
+            await StartTableScanAsync<CatalogLeafScan>(
                 taskStateKey,
                 TableScanDriverType.EnqueueCatalogLeafScans,
                 tableName,
@@ -46,7 +46,7 @@ namespace NuGet.Insights.Worker
                 }).AsJsonElement());
         }
 
-        public async Task StartTableCopyAsync(
+        public async Task StartTableCopyAsync<T>(
             TaskStateKey taskStateKey,
             string sourceTable,
             string destinationTable,
@@ -57,8 +57,9 @@ namespace NuGet.Insights.Worker
             int takeCount,
             int segmentsPerFirstPrefix,
             int segmentsPerSubsequentPrefix)
+            where T : class, ITableEntity, new()
         {
-            await StartTableScanAsync(
+            await StartTableScanAsync<T>(
                 taskStateKey,
                 TableScanDriverType.TableCopy,
                 sourceTable,
@@ -76,7 +77,7 @@ namespace NuGet.Insights.Worker
                 }).AsJsonElement());
         }
 
-        private async Task StartTableScanAsync(
+        private async Task StartTableScanAsync<T>(
             TaskStateKey taskStateKey,
             TableScanDriverType driverType,
             string sourceTable,
@@ -89,6 +90,7 @@ namespace NuGet.Insights.Worker
             int segmentsPerFirstPrefix,
             int segmentsPerSubsequentPrefix,
             JsonElement driverParameters)
+            where T : class, ITableEntity, new()
         {
             JsonElement? scanParameters;
             switch (strategy)

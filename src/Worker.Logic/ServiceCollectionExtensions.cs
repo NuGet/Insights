@@ -92,7 +92,7 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient<IMessageBatcher, MessageBatcher>();
             serviceCollection.AddTransient<IMessageEnqueuer, MessageEnqueuer>();
 
-            serviceCollection.AddTransient(typeof(TableScanService<>));
+            serviceCollection.AddTransient<TableScanService>();
             serviceCollection.AddTransient(typeof(TableScanDriverFactory<>));
             serviceCollection.AddTransient(typeof(LatestLeafStorageService<>));
 
