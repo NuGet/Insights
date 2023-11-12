@@ -17,7 +17,6 @@ namespace NuGet.Insights.Worker
 
         private readonly CatalogScanCursorService _cursorService;
         private readonly IMessageEnqueuer _messageEnqueuer;
-        private readonly SchemaSerializer _serializer;
         private readonly CatalogScanStorageService _storageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly TaskStateStorageService _taskStateStorageService;
@@ -29,7 +28,6 @@ namespace NuGet.Insights.Worker
         public CatalogScanService(
             CatalogScanCursorService cursorService,
             IMessageEnqueuer messageEnqueuer,
-            SchemaSerializer serializer,
             CatalogScanStorageService catalogScanStorageService,
             AutoRenewingStorageLeaseService leaseService,
             TaskStateStorageService taskStateStorageService,
@@ -40,7 +38,6 @@ namespace NuGet.Insights.Worker
         {
             _cursorService = cursorService;
             _messageEnqueuer = messageEnqueuer;
-            _serializer = serializer;
             _storageService = catalogScanStorageService;
             _leaseService = leaseService;
             _taskStateStorageService = taskStateStorageService;
@@ -264,9 +261,11 @@ namespace NuGet.Insights.Worker
             switch (driverType)
             {
                 case CatalogScanDriverType.CatalogDataToCsv:
-                    return await UpdateCatalogLeafToCsvAsync(
+                    return await UpdateAsync(
                         driverType,
                         onlyLatestLeaves: false,
+                        parentDriverType: null,
+                        parentScanId: null,
                         CatalogClient.NuGetOrgMin,
                         max,
                         continueWithDependents);
@@ -289,9 +288,11 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.PackageCompatibilityToCsv:
                 case CatalogScanDriverType.PackageIconToCsv:
                 case CatalogScanDriverType.PackageContentToCsv:
-                    return await UpdateCatalogLeafToCsvAsync(
+                    return await UpdateAsync(
                         driverType,
                         onlyLatestLeaves.GetValueOrDefault(true),
+                        parentDriverType: null,
+                        parentScanId: null,
                         onlyLatestLeaves.GetValueOrDefault(true) ? CatalogClient.NuGetOrgMinDeleted : CatalogClient.NuGetOrgMinAvailable,
                         max,
                         continueWithDependents);
@@ -306,7 +307,9 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.LoadPackageVersion:
                     return await UpdateAsync(
                         driverType,
-                        parameters: null,
+                        onlyLatestLeaves: null,
+                        parentDriverType: null,
+                        parentScanId: null,
                         min: CatalogClient.NuGetOrgMinDeleted,
                         max,
                         continueWithDependents);
@@ -319,7 +322,8 @@ namespace NuGet.Insights.Worker
         public async Task<CatalogIndexScan> GetOrStartFindLatestCatalogLeafScanAsync(
             string scanId,
             string storageSuffix,
-            CatalogIndexScanMessage parentScanMessage,
+            CatalogScanDriverType parentDriverType,
+            string parentScanId,
             DateTimeOffset min,
             DateTimeOffset max)
         {
@@ -327,7 +331,9 @@ namespace NuGet.Insights.Worker
                 CatalogScanDriverType.Internal_FindLatestCatalogLeafScan,
                 scanId,
                 storageSuffix,
-                parameters: _serializer.Serialize(parentScanMessage).AsString(),
+                onlyLatestLeaves: null,
+                parentDriverType,
+                parentScanId,
                 min,
                 max);
         }
@@ -335,7 +341,8 @@ namespace NuGet.Insights.Worker
         public async Task<CatalogIndexScan> GetOrStartFindLatestCatalogLeafScanPerIdAsync(
             string scanId,
             string storageSuffix,
-            CatalogIndexScanMessage parentScanMessage,
+            CatalogScanDriverType parentDriverType,
+            string parentScanId,
             DateTimeOffset min,
             DateTimeOffset max)
         {
@@ -343,34 +350,18 @@ namespace NuGet.Insights.Worker
                 CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId,
                 scanId,
                 storageSuffix,
-                parameters: _serializer.Serialize(parentScanMessage).AsString(),
+                onlyLatestLeaves: null,
+                parentDriverType,
+                parentScanId,
                 min,
                 max);
         }
 
-        private async Task<CatalogScanServiceResult> UpdateCatalogLeafToCsvAsync(
-            CatalogScanDriverType driverType,
-            bool onlyLatestLeaves,
-            DateTimeOffset min,
-            DateTimeOffset? max,
-            bool continueWithDependents)
-        {
-            var parameters = new CatalogLeafToCsvParameters
-            {
-                Mode = onlyLatestLeaves ? CatalogLeafToCsvMode.LatestLeaves : CatalogLeafToCsvMode.AllLeaves,
-            };
-
-            return await UpdateAsync(
-                driverType,
-                parameters: _serializer.Serialize(parameters).AsString(),
-                min,
-                max,
-                continueWithDependents);
-        }
-
         private async Task<CatalogScanServiceResult> UpdateAsync(
             CatalogScanDriverType driverType,
-            string parameters,
+            bool? onlyLatestLeaves,
+            CatalogScanDriverType? parentDriverType,
+            string parentScanId,
             DateTimeOffset min,
             DateTimeOffset? max,
             bool continueWithDependents)
@@ -459,7 +450,9 @@ namespace NuGet.Insights.Worker
                     driverType,
                     descendingId.ToString(),
                     descendingId.Unique,
-                    parameters,
+                    onlyLatestLeaves,
+                    parentDriverType,
+                    parentScanId,
                     cursor.Name,
                     min,
                     max.Value,
@@ -473,7 +466,9 @@ namespace NuGet.Insights.Worker
             CatalogScanDriverType driverType,
             string scanId,
             string storageSuffix,
-            string parameters,
+            bool? onlyLatestLeaves,
+            CatalogScanDriverType? parentDriverType,
+            string parentScanId,
             DateTimeOffset min,
             DateTimeOffset max)
         {
@@ -503,7 +498,9 @@ namespace NuGet.Insights.Worker
                     driverType,
                     scanId,
                     storageSuffix,
-                    parameters,
+                    onlyLatestLeaves,
+                    parentDriverType,
+                    parentScanId,
                     NoCursor,
                     min,
                     max,
@@ -515,7 +512,9 @@ namespace NuGet.Insights.Worker
             CatalogScanDriverType driverType,
             string scanId,
             string storageSuffix,
-            string parameters,
+            bool? onlyLatestLeaves,
+            CatalogScanDriverType? parentDriverType,
+            string parentScanId,
             string cursorName,
             DateTimeOffset min,
             DateTimeOffset max,
@@ -532,8 +531,10 @@ namespace NuGet.Insights.Worker
             await _messageEnqueuer.EnqueueAsync(new[] { catalogIndexScanMessage });
             var catalogIndexScan = new CatalogIndexScan(driverType, scanId, storageSuffix)
             {
-                DriverParameters = parameters,
                 State = CatalogIndexScanState.Created,
+                OnlyLatestLeaves = onlyLatestLeaves,
+                ParentDriverType = parentDriverType,
+                ParentScanId = parentScanId,
                 CursorName = cursorName,
                 Min = min,
                 Max = max,

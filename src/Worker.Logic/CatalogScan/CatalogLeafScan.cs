@@ -29,7 +29,6 @@ namespace NuGet.Insights.Worker
         public string StorageSuffix { get; set; }
         public DateTimeOffset Created { get; set; }
         public CatalogScanDriverType DriverType { get; set; }
-        public string DriverParameters { get; set; }
         public DateTimeOffset Min { get; set; } = StorageUtility.MinTimestamp;
         public DateTimeOffset Max { get; set; } = StorageUtility.MinTimestamp;
         public string ScanId { get; set; }

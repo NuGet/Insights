@@ -9,7 +9,6 @@ namespace NuGet.Insights.Worker
 {
     public abstract class BaseCatalogLeafScanToCsvAdapter
     {
-        private readonly SchemaSerializer _schemaSerializer;
         private readonly CsvTemporaryStorageFactory _storageFactory;
         protected readonly IReadOnlyList<ICsvTemporaryStorage> _storage;
         private readonly ICatalogLeafToCsvDriver _driver;
@@ -17,14 +16,12 @@ namespace NuGet.Insights.Worker
         private readonly IReadOnlyList<string> _resultContainerNames;
 
         public BaseCatalogLeafScanToCsvAdapter(
-            SchemaSerializer schemaSerializer,
             CsvTemporaryStorageFactory storageFactory,
             IReadOnlyList<ICsvTemporaryStorage> storage,
             ICatalogLeafToCsvDriver driver,
             ServiceClientFactory serviceClientFactory,
             IReadOnlyList<string> resultContainerNames)
         {
-            _schemaSerializer = schemaSerializer;
             _storageFactory = storageFactory;
             _storage = storage;
             _driver = driver;
@@ -44,38 +41,28 @@ namespace NuGet.Insights.Worker
 
         public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
         {
-            var parameters = DeserializeParameters(indexScan.DriverParameters);
-
-            CatalogIndexScanResult result;
-            switch (parameters.Mode)
+            if (indexScan.OnlyLatestLeaves == false)
             {
-                case CatalogLeafToCsvMode.AllLeaves:
-                    result = CatalogIndexScanResult.ExpandAllLeaves;
-                    break;
-                case CatalogLeafToCsvMode.LatestLeaves:
-                    result = _driver.SingleMessagePerId ? CatalogIndexScanResult.ExpandLatestLeavesPerId : CatalogIndexScanResult.ExpandLatestLeaves;
-                    break;
-                default:
-                    throw new NotImplementedException();
+                return Task.FromResult(CatalogIndexScanResult.ExpandAllLeaves);
             }
-
-            return Task.FromResult(result);
+            else if (_driver.SingleMessagePerId)
+            {
+                return Task.FromResult(CatalogIndexScanResult.ExpandLatestLeavesPerId);
+            }
+            else
+            {
+                return Task.FromResult(CatalogIndexScanResult.ExpandLatestLeaves);
+            }
         }
 
         public Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)
         {
-            var parameters = DeserializeParameters(pageScan.DriverParameters);
-            if (parameters.Mode == CatalogLeafToCsvMode.AllLeaves)
+            if (pageScan.OnlyLatestLeaves == false)
             {
                 return Task.FromResult(CatalogPageScanResult.ExpandAllowDuplicates);
             }
 
             throw new NotSupportedException();
-        }
-
-        protected CatalogLeafToCsvParameters DeserializeParameters(string driverParameters)
-        {
-            return (CatalogLeafToCsvParameters)_schemaSerializer.Deserialize(driverParameters).Data;
         }
 
         public async Task StartAggregateAsync(CatalogIndexScan indexScan)

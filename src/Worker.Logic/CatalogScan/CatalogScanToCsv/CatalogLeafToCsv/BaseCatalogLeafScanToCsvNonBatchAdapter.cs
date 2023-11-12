@@ -9,13 +9,12 @@ namespace NuGet.Insights.Worker
     public abstract class BaseCatalogLeafScanToCsvNonBatchAdapter : BaseCatalogLeafScanToCsvAdapter
     {
         public BaseCatalogLeafScanToCsvNonBatchAdapter(
-            SchemaSerializer schemaSerializer,
             CsvTemporaryStorageFactory storageFactory,
             IReadOnlyList<ICsvTemporaryStorage> storage,
             ICatalogLeafToCsvDriver driver,
             ServiceClientFactory serviceClientFactory,
             IReadOnlyList<string> resultContainerNames)
-            : base(schemaSerializer, storageFactory, storage, driver, serviceClientFactory, resultContainerNames)
+            : base(storageFactory, storage, driver, serviceClientFactory, resultContainerNames)
         {
         }
 

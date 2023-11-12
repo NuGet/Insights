@@ -418,18 +418,9 @@ namespace NuGet.Insights.Worker
                 Max = DateTimeOffset.Parse("2019-02-04T10:17:53.4035243Z"),
             };
 
-            if (driver is BaseCatalogLeafScanToCsvAdapter)
-            {
-                var parameters = new CatalogLeafToCsvParameters { Mode = CatalogLeafToCsvMode.LatestLeaves };
-                var serializer = testExecution.Host.Services.GetRequiredService<SchemaSerializer>();
-                var serializedParameters = serializer.Serialize(parameters);
-                indexScan.DriverParameters = serializedParameters.AsString();
-            }
-
             var pageScan = new CatalogPageScan(indexScan.StorageSuffix, indexScan.ScanId, "page")
             {
                 DriverType = driverType,
-                DriverParameters = indexScan.DriverParameters,
                 Min = indexScan.Min.Value,
                 Max = indexScan.Max.Value,
                 Url = "https://api.nuget.org/v3/catalog0/page7967.json",
@@ -439,7 +430,6 @@ namespace NuGet.Insights.Worker
             var leafScan = new CatalogLeafScan(pageScan.StorageSuffix, pageScan.ScanId, pageScan.PageId, "leaf")
             {
                 DriverType = driverType,
-                DriverParameters = pageScan.DriverParameters,
                 Min = pageScan.Min,
                 Max = pageScan.Max,
                 PageUrl = pageScan.Url,

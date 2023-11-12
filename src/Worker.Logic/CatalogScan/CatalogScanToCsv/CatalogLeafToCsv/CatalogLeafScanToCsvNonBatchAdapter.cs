@@ -11,12 +11,10 @@ namespace NuGet.Insights.Worker
         private readonly ICatalogLeafToCsvDriver<T> _driver;
 
         public CatalogLeafScanToCsvNonBatchAdapter(
-            SchemaSerializer schemaSerializer,
             CsvTemporaryStorageFactory intermediateStorageFactory,
             ICsvResultStorage<T> resultStorage,
             ICatalogLeafToCsvDriver<T> driver,
             ServiceClientFactory serviceClientFactory) : base(
-                schemaSerializer,
                 intermediateStorageFactory,
                 intermediateStorageFactory.Create(resultStorage),
                 driver,
@@ -47,13 +45,11 @@ namespace NuGet.Insights.Worker
         private readonly ICatalogLeafToCsvDriver<T1, T2> _driver;
 
         public CatalogLeafScanToCsvNonBatchAdapter(
-            SchemaSerializer schemaSerializer,
             CsvTemporaryStorageFactory intermediateStorageFactory,
             ICsvResultStorage<T1> resultStorage1,
             ICsvResultStorage<T2> resultStorage2,
             ICatalogLeafToCsvDriver<T1, T2> driver,
             ServiceClientFactory serviceClientFactory) : base(
-                schemaSerializer,
                 intermediateStorageFactory,
                 intermediateStorageFactory.Create(resultStorage1, resultStorage2),
                 driver,
@@ -85,14 +81,12 @@ namespace NuGet.Insights.Worker
         private readonly ICatalogLeafToCsvDriver<T1, T2, T3> _driver;
 
         public CatalogLeafScanToCsvNonBatchAdapter(
-            SchemaSerializer schemaSerializer,
             CsvTemporaryStorageFactory intermediateStorageFactory,
             ICsvResultStorage<T1> resultStorage1,
             ICsvResultStorage<T2> resultStorage2,
             ICsvResultStorage<T3> resultStorage3,
             ICatalogLeafToCsvDriver<T1, T2, T3> driver,
             ServiceClientFactory serviceClientFactory) : base(
-                schemaSerializer,
                 intermediateStorageFactory,
                 intermediateStorageFactory.Create(resultStorage1, resultStorage2, resultStorage3),
                 driver,

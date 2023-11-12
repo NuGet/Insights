@@ -123,7 +123,6 @@ namespace NuGet.Insights.Worker
                     "L" + leafItemToRank[x].ToString(CultureInfo.InvariantCulture).PadLeft(10, '0'))
                 {
                     DriverType = scan.DriverType,
-                    DriverParameters = scan.DriverParameters,
                     Min = scan.Min,
                     Max = scan.Max,
                     Url = x.Url,

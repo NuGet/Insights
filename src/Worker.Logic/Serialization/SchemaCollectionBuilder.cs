@@ -95,8 +95,6 @@ namespace NuGet.Insights.Worker
             new SchemaV1<TablePrefixScanPartitionKeyQueryParameters>("tps.pkq"),
             new SchemaV1<TablePrefixScanPrefixQueryParameters>("tps.pq"),
 
-            new SchemaV1<CatalogLeafToCsvParameters>("cl2c"),
-
             new SchemaV1<EnqueueCatalogLeafScansParameters>("ecls"),
             new SchemaV1<TableCopyParameters>("tc"),
 

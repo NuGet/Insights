@@ -37,7 +37,6 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
             return Task.FromResult(new CatalogLeafScan(_indexScan.StorageSuffix, _indexScan.ScanId, GetPageId(item.PackageId), GetLeafId(item.PackageVersion))
             {
                 DriverType = _indexScan.DriverType,
-                DriverParameters = _indexScan.DriverParameters,
                 Min = _indexScan.Min.Value,
                 Max = _indexScan.Max.Value,
                 Url = item.Url,

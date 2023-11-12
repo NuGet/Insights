@@ -192,7 +192,8 @@ namespace NuGet.Insights.Worker
                     findLatestScan = await _catalogScanService.GetOrStartFindLatestCatalogLeafScanPerIdAsync(
                         scanId: findLatestLeafScanId,
                         storageSuffix,
-                        parentScanMessage: message,
+                        scan.DriverType,
+                        scan.ScanId,
                         scan.Min.Value,
                         scan.Max.Value);
                 }
@@ -201,7 +202,8 @@ namespace NuGet.Insights.Worker
                     findLatestScan = await _catalogScanService.GetOrStartFindLatestCatalogLeafScanAsync(
                         scanId: findLatestLeafScanId,
                         storageSuffix,
-                        parentScanMessage: message,
+                        scan.DriverType,
+                        scan.ScanId,
                         scan.Min.Value,
                         scan.Max.Value);
                 }
@@ -471,7 +473,9 @@ namespace NuGet.Insights.Worker
                 "P" + rank.ToString(CultureInfo.InvariantCulture).PadLeft(10, '0'))
             {
                 DriverType = scan.DriverType,
-                DriverParameters = scan.DriverParameters,
+                OnlyLatestLeaves = scan.OnlyLatestLeaves,
+                ParentDriverType = scan.ParentDriverType,
+                ParentScanId = scan.ParentScanId,
                 State = CatalogPageScanState.Created,
                 Min = scan.Min.Value,
                 Max = scan.Max.Value,

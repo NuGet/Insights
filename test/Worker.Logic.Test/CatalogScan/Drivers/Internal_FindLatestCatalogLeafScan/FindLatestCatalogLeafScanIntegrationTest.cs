@@ -79,7 +79,6 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
             // Arrange
             var parentScan = new CatalogIndexScan(CatalogScanDriverType.PackageAssetToCsv, "parent-scan-id", ParentStorageSuffix)
             {
-                DriverParameters = "parent-parameters",
                 State = CatalogIndexScanState.Created,
                 CursorName = "parent-cursor",
                 Min = DateTimeOffset.Parse("2020-01-01T00:00:00Z"),
@@ -94,11 +93,8 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
             var scan = await CatalogScanService.GetOrStartFindLatestCatalogLeafScanAsync(
                 scanId: "flcls-scan-id",
                 storageSuffix: "flclsstoragesuffix",
-                parentScanMessage: new CatalogIndexScanMessage
-                {
-                    DriverType = parentScan.DriverType,
-                    ScanId = parentScan.ScanId,
-                },
+                parentScan.DriverType,
+                parentScan.ScanId,
                 min0,
                 max1);
 

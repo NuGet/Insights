@@ -31,7 +31,9 @@ namespace NuGet.Insights.Worker
         public string StorageSuffix { get; set; }
         public DateTimeOffset Created { get; set; }
         public CatalogIndexScanState State { get; set; }
-        public string DriverParameters { get; set; }
+        public bool? OnlyLatestLeaves { get; set; }
+        public CatalogScanDriverType? ParentDriverType { get; set; }
+        public string ParentScanId { get; set; }
         public string CursorName { get; set; }
         public DateTimeOffset? Min { get; set; }
         public DateTimeOffset? Max { get; set; }
