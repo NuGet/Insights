@@ -127,7 +127,6 @@ namespace NuGet.Insights.Worker
 
         public async Task DestroyAllOutputAsync()
         {
-            var scans = new List<CatalogIndexScan>();
             foreach (var driverType in CatalogScanCursorService.StartableDriverTypes)
             {
                 await DestroyOutputAsync(driverType);
@@ -264,8 +263,6 @@ namespace NuGet.Insights.Worker
                     return await UpdateAsync(
                         driverType,
                         onlyLatestLeaves: false,
-                        parentDriverType: null,
-                        parentScanId: null,
                         CatalogClient.NuGetOrgMin,
                         max,
                         continueWithDependents);
@@ -291,8 +288,6 @@ namespace NuGet.Insights.Worker
                     return await UpdateAsync(
                         driverType,
                         onlyLatestLeaves.GetValueOrDefault(true),
-                        parentDriverType: null,
-                        parentScanId: null,
                         onlyLatestLeaves.GetValueOrDefault(true) ? CatalogClient.NuGetOrgMinDeleted : CatalogClient.NuGetOrgMinAvailable,
                         max,
                         continueWithDependents);
@@ -308,8 +303,6 @@ namespace NuGet.Insights.Worker
                     return await UpdateAsync(
                         driverType,
                         onlyLatestLeaves: null,
-                        parentDriverType: null,
-                        parentScanId: null,
                         min: CatalogClient.NuGetOrgMinDeleted,
                         max,
                         continueWithDependents);
@@ -360,25 +353,17 @@ namespace NuGet.Insights.Worker
         private async Task<CatalogScanServiceResult> UpdateAsync(
             CatalogScanDriverType driverType,
             bool? onlyLatestLeaves,
-            CatalogScanDriverType? parentDriverType,
-            string parentScanId,
             DateTimeOffset min,
             DateTimeOffset? max,
             bool continueWithDependents)
         {
-            if (!IsEnabled(driverType))
+            var disabledOrStarted = await CheckForDisabledOrStartAsync(driverType);
+            if (disabledOrStarted is not null)
             {
-                return new CatalogScanServiceResult(CatalogScanServiceResultType.Disabled, dependencyName: null, scan: null);
+                return disabledOrStarted;
             }
 
-            // Check if a scan is already running, outside the lease.
             var cursor = await _cursorService.GetCursorAsync(driverType);
-            var incompleteScan = await GetLatestIncompleteScanAsync(driverType);
-            if (incompleteScan != null)
-            {
-                return new CatalogScanServiceResult(CatalogScanServiceResultType.AlreadyRunning, dependencyName: null, incompleteScan);
-            }
-
             var usedDefaultMin = true;
             if (cursor.Value > CursorTableEntity.Min)
             {
@@ -431,18 +416,17 @@ namespace NuGet.Insights.Worker
                 return new CatalogScanServiceResult(CatalogScanServiceResultType.FullyCaughtUpWithDependency, dependencyName, scan: null);
             }
 
-            await using (var lease = await _leaseService.TryAcquireWithRetryAsync($"Start-{driverType}"))
+            await using (var lease = await GetStartDriverLeaseAsync(driverType, parentDriverType: null))
             {
                 if (!lease.Acquired)
                 {
                     return new CatalogScanServiceResult(CatalogScanServiceResultType.UnavailableLease, dependencyName: null, scan: null);
                 }
 
-                // Check if a scan is already running, inside the lease.
-                incompleteScan = await GetLatestIncompleteScanAsync(driverType);
-                if (incompleteScan != null)
+                disabledOrStarted = await CheckForDisabledOrStartAsync(driverType);
+                if (disabledOrStarted is not null)
                 {
-                    return new CatalogScanServiceResult(CatalogScanServiceResultType.AlreadyRunning, dependencyName: null, incompleteScan);
+                    return disabledOrStarted;
                 }
 
                 var descendingId = StorageUtility.GenerateDescendingId();
@@ -451,8 +435,8 @@ namespace NuGet.Insights.Worker
                     descendingId.ToString(),
                     descendingId.Unique,
                     onlyLatestLeaves,
-                    parentDriverType,
-                    parentScanId,
+                    parentDriverType: null,
+                    parentScanId: null,
                     cursor.Name,
                     min,
                     max.Value,
@@ -460,6 +444,23 @@ namespace NuGet.Insights.Worker
 
                 return new CatalogScanServiceResult(CatalogScanServiceResultType.NewStarted, dependencyName: null, newScan);
             }
+        }
+
+        private async Task<CatalogScanServiceResult> CheckForDisabledOrStartAsync(CatalogScanDriverType driverType)
+        {
+            if (!IsEnabled(driverType))
+            {
+                return new CatalogScanServiceResult(CatalogScanServiceResultType.Disabled, dependencyName: null, scan: null);
+            }
+
+            // Check if a scan is already running, outside the lease.
+            var incompleteScan = await GetLatestIncompleteScanAsync(driverType);
+            if (incompleteScan != null)
+            {
+                return new CatalogScanServiceResult(CatalogScanServiceResultType.AlreadyRunning, dependencyName: null, incompleteScan);
+            }
+
+            return null;
         }
 
         private async Task<CatalogIndexScan> GetOrStartCursorlessAsync(
@@ -480,7 +481,7 @@ namespace NuGet.Insights.Worker
             }
 
             // Use a rather generic lease, to simplify clean-up.
-            await using (var lease = await _leaseService.TryAcquireWithRetryAsync($"Start-{driverType}-{scanId}"))
+            await using (var lease = await GetStartDriverLeaseAsync(driverType, parentDriverType))
             {
                 if (!lease.Acquired)
                 {
@@ -555,6 +556,17 @@ namespace NuGet.Insights.Worker
             }
 
             return null;
+        }
+
+        private async Task<AutoRenewingStorageLeaseResult> GetStartDriverLeaseAsync(CatalogScanDriverType driverType, CatalogScanDriverType? parentDriverType)
+        {
+            var leaseName = $"Start-{driverType}";
+            if (parentDriverType.HasValue)
+            {
+                leaseName += $"-{parentDriverType}";
+            }
+
+            return await _leaseService.TryAcquireWithRetryAsync(leaseName);
         }
     }
 }
