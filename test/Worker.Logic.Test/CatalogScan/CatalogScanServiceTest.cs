@@ -16,313 +16,349 @@ namespace NuGet.Insights.Worker
 {
     public class CatalogScanServiceTest : BaseWorkerLogicIntegrationTest
     {
-        [Fact]
-        public async Task AlreadyRunning()
+        public class TheAbortAsyncMethod : CatalogScanServiceTest
         {
-            // Arrange
-            await CatalogScanService.InitializeAsync();
-            await SetDependencyCursorsAsync(DriverType, CursorValue);
-            var first = await CatalogScanService.UpdateAsync(DriverType);
+            [Fact]
+            public async Task AbortCleansUpFindLatest()
+            {
+                // Arrange
+                DriverType = CatalogScanDriverType.PackageAssetToCsv;
+                await CatalogScanService.InitializeAsync();
+                await SetDependencyCursorsAsync(DriverType, CursorValue);
+                var scanResult = await CatalogScanService.UpdateAsync(DriverType);
+                var scan = scanResult.Scan;
 
-            // Act
-            var result = await CatalogScanService.UpdateAsync(DriverType);
+                var processor = Host.Services.GetRequiredService<IMessageProcessor<CatalogIndexScanMessage>>();
+                var message = new CatalogIndexScanMessage { DriverType = DriverType, ScanId = scan.ScanId };
+                await processor.ProcessAsync(message, dequeueCount: 0);
+                scan = await CatalogScanStorageService.GetIndexScanAsync(DriverType, scan.ScanId);
+                var scansBefore = await CatalogScanStorageService.GetIndexScansAsync();
 
-            // Assert
-            Assert.Equal(CatalogScanServiceResultType.AlreadyRunning, result.Type);
-            Assert.Equal(first.Scan.ScanId, result.Scan.ScanId);
+                // Act
+                var aborted = await CatalogScanService.AbortAsync(DriverType);
+
+                // Assert
+                Assert.Equal(CatalogIndexScanState.FindingLatest, scan.State);
+                Assert.Equal(scan.ScanId, aborted.ScanId);
+
+                Assert.Equal(2, scansBefore.Count);
+                Assert.Contains(scan.ScanId, scansBefore.Select(x => x.ScanId));
+                Assert.Contains(CatalogScanDriverType.Internal_FindLatestCatalogLeafScan, scansBefore.Select(x => x.DriverType));
+
+                var scansAfter = await CatalogScanStorageService.GetIndexScansAsync();
+                Assert.Single(scansAfter);
+                Assert.Contains(scan.ScanId, scansAfter.Select(x => x.ScanId));
+                Assert.DoesNotContain(CatalogScanDriverType.Internal_FindLatestCatalogLeafScan, scansAfter.Select(x => x.DriverType));
+            }
+
+            [Fact]
+            public async Task AbortCleansUpTemporaryCsvState()
+            {
+                // Arrange
+                DriverType = CatalogScanDriverType.CatalogDataToCsv;
+                await CatalogScanService.InitializeAsync();
+                await SetDependencyCursorsAsync(DriverType, CursorValue);
+                var scanResult = await CatalogScanService.UpdateAsync(DriverType);
+                var scan = scanResult.Scan;
+
+                var processor = Host.Services.GetRequiredService<IMessageProcessor<CatalogIndexScanMessage>>();
+                var message = new CatalogIndexScanMessage { DriverType = DriverType, ScanId = scan.ScanId };
+                await processor.ProcessAsync(message, dequeueCount: 0);
+                scan = await CatalogScanStorageService.GetIndexScanAsync(DriverType, scan.ScanId);
+                var tablesBefore = await GetTableNamesAsync();
+
+                // Act
+                var aborted = await CatalogScanService.AbortAsync(DriverType);
+
+                // Assert
+                Assert.Equal(CatalogIndexScanState.Working, scan.State);
+                Assert.Equal(scan.ScanId, aborted.ScanId);
+
+                Assert.Contains(Options.Value.CursorTableName, tablesBefore);
+                Assert.Contains(Options.Value.CatalogIndexScanTableName, tablesBefore);
+                Assert.Contains($"{Options.Value.CatalogPageScanTableName}{scan.StorageSuffix}", tablesBefore);
+                Assert.Contains($"{Options.Value.CatalogLeafScanTableName}{scan.StorageSuffix}", tablesBefore);
+                Assert.Contains($"{Options.Value.CsvRecordTableName}{scan.StorageSuffix}0", tablesBefore);
+                Assert.Contains($"{Options.Value.CsvRecordTableName}{scan.StorageSuffix}1", tablesBefore);
+                Assert.Contains($"{Options.Value.CsvRecordTableName}{scan.StorageSuffix}2", tablesBefore);
+                Assert.Contains($"{Options.Value.TaskStateTableName}{scan.StorageSuffix}", tablesBefore);
+                Assert.Equal(8, tablesBefore.Count);
+
+                var tablesAfter = await GetTableNamesAsync();
+                Assert.Contains(Options.Value.CursorTableName, tablesAfter);
+                Assert.Contains(Options.Value.CatalogIndexScanTableName, tablesAfter);
+                Assert.Equal(2, tablesAfter.Count);
+            }
+
+            [Fact]
+            public async Task AbortCanBeRunImmediately()
+            {
+                // Arrange
+                DriverType = CatalogScanDriverType.CatalogDataToCsv;
+                await CatalogScanService.InitializeAsync();
+                await SetDependencyCursorsAsync(DriverType, CursorValue);
+                var scanResult = await CatalogScanService.UpdateAsync(DriverType);
+                var scan = scanResult.Scan;
+                var tablesBefore = await GetTableNamesAsync();
+
+                // Act
+                var aborted = await CatalogScanService.AbortAsync(DriverType);
+
+                // Assert
+                Assert.Equal(scan.ScanId, aborted.ScanId);
+
+                Assert.Contains(Options.Value.CursorTableName, tablesBefore);
+                Assert.Contains(Options.Value.CatalogIndexScanTableName, tablesBefore);
+                Assert.Equal(2, tablesBefore.Count);
+
+                var tablesAfter = await GetTableNamesAsync();
+                Assert.Equal(tablesBefore, tablesAfter);
+            }
+
+            private async Task<List<string>> GetTableNamesAsync()
+            {
+                var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
+                var tables = await tableServiceClient.QueryAsync().ToListAsync();
+                return tables.Select(x => x.Name).Where(x => x.StartsWith(StoragePrefix)).ToList();
+            }
+
+            public TheAbortAsyncMethod(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
         }
 
-        [Fact]
-        public async Task AbortCleansUpFindLatest()
+        public class TheUpdateAsyncMethod : CatalogScanServiceTest
         {
-            // Arrange
-            DriverType = CatalogScanDriverType.PackageAssetToCsv;
-            await CatalogScanService.InitializeAsync();
-            await SetDependencyCursorsAsync(DriverType, CursorValue);
-            var scanResult = await CatalogScanService.UpdateAsync(DriverType);
-            var scan = scanResult.Scan;
+            [Fact]
+            public async Task AlreadyRunning()
+            {
+                // Arrange
+                await CatalogScanService.InitializeAsync();
+                await SetDependencyCursorsAsync(DriverType, CursorValue);
+                var first = await CatalogScanService.UpdateAsync(DriverType);
 
-            var processor = Host.Services.GetRequiredService<IMessageProcessor<CatalogIndexScanMessage>>();
-            var message = new CatalogIndexScanMessage { DriverType = DriverType, ScanId = scan.ScanId };
-            await processor.ProcessAsync(message, dequeueCount: 0);
-            scan = await CatalogScanStorageService.GetIndexScanAsync(DriverType, scan.ScanId);
-            var scansBefore = await CatalogScanStorageService.GetIndexScansAsync();
+                // Act
+                var result = await CatalogScanService.UpdateAsync(DriverType);
 
-            // Act
-            var aborted = await CatalogScanService.AbortAsync(DriverType);
+                // Assert
+                Assert.Equal(CatalogScanServiceResultType.AlreadyRunning, result.Type);
+                Assert.Equal(first.Scan.ScanId, result.Scan.ScanId);
+            }
 
-            // Assert
-            Assert.Equal(CatalogIndexScanState.FindingLatest, scan.State);
-            Assert.Equal(scan.ScanId, aborted.ScanId);
+            [Fact]
+            public async Task BlockedByDependencyThatHasNeverRun()
+            {
+                // Arrange
+                await CatalogScanService.InitializeAsync();
+                await SetDependencyCursorsAsync(DriverType, CursorTableEntity.Min);
 
-            Assert.Equal(2, scansBefore.Count);
-            Assert.Contains(scan.ScanId, scansBefore.Select(x => x.ScanId));
-            Assert.Contains(CatalogScanDriverType.Internal_FindLatestCatalogLeafScan, scansBefore.Select(x => x.DriverType));
+                // Act
+                var result = await CatalogScanService.UpdateAsync(DriverType);
 
-            var scansAfter = await CatalogScanStorageService.GetIndexScansAsync();
-            Assert.Single(scansAfter);
-            Assert.Contains(scan.ScanId, scansAfter.Select(x => x.ScanId));
-            Assert.DoesNotContain(CatalogScanDriverType.Internal_FindLatestCatalogLeafScan, scansAfter.Select(x => x.DriverType));
+                // Assert
+                Assert.Equal(CatalogScanServiceResultType.BlockedByDependency, result.Type);
+                Assert.Null(result.Scan);
+                Assert.Equal(CatalogScanDriverType.LoadPackageArchive.ToString(), result.DependencyName);
+            }
+
+            [Fact]
+            public async Task Disabled()
+            {
+                // Arrange
+                ConfigureWorkerSettings = x => x.DisabledDrivers.Add(DriverType);
+                await CatalogScanService.InitializeAsync();
+                await SetDependencyCursorsAsync(DriverType, CursorValue);
+
+                // Act
+                var result = await CatalogScanService.UpdateAsync(DriverType, CursorValue);
+
+                // Assert
+                Assert.Equal(CatalogScanServiceResultType.Disabled, result.Type);
+                Assert.Null(result.Scan);
+                Assert.Null(result.DependencyName);
+            }
+
+            [Fact]
+            public async Task BlockedByDependency()
+            {
+                // Arrange
+                await CatalogScanService.InitializeAsync();
+                await SetDependencyCursorsAsync(DriverType, CursorValue);
+
+                // Act
+                var result = await CatalogScanService.UpdateAsync(DriverType, max: CursorValue.AddTicks(1));
+
+                // Assert
+                Assert.Equal(CatalogScanServiceResultType.BlockedByDependency, result.Type);
+                Assert.Null(result.Scan);
+                Assert.Equal(CatalogScanDriverType.LoadPackageArchive.ToString(), result.DependencyName);
+            }
+
+            [Fact]
+            public async Task MinAfterMax()
+            {
+                // Arrange
+                await CatalogScanService.InitializeAsync();
+                await SetDependencyCursorsAsync(DriverType, CursorValue);
+
+                // Act
+                var result = await CatalogScanService.UpdateAsync(DriverType, max: CursorTableEntity.Min.AddTicks(-1));
+
+                // Assert
+                Assert.Equal(CatalogScanServiceResultType.MinAfterMax, result.Type);
+                Assert.Null(result.Scan);
+                Assert.Null(result.DependencyName);
+            }
+
+            [Fact]
+            public async Task FullyCaughtUpWithDependency()
+            {
+                // Arrange
+                await CatalogScanService.InitializeAsync();
+                await SetDependencyCursorsAsync(DriverType, CursorValue);
+                await SetCursorAsync(DriverType, CursorValue);
+
+                // Act
+                var result = await CatalogScanService.UpdateAsync(DriverType);
+
+                // Assert
+                Assert.Equal(CatalogScanServiceResultType.FullyCaughtUpWithDependency, result.Type);
+                Assert.Null(result.Scan);
+                Assert.Equal(CatalogScanDriverType.LoadPackageArchive.ToString(), result.DependencyName);
+            }
+
+            [Fact]
+            public async Task FullyCaughtUpWithMax()
+            {
+                // Arrange
+                await CatalogScanService.InitializeAsync();
+                await SetDependencyCursorsAsync(DriverType, CursorValue.AddTicks(1));
+                await SetCursorAsync(DriverType, CursorValue);
+
+                // Act
+                var result = await CatalogScanService.UpdateAsync(DriverType, max: CursorValue);
+
+                // Assert
+                Assert.Equal(CatalogScanServiceResultType.FullyCaughtUpWithMax, result.Type);
+                Assert.Null(result.Scan);
+                Assert.Null(result.DependencyName);
+            }
+
+            [Fact]
+            public async Task DoesNotRevertMinWhenMaxIsSet()
+            {
+                // Arrange
+                await CatalogScanService.InitializeAsync();
+                await SetDependencyCursorsAsync(DriverType, CursorValue.AddTicks(1));
+                await SetCursorAsync(DriverType, CursorValue);
+
+                // Act
+                var result = await CatalogScanService.UpdateAsync(DriverType, max: CursorValue.AddTicks(-1));
+
+                // Assert
+                Assert.Equal(CatalogScanServiceResultType.MinAfterMax, result.Type);
+                Assert.Null(result.Scan);
+                Assert.Null(result.DependencyName);
+            }
+
+            [Fact]
+            public async Task ContinuesFromCursorValueWithNoMaxSpecified()
+            {
+                // Arrange
+                await CatalogScanService.InitializeAsync();
+                var first = CursorValue.AddMinutes(-10);
+                await SetCursorAsync(DriverType, first);
+                await SetDependencyCursorsAsync(DriverType, CursorValue);
+
+                // Act
+                var result = await CatalogScanService.UpdateAsync(DriverType);
+
+                // Assert
+                Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
+                Assert.Null(result.DependencyName);
+                Assert.Equal(first, result.Scan.Min);
+                Assert.Equal(CursorValue, result.Scan.Max);
+            }
+
+            [Fact]
+            public async Task ContinuesFromCursorValueWithMaxSpecified()
+            {
+                // Arrange
+                await CatalogScanService.InitializeAsync();
+                var first = CursorValue.AddMinutes(-10);
+                await SetCursorAsync(DriverType, first);
+                await SetDependencyCursorsAsync(DriverType, CursorValue.AddMinutes(10));
+
+                // Act
+                var result = await CatalogScanService.UpdateAsync(DriverType, max: CursorValue);
+
+                // Assert
+                Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
+                Assert.Null(result.DependencyName);
+                Assert.Equal(first, result.Scan.Min);
+                Assert.Equal(CursorValue, result.Scan.Max);
+            }
+
+            [Theory]
+            [MemberData(nameof(SetsDefaultMinData))]
+            public async Task SetsDefaultMin(CatalogScanDriverType type, DateTimeOffset expected)
+            {
+                // Arrange
+                await CatalogScanService.InitializeAsync();
+                await SetDependencyCursorsAsync(type, CursorValue);
+
+                // Act
+                var result = await CatalogScanService.UpdateAsync(type);
+
+                // Assert
+                Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
+                Assert.Equal(expected, result.Scan.Min);
+            }
+
+            public static IEnumerable<object[]> SetsDefaultMinData => TypeToInfo
+                .Select(x => new object[] { x.Key, x.Value.DefaultMin });
+
+            [Theory]
+            [MemberData(nameof(StartableTypes))]
+            public async Task MaxAlignsWithDependency(CatalogScanDriverType type)
+            {
+                // Arrange
+                await CatalogScanService.InitializeAsync();
+                await SetDependencyCursorsAsync(type, CursorValue);
+
+                // Act
+                var result = await CatalogScanService.UpdateAsync(type);
+
+                // Assert
+                Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
+                Assert.Equal(CursorValue, result.Scan.Max);
+            }
+
+            public static IEnumerable<object[]> StartableTypes => CatalogScanCursorService
+                .StartableDriverTypes
+                .Select(x => new object[] { x });
+
+            public TheUpdateAsyncMethod(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
         }
 
-        [Fact]
-        public async Task AbortCleansUpTemporaryCsvState()
+        public class TheUpdateAllAsyncMethod : CatalogScanServiceTest
         {
-            // Arrange
-            DriverType = CatalogScanDriverType.CatalogDataToCsv;
-            await CatalogScanService.InitializeAsync();
-            await SetDependencyCursorsAsync(DriverType, CursorValue);
-            var scanResult = await CatalogScanService.UpdateAsync(DriverType);
-            var scan = scanResult.Scan;
+            [Fact]
+            public async Task StartExpectedDependencylessDrivers()
+            {
+                // Arrange
+                await CatalogScanService.InitializeAsync();
+                FlatContainerCursor = CursorValue;
 
-            var processor = Host.Services.GetRequiredService<IMessageProcessor<CatalogIndexScanMessage>>();
-            var message = new CatalogIndexScanMessage { DriverType = DriverType, ScanId = scan.ScanId };
-            await processor.ProcessAsync(message, dequeueCount: 0);
-            scan = await CatalogScanStorageService.GetIndexScanAsync(DriverType, scan.ScanId);
-            var tablesBefore = await GetTableNamesAsync();
+                // Act
+                var results = await CatalogScanService.UpdateAllAsync(CursorValue);
 
-            // Act
-            var aborted = await CatalogScanService.AbortAsync(DriverType);
-
-            // Assert
-            Assert.Equal(CatalogIndexScanState.Working, scan.State);
-            Assert.Equal(scan.ScanId, aborted.ScanId);
-
-            Assert.Contains(Options.Value.CursorTableName, tablesBefore);
-            Assert.Contains(Options.Value.CatalogIndexScanTableName, tablesBefore);
-            Assert.Contains($"{Options.Value.CatalogPageScanTableName}{scan.StorageSuffix}", tablesBefore);
-            Assert.Contains($"{Options.Value.CatalogLeafScanTableName}{scan.StorageSuffix}", tablesBefore);
-            Assert.Contains($"{Options.Value.CsvRecordTableName}{scan.StorageSuffix}0", tablesBefore);
-            Assert.Contains($"{Options.Value.CsvRecordTableName}{scan.StorageSuffix}1", tablesBefore);
-            Assert.Contains($"{Options.Value.CsvRecordTableName}{scan.StorageSuffix}2", tablesBefore);
-            Assert.Contains($"{Options.Value.TaskStateTableName}{scan.StorageSuffix}", tablesBefore);
-            Assert.Equal(8, tablesBefore.Count);
-
-            var tablesAfter = await GetTableNamesAsync();
-            Assert.Contains(Options.Value.CursorTableName, tablesAfter);
-            Assert.Contains(Options.Value.CatalogIndexScanTableName, tablesAfter);
-            Assert.Equal(2, tablesAfter.Count);
-        }
-
-        [Fact]
-        public async Task AbortCanBeRunImmediately()
-        {
-            // Arrange
-            DriverType = CatalogScanDriverType.CatalogDataToCsv;
-            await CatalogScanService.InitializeAsync();
-            await SetDependencyCursorsAsync(DriverType, CursorValue);
-            var scanResult = await CatalogScanService.UpdateAsync(DriverType);
-            var scan = scanResult.Scan;
-            var tablesBefore = await GetTableNamesAsync();
-
-            // Act
-            var aborted = await CatalogScanService.AbortAsync(DriverType);
-
-            // Assert
-            Assert.Equal(scan.ScanId, aborted.ScanId);
-
-            Assert.Contains(Options.Value.CursorTableName, tablesBefore);
-            Assert.Contains(Options.Value.CatalogIndexScanTableName, tablesBefore);
-            Assert.Equal(2, tablesBefore.Count);
-
-            var tablesAfter = await GetTableNamesAsync();
-            Assert.Equal(tablesBefore, tablesAfter);
-        }
-
-        private async Task<List<string>> GetTableNamesAsync()
-        {
-            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
-            var tables = await tableServiceClient.QueryAsync().ToListAsync();
-            return tables.Select(x => x.Name).Where(x => x.StartsWith(StoragePrefix)).ToList();
-        }
-
-        [Fact]
-        public async Task BlockedByDependencyThatHasNeverRun()
-        {
-            // Arrange
-            await CatalogScanService.InitializeAsync();
-            await SetDependencyCursorsAsync(DriverType, CursorTableEntity.Min);
-
-            // Act
-            var result = await CatalogScanService.UpdateAsync(DriverType);
-
-            // Assert
-            Assert.Equal(CatalogScanServiceResultType.BlockedByDependency, result.Type);
-            Assert.Null(result.Scan);
-            Assert.Equal(CatalogScanDriverType.LoadPackageArchive.ToString(), result.DependencyName);
-        }
-
-        [Fact]
-        public async Task Disabled()
-        {
-            // Arrange
-            ConfigureWorkerSettings = x => x.DisabledDrivers.Add(DriverType);
-            await CatalogScanService.InitializeAsync();
-            await SetDependencyCursorsAsync(DriverType, CursorValue);
-
-            // Act
-            var result = await CatalogScanService.UpdateAsync(DriverType, CursorValue);
-
-            // Assert
-            Assert.Equal(CatalogScanServiceResultType.Disabled, result.Type);
-            Assert.Null(result.Scan);
-            Assert.Null(result.DependencyName);
-        }
-
-        [Fact]
-        public async Task BlockedByDependency()
-        {
-            // Arrange
-            await CatalogScanService.InitializeAsync();
-            await SetDependencyCursorsAsync(DriverType, CursorValue);
-
-            // Act
-            var result = await CatalogScanService.UpdateAsync(DriverType, max: CursorValue.AddTicks(1));
-
-            // Assert
-            Assert.Equal(CatalogScanServiceResultType.BlockedByDependency, result.Type);
-            Assert.Null(result.Scan);
-            Assert.Equal(CatalogScanDriverType.LoadPackageArchive.ToString(), result.DependencyName);
-        }
-
-        [Fact]
-        public async Task MinAfterMax()
-        {
-            // Arrange
-            await CatalogScanService.InitializeAsync();
-            await SetDependencyCursorsAsync(DriverType, CursorValue);
-
-            // Act
-            var result = await CatalogScanService.UpdateAsync(DriverType, max: CursorTableEntity.Min.AddTicks(-1));
-
-            // Assert
-            Assert.Equal(CatalogScanServiceResultType.MinAfterMax, result.Type);
-            Assert.Null(result.Scan);
-            Assert.Null(result.DependencyName);
-        }
-
-        [Fact]
-        public async Task FullyCaughtUpWithDependency()
-        {
-            // Arrange
-            await CatalogScanService.InitializeAsync();
-            await SetDependencyCursorsAsync(DriverType, CursorValue);
-            await SetCursorAsync(DriverType, CursorValue);
-
-            // Act
-            var result = await CatalogScanService.UpdateAsync(DriverType);
-
-            // Assert
-            Assert.Equal(CatalogScanServiceResultType.FullyCaughtUpWithDependency, result.Type);
-            Assert.Null(result.Scan);
-            Assert.Equal(CatalogScanDriverType.LoadPackageArchive.ToString(), result.DependencyName);
-        }
-
-        [Fact]
-        public async Task FullyCaughtUpWithMax()
-        {
-            // Arrange
-            await CatalogScanService.InitializeAsync();
-            await SetDependencyCursorsAsync(DriverType, CursorValue.AddTicks(1));
-            await SetCursorAsync(DriverType, CursorValue);
-
-            // Act
-            var result = await CatalogScanService.UpdateAsync(DriverType, max: CursorValue);
-
-            // Assert
-            Assert.Equal(CatalogScanServiceResultType.FullyCaughtUpWithMax, result.Type);
-            Assert.Null(result.Scan);
-            Assert.Null(result.DependencyName);
-        }
-
-        [Fact]
-        public async Task DoesNotRevertMinWhenMaxIsSet()
-        {
-            // Arrange
-            await CatalogScanService.InitializeAsync();
-            await SetDependencyCursorsAsync(DriverType, CursorValue.AddTicks(1));
-            await SetCursorAsync(DriverType, CursorValue);
-
-            // Act
-            var result = await CatalogScanService.UpdateAsync(DriverType, max: CursorValue.AddTicks(-1));
-
-            // Assert
-            Assert.Equal(CatalogScanServiceResultType.MinAfterMax, result.Type);
-            Assert.Null(result.Scan);
-            Assert.Null(result.DependencyName);
-        }
-
-        [Fact]
-        public async Task ContinuesFromCursorValueWithNoMaxSpecified()
-        {
-            // Arrange
-            await CatalogScanService.InitializeAsync();
-            var first = CursorValue.AddMinutes(-10);
-            await SetCursorAsync(DriverType, first);
-            await SetDependencyCursorsAsync(DriverType, CursorValue);
-
-            // Act
-            var result = await CatalogScanService.UpdateAsync(DriverType);
-
-            // Assert
-            Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
-            Assert.Null(result.DependencyName);
-            Assert.Equal(first, result.Scan.Min);
-            Assert.Equal(CursorValue, result.Scan.Max);
-        }
-
-        [Fact]
-        public async Task ContinuesFromCursorValueWithMaxSpecified()
-        {
-            // Arrange
-            await CatalogScanService.InitializeAsync();
-            var first = CursorValue.AddMinutes(-10);
-            await SetCursorAsync(DriverType, first);
-            await SetDependencyCursorsAsync(DriverType, CursorValue.AddMinutes(10));
-
-            // Act
-            var result = await CatalogScanService.UpdateAsync(DriverType, max: CursorValue);
-
-            // Assert
-            Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
-            Assert.Null(result.DependencyName);
-            Assert.Equal(first, result.Scan.Min);
-            Assert.Equal(CursorValue, result.Scan.Max);
-        }
-
-        [Theory]
-        [MemberData(nameof(SetsDefaultMinData))]
-        public async Task SetsDefaultMin(CatalogScanDriverType type, DateTimeOffset expected)
-        {
-            // Arrange
-            await CatalogScanService.InitializeAsync();
-            await SetDependencyCursorsAsync(type, CursorValue);
-
-            // Act
-            var result = await CatalogScanService.UpdateAsync(type);
-
-            // Assert
-            Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
-            Assert.Equal(expected, result.Scan.Min);
-        }
-
-        public static IEnumerable<object[]> SetsDefaultMinData => TypeToInfo
-            .Select(x => new object[] { x.Key, x.Value.DefaultMin });
-
-        [Fact]
-        public async Task StartExpectedDependencylessDrivers()
-        {
-            // Arrange
-            await CatalogScanService.InitializeAsync();
-            FlatContainerCursor = CursorValue;
-
-            // Act
-            var results = await CatalogScanService.UpdateAllAsync(CursorValue);
-
-            // Assert
-            Assert.Equal(
-                new[]
-                {
+                // Assert
+                Assert.Equal(
+                    new[]
+                    {
                     CatalogScanDriverType.BuildVersionSet,
                     CatalogScanDriverType.CatalogDataToCsv,
                     CatalogScanDriverType.LoadBucketedPackage,
@@ -338,73 +374,52 @@ namespace NuGet.Insights.Worker
                     CatalogScanDriverType.PackageAssemblyToCsv,
                     CatalogScanDriverType.PackageIconToCsv,
                     CatalogScanDriverType.PackageLicenseToCsv,
-                },
-                results
-                    .Where(x => x.Value.Type == CatalogScanServiceResultType.NewStarted)
-                    .Select(x => x.Key)
-                    .OrderBy(x => x.ToString(), StringComparer.Ordinal)
-                    .ToArray());
-            Assert.Equal(
-                CatalogScanCursorService.StartableDriverTypes,
-                results.Keys.Select(x => x).ToList());
-        }
+                    },
+                    results
+                        .Where(x => x.Value.Type == CatalogScanServiceResultType.NewStarted)
+                        .Select(x => x.Key)
+                        .OrderBy(x => x.ToString(), StringComparer.Ordinal)
+                        .ToArray());
+                Assert.Equal(
+                    CatalogScanCursorService.StartableDriverTypes,
+                    results.Keys.Select(x => x).ToList());
+            }
 
-        [Fact]
-        public async Task CanCompleteAllDriversWithUpdate()
-        {
-            // Arrange
-            await CatalogScanService.InitializeAsync();
-            FlatContainerCursor = CursorValue;
-            var finished = new Dictionary<CatalogScanDriverType, CatalogScanServiceResult>();
-
-            // Act & Assert
-            int started;
-            do
+            [Fact]
+            public async Task CanCompleteAllDriversWithUpdate()
             {
-                started = 0;
-                foreach (var pair in await CatalogScanService.UpdateAllAsync(CursorValue))
+                // Arrange
+                await CatalogScanService.InitializeAsync();
+                FlatContainerCursor = CursorValue;
+                var finished = new Dictionary<CatalogScanDriverType, CatalogScanServiceResult>();
+
+                // Act & Assert
+                int started;
+                do
                 {
-                    if (pair.Value.Type == CatalogScanServiceResultType.NewStarted)
+                    started = 0;
+                    foreach (var pair in await CatalogScanService.UpdateAllAsync(CursorValue))
                     {
-                        started++;
-                        await SetCursorAsync(pair.Key, pair.Value.Scan.Max.Value);
-                        finished.Add(pair.Key, pair.Value);
+                        if (pair.Value.Type == CatalogScanServiceResultType.NewStarted)
+                        {
+                            started++;
+                            await SetCursorAsync(pair.Key, pair.Value.Scan.Max.Value);
+                            finished.Add(pair.Key, pair.Value);
+                        }
                     }
                 }
+                while (started > 0);
+
+                Assert.Equal(
+                    CatalogScanCursorService.StartableDriverTypes,
+                    finished.Keys.Order().ToArray());
+                Assert.All(finished.Values, x => Assert.Equal(CursorValue, x.Scan.Max.Value));
             }
-            while (started > 0);
 
-            Assert.Equal(
-                CatalogScanCursorService.StartableDriverTypes,
-                finished.Keys.Order().ToArray());
-            Assert.All(finished.Values, x => Assert.Equal(CursorValue, x.Scan.Max.Value));
-        }
-
-        [Theory]
-        [MemberData(nameof(StartableTypes))]
-        public async Task MaxAlignsWithDependency(CatalogScanDriverType type)
-        {
-            // Arrange
-            await CatalogScanService.InitializeAsync();
-            await SetDependencyCursorsAsync(type, CursorValue);
-
-            // Act
-            var result = await CatalogScanService.UpdateAsync(type);
-
-            // Assert
-            Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
-            Assert.Equal(CursorValue, result.Scan.Max);
-        }
-
-        public static IEnumerable<object[]> StartableTypes => Enum
-            .GetValues(typeof(CatalogScanDriverType))
-            .Cast<CatalogScanDriverType>()
-            .Except(new[]
+            public TheUpdateAllAsyncMethod(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {
-                CatalogScanDriverType.Internal_FindLatestCatalogLeafScan,
-                CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId,
-            })
-            .Select(x => new object[] { x });
+            }
+        }
 
         private async Task SetDependencyCursorsAsync(CatalogScanDriverType type, DateTimeOffset min)
         {
