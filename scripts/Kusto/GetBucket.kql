@@ -1,0 +1,29 @@
+// This implements the GetBucket method normally executed in NuGet Insights .NET code.
+// See StorageUtility.GetBucket for the C# implementation. This is complex because Kusto
+// does not support unsigned 64-bit integers and the implementation depends on little-endian
+// byte encoding. I tested the implementation on many ulong and long edge cases and it seems okay.
+let GetBucket = (bucketCount : int, bucketKey : string) {
+    let hash = hash_sha256(bucketKey);
+    // handle little-endian byte order
+    let hex = array_strcat(pack_array(
+        substring(hash, 14, 2),
+        substring(hash, 12, 2),
+        substring(hash, 10, 2),
+        substring(hash, 8, 2),
+        substring(hash, 6, 2),
+        substring(hash, 4, 2),
+        substring(hash, 2, 2),
+        substring(hash, 0, 2)
+    ), "");
+    let i64 = tolong(strcat("0x", hex));
+    // handle ulong mod bucketKey logic with long representation
+    let longMinValue = long(-9223372036854775808);
+    // this offset is 808 for bucket count = 1000 (notice long.MinValue ends in 808)
+    let offset = abs(longMinValue + bucketCount) % bucketCount;
+    let u64Equivalent = iff(
+        i64 < -offset, i64 + longMinValue + offset, iff(
+        i64 < 0, i64 + 2 * offset,
+        i64));
+    u64Equivalent % bucketCount
+};
+print GetBucket(1000, "newtonsoft.json")
