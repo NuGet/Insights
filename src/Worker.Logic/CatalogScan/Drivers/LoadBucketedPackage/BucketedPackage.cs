@@ -67,7 +67,7 @@ namespace NuGet.Insights.Worker.LoadBucketedPackage
         public static string GetPartitionKey(ICatalogLeafItem item)
         {
             var rowKey = GetRowKey(item);
-            var bucket = AppendResultStorageService.GetBucket(BucketCount, rowKey);
+            var bucket = StorageUtility.GetBucket(BucketCount, rowKey);
             return GetBucketString(bucket);
         }
 

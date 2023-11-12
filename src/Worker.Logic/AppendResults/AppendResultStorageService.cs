@@ -9,7 +9,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -24,14 +23,6 @@ namespace NuGet.Insights.Worker
 {
     public class AppendResultStorageService
     {
-        static AppendResultStorageService()
-        {
-            if (!BitConverter.IsLittleEndian)
-            {
-                throw new NotSupportedException($"The {nameof(GetBucket)} method only works on little endian systems right now.");
-            }
-        }
-
         private static readonly ConcurrentDictionary<Type, string> TypeToHeader = new ConcurrentDictionary<Type, string>();
 
         private const string ContentType = "text/plain";
@@ -72,7 +63,7 @@ namespace NuGet.Insights.Worker
         {
             var bucketGroups = sets
                 .SelectMany(x => x.Records.Select(y => (x.BucketKey, Record: y)))
-                .GroupBy(x => GetBucket(bucketCount, x.BucketKey), x => x.Record);
+                .GroupBy(x => StorageUtility.GetBucket(bucketCount, x.BucketKey), x => x.Record);
 
             foreach (var group in bucketGroups)
             {
@@ -454,18 +445,6 @@ namespace NuGet.Insights.Worker
             {
                 record.Write(streamWriter);
             }
-        }
-
-        public static int GetBucket(int bucketCount, string bucketKey)
-        {
-            int bucket;
-            using (var algorithm = SHA256.Create())
-            {
-                var hash = algorithm.ComputeHash(Encoding.UTF8.GetBytes(bucketKey));
-                bucket = (int)(BitConverter.ToUInt64(hash) % (ulong)bucketCount);
-            }
-
-            return bucket;
         }
 
         private async Task<BlobContainerClient> GetContainerAsync(string name)

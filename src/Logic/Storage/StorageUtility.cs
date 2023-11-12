@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace NuGet.Insights
@@ -36,6 +38,23 @@ namespace NuGet.Insights
         public const string EmulatorConnectionString = "UseDevelopmentStorage=true";
 
         public static readonly IList<string> MinSelectColumns = new[] { PartitionKey, RowKey };
+
+        public static int GetBucket(int bucketCount, string bucketKey)
+        {
+            if (!BitConverter.IsLittleEndian)
+            {
+                throw new NotSupportedException($"The {nameof(GetBucket)} method only works on little endian systems right now.");
+            }
+
+            int bucket;
+            using (var algorithm = SHA256.Create())
+            {
+                var hash = algorithm.ComputeHash(Encoding.UTF8.GetBytes(bucketKey));
+                bucket = (int)(BitConverter.ToUInt64(hash) % (ulong)bucketCount);
+            }
+
+            return bucket;
+        }
 
         public static string GenerateUniqueId()
         {
