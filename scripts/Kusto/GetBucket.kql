@@ -2,7 +2,13 @@
 // See StorageUtility.GetBucket for the C# implementation. This is complex because Kusto
 // does not support unsigned 64-bit integers and the implementation depends on little-endian
 // byte encoding. I tested the implementation on many ulong and long edge cases and it seems okay.
-let GetBucket = (bucketCount : int, bucketKey : string) {
+//
+// Example: GetBucket(1000, "newtonsoft.json")
+//  Output: 892 
+//
+// Reference: https://github.com/NuGet/Insights/blob/main/docs/tables/README.md#partitioning-algorithm
+.create function with (docstring = 'NuGet Insights GetBucket function to calculate a bucket like StorageUtility.GetBucket.')
+GetBucket(bucketCount : int, bucketKey : string) {
     let hash = hash_sha256(bucketKey);
     // handle little-endian byte order
     let hex = array_strcat(pack_array(
@@ -25,5 +31,4 @@ let GetBucket = (bucketCount : int, bucketKey : string) {
         i64 < 0, i64 + 2 * offset,
         i64));
     u64Equivalent % bucketCount
-};
-print GetBucket(1000, "newtonsoft.json")
+}

@@ -1,0 +1,33 @@
+// This query returns 1 to 3 rows.
+// 
+// Example: GetAdjacentCommitTimestamps(datetime(2023-11-11 17:53:29.3145280))
+//  Output: CommitTimestamp             | Label
+//          --------------------------- | ------
+//          2023-11-11 17:52:25.2168748 | before
+//          2023-11-11 17:53:29.3145280 | same
+//          2023-11-11 17:53:58.3631360 | after
+// 
+// This allows you to easily find real commit timestamps around a given time.
+// If the input commit timestamp is before the first commit timestamp, no "before" row is excluded.
+// If the input commit timestamp is after the last commit timestamp, no "after" row is excluded.
+// If no exact commit timestamp is found, the "same" row is excluded.
+.create function with (docstring = 'NuGet Insights GetAdjacentCommitTimestamps function to find real commit timestamps near to a provided timestamp.')
+GetAdjacentCommitTimestamps (commitTimestamp : datetime) {
+    NiCatalogLeafItems
+    | where CommitTimestamp <= commitTimestamp
+    | distinct CommitTimestamp
+    | order by CommitTimestamp desc
+    | take 2
+    | union (
+        NiCatalogLeafItems
+        | where CommitTimestamp >= commitTimestamp
+        | distinct CommitTimestamp
+        | order by CommitTimestamp asc
+        | take 2
+    )
+    | distinct CommitTimestamp
+    | extend Label = iff(CommitTimestamp == commitTimestamp, "same", iff(CommitTimestamp < commitTimestamp, "before", "after"))
+    | summarize min(CommitTimestamp), max(CommitTimestamp) by Label
+    | project CommitTimestamp = iff(Label == "before", max_CommitTimestamp, min_CommitTimestamp), Label
+    | order by CommitTimestamp asc
+}
