@@ -71,7 +71,7 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
 
         protected override IEnumerable<string> GetExpectedLeaseNames()
         {
-            yield return $"Start-{DriverType}-{ExpectedCatalogIndexScans.First().ScanId}";
+            yield return $"Start-{DriverType}-{ExpectedCatalogIndexScans.First().ParentDriverType}";
         }
 
         private async Task UpdateAsync(DateTimeOffset min0, DateTimeOffset max1)

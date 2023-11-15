@@ -53,7 +53,7 @@ namespace NuGet.Insights.Worker
                 .GetBlobContainerClient(Options.Value.LeaseContainerName)
                 .GetBlobsAsync()
                 .ToListAsync();
-            var expectedLeaseNames = GetExpectedLeaseNames().OrderBy(x => x, StringComparer.Ordinal).ToArray();
+            var expectedLeaseNames = GetExpectedLeaseNames().Distinct().OrderBy(x => x, StringComparer.Ordinal).ToArray();
             var actualLeaseNames = leaseBlobs.Select(x => x.Name).ToArray();
             Assert.Equal(expectedLeaseNames, actualLeaseNames);
 
@@ -119,7 +119,7 @@ namespace NuGet.Insights.Worker
             {
                 foreach (var scan in ExpectedCatalogIndexScans.Where(x => x.DriverType == type))
                 {
-                    yield return $"Start-{CatalogScanDriverType.Internal_FindLatestCatalogLeafScan}-{scan.ScanId}-fl";
+                    yield return $"Start-{CatalogScanDriverType.Internal_FindLatestCatalogLeafScan}-{scan.DriverType}";
                 }
             }
 
@@ -127,7 +127,7 @@ namespace NuGet.Insights.Worker
             {
                 foreach (var scan in ExpectedCatalogIndexScans.Where(x => x.DriverType == type))
                 {
-                    yield return $"Start-{CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId}-{scan.ScanId}-fl";
+                    yield return $"Start-{CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId}-{scan.DriverType}";
                 }
             }
         }
