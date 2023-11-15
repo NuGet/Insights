@@ -467,7 +467,7 @@ function New-WorkerStandaloneEnv($ResourceSettings) {
     $config["AzureWebJobsStorage__accountName"] = $ResourceSettings.StorageAccountName;
     $config["AzureWebJobsStorage__credential"] = "managedidentity";
     $config["DOTNET_gcServer"] = "1";
-    $config["FUNCTIONS_WORKER_RUNTIME_VERSION"] = "7.0";
+    $config["FUNCTIONS_WORKER_RUNTIME_VERSION"] = "8.0";
     $config["FUNCTIONS_WORKER_RUNTIME"] = "dotnet-isolated";
     $config["logging__ApplicationInsights__LogLevel__Default"] = $ResourceSettings.WorkerLogLevel;
     $config["logging__LogLevel__Default"] = $ResourceSettings.WorkerLogLevel;

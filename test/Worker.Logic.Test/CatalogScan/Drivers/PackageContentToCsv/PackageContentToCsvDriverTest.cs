@@ -117,13 +117,13 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
 
         [Theory]
         [InlineData(925, 925, 925, "Code. ")]
-        [InlineData(926, 925, 925, "Code. ")]
-        [InlineData(927, 925, 925, "Code. ")]
+        [InlineData(926, 928, 926, "Code. ")]
+        [InlineData(927, 928, 926, "Code. ")]
         [InlineData(928, 928, 926, "Code. “")]
         [InlineData(929, 929, 927, "Code. “D")]
         [InlineData(1097, 1097, 1093, "Distribute.\r")]
         [InlineData(1098, 1098, 1094, "Distribute.\r\n")]
-        [InlineData(1099, 1098, 1094, "Distribute.\r\n")]
+        [InlineData(1099, 1101, 1095, "Distribute.\r\n")]
         [InlineData(1100, 1100, 1095, "Distribute.\r\n·")]
         [InlineData(1101, 1101, 1096, "Distribute.\r\n· ")]
         public async Task SplitsMultiByteCharacter(int limit, int contentBytes, int contentLength, string contentEndsWith)
@@ -203,8 +203,9 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             Assert.Equal(9126, records[0].Size);
             Assert.True(records[0].Truncated);
             Assert.Equal(926, records[0].TruncatedSize);
-            Assert.Equal(925, Encoding.UTF8.GetBytes(records[0].Content).Length);
-            Assert.Equal(925, records[0].Content.Length); // UTF-8 characters
+            // See https://github.com/dotnet/docs/issues/38262 (behavior change in .NET 8)
+            Assert.Equal(928, Encoding.UTF8.GetBytes(records[0].Content).Length); // has a Unicode replacement character
+            Assert.Equal(926, records[0].Content.Length); // UTF-8 characters
             Assert.EndsWith("Code. ", records[0].Content);
             Assert.False(records[0].DuplicateContent);
 

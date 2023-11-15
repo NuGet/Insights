@@ -204,9 +204,9 @@ resource worker 'Microsoft.Web/sites@2022-09-01' = {
             }
           ] : [], workerConfigWithStorage)
       }, isLinux ? {
-        linuxFxVersion: 'DOTNET-ISOLATED|7.0'
+        linuxFxVersion: 'DOTNET-ISOLATED|8.0'
       } : {
-        netFrameworkVersion: 'v7.0'
+        netFrameworkVersion: 'v8.0'
       })
   }
 

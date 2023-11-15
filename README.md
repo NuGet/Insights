@@ -30,7 +30,7 @@ solution.**
 
 ### Build the code
 
-1. Ensure you have the .NET 7 SDK installed. [Install it if
+1. Ensure you have the .NET 8 SDK installed. [Install it if
    needed](https://dotnet.microsoft.com/download).
    ```
    dotnet --info

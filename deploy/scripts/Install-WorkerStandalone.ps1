@@ -31,7 +31,7 @@ param (
 $ErrorActionPreference = "Stop"
 
 $dotnetInstallPattern = "dotnet-install.ps1"
-$dotnetChannel = "7.0"
+$dotnetChannel = "8.0"
 $dotnetRuntime = "aspnetcore"
 $binDir = "C:\bin"
 $dotnetDir = "C:\Program Files\dotnet"

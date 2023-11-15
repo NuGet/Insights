@@ -122,7 +122,7 @@ namespace NuGet.Insights.Website
             app.UseHsts();
             app.Use(async (context, next) =>
             {
-                context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+                context.Response.Headers["X-Content-Type-Options"] = "nosniff"; 
                 await next();
             });
 
