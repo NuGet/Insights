@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -220,8 +221,8 @@ namespace NuGet.Insights.Worker
                         properties.ToDictionary(x => x.Name, x => (string)x.GetValue(options)),
                         StringComparer.Ordinal);
                 }
-                var tables = GetNames(properties.Where(x => x.Name.EndsWith("TableName")));
-                var blobContainers = GetNames(properties.Where(x => x.Name.EndsWith("ContainerName")));
+                var tables = GetNames(properties.Where(x => x.Name.EndsWith("TableName", StringComparison.Ordinal)));
+                var blobContainers = GetNames(properties.Where(x => x.Name.EndsWith("ContainerName", StringComparison.Ordinal)));
 
                 // Remove transient tables
                 tables.Remove(nameof(NuGetInsightsWorkerSettings.CatalogLeafScanTableName));
@@ -346,8 +347,8 @@ namespace NuGet.Insights.Worker
                     x.KustoDatabaseName = "fake database name";
                 };
 
-                var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
-                var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
+                var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z", CultureInfo.InvariantCulture);
+                var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z", CultureInfo.InvariantCulture);
 
                 HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
                 {
@@ -359,21 +360,21 @@ namespace NuGet.Insights.Worker
                         };
                     }
 
-                    if (req.RequestUri.AbsolutePath.EndsWith("/downloads.v1.json"))
+                    if (req.RequestUri.AbsolutePath.EndsWith("/downloads.v1.json", StringComparison.Ordinal))
                     {
                         var newReq = Clone(req);
                         newReq.RequestUri = new Uri($"http://localhost/{TestData}/DownloadsToCsv/{Step1}/downloads.v1.json");
                         return await TestDataHttpClient.SendAsync(newReq);
                     }
 
-                    if (req.RequestUri.AbsolutePath.EndsWith("/owners.v2.json"))
+                    if (req.RequestUri.AbsolutePath.EndsWith("/owners.v2.json", StringComparison.Ordinal))
                     {
                         var newReq = Clone(req);
                         newReq.RequestUri = new Uri($"http://localhost/{TestData}/OwnersToCsv/{Step1}/owners.v2.json");
                         return await TestDataHttpClient.SendAsync(newReq);
                     }
 
-                    if (req.RequestUri.AbsolutePath.EndsWith("/verifiedPackages.json"))
+                    if (req.RequestUri.AbsolutePath.EndsWith("/verifiedPackages.json", StringComparison.Ordinal))
                     {
                         var newReq = Clone(req);
                         newReq.RequestUri = new Uri($"http://localhost/{TestData}/VerifiedPackagesToCsv/{Step1}/verifiedPackages.json");
@@ -461,8 +462,8 @@ namespace NuGet.Insights.Worker
                 // Arrange
                 await CatalogScanService.InitializeAsync();
 
-                var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
-                var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
+                var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z", CultureInfo.InvariantCulture);
+                var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z", CultureInfo.InvariantCulture);
 
                 foreach (var type in CatalogScanCursorService.StartableDriverTypes)
                 {
@@ -571,32 +572,32 @@ namespace NuGet.Insights.Worker
                 }
 
                 Assert.Equal(4, userAgents.Count); // NuGet Insights, and Blob + Queue + Table Azure SDK.
-                Assert.StartsWith("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0; AppInsights)", userAgents[0]);
+                Assert.StartsWith("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0; AppInsights)", userAgents[0], StringComparison.Ordinal);
                 Assert.Matches(@"(NuGet Test Client)/?(\d+)?\.?(\d+)?\.?(\d+)?", userAgents[0]);
-                Assert.StartsWith("azsdk-net-Data.Tables/", userAgents[1]);
-                Assert.StartsWith("azsdk-net-Storage.Blobs/", userAgents[2]);
-                Assert.StartsWith("azsdk-net-Storage.Queues/", userAgents[3]);
+                Assert.StartsWith("azsdk-net-Data.Tables/", userAgents[1], StringComparison.Ordinal);
+                Assert.StartsWith("azsdk-net-Storage.Blobs/", userAgents[2], StringComparison.Ordinal);
+                Assert.StartsWith("azsdk-net-Storage.Queues/", userAgents[3], StringComparison.Ordinal);
             }
         }
 
         private int GetNuspecRequestCount()
         {
-            return HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".nuspec"));
+            return HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".nuspec", StringComparison.Ordinal));
         }
 
         private int GetNupkgRequestCount()
         {
-            return HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".nupkg"));
+            return HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".nupkg", StringComparison.Ordinal));
         }
 
         private int GetReadmeRequestCount()
         {
-            return HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".md"));
+            return HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".md", StringComparison.Ordinal));
         }
 
         private int GetSnupkgRequestCount()
         {
-            return HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".snupkg"));
+            return HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".snupkg", StringComparison.Ordinal));
         }
     }
 }

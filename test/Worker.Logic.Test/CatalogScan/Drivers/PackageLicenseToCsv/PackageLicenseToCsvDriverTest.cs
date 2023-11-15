@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -47,7 +48,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             Assert.Null(record.ExpressionHasDeprecatedIdentifier);
             Assert.Equal(1081, record.FileSize);
             Assert.Equal("10UzT325N2HPnB/9TAPQqENhj/h/WUB3vWAppz3QzLI=", record.FileSHA256);
-            Assert.StartsWith("The MIT License\n\nCopyright (c) LibGit2Sharp contributors\n\nPermission is hereby granted", record.FileContent);
+            Assert.StartsWith("The MIT License\n\nCopyright (c) LibGit2Sharp contributors\n\nPermission is hereby granted", record.FileContent, StringComparison.Ordinal);
         }
 
         [Fact]

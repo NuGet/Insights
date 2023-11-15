@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -44,7 +45,7 @@ namespace NuGet.Insights.Worker
             [Fact]
             public async Task CanAddMoreThan100TaskStatesAtOnce()
             {
-                var rowKeys = Enumerable.Range(100, 101).Select(x => x.ToString()).ToList();
+                var rowKeys = Enumerable.Range(100, 101).Select(x => x.ToString(CultureInfo.InvariantCulture)).ToList();
 
                 await Target.AddAsync(StorageSuffix, PartitionKey, rowKeys);
 
@@ -62,8 +63,8 @@ namespace NuGet.Insights.Worker
             [Fact]
             public async Task DoesNotConflictWithExisting()
             {
-                var rowKeysA = Enumerable.Range(10, 10).Select(x => x.ToString()).ToList();
-                var rowKeysB = Enumerable.Range(10, 20).Select(x => x.ToString()).ToList();
+                var rowKeysA = Enumerable.Range(10, 10).Select(x => x.ToString(CultureInfo.InvariantCulture)).ToList();
+                var rowKeysB = Enumerable.Range(10, 20).Select(x => x.ToString(CultureInfo.InvariantCulture)).ToList();
 
                 await Target.AddAsync(StorageSuffix, PartitionKey, rowKeysA);
                 await Target.AddAsync(StorageSuffix, PartitionKey, rowKeysB);

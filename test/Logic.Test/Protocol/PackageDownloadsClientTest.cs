@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -22,7 +23,7 @@ namespace NuGet.Insights
         [Fact]
         public async Task RejectsOldData()
         {
-            var lastModified = DateTimeOffset.Parse("2022-01-23T16:15:00Z");
+            var lastModified = DateTimeOffset.Parse("2022-01-23T16:15:00Z", CultureInfo.InvariantCulture);
             Settings.DownloadsV1AgeLimit = TimeSpan.FromHours(1);
 
             HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
@@ -80,7 +81,7 @@ namespace NuGet.Insights
                         Headers = { ETag = new EntityTagHeaderValue("\"my-etag\"", isWeak: true) },
                         Content = new StringContent(json)
                         {
-                            Headers = { LastModified = DateTimeOffset.Parse("2022-01-23T16:15:00Z") },
+                            Headers = { LastModified = DateTimeOffset.Parse("2022-01-23T16:15:00Z", CultureInfo.InvariantCulture) },
                         },
                     };
                 }
@@ -97,7 +98,7 @@ namespace NuGet.Insights
                         Headers = { ETag = new EntityTagHeaderValue("\"my-etag\"", isWeak: true) },
                         Content = new StringContent(json)
                         {
-                            Headers = { LastModified = DateTimeOffset.Parse("2022-01-25T16:15:00Z") },
+                            Headers = { LastModified = DateTimeOffset.Parse("2022-01-25T16:15:00Z", CultureInfo.InvariantCulture) },
                         },
                     };
                 }
@@ -114,7 +115,7 @@ namespace NuGet.Insights
                         Headers = { ETag = new EntityTagHeaderValue("\"my-etag\"", isWeak: true) },
                         Content = new StringContent(json)
                         {
-                            Headers = { LastModified = DateTimeOffset.Parse("2022-01-24T16:15:00Z") },
+                            Headers = { LastModified = DateTimeOffset.Parse("2022-01-24T16:15:00Z", CultureInfo.InvariantCulture) },
                         },
                     };
                 }
@@ -137,7 +138,7 @@ namespace NuGet.Insights
         [Fact]
         public async Task HandlesIdWithNoVersion()
         {
-            var lastModified = DateTimeOffset.Parse("2022-01-23T16:15:00Z");
+            var lastModified = DateTimeOffset.Parse("2022-01-23T16:15:00Z", CultureInfo.InvariantCulture);
             HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
             {
                 await Task.Yield();
@@ -179,7 +180,7 @@ namespace NuGet.Insights
         [Fact]
         public async Task HandlesEmptyArray()
         {
-            var lastModified = DateTimeOffset.Parse("2022-01-23T16:15:00Z");
+            var lastModified = DateTimeOffset.Parse("2022-01-23T16:15:00Z", CultureInfo.InvariantCulture);
             HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
             {
                 await Task.Yield();
@@ -209,7 +210,7 @@ namespace NuGet.Insights
         [Fact]
         public async Task ParsesDownloads()
         {
-            var lastModified = DateTimeOffset.Parse("2022-01-23T16:15:00Z");
+            var lastModified = DateTimeOffset.Parse("2022-01-23T16:15:00Z", CultureInfo.InvariantCulture);
             HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
             {
                 await Task.Yield();

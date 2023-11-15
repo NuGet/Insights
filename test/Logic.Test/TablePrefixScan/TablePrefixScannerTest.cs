@@ -203,7 +203,7 @@ namespace NuGet.Insights.TablePrefixScan
                 .Concat(GenerateTestEntities("AK", 3, 3))
                 .Concat(GenerateTestEntities("PK", 3, 3))
                 .Concat(GenerateTestEntities("ZK", 3, 3)));
-            var expected = all.Where(x => x.PartitionKey.StartsWith("PK")).ToList();
+            var expected = all.Where(x => x.PartitionKey.StartsWith("PK", StringComparison.Ordinal)).ToList();
 
             var actual = await Target.ListAsync<TestEntity>(table, "P", MinSelectColumns, takeCount);
 
@@ -306,7 +306,7 @@ namespace NuGet.Insights.TablePrefixScan
                 })
                 .Concat(GenerateTestEntities("ZK", 1, 1)));
             var expected = all.Where(x =>
-                x.PartitionKey.StartsWith(prefix)
+                x.PartitionKey.StartsWith(prefix, StringComparison.Ordinal)
                 && (lowerBound is null || string.CompareOrdinal(x.PartitionKey, lowerBound) > 0)
                 && (upperBound is null || string.CompareOrdinal(x.PartitionKey, upperBound) < 0)).ToList();
 
@@ -354,7 +354,7 @@ namespace NuGet.Insights.TablePrefixScan
                 })
                 .Concat(GenerateTestEntities("ZK", 1, 1)));
             var prefix = new string('P', prefixLength);
-            var expected = all.Where(x => x.PartitionKey.StartsWith(prefix)).ToList();
+            var expected = all.Where(x => x.PartitionKey.StartsWith(prefix, StringComparison.Ordinal)).ToList();
 
             var actual = await Target.ListAsync<TestEntity>(table, prefix, MinSelectColumns, takeCount);
 

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -28,7 +29,7 @@ namespace NuGet.Insights
 
                 var leafItem = new CatalogLeafItem
                 {
-                    CommitTimestamp = DateTimeOffset.Parse("2021-03-22T20:13:54.6075418Z"),
+                    CommitTimestamp = DateTimeOffset.Parse("2021-03-22T20:13:54.6075418Z", CultureInfo.InvariantCulture),
                     PackageId = "Newtonsoft.Json",
                     PackageVersion = "13.0.1",
                     Type = CatalogLeafType.PackageDetails,
@@ -43,7 +44,7 @@ namespace NuGet.Insights
                 Assert.Equal("vaWuAPufkOrRT0f48FuX90NnymmB/hrLUvg+XsQUHkaht/cwpqkLYcNlUPrjiak7Uhw4uX14dcXUT/NznHHHHg==", info.HttpHeaders["x-ms-meta-SHA512"].Single());
                 Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x =>
                     x.Method == HttpMethod.Get
-                    && x.RequestUri.AbsolutePath.EndsWith(".snupkg")));
+                    && x.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal)));
             }
 
             [Fact]
@@ -54,7 +55,7 @@ namespace NuGet.Insights
 
                 var leafItem = new CatalogLeafItem
                 {
-                    CommitTimestamp = DateTime.Parse("2018-10-15T01:04:00.4615524Z"),
+                    CommitTimestamp = DateTime.Parse("2018-10-15T01:04:00.4615524Z", CultureInfo.InvariantCulture),
                     PackageId = "Newtonsoft.Json",
                     PackageVersion = "9.0.1",
                     Type = CatalogLeafType.PackageDetails,
@@ -67,11 +68,11 @@ namespace NuGet.Insights
                 Assert.False(info.Available);
                 Assert.Null(info.HttpHeaders);
                 Assert.Equal(1, HttpMessageHandlerFactory.Responses.Count(x =>
-                    x.RequestMessage.RequestUri.AbsolutePath.EndsWith(".snupkg")
+                    x.RequestMessage.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal)
                     && x.StatusCode == HttpStatusCode.NotFound));
                 Assert.Equal(0, HttpMessageHandlerFactory.SuccessRequests.Count(x =>
                     x.Method == HttpMethod.Get
-                    && x.RequestUri.AbsolutePath.EndsWith(".snupkg")));
+                    && x.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal)));
             }
         }
 
@@ -89,7 +90,7 @@ namespace NuGet.Insights
 
                 var leafItem = new CatalogLeafItem
                 {
-                    CommitTimestamp = DateTimeOffset.Parse("2021-03-22T20:13:54.6075418Z"),
+                    CommitTimestamp = DateTimeOffset.Parse("2021-03-22T20:13:54.6075418Z", CultureInfo.InvariantCulture),
                     PackageId = "Newtonsoft.Json",
                     PackageVersion = "13.0.1",
                     Type = CatalogLeafType.PackageDetails,

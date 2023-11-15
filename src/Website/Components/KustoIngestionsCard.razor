@@ -37,7 +37,7 @@
                         {
                             var runtime = ingestion.Completed.GetValueOrDefault(DateTimeOffset.UtcNow) - ingestion.Started.Value;
                             var runtimeStr = runtime.ToString("d\\.hh\\:mm\\:ss");
-                            if (runtimeStr.StartsWith("0."))
+                            if (runtimeStr.StartsWith("0.", StringComparison.Ordinal))
                             {
                                 runtimeStr = runtimeStr.Substring(2);
                             }

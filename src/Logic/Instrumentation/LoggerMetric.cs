@@ -23,7 +23,7 @@ namespace NuGet.Insights
 
         private static bool ShouldLogMetric(string metricId)
         {
-            if (metricId.Contains(QueryLoopMetrics.MetricIdSubstring))
+            if (metricId.Contains(QueryLoopMetrics.MetricIdSubstring, StringComparison.Ordinal))
             {
                 return false;
             }

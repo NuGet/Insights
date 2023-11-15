@@ -54,7 +54,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 
         public override IEnumerable<string> GetFiles(string folder)
         {
-            return _files.Where(x => x.StartsWith(folder + "/"));
+            return _files.Where(x => x.StartsWith(folder + "/", StringComparison.Ordinal));
         }
 
         public override Task<PrimarySignature> GetPrimarySignatureAsync(CancellationToken token)

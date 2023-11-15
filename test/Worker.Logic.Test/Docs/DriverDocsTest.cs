@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -157,7 +158,7 @@ namespace NuGet.Insights.Worker
             Assert.Equal("CatalogScanDriverType enum value", info.ToPlainText(rows[i][0]));
             Assert.NotEmpty(info.ToPlainText(rows[i][0]));
             var driverTypeValue = info.ToPlainText(rows[i][1]);
-            Assert.Contains(driverTypeValue, driverType.ToString());
+            Assert.Contains(driverTypeValue, driverType.ToString(), StringComparison.Ordinal);
 
             i++;
             Assert.Equal("Driver implementation", info.ToPlainText(rows[i][0]));
@@ -336,7 +337,7 @@ namespace NuGet.Insights.Worker
                 .GetProperties(BindingFlags.Instance | BindingFlags.GetProperty | BindingFlags.Public)
                 .Where(x => x.PropertyType == typeof(string))
                 .Select(x => new { ConfigurationValue = (string)x.GetValue(settings), ConfigurationName = x.Name })
-                .Where(x => x.ConfigurationValue is not null && x.ConfigurationValue.StartsWith(testExecution.StoragePrefix))
+                .Where(x => x.ConfigurationValue is not null && x.ConfigurationValue.StartsWith(testExecution.StoragePrefix, StringComparison.Ordinal))
                 .ToDictionary(x => x.ConfigurationValue, x => x.ConfigurationName);
 
             var serviceClientFactory = testExecution.Host.Services.GetRequiredService<ServiceClientFactory>();
@@ -359,7 +360,7 @@ namespace NuGet.Insights.Worker
             var containerNameToStorage = blobContainers
                 .Concat(queues)
                 .Concat(tables)
-                .Where(x => x.Value.StartsWith(testExecution.StoragePrefix))
+                .Where(x => x.Value.StartsWith(testExecution.StoragePrefix, StringComparison.Ordinal))
                 .ToDictionary(x => x.Value);
 
             var isStorageMatched = containerNameToStorage
@@ -378,7 +379,7 @@ namespace NuGet.Insights.Worker
                 foreach (var storage in isStorageMatched[false])
                 {
                     if (storage.Type == StorageContainerType.Queue
-                        && storage.Value.EndsWith("-poison")
+                        && storage.Value.EndsWith("-poison", StringComparison.Ordinal)
                         && configurationValueToName[storage.Value.Substring(0, storage.Value.Length - "-poison".Length)].Any())
                     {
                         continue;
@@ -414,8 +415,8 @@ namespace NuGet.Insights.Worker
 
             var indexScan = new CatalogIndexScan(driverType, scanId.ToString(), scanId.Unique)
             {
-                Min = DateTimeOffset.Parse("2019-02-04T10:17:53.4035243Z") - TimeSpan.FromTicks(1),
-                Max = DateTimeOffset.Parse("2019-02-04T10:17:53.4035243Z"),
+                Min = DateTimeOffset.Parse("2019-02-04T10:17:53.4035243Z", CultureInfo.InvariantCulture) - TimeSpan.FromTicks(1),
+                Max = DateTimeOffset.Parse("2019-02-04T10:17:53.4035243Z", CultureInfo.InvariantCulture),
             };
 
             var pageScan = new CatalogPageScan(indexScan.StorageSuffix, indexScan.ScanId, "page")

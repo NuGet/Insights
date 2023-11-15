@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -556,7 +557,7 @@ namespace NuGet.Insights.StorageNoOpRetry
                 var allEntities = Enumerable.Range(0, 2000).Select(i => new TableEntityWithClientRequestId
                 {
                     PartitionKey = "pk",
-                    RowKey = "rk" + i.ToString("D4"),
+                    RowKey = "rk" + i.ToString("D4", CultureInfo.InvariantCulture),
                     MyProperty = "foo",
                 }).ToList();
                 var mutableBatch = new MutableTableTransactionalBatch(table);
@@ -629,7 +630,7 @@ namespace NuGet.Insights.StorageNoOpRetry
                 var allEntities = Enumerable.Range(0, 2000).Select(i => new TableEntityWithClientRequestId
                 {
                     PartitionKey = "pk",
-                    RowKey = "rk" + i.ToString("D4"),
+                    RowKey = "rk" + i.ToString("D4", CultureInfo.InvariantCulture),
                     MyProperty = "foo",
                 }).ToList();
                 var mutableBatch = new MutableTableTransactionalBatch(table);
@@ -699,9 +700,9 @@ namespace NuGet.Insights.StorageNoOpRetry
                 Assert.All(testEntities, e => Assert.NotNull(e.ClientRequestId));
                 Assert.All(testEntities, e => Assert.NotEqual(default, e.ETag));
 
-                Assert.Contains(LogMessages, m => m.Contains("Fetched 1000 entities with row keys between 'rk0000' and 'rk1002', with 9 matched and 2 missed."));
-                Assert.Contains(LogMessages, m => m.Contains("The action at index 2 for partition key 'pk' and row key 'rk0004' has been superceded. Using a stale etag for the multipart/mixed response."));
-                Assert.Contains(LogMessages, m => m.Contains("The action at index 3 for partition key 'pk' and row key 'rk0006' has been superceded. Using a stale etag for the multipart/mixed response."));
+                Assert.Contains(LogMessages, m => m.Contains("Fetched 1000 entities with row keys between 'rk0000' and 'rk1002', with 9 matched and 2 missed.", StringComparison.Ordinal));
+                Assert.Contains(LogMessages, m => m.Contains("The action at index 2 for partition key 'pk' and row key 'rk0004' has been superceded. Using a stale etag for the multipart/mixed response.", StringComparison.Ordinal));
+                Assert.Contains(LogMessages, m => m.Contains("The action at index 3 for partition key 'pk' and row key 'rk0006' has been superceded. Using a stale etag for the multipart/mixed response.", StringComparison.Ordinal));
             }
 
             public TableStorageForBatch(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

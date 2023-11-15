@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -42,7 +43,7 @@ namespace NuGet.Insights
                     using var response = httpClient.Send(request);
 
                     if (response.Headers.TryGetValues("Server", out var serverHeaders)
-                        && serverHeaders.Any(x => x.Contains("Azurite")))
+                        && serverHeaders.Any(x => x.Contains("Azurite", StringComparison.Ordinal)))
                     {
                         // Azurite returns a header like this: "Server: Azurite-Blob/3.16.0"
                         return StorageType.Azurite;
@@ -102,7 +103,7 @@ namespace NuGet.Insights
             var randomBytes = new byte[10];
             using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(randomBytes);
-            var storagePrefix = "t" + DateTimeOffset.UtcNow.ToString("yyMMdd") + randomBytes.ToTrimmedBase32();
+            var storagePrefix = "t" + DateTimeOffset.UtcNow.ToString("yyMMdd", CultureInfo.InvariantCulture) + randomBytes.ToTrimmedBase32();
             Assert.Matches("^" + StoragePrefixPattern + "$", storagePrefix);
             return storagePrefix;
         }

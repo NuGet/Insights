@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -38,7 +39,7 @@ namespace NuGet.Insights
         /// This is the earliest commit timestamp in the NuGet.org catalog.
         /// </summary>
         public static readonly DateTimeOffset NuGetOrgFirstCommit = DateTimeOffset
-            .Parse("2015-02-01T06:22:45.8488496Z");
+            .Parse("2015-02-01T06:22:45.8488496Z", CultureInfo.InvariantCulture);
 
         /// <summary>
         /// This is a min value right before (by 1 tick) the earliest commit timestamp in the NuGet.org catalog.
@@ -53,7 +54,7 @@ namespace NuGet.Insights
         /// 2,331,705 catalog leaves (4,251 pages). This is about 35% of the total, as of February, 2021.
         /// </summary>
         public static readonly DateTimeOffset NuGetOrgMinAvailable = DateTimeOffset
-            .Parse("2018-08-08T16:29:16.4488298Z")
+            .Parse("2018-08-08T16:29:16.4488298Z", CultureInfo.InvariantCulture)
             .Subtract(TimeSpan.FromTicks(1));
 
         /// <summary>
@@ -62,7 +63,7 @@ namespace NuGet.Insights
         /// 630,960 catalog leaves (1,165 pages). This is about 9% of the total, as of February, 2021.
         /// </summary>
         public static readonly DateTimeOffset NuGetOrgMinDeleted = DateTimeOffset
-            .Parse("2015-10-28T10:22:26.4686283Z")
+            .Parse("2015-10-28T10:22:26.4686283Z", CultureInfo.InvariantCulture)
             .Subtract(TimeSpan.FromTicks(1));
 
         private readonly HttpSource _httpSource;
@@ -116,7 +117,7 @@ namespace NuGet.Insights
                 _logger,
                 CancellationToken.None);
 
-            return DateTimeOffset.Parse(commitTimestamp);
+            return DateTimeOffset.Parse(commitTimestamp, CultureInfo.InvariantCulture);
         }
 
         private string? ReadCommitTimestamp(byte[] bytes)
@@ -188,7 +189,7 @@ namespace NuGet.Insights
             return string.Join("/", new[]
             {
                 "data",
-                commitTimestamp.ToString("yyyy.MM.dd.HH.mm.ss"),
+                commitTimestamp.ToString("yyyy.MM.dd.HH.mm.ss", CultureInfo.InvariantCulture),
                 $"{Uri.EscapeDataString(id.ToLowerInvariant())}.{version.ToLowerInvariant()}.json",
             });
         }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -78,7 +79,7 @@ namespace NuGet.Insights
             "2015-02-01T06:40:32.4085154Z",
             "2015-02-01T06:40:46.4085037Z",
 
-        }.Select(x => (DateTimeOffset?)DateTimeOffset.Parse(x)).ToList();
+        }.Select(x => (DateTimeOffset?)DateTimeOffset.Parse(x, CultureInfo.InvariantCulture)).ToList();
 
         public CatalogCommitTimestampProviderIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
@@ -139,60 +140,60 @@ namespace NuGet.Insights
         public async Task UsesTickPrecision_LessThan_InsidePage()
         {
             // Arrange & Act
-            var min = await Target.GetNextAsync(DateTimeOffset.Parse("2015-02-01T06:22:57.0992608Z").AddTicks(-1));
+            var min = await Target.GetNextAsync(DateTimeOffset.Parse("2015-02-01T06:22:57.0992608Z", CultureInfo.InvariantCulture).AddTicks(-1));
 
             // Assert
-            Assert.Equal(DateTimeOffset.Parse("2015-02-01T06:22:57.0992608Z"), min);
+            Assert.Equal(DateTimeOffset.Parse("2015-02-01T06:22:57.0992608Z", CultureInfo.InvariantCulture), min);
         }
 
         [Fact]
         public async Task UsesTickPrecision_Equals_InsidePage()
         {
             // Arrange & Act
-            var min = await Target.GetNextAsync(DateTimeOffset.Parse("2015-02-01T06:22:57.0992608Z"));
+            var min = await Target.GetNextAsync(DateTimeOffset.Parse("2015-02-01T06:22:57.0992608Z", CultureInfo.InvariantCulture));
 
             // Assert
-            Assert.Equal(DateTimeOffset.Parse("2015-02-01T06:23:09.6621617Z"), min);
+            Assert.Equal(DateTimeOffset.Parse("2015-02-01T06:23:09.6621617Z", CultureInfo.InvariantCulture), min);
         }
 
         [Fact]
         public async Task UsesTickPrecision_GreaterThan_InsidePage()
         {
             // Arrange & Act
-            var min = await Target.GetNextAsync(DateTimeOffset.Parse("2015-02-01T06:22:57.0992608Z").AddTicks(1));
+            var min = await Target.GetNextAsync(DateTimeOffset.Parse("2015-02-01T06:22:57.0992608Z", CultureInfo.InvariantCulture).AddTicks(1));
 
             // Assert
-            Assert.Equal(DateTimeOffset.Parse("2015-02-01T06:23:09.6621617Z"), min);
+            Assert.Equal(DateTimeOffset.Parse("2015-02-01T06:23:09.6621617Z", CultureInfo.InvariantCulture), min);
         }
 
         [Fact]
         public async Task UsesTickPrecision_LessThan_PageBound()
         {
             // Arrange & Act
-            var min = await Target.GetNextAsync(DateTimeOffset.Parse("2015-02-01T06:30:11.7477681Z").AddTicks(-1));
+            var min = await Target.GetNextAsync(DateTimeOffset.Parse("2015-02-01T06:30:11.7477681Z", CultureInfo.InvariantCulture).AddTicks(-1));
 
             // Assert
-            Assert.Equal(DateTimeOffset.Parse("2015-02-01T06:30:11.7477681Z"), min);
+            Assert.Equal(DateTimeOffset.Parse("2015-02-01T06:30:11.7477681Z", CultureInfo.InvariantCulture), min);
         }
 
         [Fact]
         public async Task UsesTickPrecision_Equals_PageBound()
         {
             // Arrange & Act
-            var min = await Target.GetNextAsync(DateTimeOffset.Parse("2015-02-01T06:30:11.7477681Z"));
+            var min = await Target.GetNextAsync(DateTimeOffset.Parse("2015-02-01T06:30:11.7477681Z", CultureInfo.InvariantCulture));
 
             // Assert
-            Assert.Equal(DateTimeOffset.Parse("2015-02-01T06:30:42.5921094Z"), min);
+            Assert.Equal(DateTimeOffset.Parse("2015-02-01T06:30:42.5921094Z", CultureInfo.InvariantCulture), min);
         }
 
         [Fact]
         public async Task UsesTickPrecision_GreaterThan_PageBound()
         {
             // Arrange & Act
-            var min = await Target.GetNextAsync(DateTimeOffset.Parse("2015-02-01T06:30:11.7477681Z").AddTicks(1));
+            var min = await Target.GetNextAsync(DateTimeOffset.Parse("2015-02-01T06:30:11.7477681Z", CultureInfo.InvariantCulture).AddTicks(1));
 
             // Assert
-            Assert.Equal(DateTimeOffset.Parse("2015-02-01T06:30:42.5921094Z"), min);
+            Assert.Equal(DateTimeOffset.Parse("2015-02-01T06:30:42.5921094Z", CultureInfo.InvariantCulture), min);
         }
 
         [Fact]
@@ -203,10 +204,10 @@ namespace NuGet.Insights
             HttpMessageHandlerFactory.Clear();
 
             // Act
-            var min = await Target.GetNextAsync(DateTimeOffset.Parse("2015-02-01T06:30:11.7477681Z"));
+            var min = await Target.GetNextAsync(DateTimeOffset.Parse("2015-02-01T06:30:11.7477681Z", CultureInfo.InvariantCulture));
 
             // Assert
-            Assert.Equal(DateTimeOffset.Parse("2015-02-01T06:30:42.5921094Z"), min);
+            Assert.Equal(DateTimeOffset.Parse("2015-02-01T06:30:42.5921094Z", CultureInfo.InvariantCulture), min);
             HttpMessageHandlerFactory.LogResponses(Output);
             Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page1Url));
         }

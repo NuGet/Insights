@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -44,7 +45,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 return blobs
                     .Select(x => new CsvResultBlob(
                         x.Name,
-                        long.Parse(x.Metadata[StorageUtility.RawSizeBytesMetadata])))
+                        long.Parse(x.Metadata[StorageUtility.RawSizeBytesMetadata], CultureInfo.InvariantCulture)))
                     .ToList();
             }
             catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
@@ -66,17 +67,17 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
         public string GetTempKustoTableName(string containerName)
         {
-            return string.Format(_options.Value.KustoTempTableNameFormat, GetKustoTableName(containerName));
+            return string.Format(CultureInfo.InvariantCulture, _options.Value.KustoTempTableNameFormat, GetKustoTableName(containerName));
         }
 
         public string GetOldKustoTableName(string containerName)
         {
-            return string.Format(_options.Value.KustoOldTableNameFormat, GetKustoTableName(containerName));
+            return string.Format(CultureInfo.InvariantCulture, _options.Value.KustoOldTableNameFormat, GetKustoTableName(containerName));
         }
 
         public string GetKustoTableName(string containerName)
         {
-            return string.Format(_options.Value.KustoTableNameFormat, GetDefaultKustoTableName(containerName));
+            return string.Format(CultureInfo.InvariantCulture, _options.Value.KustoTableNameFormat, GetDefaultKustoTableName(containerName));
         }
 
         public string GetDefaultKustoTableName(string containerName)

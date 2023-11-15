@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -82,7 +83,7 @@ namespace NuGet.Insights.Worker
                 await _wideEntityService.InsertAsync(
                    srcTable,
                    partitionKey: string.Empty,
-                   rowKey: bucket.ToString(),
+                   rowKey: bucket.ToString(CultureInfo.InvariantCulture),
                    content: Array.Empty<byte>());
             }
             catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.Conflict)
@@ -118,7 +119,7 @@ namespace NuGet.Insights.Worker
                     var rowKey = StorageUtility.GenerateDescendingId().ToString();
                     try
                     {
-                        await _wideEntityService.InsertAsync(srcTable, partitionKey: bucket.ToString(), rowKey, content: bytes);
+                        await _wideEntityService.InsertAsync(srcTable, partitionKey: bucket.ToString(CultureInfo.InvariantCulture), rowKey, content: bytes);
                         break;
                     }
                     catch (RequestFailedException ex) when (attempt < 3 && ex.Status == (int)HttpStatusCode.Conflict)
@@ -167,7 +168,7 @@ namespace NuGet.Insights.Worker
                 var pruneRecordDeltaMetric = GetPruneRecordDeltaMetric();
                 var entities = _wideEntityService.RetrieveAsync(
                     srcTable,
-                    partitionKey: bucket.ToString(),
+                    partitionKey: bucket.ToString(CultureInfo.InvariantCulture),
                     minRowKey: null,
                     maxRowKey: null,
                     includeData: true,
@@ -293,7 +294,7 @@ namespace NuGet.Insights.Worker
                     {
                         {
                             StorageUtility.RawSizeBytesMetadata,
-                            uncompressedLength.ToString()
+                            uncompressedLength.ToString(CultureInfo.InvariantCulture)
                         },
                     },
                 });
@@ -358,7 +359,7 @@ namespace NuGet.Insights.Worker
         public async Task<List<int>> GetAppendedBucketsAsync(string srcTable)
         {
             var markerEntities = await _wideEntityService.RetrieveAsync(srcTable, partitionKey: string.Empty);
-            return markerEntities.Select(x => int.Parse(x.RowKey)).ToList();
+            return markerEntities.Select(x => int.Parse(x.RowKey, CultureInfo.InvariantCulture)).ToList();
         }
 
         public async Task<List<int>> GetCompactedBucketsAsync(string destContainer)
@@ -375,7 +376,7 @@ namespace NuGet.Insights.Worker
             var blobs = container.GetBlobsAsync(prefix: CompactPrefix);
             await foreach (var blob in blobs)
             {
-                var bucket = int.Parse(regex.Match(blob.Name).Groups[1].Value);
+                var bucket = int.Parse(regex.Match(blob.Name).Groups[1].Value, CultureInfo.InvariantCulture);
                 buckets.Add(bucket);
             }
 

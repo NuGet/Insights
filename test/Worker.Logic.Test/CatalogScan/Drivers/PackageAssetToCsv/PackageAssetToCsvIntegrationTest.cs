@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -23,9 +24,9 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
         public async Task PackageAssetToCsv()
         {
             // Arrange
-            var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
-            var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
-            var max2 = DateTimeOffset.Parse("2020-11-27T19:36:50.4909042Z");
+            var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z", CultureInfo.InvariantCulture);
+            var max2 = DateTimeOffset.Parse("2020-11-27T19:36:50.4909042Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
@@ -54,8 +55,8 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             // Arrange
             ConfigureWorkerSettings = x => x.AllowBatching = false;
 
-            var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
-            var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
+            var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
@@ -78,13 +79,13 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
         public async Task PackageAssetToCsv_LeafLevelTelemetry(string threshold, bool onlyLatestLeaves, bool expectLogs)
         {
             // Arrange
-            var min0 = DateTimeOffset.Parse("2016-07-28T16:12:06.0020479Z");
-            var max1 = DateTimeOffset.Parse("2016-07-28T16:13:37.3231638Z");
+            var min0 = DateTimeOffset.Parse("2016-07-28T16:12:06.0020479Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2016-07-28T16:13:37.3231638Z", CultureInfo.InvariantCulture);
 
             ConfigureWorkerSettings = x =>
             {
                 x.AllowBatching = false;
-                x.LeafLevelTelemetryThreshold = TimeSpan.Parse(threshold);
+                x.LeafLevelTelemetryThreshold = TimeSpan.Parse(threshold, CultureInfo.InvariantCulture);
             };
 
             if (!onlyLatestLeaves)
@@ -102,9 +103,9 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             // Assert
             if (expectLogs)
             {
-                Assert.Contains(LogMessages, x => x.Contains("Metric emitted: CatalogScanExpandService.EnqueueLeafScansAsync.CatalogLeafScan = 1"));
-                Assert.Contains(LogMessages, x => x.Contains("Metric emitted: CatalogLeafScanMessageProcessor.ToProcess.CatalogLeafScan = 1"));
-                Assert.Contains(LogMessages, x => x.Contains("Metric emitted: CatalogScanStorageService.DeleteAsync.Single.CatalogLeafScan = 1"));
+                Assert.Contains(LogMessages, x => x.Contains("Metric emitted: CatalogScanExpandService.EnqueueLeafScansAsync.CatalogLeafScan = 1", StringComparison.Ordinal));
+                Assert.Contains(LogMessages, x => x.Contains("Metric emitted: CatalogLeafScanMessageProcessor.ToProcess.CatalogLeafScan = 1", StringComparison.Ordinal));
+                Assert.Contains(LogMessages, x => x.Contains("Metric emitted: CatalogScanStorageService.DeleteAsync.Single.CatalogLeafScan = 1", StringComparison.Ordinal));
             }
             else
             {
@@ -117,9 +118,9 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
         {
             // Arrange
             MakeDeletedPackageAvailable();
-            var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
-            var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
-            var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
+            var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z", CultureInfo.InvariantCulture);
+            var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
@@ -208,8 +209,8 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             };
 
             // Arrange
-            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
-            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
@@ -223,7 +224,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             var duplicatePackageRequests = HttpMessageHandlerFactory
                 .SuccessRequests
-                .Where(x => x.RequestUri.GetLeftPart(UriPartial.Path).EndsWith("/gosms.ge-sms-api.1.0.1.nupkg"))
+                .Where(x => x.RequestUri.GetLeftPart(UriPartial.Path).EndsWith("/gosms.ge-sms-api.1.0.1.nupkg", StringComparison.Ordinal))
                 .ToList();
             var onlyLatestLeaves = LatestLeavesTypes.Contains(DriverType);
             Assert.Equal(onlyLatestLeaves ? 1 : 2, duplicatePackageRequests.Count(x => x.Method == HttpMethod.Get));

@@ -531,7 +531,7 @@ namespace NuGet.Insights.ReferenceTracking
 
         internal static void GuardNoSeparator(string paramName, string value)
         {
-            if (value.Contains(Separator))
+            if (value.Contains(Separator, StringComparison.Ordinal))
             {
                 throw new ArgumentException($"The {paramName} must not contain a '{Separator}'.", paramName);
             }

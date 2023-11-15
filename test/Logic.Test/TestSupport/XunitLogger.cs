@@ -76,7 +76,7 @@ namespace NuGet.Insights
                     _output.WriteLine(exception.ToString());
                 }
             }
-            catch (InvalidOperationException ex) when (ex.Message.Contains("There is no currently active test."))
+            catch (InvalidOperationException ex) when (ex.Message.Contains("There is no currently active test.", StringComparison.Ordinal))
             {
                 // Ignore this failure. I've seen cases where an HttpClientFactory timer logs at a strange time.
             }

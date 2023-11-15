@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -117,13 +118,13 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
 
         [Theory]
         [InlineData(925, 925, 925, "Code. ")]
-        [InlineData(926, 928, 926, "Code. ")]
-        [InlineData(927, 928, 926, "Code. ")]
+        [InlineData(926, 928, 926, "Code. \uFFFD")]
+        [InlineData(927, 928, 926, "Code. \uFFFD")]
         [InlineData(928, 928, 926, "Code. “")]
         [InlineData(929, 929, 927, "Code. “D")]
         [InlineData(1097, 1097, 1093, "Distribute.\r")]
         [InlineData(1098, 1098, 1094, "Distribute.\r\n")]
-        [InlineData(1099, 1101, 1095, "Distribute.\r\n")]
+        [InlineData(1099, 1101, 1095, "Distribute.\r\n\uFFFD")]
         [InlineData(1100, 1100, 1095, "Distribute.\r\n·")]
         [InlineData(1101, 1101, 1096, "Distribute.\r\n· ")]
         public async Task SplitsMultiByteCharacter(int limit, int contentBytes, int contentLength, string contentEndsWith)
@@ -153,7 +154,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             Assert.Equal(9126, records[0].Size);
             Assert.True(records[0].Truncated);
             Assert.Equal(limit, records[0].TruncatedSize);
-            Assert.EndsWith(contentEndsWith, records[0].Content);
+            Assert.EndsWith(contentEndsWith, records[0].Content, StringComparison.Ordinal);
             Assert.Equal(contentBytes, Encoding.UTF8.GetBytes(records[0].Content).Length);
             Assert.Equal(contentLength, records[0].Content.Length); // UTF-8 characters
             Assert.False(records[0].DuplicateContent);
@@ -206,7 +207,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             // See https://github.com/dotnet/docs/issues/38262 (behavior change in .NET 8)
             Assert.Equal(928, Encoding.UTF8.GetBytes(records[0].Content).Length); // has a Unicode replacement character
             Assert.Equal(926, records[0].Content.Length); // UTF-8 characters
-            Assert.EndsWith("Code. ", records[0].Content);
+            Assert.EndsWith("Code. \uFFFD", records[0].Content, StringComparison.Ordinal);
             Assert.False(records[0].DuplicateContent);
 
             Assert.Equal("ThirdPartyNotices.txt", records[1].Path);

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,7 +27,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             // Arrange
             var subjectRecords = Enumerable
                 .Range(0, 10)
-                .Select(x => new TestSubjectRecord { BucketKey = x.ToString(), Id = "Subject" + x })
+                .Select(x => new TestSubjectRecord { BucketKey = x.ToString(CultureInfo.InvariantCulture), Id = "Subject" + x })
                 .ToList();
 
             // Act
@@ -68,7 +69,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             // Arrange
             var subjectRecords = Enumerable
                 .Range(0, 10)
-                .Select(x => new TestSubjectRecord { BucketKey = x.ToString(), Id = "Subject" + x })
+                .Select(x => new TestSubjectRecord { BucketKey = x.ToString(CultureInfo.InvariantCulture), Id = "Subject" + x })
                 .ToList();
 
             // Act
@@ -110,7 +111,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             // Arrange
             var subjectRecords = Enumerable
                 .Range(0, 10)
-                .Select(x => new TestSubjectRecord { BucketKey = x.ToString(), Id = "Subject" + x })
+                .Select(x => new TestSubjectRecord { BucketKey = x.ToString(CultureInfo.InvariantCulture), Id = "Subject" + x })
                 .ToList();
 
             // Act

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -70,7 +71,7 @@ namespace NuGet.Insights
 
         public static string GetDescendingId(DateTimeOffset timestamp)
         {
-            return (long.MaxValue - timestamp.Ticks).ToString("D20");
+            return (long.MaxValue - timestamp.Ticks).ToString("D20", CultureInfo.InvariantCulture);
         }
 
         public static TimeSpan GetMessageDelay(int attemptCount)
@@ -93,7 +94,7 @@ namespace NuGet.Insights
             DateTimeOffset sasExpiry;
             var parsedSas = QueryHelpers.ParseQuery(sas);
             var expiry = parsedSas["se"].Single();
-            sasExpiry = DateTimeOffset.Parse(expiry);
+            sasExpiry = DateTimeOffset.Parse(expiry, CultureInfo.InvariantCulture);
             return sasExpiry;
         }
     }

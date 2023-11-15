@@ -4,13 +4,14 @@
 
 Copied license: [`LICENSE.txt`](dotnet/aspnetcore/LICENSE.txt)
 
-Copied revision: [`4931b1929188349b438575803bcec889a9a7d190`](https://github.com/dotnet/aspnetcore/tree/4931b1929188349b438575803bcec889a9a7d190)
+Copied revision: [`c096dbbbe652f03be926502d790eb499682eea13`](https://github.com/dotnet/aspnetcore/tree/c096dbbbe652f03be926502d790eb499682eea13)
 
 Files:
+  - [`src/Shared/ThrowHelpers/ArgumentNullThrowHelper.cs`](dotnet/aspnetcore/src/Shared/ThrowHelpers/ArgumentNullThrowHelper.cs)
   - [`src/Identity/Extensions.Core/src/Base32.cs`](dotnet/aspnetcore/src/Identity/Extensions.Core/src/Base32.cs)
 
 Patches:
-  - (none)
+  - [Add StringComparison.Ordinal to IndexOf](0004-Add-StringComparison-to-IndexOf.patch)
 
 # [NuGet/NuGet.Jobs](https://github.com/NuGet/NuGet.Jobs)
 

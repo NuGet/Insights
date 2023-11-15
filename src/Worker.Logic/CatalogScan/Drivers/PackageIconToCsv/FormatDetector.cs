@@ -116,7 +116,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             using (var reader = new StreamReader(memoryStream))
             {
                 var stringContent = reader.ReadToEnd();
-                return stringContent.Contains("<svg");
+                return stringContent.Contains("<svg", StringComparison.Ordinal);
             }
         }
     }

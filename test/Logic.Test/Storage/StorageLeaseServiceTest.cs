@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -318,7 +319,7 @@ namespace NuGet.Insights
                             {
                                 Output.WriteLine($"[{sw.Elapsed}] [{x}] Trying to acquire lease {i}...");
                                 var acquireSw = Stopwatch.StartNew();
-                                var result = await Target.TryAcquireAsync(i.ToString(), MinDuration);
+                                var result = await Target.TryAcquireAsync(i.ToString(CultureInfo.InvariantCulture), MinDuration);
                                 if (result.Acquired)
                                 {
                                     Output.WriteLine($"[{sw.Elapsed}] [{x}] Releasing lease {i}...");

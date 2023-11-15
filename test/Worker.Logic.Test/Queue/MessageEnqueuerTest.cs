@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -21,13 +22,13 @@ namespace NuGet.Insights.Worker
         [InlineData(2)]
         public async Task DoesNotBatchIfMessageCountIsLessThanThreshold(int messageCount)
         {
-            await Target.EnqueueAsync(Enumerable.Range(0, messageCount).Select(x => new CatalogPageScanMessage { PageId = x.ToString() }).ToList());
+            await Target.EnqueueAsync(Enumerable.Range(0, messageCount).Select(x => new CatalogPageScanMessage { PageId = x.ToString(CultureInfo.InvariantCulture) }).ToList());
 
             var messages = Assert.Single(EnqueuedMessages);
             for (var i = 0; i < messageCount; i++)
             {
                 var message = (CatalogPageScanMessage)messages[i];
-                Assert.Equal(i.ToString(), message.PageId);
+                Assert.Equal(i.ToString(CultureInfo.InvariantCulture), message.PageId);
             }
         }
 
@@ -54,7 +55,7 @@ namespace NuGet.Insights.Worker
             for (var i = 0; i < messageCount; i++)
             {
                 var message = (HomogeneousBulkEnqueueMessage)Assert.Single(EnqueuedMessages[i / perBatch]);
-                Assert.StartsWith($"{i}_", message.Messages[i % perBatch].ToString());
+                Assert.StartsWith($"{i}_", message.Messages[i % perBatch].ToString(), StringComparison.Ordinal);
             }
         }
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,8 +20,8 @@ namespace NuGet.Insights
                 return;
             }
 
-            if (value.StartsWith(" ")
-                || value.EndsWith(" ")
+            if (value.StartsWith(" ", StringComparison.Ordinal)
+                || value.EndsWith(" ", StringComparison.Ordinal)
                 || value.IndexOfAny(new[] { ',', '"', '\r', '\n' }) > -1)
             {
                 writer.Write('"');
@@ -41,8 +41,8 @@ namespace NuGet.Insights
                 return;
             }
 
-            if (value.StartsWith(" ")
-                || value.EndsWith(" ")
+            if (value.StartsWith(" ", StringComparison.Ordinal)
+                || value.EndsWith(" ", StringComparison.Ordinal)
                 || value.IndexOfAny(new[] { ',', '"', '\r', '\n' }) > -1)
             {
                 await writer.WriteAsync('"');
@@ -92,7 +92,7 @@ namespace NuGet.Insights
 
         public static DateTimeOffset ParseDateTimeOffset(string input)
         {
-            if (input.EndsWith("Z"))
+            if (input.EndsWith("Z", StringComparison.Ordinal))
             {
                 return DateTimeOffset.ParseExact(input, DateTimeOffsetUtcFormat, CultureInfo.InvariantCulture);
             }

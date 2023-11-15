@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -220,13 +221,13 @@ namespace NuGet.Insights.Worker.KustoIngestion
         private string FormatCommand(string containerName, string tableName, string commandTemplate)
         {
             var originalTableName = _csvRecordContainers.GetDefaultKustoTableName(containerName);
-            var docstring = JsonSerializer.Serialize(string.Format(_options.Value.KustoTableDocstringFormat, originalTableName));
+            var docstring = JsonSerializer.Serialize(string.Format(CultureInfo.InvariantCulture, _options.Value.KustoTableDocstringFormat, originalTableName));
             var folder = JsonSerializer.Serialize(_options.Value.KustoTableFolder);
 
             return commandTemplate
-                .Replace("__TABLENAME__", tableName)
-                .Replace("__DOCSTRING__", docstring)
-                .Replace("__FOLDER__", folder);
+                .Replace("__TABLENAME__", tableName, StringComparison.Ordinal)
+                .Replace("__DOCSTRING__", docstring, StringComparison.Ordinal)
+                .Replace("__FOLDER__", folder, StringComparison.Ordinal);
         }
     }
 }

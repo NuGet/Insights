@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Insights.StorageNoOpRetry;
@@ -20,8 +21,8 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
         public async Task Internal_FindLatestCatalogLeafScan()
         {
             // Arrange
-            var min0 = DateTimeOffset.Parse("2020-12-27T05:06:30.4180312Z");
-            var max1 = DateTimeOffset.Parse("2020-12-27T05:07:21.9968244Z");
+            var min0 = DateTimeOffset.Parse("2020-12-27T05:06:30.4180312Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-12-27T05:07:21.9968244Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
 
@@ -36,8 +37,8 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
         public async Task Internal_FindLatestCatalogLeafScan_WithDuplicates()
         {
             // Arrange
-            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
-            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
 
@@ -81,8 +82,8 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
             {
                 State = CatalogIndexScanState.Created,
                 CursorName = "parent-cursor",
-                Min = DateTimeOffset.Parse("2020-01-01T00:00:00Z"),
-                Max = DateTimeOffset.Parse("2020-01-02T00:00:00Z"),
+                Min = DateTimeOffset.Parse("2020-01-01T00:00:00Z", CultureInfo.InvariantCulture),
+                Max = DateTimeOffset.Parse("2020-01-02T00:00:00Z", CultureInfo.InvariantCulture),
             };
 
             await CatalogScanStorageService.InsertAsync(parentScan);
@@ -107,7 +108,7 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
             await AssertEntityOutputAsync<CatalogLeafScan>(
                 await GetLeafScanTableAsync(),
                 dir,
-                cleanEntity: x => x.Created = DateTimeOffset.Parse("2020-01-03T00:00:00Z"));
+                cleanEntity: x => x.Created = DateTimeOffset.Parse("2020-01-03T00:00:00Z", CultureInfo.InvariantCulture));
         }
 
         private async Task<TableClientWithRetryContext> GetLeafScanTableAsync()

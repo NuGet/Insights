@@ -168,12 +168,12 @@ namespace NuGet.Insights
             {
                 var flattenedText = FlattenWhitespace.Replace(alert.TextContent.Trim(), " ");
 
-                if (flattenedText.Contains("This package has been deleted from the gallery."))
+                if (flattenedText.Contains("This package has been deleted from the gallery.", StringComparison.Ordinal))
                 {
                     state.PackageDeletedStatus = PackageDeletedStatus.SoftDeleted;
                 }
 
-                if (flattenedText.Contains("The owner has unlisted this package."))
+                if (flattenedText.Contains("The owner has unlisted this package.", StringComparison.Ordinal))
                 {
                     state.IsListed = false;
                 }

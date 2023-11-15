@@ -53,16 +53,16 @@ namespace NuGet.Insights
                 Assert.Contains("Content-Length", reader.Properties.Select(x => x.Key));
                 Assert.Equal("12830", reader.Properties["Content-Length"].Single());
 
-                Assert.Contains(LogMessages, x => x.Contains("Trying again with a full download."));
+                Assert.Contains(LogMessages, x => x.Contains("Trying again with a full download.", StringComparison.Ordinal));
                 Assert.Equal(7, HttpMessageHandlerFactory.Responses.Count());
                 Assert.Equal(3, HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.Method == HttpMethod.Head
                     && x.RequestMessage.RequestUri.AbsoluteUri == url));
                 Assert.Equal(3, HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.Method == HttpMethod.Head
                     && x.RequestMessage.RequestUri.GetLeftPart(UriPartial.Path) == url
-                    && x.RequestMessage.RequestUri.Query.Contains("cache-bust=")));
+                    && x.RequestMessage.RequestUri.Query.Contains("cache-bust=", StringComparison.Ordinal)));
                 Assert.Equal(1, HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.Method == HttpMethod.Get
-                    && x.RequestMessage.RequestUri.GetLeftPart(UriPartial.Path).StartsWith(url)
-                    && x.RequestMessage.RequestUri.Query.Contains("cache-bust=")));
+                    && x.RequestMessage.RequestUri.GetLeftPart(UriPartial.Path).StartsWith(url, StringComparison.Ordinal)
+                    && x.RequestMessage.RequestUri.Query.Contains("cache-bust=", StringComparison.Ordinal)));
             }
 
             [Fact]

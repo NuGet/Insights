@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -67,24 +68,24 @@ namespace NuGet.Insights.Worker
                 csvTables.Add(None);
             }
 
-            builder.AppendLine($"# {_info.DriverType}");
-            builder.AppendLine($"");
-            builder.AppendLine($"TODO DRIVER DESCRIPTION");
-            builder.AppendLine($"");
-            builder.AppendLine($"|                                    |      |");
-            builder.AppendLine($"| ---------------------------------- | ---- |");
-            builder.AppendLine($"| `CatalogScanDriverType` enum value | `{_info.DriverType}` |");
-            builder.AppendLine($"| Driver implementation              | [`{_info.DriverType}Driver`](../../src/Worker.Logic/CatalogScan/Drivers/{_info.DriverType}/{_info.DriverType}Driver.cs) |");
-            builder.AppendLine($"| Processing mode                    | {processingMode} |");
-            builder.AppendLine($"| Cursor dependencies                | {string.Join("<br />", cursorDependencies)} |");
-            builder.AppendLine($"| Components using driver output     | {string.Join("<br />", dependents)} |");
-            builder.AppendLine($"| Temporary storage config           | {string.Join("<br />", intermediateContainerLines)} |");
-            builder.AppendLine($"| Persistent storage config          | {string.Join("<br />", addedContainerLines)} |");
-            builder.AppendLine($"| Output CSV tables                  | {string.Join("<br />", csvTables)} |");
-            builder.AppendLine($"");
-            builder.AppendLine($"## Algorithm");
-            builder.AppendLine($"");
-            builder.AppendLine($"TODO ALGORITHM DESCRIPTION");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"# {_info.DriverType}");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"TODO DRIVER DESCRIPTION");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"|                                    |      |");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"| ---------------------------------- | ---- |");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"| `CatalogScanDriverType` enum value | `{_info.DriverType}` |");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"| Driver implementation              | [`{_info.DriverType}Driver`](../../src/Worker.Logic/CatalogScan/Drivers/{_info.DriverType}/{_info.DriverType}Driver.cs) |");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"| Processing mode                    | {processingMode} |");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"| Cursor dependencies                | {string.Join("<br />", cursorDependencies)} |");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"| Components using driver output     | {string.Join("<br />", dependents)} |");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"| Temporary storage config           | {string.Join("<br />", intermediateContainerLines)} |");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"| Persistent storage config          | {string.Join("<br />", addedContainerLines)} |");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"| Output CSV tables                  | {string.Join("<br />", csvTables)} |");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"## Algorithm");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"TODO ALGORITHM DESCRIPTION");
 
             return builder.ToString();
         }

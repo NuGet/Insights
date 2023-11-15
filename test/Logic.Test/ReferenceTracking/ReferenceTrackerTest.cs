@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -1025,7 +1026,7 @@ namespace NuGet.Insights.ReferenceTracking
                     && x.PartitionKey.CompareTo(PartitionKeyPrefix + char.MaxValue) < 0)
                 .ToListAsync();
             var actualSubjectToOwner = actualSubjectToOwnerEntities
-                .Where(x => x.PartitionKey.StartsWith(SubjectType + ReferenceTracker.Separator))
+                .Where(x => x.PartitionKey.StartsWith(SubjectType + ReferenceTracker.Separator, StringComparison.Ordinal))
                 .Select(x => (x.PartitionKey, x.RowKey))
                 .ToList();
 
@@ -1057,14 +1058,14 @@ namespace NuGet.Insights.ReferenceTracking
                 number = Interlocked.Increment(ref _nextByte);
             }
 
-            return Encoding.UTF8.GetBytes(number.Value.ToString());
+            return Encoding.UTF8.GetBytes(number.Value.ToString(CultureInfo.InvariantCulture));
         }
 
         private void OutputKeys(List<(string PartitionKey, string RowKey)> keys)
         {
             foreach (var (pk, rk) in keys)
             {
-                Output.WriteLine($"    ($\"{{{pk.Replace("$", "}${")}}}\", {rk}),");
+                Output.WriteLine($"    ($\"{{{pk.Replace("$", "}${", StringComparison.Ordinal)}}}\", {rk}),");
             }
         }
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,8 +21,8 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
         public async Task LoadLatestPackageLeaf()
         {
             // Arrange
-            var min0 = DateTimeOffset.Parse("2020-12-27T05:06:30.4180312Z");
-            var max1 = DateTimeOffset.Parse("2020-12-27T05:07:21.9968244Z");
+            var min0 = DateTimeOffset.Parse("2020-12-27T05:06:30.4180312Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-12-27T05:07:21.9968244Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(min0);
@@ -37,9 +38,9 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
         public async Task LoadLatestPackageLeaf_WithDuplicatesInCommit()
         {
             // Arrange
-            var min0 = DateTimeOffset.Parse("2018-03-23T08:55:02.1875809Z");
-            var max1 = DateTimeOffset.Parse("2018-03-23T08:55:20.0232708Z");
-            var max2 = DateTimeOffset.Parse("2018-03-23T08:55:38.0342003Z");
+            var min0 = DateTimeOffset.Parse("2018-03-23T08:55:02.1875809Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2018-03-23T08:55:20.0232708Z", CultureInfo.InvariantCulture);
+            var max2 = DateTimeOffset.Parse("2018-03-23T08:55:38.0342003Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(min0);

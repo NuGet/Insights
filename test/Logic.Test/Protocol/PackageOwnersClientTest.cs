@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,7 +28,7 @@ namespace NuGet.Insights
             ConfigureSettings = x => x.OwnersV2Urls = new List<string> { url };
             HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
             {
-                if (req.RequestUri.AbsolutePath.EndsWith("/owners.v2.json"))
+                if (req.RequestUri.AbsolutePath.EndsWith("/owners.v2.json", StringComparison.Ordinal))
                 {
                     var newReq = Clone(req);
                     newReq.RequestUri = new Uri(url);
@@ -38,7 +39,7 @@ namespace NuGet.Insights
             };
 
             // Set the Last-Modified date
-            var asOfTimestamp = DateTime.Parse("2021-01-14T18:00:00Z");
+            var asOfTimestamp = DateTime.Parse("2021-01-14T18:00:00Z", CultureInfo.InvariantCulture);
             var downloadsFile = new FileInfo(Path.Combine(TestData, OwnersToCsvDir, Step1, "owners.v2.json"))
             {
                 LastWriteTimeUtc = asOfTimestamp,

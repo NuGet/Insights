@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -119,7 +120,7 @@ namespace NuGet.Insights.Worker
             {
                 var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
                 var tables = await tableServiceClient.QueryAsync().ToListAsync();
-                return tables.Select(x => x.Name).Where(x => x.StartsWith(StoragePrefix)).ToList();
+                return tables.Select(x => x.Name).Where(x => x.StartsWith(StoragePrefix, StringComparison.Ordinal)).ToList();
             }
 
             public TheAbortAsyncMethod(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
@@ -734,8 +735,8 @@ namespace NuGet.Insights.Worker
         {
             RemoteCursorClient = new Mock<IRemoteCursorClient>();
 
-            FlatContainerCursor = DateTimeOffset.Parse("2021-02-02T16:00:00Z");
-            CursorValue = DateTimeOffset.Parse("2021-02-01T16:00:00Z");
+            FlatContainerCursor = DateTimeOffset.Parse("2021-02-02T16:00:00Z", CultureInfo.InvariantCulture);
+            CursorValue = DateTimeOffset.Parse("2021-02-01T16:00:00Z", CultureInfo.InvariantCulture);
             DriverType = CatalogScanDriverType.PackageAssetToCsv;
 
             RemoteCursorClient.Setup(x => x.GetFlatContainerAsync(It.IsAny<CancellationToken>())).ReturnsAsync(() => FlatContainerCursor);

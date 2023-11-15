@@ -197,15 +197,15 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
         private static bool IsInvalidDueMissingPortableProfile(FrameworkException ex)
         {
             return
-                ex.Message.StartsWith("Invalid portable frameworks for '")
-                && ex.Message.EndsWith("'. A portable framework must have at least one framework in the profile.");
+                ex.Message.StartsWith("Invalid portable frameworks for '", StringComparison.Ordinal)
+                && ex.Message.EndsWith("'. A portable framework must have at least one framework in the profile.", StringComparison.Ordinal);
         }
 
         public static bool IsInvalidDueToHyphenInProfile(ArgumentException ex)
         {
             return
-                ex.Message.StartsWith("Invalid portable frameworks '")
-                && ex.Message.EndsWith("'. A hyphen may not be in any of the portable framework names.");
+                ex.Message.StartsWith("Invalid portable frameworks '", StringComparison.Ordinal)
+                && ex.Message.EndsWith("'. A hyphen may not be in any of the portable framework names.", StringComparison.Ordinal);
         }
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -67,7 +68,7 @@ namespace NuGet.Insights
                 var page = await Target.GetCatalogPageAsync("https://api.nuget.org/v3/catalog0/page10006.json");
 
                 Assert.Equal(TimeSpan.Zero, page.CommitTimestamp.Offset);
-                Assert.Equal(DateTimeOffset.Parse("2020-04-17T04:23:09.956209Z"), page.CommitTimestamp);
+                Assert.Equal(DateTimeOffset.Parse("2020-04-17T04:23:09.956209Z", CultureInfo.InvariantCulture), page.CommitTimestamp);
                 Assert.Equal("https://api.nuget.org/v3/catalog0/index.json", page.Parent);
                 Assert.Equal(550, page.Count);
 
@@ -91,7 +92,7 @@ namespace NuGet.Insights
 
                 var details = Assert.IsType<PackageDetailsCatalogLeaf>(leaf);
                 Assert.Null(details.Listed);
-                Assert.Equal(DateTimeOffset.Parse("1900-01-01T00:00:00Z"), details.Published);
+                Assert.Equal(DateTimeOffset.Parse("1900-01-01T00:00:00Z", CultureInfo.InvariantCulture), details.Published);
                 Assert.False(details.IsListed());
             }
 
@@ -155,7 +156,7 @@ namespace NuGet.Insights
 
                 Assert.Equal(CatalogLeafType.PackageDetails, leaf.Type);
                 var details = Assert.IsType<PackageDetailsCatalogLeaf>(leaf);
-                Assert.Equal(DateTimeOffset.Parse("2021-03-22T20:10:49.407Z"), details.Created);
+                Assert.Equal(DateTimeOffset.Parse("2021-03-22T20:10:49.407Z", CultureInfo.InvariantCulture), details.Created);
             }
 
             [Fact]

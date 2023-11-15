@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using Azure;
 
 namespace NuGet.Insights.Worker.LoadBucketedPackage
@@ -61,7 +62,7 @@ namespace NuGet.Insights.Worker.LoadBucketedPackage
                 throw new ArgumentException("The bucket string must start with a 'B'.", nameof(bucketString));
             }
 
-            return int.Parse(bucketString.Substring(1));
+            return int.Parse(bucketString.Substring(1), CultureInfo.InvariantCulture);
         }
 
         public static string GetPartitionKey(ICatalogLeafItem item)

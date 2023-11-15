@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -17,11 +18,11 @@ namespace NuGet.Insights
 
             // Clean up the type name by removing unnecessary namespaces.
             const string systemPrefix = "System.";
-            if (prettyPropType.StartsWith(systemPrefix) && prettyPropType.IndexOf('.', systemPrefix.Length) < 0)
+            if (prettyPropType.StartsWith(systemPrefix, StringComparison.Ordinal) && prettyPropType.IndexOf('.', systemPrefix.Length) < 0)
             {
                 prettyPropType = prettyPropType.Substring(systemPrefix.Length);
             }
-            else if (prettyPropType.StartsWith(classNamespacePrefix))
+            else if (prettyPropType.StartsWith(classNamespacePrefix, StringComparison.Ordinal))
             {
                 prettyPropType = prettyPropType.Substring(classNamespacePrefix.Length);
             }

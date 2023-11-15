@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -29,7 +30,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2017.11.08.17.42.28/nuget.platform.1.0.0.json",
                 LeafType = CatalogLeafType.PackageDelete,
-                CommitTimestamp = DateTimeOffset.Parse("2017-11-08T17:42:28.5677911Z"),
+                CommitTimestamp = DateTimeOffset.Parse("2017-11-08T17:42:28.5677911Z", CultureInfo.InvariantCulture),
                 PackageId = "NuGet.Platform",
                 PackageVersion = "1.0.0",
             };
@@ -52,7 +53,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2015.06.13.03.41.09/nuget.platform.1.0.0.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2015-06-13T03:41:09.5185838Z"),
+                CommitTimestamp = DateTimeOffset.Parse("2015-06-13T03:41:09.5185838Z", CultureInfo.InvariantCulture),
                 PackageId = "NuGet.Platform",
                 PackageVersion = "1.0.0",
             };
@@ -73,7 +74,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.08.28.22.26.57/loshar.my.package.1.0.0.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2018-08-28T22:26:57.4218948Z"),
+                CommitTimestamp = DateTimeOffset.Parse("2018-08-28T22:26:57.4218948Z", CultureInfo.InvariantCulture),
                 PackageId = "Loshar.My.Package",
                 PackageVersion = "1.0.0",
             };
@@ -107,7 +108,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal("_rels", entries[0].TopLevelFolder);
             Assert.Equal(0, entries[0].Flags);
             Assert.Equal(8, entries[0].CompressionMethod);
-            Assert.Equal(DateTimeOffset.Parse("2018-08-06T13:48:24.0000000+00:00"), entries[0].LastModified);
+            Assert.Equal(DateTimeOffset.Parse("2018-08-06T13:48:24.0000000+00:00", CultureInfo.InvariantCulture), entries[0].LastModified);
             Assert.Equal(3811040653, entries[0].Crc32);
             Assert.Equal(274u, entries[0].CompressedSize);
             Assert.Equal(511u, entries[0].UncompressedSize);
@@ -121,7 +122,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Null(entries[1].TopLevelFolder);
             Assert.Equal(0, entries[1].Flags);
             Assert.Equal(8, entries[1].CompressionMethod);
-            Assert.Equal(DateTimeOffset.Parse("2018-08-06T13:48:24.0000000+00:00"), entries[1].LastModified);
+            Assert.Equal(DateTimeOffset.Parse("2018-08-06T13:48:24.0000000+00:00", CultureInfo.InvariantCulture), entries[1].LastModified);
             Assert.Equal(3125932907, entries[1].Crc32);
             Assert.Equal(376u, entries[1].CompressedSize);
             Assert.Equal(734u, entries[1].UncompressedSize);
@@ -135,7 +136,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal("lib", entries[2].TopLevelFolder);
             Assert.Equal(0, entries[2].Flags);
             Assert.Equal(8, entries[2].CompressionMethod);
-            Assert.Equal(DateTimeOffset.Parse("2018-08-06T20:48:20.0000000+00:00"), entries[2].LastModified);
+            Assert.Equal(DateTimeOffset.Parse("2018-08-06T20:48:20.0000000+00:00", CultureInfo.InvariantCulture), entries[2].LastModified);
             Assert.Equal(2664195616, entries[2].Crc32);
             Assert.Equal(1559u, entries[2].CompressedSize);
             Assert.Equal(4608u, entries[2].UncompressedSize);
@@ -149,7 +150,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Null(entries[3].TopLevelFolder);
             Assert.Equal(0, entries[3].Flags);
             Assert.Equal(8, entries[3].CompressionMethod);
-            Assert.Equal(DateTimeOffset.Parse("2018-08-06T13:48:24.0000000+00:00"), entries[3].LastModified);
+            Assert.Equal(DateTimeOffset.Parse("2018-08-06T13:48:24.0000000+00:00", CultureInfo.InvariantCulture), entries[3].LastModified);
             Assert.Equal(3159194846, entries[3].Crc32);
             Assert.Equal(207u, entries[3].CompressedSize);
             Assert.Equal(465u, entries[3].UncompressedSize);
@@ -163,7 +164,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal("package", entries[4].TopLevelFolder);
             Assert.Equal(0, entries[4].Flags);
             Assert.Equal(8, entries[4].CompressionMethod);
-            Assert.Equal(DateTimeOffset.Parse("2018-08-06T13:48:24.0000000+00:00"), entries[4].LastModified);
+            Assert.Equal(DateTimeOffset.Parse("2018-08-06T13:48:24.0000000+00:00", CultureInfo.InvariantCulture), entries[4].LastModified);
             Assert.Equal(3933553402, entries[4].Crc32);
             Assert.Equal(408u, entries[4].CompressedSize);
             Assert.Equal(695u, entries[4].UncompressedSize);
@@ -177,7 +178,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Null(entries[5].TopLevelFolder);
             Assert.Equal(0, entries[5].Flags);
             Assert.Equal(0, entries[5].CompressionMethod);
-            Assert.Equal(DateTimeOffset.Parse("2018-08-20T20:19:24.0000000+00:00"), entries[5].LastModified);
+            Assert.Equal(DateTimeOffset.Parse("2018-08-20T20:19:24.0000000+00:00", CultureInfo.InvariantCulture), entries[5].LastModified);
             Assert.Equal(2180012886, entries[5].Crc32);
             Assert.Equal(18683u, entries[5].CompressedSize);
             Assert.Equal(18683u, entries[5].UncompressedSize);
@@ -192,7 +193,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2021.08.06.00.31.41/knapcode.torsharp.2.6.0.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2021-08-06T00:31:41.2929519Z"),
+                CommitTimestamp = DateTimeOffset.Parse("2021-08-06T00:31:41.2929519Z", CultureInfo.InvariantCulture),
                 PackageId = "Knapcode.TorSharp",
                 PackageVersion = "2.6.0",
             };
@@ -218,7 +219,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2019.12.03.16.44.55/microsoft.extensions.configuration.3.1.0.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2019-12-03T16:44:55.0668686Z"),
+                CommitTimestamp = DateTimeOffset.Parse("2019-12-03T16:44:55.0668686Z", CultureInfo.InvariantCulture),
                 PackageId = "Microsoft.Extensions.Configuration",
                 PackageVersion = "3.1.0",
             };
@@ -250,7 +251,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Null(entries[6].TopLevelFolder);
             Assert.Equal(0, entries[6].Flags);
             Assert.Equal(8, entries[6].CompressionMethod);
-            Assert.Equal(DateTimeOffset.Parse("1980-01-01T00:00:00.0000000+00:00"), entries[6].LastModified);
+            Assert.Equal(DateTimeOffset.Parse("1980-01-01T00:00:00.0000000+00:00", CultureInfo.InvariantCulture), entries[6].LastModified);
             Assert.Equal(3714772846, entries[6].Crc32);
             Assert.Equal(5653u, entries[6].CompressedSize);
             Assert.Equal(7006u, entries[6].UncompressedSize);
@@ -264,7 +265,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Null(entries[7].TopLevelFolder);
             Assert.Equal(0, entries[7].Flags);
             Assert.Equal(8, entries[7].CompressionMethod);
-            Assert.Equal(DateTimeOffset.Parse("1980-01-01T00:00:00.0000000+00:00"), entries[7].LastModified);
+            Assert.Equal(DateTimeOffset.Parse("1980-01-01T00:00:00.0000000+00:00", CultureInfo.InvariantCulture), entries[7].LastModified);
             Assert.Equal(3714772846, entries[7].Crc32);
             Assert.Equal(5653u, entries[7].CompressedSize);
             Assert.Equal(7006u, entries[7].UncompressedSize);

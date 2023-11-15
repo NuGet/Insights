@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -19,9 +20,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
         public async Task NuGetPackageExplorerToCsv()
         {
             // Arrange
-            var min0 = DateTimeOffset.Parse("2020-11-10T23:37:14.085963Z");
-            var max1 = DateTimeOffset.Parse("2020-11-10T23:38:46.5558967Z");
-            var max2 = DateTimeOffset.Parse("2020-11-10T23:39:05.5717605Z");
+            var min0 = DateTimeOffset.Parse("2020-11-10T23:37:14.085963Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-11-10T23:38:46.5558967Z", CultureInfo.InvariantCulture);
+            var max2 = DateTimeOffset.Parse("2020-11-10T23:39:05.5717605Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(CatalogScanDriverType.LoadLatestPackageLeaf, max2);
@@ -50,9 +51,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
         {
             // Arrange
             MakeDeletedPackageAvailable();
-            var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
-            var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
-            var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
+            var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z", CultureInfo.InvariantCulture);
+            var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(CatalogScanDriverType.LoadLatestPackageLeaf, max2);

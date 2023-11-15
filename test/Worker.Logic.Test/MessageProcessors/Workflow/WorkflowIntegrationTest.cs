@@ -3,6 +3,7 @@
 
 using System;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -68,8 +69,8 @@ namespace NuGet.Insights.Worker.Workflow
 
             await WorkflowService.InitializeAsync();
 
-            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
-            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z", CultureInfo.InvariantCulture);
             MockRemoteCursorClient
                 .Setup(x => x.GetFlatContainerAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(max1);
@@ -126,8 +127,8 @@ namespace NuGet.Insights.Worker.Workflow
 
             await WorkflowService.InitializeAsync();
 
-            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
-            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z", CultureInfo.InvariantCulture);
             MockRemoteCursorClient
                 .Setup(x => x.GetFlatContainerAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(max1);
@@ -166,8 +167,8 @@ namespace NuGet.Insights.Worker.Workflow
 
             await WorkflowService.InitializeAsync();
 
-            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
-            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z", CultureInfo.InvariantCulture);
             MockRemoteCursorClient
                 .Setup(x => x.GetFlatContainerAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(max1);
@@ -213,8 +214,8 @@ namespace NuGet.Insights.Worker.Workflow
 
             await WorkflowService.InitializeAsync();
 
-            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
-            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z", CultureInfo.InvariantCulture);
             MockRemoteCursorClient
                 .Setup(x => x.GetFlatContainerAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(max1);

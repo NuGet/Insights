@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -186,7 +187,7 @@ namespace NuGet.Insights
 
                 var result = await Target.DeserializeUrlAsync<PersonWithDateTimeOffset>(TestUrl, IgnoreNotFounds, Logger);
 
-                Assert.Equal(TimeSpan.Parse(expected), result.DateOfBirth.Offset);
+                Assert.Equal(TimeSpan.Parse(expected, CultureInfo.InvariantCulture), result.DateOfBirth.Offset);
                 Assert.Equal(DateTimeKind.Unspecified, result.DateOfBirth.DateTime.Kind);
                 Assert.Equal("1955-10-28T00:00:00.0000000", result.DateOfBirth.DateTime.ToString("O"));
             }

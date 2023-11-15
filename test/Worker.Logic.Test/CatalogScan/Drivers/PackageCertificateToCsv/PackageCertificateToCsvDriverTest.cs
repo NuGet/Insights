@@ -256,7 +256,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             Assert.NotEmpty(certificates);
             var certificate = Assert.Single(certificates, x => x.FingerprintSHA256Hex == "FB32E016FD317DB68C0B2B5B6E33231EE932B4B21E27F32B51654A483A10ADFB");
             Assert.NotNull(certificate.Policies);
-            Assert.Contains("https://www.digicert.com/CPS", certificate.Policies);
+            Assert.Contains("https://www.digicert.com/CPS", certificate.Policies, StringComparison.Ordinal);
             var genericPolicies = JsonSerializer.Deserialize<List<X509PolicyInfo>>(certificate.Policies);
             Assert.Equal(2, genericPolicies.Count);
             Assert.Equal("2.16.840.1.114412.3.2", genericPolicies[0].PolicyIdentifier);

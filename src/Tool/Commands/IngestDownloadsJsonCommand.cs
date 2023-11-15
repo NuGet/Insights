@@ -19,6 +19,7 @@ using Microsoft.Extensions.Logging;
 using NuGet.Insights.Worker.BuildVersionSet;
 using MessagePack;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace NuGet.Insights.Tool
 {
@@ -204,6 +205,7 @@ namespace NuGet.Insights.Tool
             while (recordCount == take)
             {
                 var query = string.Format(
+                    CultureInfo.InvariantCulture,
                     PackageTimestampQueryFormat,
                     _kustoTablePrefix.ParsedValue,
                     lastTimestamp,

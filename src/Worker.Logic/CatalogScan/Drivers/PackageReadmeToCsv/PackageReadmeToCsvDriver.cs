@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -94,7 +95,7 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
             var lastModifiedString = info.HttpHeaders["Last-Modified"].FirstOrDefault();
             if (lastModifiedString is not null)
             {
-                lastModified = DateTimeOffset.Parse(lastModifiedString);
+                lastModified = DateTimeOffset.Parse(lastModifiedString, CultureInfo.InvariantCulture);
             }
 
             using var hasher = SHA256.Create();

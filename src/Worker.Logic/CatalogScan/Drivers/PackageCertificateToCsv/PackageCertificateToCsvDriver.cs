@@ -180,7 +180,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             CertificateDataBuilder builder,
             string packageId)
         {
-            if (packageId.Contains(ReferenceTracker.Separator))
+            if (packageId.Contains(ReferenceTracker.Separator, StringComparison.Ordinal))
             {
                 _logger.LogInformation(
                     $"Skipping writing references package ID '{{Id}}' because it contains a " +

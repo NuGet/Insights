@@ -62,7 +62,7 @@ namespace NuGet.Insights
             // Account for ToLower normalization (used instead of ToLowerInvariant in this case).
             var idCount = result
                 .Data
-                .Select(x => x.PackageRegistration.Id.ToLower())
+                .Select(x => x.PackageRegistration.Id.ToLowerInvariant())
                 .Distinct()
                 .Count();
             var exactMatch = result

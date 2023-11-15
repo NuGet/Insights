@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -40,8 +41,8 @@ namespace NuGet.Insights.Worker.TableCopy
         private async Task CopyAsync(TableScanStrategy strategy, string lowerBound, string upperBound)
         {
             // Arrange
-            var min0 = DateTimeOffset.Parse("2020-11-27T20:58:24.1558179Z");
-            var max1 = DateTimeOffset.Parse("2020-11-27T23:41:30.2461308Z");
+            var min0 = DateTimeOffset.Parse("2020-11-27T20:58:24.1558179Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-11-27T23:41:30.2461308Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(CatalogScanDriverType.LoadLatestPackageLeaf, min0);

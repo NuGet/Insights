@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -104,7 +105,7 @@ namespace NuGet.Insights
         protected LogLevel AssertLogLevel { get; set; } = LogLevel.Warning;
         public Func<LogLevel, string, LogLevel> TransformLogLevel { get; set; } = (LogLevel logLevel, string message) =>
         {
-            if (message.StartsWith(LoggerExtensions.TransientPrefix) && logLevel == LogLevel.Warning)
+            if (message.StartsWith(LoggerExtensions.TransientPrefix, StringComparison.Ordinal) && logLevel == LogLevel.Warning)
             {
                 return LogLevel.Information;
             }
@@ -147,12 +148,14 @@ namespace NuGet.Insights
             var storageNameProperties = x
                 .GetType()
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .Where(x => x.Name.EndsWith("QueueName") || x.Name.EndsWith("TableName") || x.Name.EndsWith("ContainerName"));
+                .Where(x => x.Name.EndsWith("QueueName", StringComparison.Ordinal)
+                         || x.Name.EndsWith("TableName", StringComparison.Ordinal)
+                         || x.Name.EndsWith("ContainerName", StringComparison.Ordinal));
             var storageNames = new HashSet<string>();
             foreach (var property in storageNameProperties)
             {
                 var value = (string)property.GetMethod.Invoke(x, null);
-                Assert.StartsWith(StoragePrefix, value);
+                Assert.StartsWith(StoragePrefix, value, StringComparison.Ordinal);
                 Assert.DoesNotContain(value, storageNames); // Make sure there are no duplicates
                 storageNames.Add(value);
             }
@@ -180,12 +183,12 @@ namespace NuGet.Insights
 
         protected async Task AssertCsvBlobAsync<T>(string containerName, string testName, string stepName, string fileName, string blobName) where T : ICsvRecord
         {
-            Assert.EndsWith(".csv.gz", blobName);
+            Assert.EndsWith(".csv.gz", blobName, StringComparison.Ordinal);
             var actual = await AssertBlobAsync(containerName, testName, stepName, fileName, blobName, gzip: true);
             var headerFactory = Activator.CreateInstance<T>();
             var stringWriter = new StringWriter { NewLine = "\n" };
             headerFactory.WriteHeader(stringWriter);
-            Assert.StartsWith(stringWriter.ToString(), actual);
+            Assert.StartsWith(stringWriter.ToString(), actual, StringComparison.Ordinal);
         }
 
         protected async Task<BlobClient> GetBlobAsync(string containerName, string blobName)
@@ -207,7 +210,7 @@ namespace NuGet.Insights
                     fileName = blobName.Substring(0, blobName.Length - ".gz".Length);
                 }
 
-                Assert.EndsWith(".gz", blobName);
+                Assert.EndsWith(".gz", blobName, StringComparison.Ordinal);
 
                 using var destStream = new MemoryStream();
                 using BlobDownloadInfo downloadInfo = await blob.DownloadAsync();
@@ -215,7 +218,7 @@ namespace NuGet.Insights
                 destStream.Position = 0;
 
                 Assert.Contains(StorageUtility.RawSizeBytesMetadata, downloadInfo.Details.Metadata);
-                var uncompressedLength = long.Parse(downloadInfo.Details.Metadata[StorageUtility.RawSizeBytesMetadata]);
+                var uncompressedLength = long.Parse(downloadInfo.Details.Metadata[StorageUtility.RawSizeBytesMetadata], CultureInfo.InvariantCulture);
 
                 using var gzipStream = new GZipStream(destStream, CompressionMode.Decompress);
                 using var decompressedStream = new MemoryStream();
@@ -255,7 +258,7 @@ namespace NuGet.Insights
         protected static void OverwriteTestDataAndCopyToSource(string testDataFile, string actual)
         {
             var sourcePath = Path.GetFullPath(testDataFile);
-            var projectDir = sourcePath.Contains("Worker.Logic.Test") ? "Worker.Logic.Test" : "Logic.Test";
+            var projectDir = sourcePath.Contains("Worker.Logic.Test", StringComparison.Ordinal) ? "Worker.Logic.Test" : "Logic.Test";
             var repoDir = TestSettings.GetRepositoryRoot();
             var destPath = Path.Combine(repoDir, "test", projectDir, testDataFile);
 
@@ -293,7 +296,7 @@ namespace NuGet.Insights
             {
                 try
                 {
-                    await CleanUpStorageContainers(x => x.StartsWith(StoragePrefix));
+                    await CleanUpStorageContainers(x => x.StartsWith(StoragePrefix, StringComparison.Ordinal));
                 }
                 finally
                 {
@@ -383,7 +386,7 @@ namespace NuGet.Insights
                 },
             });
 
-            return json.Replace("\r\n", "\n");
+            return json.Replace("\r\n", "\n", StringComparison.Ordinal);
         }
 
         public static HttpRequestMessage Clone(HttpRequestMessage req)

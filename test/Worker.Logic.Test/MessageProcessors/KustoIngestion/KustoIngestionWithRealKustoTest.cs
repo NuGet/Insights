@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -37,8 +38,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
             };
 
             // Arrange
-            var min0 = DateTimeOffset.Parse("2018-12-31T21:16:31.1342711Z");
-            var max1 = DateTimeOffset.Parse("2018-12-31T21:22:25.1269269Z");
+            var min0 = DateTimeOffset.Parse("2018-12-31T21:16:31.1342711Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2018-12-31T21:22:25.1269269Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(CatalogScanDriverType.CatalogDataToCsv, min0);

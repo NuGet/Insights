@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -123,9 +124,9 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
                     output.Add(new PackageVulnerabilityRecord(scanId, scanTimestamp, leaf)
                     {
                         ResultType = PackageVulnerabilityResultType.Vulnerable,
-                        GitHubDatabaseKey = int.Parse(match.Groups["GitHubDatabaseKey"].Value),
+                        GitHubDatabaseKey = int.Parse(match.Groups["GitHubDatabaseKey"].Value, CultureInfo.InvariantCulture),
                         AdvisoryUrl = vulnerability.AdvisoryUrl,
-                        Severity = int.Parse(vulnerability.Severity),
+                        Severity = int.Parse(vulnerability.Severity, CultureInfo.InvariantCulture),
                     });
                 }
             }

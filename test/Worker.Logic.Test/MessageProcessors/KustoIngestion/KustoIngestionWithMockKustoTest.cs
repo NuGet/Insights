@@ -3,6 +3,7 @@
 
 using System;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -35,8 +36,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 x.AppendResultStorageBucketCount = 2;
             };
 
-            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
-            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, max1);
@@ -67,11 +68,11 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 MockCslAdminProvider.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
 
             MockKustoQueueIngestClient.Verify(x => x.IngestFromStorageAsync(
-                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_0.csv.gz?")),
+                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_0.csv.gz?", StringComparison.Ordinal)),
                 It.IsAny<KustoIngestionProperties>(),
                 It.IsAny<StorageSourceOptions>()), Times.Once);
             MockKustoQueueIngestClient.Verify(x => x.IngestFromStorageAsync(
-                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_1.csv.gz?")),
+                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_1.csv.gz?", StringComparison.Ordinal)),
                 It.IsAny<KustoIngestionProperties>(),
                 It.IsAny<StorageSourceOptions>()), Times.Once);
             Assert.Equal(2, MockKustoQueueIngestClient.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
@@ -99,8 +100,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 x.AppendResultStorageBucketCount = 2;
             };
 
-            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
-            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, max1);
@@ -129,7 +130,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 .Setup(
                     x => x.ExecuteQueryAsync(
                         Options.Value.KustoDatabaseName,
-                        It.Is<string>(q => q.Contains("MaxCommitTimestamp")),
+                        It.Is<string>(q => q.Contains("MaxCommitTimestamp", StringComparison.Ordinal)),
                         It.IsAny<ClientRequestProperties>(),
                         It.IsAny<CancellationToken>()))
                 .ReturnsAsync(() =>
@@ -166,11 +167,11 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 MockCslAdminProvider.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
 
             MockKustoQueueIngestClient.Verify(x => x.IngestFromStorageAsync(
-                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_0.csv.gz?")),
+                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_0.csv.gz?", StringComparison.Ordinal)),
                 It.IsAny<KustoIngestionProperties>(),
                 It.IsAny<StorageSourceOptions>()), Times.Once);
             MockKustoQueueIngestClient.Verify(x => x.IngestFromStorageAsync(
-                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_1.csv.gz?")),
+                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_1.csv.gz?", StringComparison.Ordinal)),
                 It.IsAny<KustoIngestionProperties>(),
                 It.IsAny<StorageSourceOptions>()), Times.Once);
             Assert.Equal(2, MockKustoQueueIngestClient.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
@@ -206,7 +207,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     It.IsAny<StorageSourceOptions>()))
                 .Returns<string, KustoIngestionProperties, StorageSourceOptions>(async (u, p, o) =>
                 {
-                    if (u.Contains($"/{Options.Value.PackageManifestContainerName}/compact_0.csv.gz") && attempt <= 2)
+                    if (u.Contains($"/{Options.Value.PackageManifestContainerName}/compact_0.csv.gz", StringComparison.Ordinal) && attempt <= 2)
                     {
                         attempt++;
                         return await MakeTableReportIngestionResultAsync(o, Status.Failed);
@@ -217,8 +218,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     }
                 });
 
-            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
-            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, max1);
@@ -245,11 +246,11 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 MockCslAdminProvider.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
 
             MockKustoQueueIngestClient.Verify(x => x.IngestFromStorageAsync(
-                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_0.csv.gz?")),
+                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_0.csv.gz?", StringComparison.Ordinal)),
                 It.IsAny<KustoIngestionProperties>(),
                 It.IsAny<StorageSourceOptions>()), Times.Exactly(3));
             MockKustoQueueIngestClient.Verify(x => x.IngestFromStorageAsync(
-                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_1.csv.gz?")),
+                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_1.csv.gz?", StringComparison.Ordinal)),
                 It.IsAny<KustoIngestionProperties>(),
                 It.IsAny<StorageSourceOptions>()), Times.Exactly(3));
             Assert.Equal(6, MockKustoQueueIngestClient.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
@@ -296,8 +297,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     return mockReader.Object;
                 });
 
-            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
-            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, max1);
@@ -329,7 +330,9 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
         private void VerifyCommandStartsWith(string command, Times times)
         {
-            MockCslAdminProvider.Verify(x => x.ExecuteControlCommandAsync(Options.Value.KustoDatabaseName, It.Is<string>(c => c.StartsWith(command)), null), times);
+            MockCslAdminProvider.Verify(x => x.ExecuteControlCommandAsync(
+                Options.Value.KustoDatabaseName,
+                It.Is<string>(c => c.StartsWith(command, StringComparison.Ordinal)), null), times);
         }
 
         protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)

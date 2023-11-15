@@ -2,10 +2,16 @@ $files = [ordered]@{
     "dotnet/aspnetcore"  = @{
         License  = "LICENSE.txt";
         Files    = @(
+            "src/Shared/ThrowHelpers/ArgumentNullThrowHelper.cs",
             "src/Identity/Extensions.Core/src/Base32.cs"
         );
-        Revision = "4931b1929188349b438575803bcec889a9a7d190";
-        Patches  = @()
+        Revision = "c096dbbbe652f03be926502d790eb499682eea13";
+        Patches  = @(
+            @{
+                Description = "Add StringComparison.Ordinal to IndexOf"
+                Path        = "0004-Add-StringComparison-to-IndexOf.patch"
+            }
+        )
     };
     "NuGet/NuGet.Jobs"   = @{
         License  = "LICENSE.txt"
@@ -137,10 +143,12 @@ $changes = git status $PSScriptRoot --porcelain=v1 | Out-String
 if ($changes) {
     if ($changes.Trim() -eq "M src/Forks/README.md") {
         $hint = [Environment]::NewLine + "The only file that changed is README.md. Try running src/Forks/downloads.ps1 and committing the changes."
-    } else {
+    }
+    else {
         $hint = ""
     }
     throw "There unexpected changes in the Fork project.$hint" + [Environment]::NewLine + $changes
-} else {
+}
+else {
     Write-Host "No uncommitted changes found"
 }

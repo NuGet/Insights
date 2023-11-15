@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -435,7 +436,7 @@ namespace NuGet.Insights.Worker
                         var values = new List<string>();
                         foreach (var value in grouping)
                         {
-                            if (!value.StartsWith("\""))
+                            if (!value.StartsWith("\"", StringComparison.Ordinal))
                             {
                                 values.Add("\"" + value + "\"");
                             }
@@ -564,7 +565,7 @@ namespace NuGet.Insights.Worker
 
             HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
             {
-                if (req.RequestUri.AbsolutePath.EndsWith($"/{lowerId}.{lowerVersion}.nupkg"))
+                if (req.RequestUri.AbsolutePath.EndsWith($"/{lowerId}.{lowerVersion}.nupkg", StringComparison.Ordinal))
                 {
                     var newReq = Clone(req);
                     newReq.RequestUri = new Uri($"http://localhost/{TestData}/{lowerId}.{lowerVersion}.nupkg.testdata");
@@ -573,7 +574,7 @@ namespace NuGet.Insights.Worker
                     return response;
                 }
 
-                if (req.RequestUri.AbsolutePath.EndsWith($"/{lowerId}.nuspec"))
+                if (req.RequestUri.AbsolutePath.EndsWith($"/{lowerId}.nuspec", StringComparison.Ordinal))
                 {
                     var newReq = Clone(req);
                     newReq.RequestUri = new Uri($"http://localhost/{TestData}/{lowerId}.{lowerVersion}.nuspec");
@@ -582,7 +583,7 @@ namespace NuGet.Insights.Worker
                     return response;
                 }
 
-                if (req.RequestUri.AbsolutePath.EndsWith($"{lowerId}/{lowerVersion}/readme"))
+                if (req.RequestUri.AbsolutePath.EndsWith($"{lowerId}/{lowerVersion}/readme", StringComparison.Ordinal))
                 {
                     var newReq = Clone(req);
                     newReq.RequestUri = new Uri($"http://localhost/{TestData}/{lowerId}.{lowerVersion}.md");
@@ -591,7 +592,7 @@ namespace NuGet.Insights.Worker
                     return response;
                 }
 
-                if (req.RequestUri.AbsolutePath.EndsWith($"/{lowerId}.{lowerVersion}.snupkg"))
+                if (req.RequestUri.AbsolutePath.EndsWith($"/{lowerId}.{lowerVersion}.snupkg", StringComparison.Ordinal))
                 {
                     var newReq = Clone(req);
                     newReq.RequestUri = new Uri($"http://localhost/{TestData}/{lowerId}.{lowerVersion}.snupkg.testdata");
@@ -606,22 +607,22 @@ namespace NuGet.Insights.Worker
 
             if (nupkgFile.Exists)
             {
-                nupkgFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z");
+                nupkgFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z", CultureInfo.InvariantCulture);
             }
 
             if (nuspecFile.Exists)
             {
-                nuspecFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T19:00:00Z");
+                nuspecFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T19:00:00Z", CultureInfo.InvariantCulture);
             }
 
             if (readmeFile.Exists)
             {
-                readmeFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T20:00:00Z");
+                readmeFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T20:00:00Z", CultureInfo.InvariantCulture);
             }
 
             if (snupkgFile.Exists)
             {
-                snupkgFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T21:00:00Z");
+                snupkgFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T21:00:00Z", CultureInfo.InvariantCulture);
             }
         }
 
@@ -755,7 +756,7 @@ namespace NuGet.Insights.Worker
         {
             if (shouldInclude is null)
             {
-                shouldInclude = x => x.StartsWith(StoragePrefix);
+                shouldInclude = x => x.StartsWith(StoragePrefix, StringComparison.Ordinal);
             }
 
             using var adminClient = GetKustoAdminClient();

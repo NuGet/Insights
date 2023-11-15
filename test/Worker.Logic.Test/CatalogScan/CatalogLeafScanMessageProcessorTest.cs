@@ -57,7 +57,7 @@ namespace NuGet.Insights.Worker
                 var result = await Target.ProcessAsync(messages, dequeueCount: 0);
 
                 // Assert
-                Assert.Contains(LogMessages, m => m.StartsWith("[transient] "));
+                Assert.Contains(LogMessages, m => m.StartsWith("[transient] ", StringComparison.Ordinal));
                 Assert.Equal(LogMessages.Count, LogLevelToCount[LogLevel.Information]);
             }
 
@@ -156,7 +156,7 @@ namespace NuGet.Insights.Worker
                 int requestCount = 0;
                 HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
                 {
-                    if (r.RequestUri.AbsolutePath.EndsWith("/$batch"))
+                    if (r.RequestUri.AbsolutePath.EndsWith("/$batch", StringComparison.Ordinal))
                     {
                         if (Interlocked.Increment(ref requestCount) == 1)
                         {
@@ -369,7 +369,7 @@ namespace NuGet.Insights.Worker
                 var requestCount = 0;
                 HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
                 {
-                    if (r.RequestUri.AbsolutePath.EndsWith("RowKey='li-3')")
+                    if (r.RequestUri.AbsolutePath.EndsWith("RowKey='li-3')", StringComparison.Ordinal)
                         && r.Headers.IfMatch.Count != 0)
                     {
                         if (Interlocked.Increment(ref requestCount) == 1)

@@ -1,5 +1,4 @@
 From 434b6517b9c5103589a8db0d050f9360d0b60c80 Mon Sep 17 00:00:00 2001
-From: Joel Verhagen <joel.verhagen@gmail.com>
 Date: Sun, 16 Jan 2022 20:46:34 -0800
 Subject: [PATCH] Add chain info property to CertificateVerificationResult
 

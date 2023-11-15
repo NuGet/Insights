@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>NuGet.Insights.Forks</AssemblyName>
     <RootNamespace>NuGet.Insights</RootNamespace>

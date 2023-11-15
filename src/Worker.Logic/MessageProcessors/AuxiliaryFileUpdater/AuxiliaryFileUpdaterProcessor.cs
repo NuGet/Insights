@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
@@ -181,7 +182,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
             {
                 {
                     StorageUtility.RawSizeBytesMetadata,
-                    uncompressedLength.ToString()
+                    uncompressedLength.ToString(CultureInfo.InvariantCulture)
                 },
                 {
                     VersionSetCommitTimestampMetadata,

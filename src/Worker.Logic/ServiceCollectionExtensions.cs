@@ -173,7 +173,7 @@ namespace NuGet.Insights.Worker
                 var connectionStringBuilder = x.GetRequiredService<KustoConnectionStringBuilder>();
 
                 const string prefix = "https://";
-                if (connectionStringBuilder.DataSource == null || !connectionStringBuilder.DataSource.StartsWith(prefix))
+                if (connectionStringBuilder.DataSource == null || !connectionStringBuilder.DataSource.StartsWith(prefix, StringComparison.Ordinal))
                 {
                     throw new InvalidOperationException($"The Kusto connection must have a data source that starts with '{prefix}'.");
                 }

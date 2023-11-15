@@ -22,8 +22,8 @@ namespace NuGet.Insights
                 return;
             }
 
-            if (value.StartsWith(" ")
-                || value.EndsWith(" ")
+            if (value.StartsWith(" ", StringComparison.Ordinal)
+                || value.EndsWith(" ", StringComparison.Ordinal)
                 || value.IndexOfAny(new[] { ',', '"', '\r', '\n' }) > -1)
             {
                 writer.Write('"');
@@ -43,8 +43,8 @@ namespace NuGet.Insights
                 return;
             }
 
-            if (value.StartsWith(" ")
-                || value.EndsWith(" ")
+            if (value.StartsWith(" ", StringComparison.Ordinal)
+                || value.EndsWith(" ", StringComparison.Ordinal)
                 || value.IndexOfAny(new[] { ',', '"', '\r', '\n' }) > -1)
             {
                 await writer.WriteAsync('"');
@@ -94,7 +94,7 @@ namespace NuGet.Insights
 
         public static DateTimeOffset ParseDateTimeOffset(string input)
         {
-            if (input.EndsWith("Z"))
+            if (input.EndsWith("Z", StringComparison.Ordinal))
             {
                 return DateTimeOffset.ParseExact(input, DateTimeOffsetUtcFormat, CultureInfo.InvariantCulture);
             }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -112,7 +113,7 @@ namespace NuGet.Insights.Worker
                 await _parent._taskStateStorageService.AddAsync(
                     storageSuffix,
                     partitionKey,
-                    buckets.Select(x => x.ToString()).ToList());
+                    buckets.Select(x => x.ToString(CultureInfo.InvariantCulture)).ToList());
 
                 var messages = buckets
                     .Select(b => new CsvCompactMessage<T>
@@ -122,7 +123,7 @@ namespace NuGet.Insights.Worker
                         TaskStateKey = new TaskStateKey(
                             storageSuffix,
                             partitionKey,
-                            b.ToString()),
+                            b.ToString(CultureInfo.InvariantCulture)),
                     })
                     .ToList();
                 await _parent._messageEnqueuer.EnqueueAsync(messages);

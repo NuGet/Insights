@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -519,7 +520,7 @@ namespace NuGet.Insights.StorageNoOpRetry
                 {
                     { ClientRequestIdHeader, context.ClientRequestIdString },
                     { "Content-Type", $"multipart/mixed; boundary={batchBoundary}" },
-                    { "Content-Length", memoryStream.Length.ToString() },
+                    { "Content-Length", memoryStream.Length.ToString(CultureInfo.InvariantCulture) },
                 })
             {
                 ContentStream = memoryStream,

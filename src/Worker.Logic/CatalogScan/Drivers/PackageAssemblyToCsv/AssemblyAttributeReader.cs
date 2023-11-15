@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection.Metadata;
 using System.Threading;
 using Microsoft.Extensions.Logging;
@@ -180,7 +181,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 var arguments = new Dictionary<string, object>();
                 for (var i = 0; i < value.FixedArguments.Length; i++)
                 {
-                    arguments.Add(i.ToString(), value.FixedArguments[i].Value);
+                    arguments.Add(i.ToString(CultureInfo.InvariantCulture), value.FixedArguments[i].Value);
                 }
                 foreach (var argument in value.NamedArguments)
                 {

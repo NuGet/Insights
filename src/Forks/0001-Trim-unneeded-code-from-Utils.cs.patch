@@ -1,5 +1,4 @@
 From 4717ec63e4e2339a0aa8e9a6659ea2a15e534bf3 Mon Sep 17 00:00:00 2001
-From: Joel Verhagen <joel.verhagen@gmail.com>
 Date: Wed, 15 Mar 2023 12:19:10 -0400
 Subject: [PATCH] Trim unneeded code from Utils.cs
 

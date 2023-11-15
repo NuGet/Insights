@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -21,13 +22,13 @@ namespace NuGet.Insights
         private const string Page1Url = "https://example.com/catalog/page1.json";
         private const string Page2Url = "https://example.com/catalog/page2.json";
 
-        private static readonly DateTimeOffset TS0 = DateTimeOffset.Parse("2020-01-01Z");
-        private static readonly DateTimeOffset TS1 = DateTimeOffset.Parse("2020-01-02Z");
-        private static readonly DateTimeOffset TS2 = DateTimeOffset.Parse("2020-01-03Z");
-        private static readonly DateTimeOffset TS3 = DateTimeOffset.Parse("2020-01-04Z");
-        private static readonly DateTimeOffset TS4 = DateTimeOffset.Parse("2020-01-05Z");
-        private static readonly DateTimeOffset TS5 = DateTimeOffset.Parse("2020-01-06Z");
-        private static readonly DateTimeOffset TS6 = DateTimeOffset.Parse("2020-01-07Z");
+        private static readonly DateTimeOffset TS0 = DateTimeOffset.Parse("2020-01-01Z", CultureInfo.InvariantCulture);
+        private static readonly DateTimeOffset TS1 = DateTimeOffset.Parse("2020-01-02Z", CultureInfo.InvariantCulture);
+        private static readonly DateTimeOffset TS2 = DateTimeOffset.Parse("2020-01-03Z", CultureInfo.InvariantCulture);
+        private static readonly DateTimeOffset TS3 = DateTimeOffset.Parse("2020-01-04Z", CultureInfo.InvariantCulture);
+        private static readonly DateTimeOffset TS4 = DateTimeOffset.Parse("2020-01-05Z", CultureInfo.InvariantCulture);
+        private static readonly DateTimeOffset TS5 = DateTimeOffset.Parse("2020-01-06Z", CultureInfo.InvariantCulture);
+        private static readonly DateTimeOffset TS6 = DateTimeOffset.Parse("2020-01-07Z", CultureInfo.InvariantCulture);
 
         public CatalogCommitTimestampProviderTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
@@ -277,7 +278,7 @@ namespace NuGet.Insights
             var ex = await Assert.ThrowsAsync<ArgumentException>(() => Target.GetNextAsync(TS1));
             Assert.StartsWith(
                 "The provided catalog page item URL 'https://example.com/catalog/page1.json' does not match the expected value 'https://example.com/catalog/page0.json'.",
-                ex.Message);
+                ex.Message, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -296,7 +297,7 @@ namespace NuGet.Insights
             var ex = await Assert.ThrowsAsync<ArgumentException>(() => Target.GetNextAsync(TS5));
             Assert.StartsWith(
                 "The page at index 0 has a URL 'https://example.com/catalog/page1.json' that is different than before 'https://example.com/catalog/page0.json'.",
-                ex.Message);
+                ex.Message, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -315,7 +316,7 @@ namespace NuGet.Insights
             var ex = await Assert.ThrowsAsync<ArgumentException>(() => Target.GetNextAsync(TS5));
             Assert.StartsWith(
                 "The page at index 0 has a commit timestamp '2020-01-05T00:00:00.0000000+00:00' that is different than before '2020-01-02T00:00:00.0000000+00:00'.",
-                ex.Message);
+                ex.Message, StringComparison.Ordinal);
         }
     }
 }

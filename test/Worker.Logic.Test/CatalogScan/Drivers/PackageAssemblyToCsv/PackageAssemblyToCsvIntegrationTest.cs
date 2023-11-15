@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -24,9 +25,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         public async Task PackageAssemblyToCsv()
         {
             // Arrange
-            var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
-            var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
-            var max2 = DateTimeOffset.Parse("2020-11-27T19:36:50.4909042Z");
+            var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z", CultureInfo.InvariantCulture);
+            var max2 = DateTimeOffset.Parse("2020-11-27T19:36:50.4909042Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(min0);
@@ -60,8 +61,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
             AdditionalLeaseNames.Add(TempDirLeaseName);
 
-            var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z");
-            var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z");
+            var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(min0);
@@ -93,9 +94,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         {
             // Arrange
             MakeDeletedPackageAvailable();
-            var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z");
-            var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z");
-            var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z");
+            var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z", CultureInfo.InvariantCulture);
+            var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(min0);
@@ -123,8 +124,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             // Arrange
             ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
 
-            var min0 = DateTimeOffset.Parse("2018-08-29T04:22:56.6184931Z");
-            var max1 = DateTimeOffset.Parse("2018-08-29T04:24:40.3247223Z");
+            var min0 = DateTimeOffset.Parse("2018-08-29T04:22:56.6184931Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2018-08-29T04:24:40.3247223Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(min0);
@@ -173,8 +174,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
 
             // Arrange
-            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z");
-            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z");
+            var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(min0);
@@ -187,7 +188,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
             var duplicatePackageRequests = HttpMessageHandlerFactory
                 .SuccessRequests
-                .Where(x => x.RequestUri.GetLeftPart(UriPartial.Path).EndsWith("/gosms.ge-sms-api.1.0.1.nupkg"))
+                .Where(x => x.RequestUri.GetLeftPart(UriPartial.Path).EndsWith("/gosms.ge-sms-api.1.0.1.nupkg", StringComparison.Ordinal))
                 .ToList();
             Assert.Equal(LatestLeavesTypes.Contains(DriverType) ? 1 : 2, duplicatePackageRequests.Count());
         }

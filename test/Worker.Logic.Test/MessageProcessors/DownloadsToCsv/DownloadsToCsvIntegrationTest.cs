@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -267,9 +268,9 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
 
             // Assert
             await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
-            Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Head && r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json"));
-            Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Get && r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json"));
-            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(r => r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json")));
+            Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Head && r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json", StringComparison.Ordinal));
+            Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Get && r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json", StringComparison.Ordinal));
+            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(r => r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json", StringComparison.Ordinal)));
             HttpMessageHandlerFactory.Clear();
 
             // Arrange
@@ -282,9 +283,9 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             // Assert
             await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 1);
             await AssertCsvBlobAsync(DownloadsToCsvDir, Step2, "latest_downloads.csv.gz");
-            Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Head && r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json"));
-            Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Get && r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json"));
-            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(r => r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json")));
+            Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Head && r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json", StringComparison.Ordinal));
+            Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Get && r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json", StringComparison.Ordinal));
+            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(r => r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json", StringComparison.Ordinal)));
         }
 
         private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>> service)
@@ -299,12 +300,12 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             // Set the Last-Modified date
             var fileA = new FileInfo(Path.Combine(TestData, dirName, Step1, "downloads.v1.json"))
             {
-                LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z")
+                LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z", CultureInfo.InvariantCulture)
             };
             var fileB = new FileInfo(Path.Combine(TestData, dirName, Step2, "downloads.v1.json"));
             if (fileB.Exists)
             {
-                fileB.LastWriteTimeUtc = DateTime.Parse("2021-01-15T19:00:00Z");
+                fileB.LastWriteTimeUtc = DateTime.Parse("2021-01-15T19:00:00Z", CultureInfo.InvariantCulture);
             }
 
             SetData(Step1, dirName);

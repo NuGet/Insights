@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -120,7 +121,7 @@ namespace NuGet.Insights
             {
                 var lowerId = item.PackageId.ToLowerInvariant();
                 var lowerVersion = item.ParsePackageVersion().ToNormalizedString().ToLowerInvariant();
-                var legacyUrl = string.Format(_options.Value.LegacyReadmeUrlPattern, lowerId, lowerVersion);
+                var legacyUrl = string.Format(CultureInfo.InvariantCulture, _options.Value.LegacyReadmeUrlPattern, lowerId, lowerVersion);
 
                 urls.Add((ReadmeType.Legacy, legacyUrl));
             }

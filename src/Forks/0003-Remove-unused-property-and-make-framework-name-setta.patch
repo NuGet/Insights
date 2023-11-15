@@ -1,5 +1,4 @@
 From 484fde083afe133c601a5032b996c7919bf35131 Mon Sep 17 00:00:00 2001
-From: Joel Verhagen <jver@microsoft.com>
 Date: Sat, 19 Mar 2022 16:08:54 -0700
 Subject: [PATCH] Remove unused property and make framework name settable
 

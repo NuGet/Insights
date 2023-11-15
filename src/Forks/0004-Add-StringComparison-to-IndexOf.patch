@@ -1,0 +1,24 @@
+From 004b7d35b3e6e4a255be0e4baf0bc5ebb37dc35a Mon Sep 17 00:00:00 2001
+Date: Wed, 15 Nov 2023 17:47:37 -0500
+Subject: [PATCH] Add StringComparison to IndexOf
+
+---
+ .../aspnetcore/src/Identity/Extensions.Core/src/Base32.cs       | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Forks/dotnet/aspnetcore/src/Identity/Extensions.Core/src/Base32.cs b/src/Forks/dotnet/aspnetcore/src/Identity/Extensions.Core/src/Base32.cs
+index 93eed054..152d452d 100644
+--- a/src/Forks/dotnet/aspnetcore/src/Identity/Extensions.Core/src/Base32.cs
++++ b/src/Forks/dotnet/aspnetcore/src/Identity/Extensions.Core/src/Base32.cs
+@@ -87,7 +87,7 @@ internal static class Base32
+         var outputIndex = 0;
+         while (outputIndex < output.Length)
+         {
+-            var byteIndex = _base32Chars.IndexOf(char.ToUpperInvariant(trimmedInput[inputIndex]));
++            var byteIndex = _base32Chars.IndexOf(char.ToUpperInvariant(trimmedInput[inputIndex]), StringComparison.Ordinal);
+             if (byteIndex < 0)
+             {
+                 throw new FormatException();
+-- 
+2.40.0.windows.1
+

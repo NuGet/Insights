@@ -125,7 +125,7 @@
                         {
                             var runtime = scan.Completed.GetValueOrDefault(DateTimeOffset.UtcNow) - scan.Started.Value;
                             var runtimeStr = runtime.ToString("d\\.hh\\:mm\\:ss");
-                            if (runtimeStr.StartsWith("0."))
+                            if (runtimeStr.StartsWith("0.", StringComparison.Ordinal))
                             {
                                 runtimeStr = runtimeStr.Substring(2);
                             }

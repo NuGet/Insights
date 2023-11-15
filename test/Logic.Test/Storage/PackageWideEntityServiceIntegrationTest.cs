@@ -175,7 +175,7 @@ namespace NuGet.Insights
                 Item.CommitTimestamp = CommitTimestamp;
 
                 var ex = await Assert.ThrowsAsync<MessagePackSerializationException>(() => UpdateNonNullBatchAsync());
-                Assert.Contains("Unexpected msgpack code 192 (nil) encountered.", ex.ToString());
+                Assert.Contains("Unexpected msgpack code 192 (nil) encountered.", ex.ToString(), StringComparison.Ordinal);
                 Assert.False(DataFetched);
             }
 

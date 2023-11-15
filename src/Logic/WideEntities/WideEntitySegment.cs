@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Azure;
 using NuGet.Insights.StorageNoOpRetry;
 
@@ -100,7 +101,7 @@ namespace NuGet.Insights.WideEntities
             }
 
             _rowKeyPrefix = value.Substring(0, tildeIndex);
-            _index = int.Parse(value.Substring(tildeIndex + 1));
+            _index = int.Parse(value.Substring(tildeIndex + 1), CultureInfo.InvariantCulture);
         }
 
         public string RowKeyPrefix
@@ -121,7 +122,7 @@ namespace NuGet.Insights.WideEntities
                     throw new ArgumentNullException(nameof(value));
                 }
 
-                if (value.Contains(RowKeySeparator))
+                if (value.Contains(RowKeySeparator, StringComparison.Ordinal))
                 {
                     throw new ArgumentException($"The row key prefix cannot contain the separator '{RowKeySeparator}'", nameof(value));
                 }

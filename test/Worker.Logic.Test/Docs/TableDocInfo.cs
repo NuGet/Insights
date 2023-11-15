@@ -37,7 +37,7 @@ namespace NuGet.Insights.Worker
             var settings = new NuGetInsightsWorkerSettings();
             var settingsProperties = settings.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
             var containerNamePropertyName = $"{tableName.Singularize()}ContainerName";
-            Assert.Contains(containerNamePropertyName, settingsProperties.Select(x => x.Name).Where(x => x.EndsWith("ContainerName")));
+            Assert.Contains(containerNamePropertyName, settingsProperties.Select(x => x.Name).Where(x => x.EndsWith("ContainerName", StringComparison.Ordinal)));
             DefaultContainerName = Assert.IsType<string>(settingsProperties.Single(x => x.Name == containerNamePropertyName).GetValue(settings));
         }
 

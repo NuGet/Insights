@@ -143,7 +143,7 @@ namespace NuGet.Insights
 
             // This is a very hacky way of not adding duplicate types. For example, the KustoDDL type really only needs
             // to exist in NuGet.Insights.Worker.Logic and in no other project.
-            var isTestAssembly = context.Compilation.AssemblyName.EndsWith(".Test");
+            var isTestAssembly = context.Compilation.AssemblyName.EndsWith(".Test", StringComparison.Ordinal);
 
             // System.Diagnostics.Debugger.Launch();
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -212,11 +213,11 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             // Set the Last-Modified date
             var fileA = new FileInfo(Path.Combine(TestData, VerifiedPackagesToCsvDir, Step1, "verifiedPackages.json"))
             {
-                LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z")
+                LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z", CultureInfo.InvariantCulture)
             };
             var fileB = new FileInfo(Path.Combine(TestData, VerifiedPackagesToCsvDir, Step2, "verifiedPackages.json"))
             {
-                LastWriteTimeUtc = DateTime.Parse("2021-01-15T19:00:00Z")
+                LastWriteTimeUtc = DateTime.Parse("2021-01-15T19:00:00Z", CultureInfo.InvariantCulture)
             };
 
             SetData(Step1);
@@ -226,7 +227,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
         {
             HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
             {
-                if (req.RequestUri.AbsolutePath.EndsWith("/verifiedPackages.json"))
+                if (req.RequestUri.AbsolutePath.EndsWith("/verifiedPackages.json", StringComparison.Ordinal))
                 {
                     var newReq = Clone(req);
                     newReq.RequestUri = new Uri($"http://localhost/{TestData}/{VerifiedPackagesToCsvDir}/{stepName}/verifiedPackages.json");

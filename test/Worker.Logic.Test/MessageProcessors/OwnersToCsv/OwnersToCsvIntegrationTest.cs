@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -210,11 +211,11 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             // Set the Last-Modified date
             var fileA = new FileInfo(Path.Combine(TestData, OwnersToCsvDir, Step1, "owners.v2.json"))
             {
-                LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z")
+                LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z", CultureInfo.InvariantCulture)
             };
             var fileB = new FileInfo(Path.Combine(TestData, OwnersToCsvDir, Step2, "owners.v2.json"))
             {
-                LastWriteTimeUtc = DateTime.Parse("2021-01-15T19:00:00Z")
+                LastWriteTimeUtc = DateTime.Parse("2021-01-15T19:00:00Z", CultureInfo.InvariantCulture)
             };
 
             SetData(Step1);
@@ -224,7 +225,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
         {
             HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
             {
-                if (req.RequestUri.AbsolutePath.EndsWith("/owners.v2.json"))
+                if (req.RequestUri.AbsolutePath.EndsWith("/owners.v2.json", StringComparison.Ordinal))
                 {
                     var newReq = Clone(req);
                     newReq.RequestUri = new Uri($"http://localhost/{TestData}/{OwnersToCsvDir}/{stepName}/owners.v2.json");

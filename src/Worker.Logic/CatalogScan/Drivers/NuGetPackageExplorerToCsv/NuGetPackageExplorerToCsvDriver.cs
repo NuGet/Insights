@@ -118,11 +118,11 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                                             || ex is PackagingException
                                             || ex is XmlException
                                             || ex is InvalidOperationException
-                                            || ex.Message.Contains("Enabling license acceptance requires a license or a licenseUrl to be specified.")
-                                            || ex.Message.Contains("Authors is required.")
-                                            || ex.Message.Contains("Description is required.")
-                                            || ex.Message.Contains("Url cannot be empty.")
-                                            || (ex.Message.Contains("Assembly reference ") && ex.Message.Contains(" contains invalid characters.")))
+                                            || ex.Message.Contains("Enabling license acceptance requires a license or a licenseUrl to be specified.", StringComparison.Ordinal)
+                                            || ex.Message.Contains("Authors is required.", StringComparison.Ordinal)
+                                            || ex.Message.Contains("Description is required.", StringComparison.Ordinal)
+                                            || ex.Message.Contains("Url cannot be empty.", StringComparison.Ordinal)
+                                            || (ex.Message.Contains("Assembly reference ", StringComparison.Ordinal) && ex.Message.Contains(" contains invalid characters.", StringComparison.Ordinal)))
                     {
                         _logger.LogWarning(ex, "Package {Id} {Version} had invalid metadata.", leaf.PackageId, leaf.PackageVersion);
                         return MakeSingleItem(scanId, scanTimestamp, leaf, NuGetPackageExplorerResultType.InvalidMetadata);
