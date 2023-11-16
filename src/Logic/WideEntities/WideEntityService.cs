@@ -349,7 +349,7 @@ namespace NuGet.Insights.WideEntities
         public async Task<IReadOnlyList<WideEntity>> ExecuteBatchAsync(string tableName, IEnumerable<WideEntityOperation> batch, bool allowBatchSplits)
         {
             var table = await GetTableAsync(tableName);
-            var tableBatch = new MutableTableTransactionalBatch(table);
+            var tableBatch = new MutableTableTransactionalBatch(table, WideEntitySegment.ClientRequestIdPropertyName);
             var segmentsList = new List<List<WideEntitySegment>>();
             foreach (var operation in batch)
             {
@@ -421,7 +421,7 @@ namespace NuGet.Insights.WideEntities
         public async Task DeleteAsync(string tableName, WideEntity existing)
         {
             var table = await GetTableAsync(tableName);
-            var batch = new MutableTableTransactionalBatch(table);
+            var batch = new MutableTableTransactionalBatch(table, WideEntitySegment.ClientRequestIdPropertyName);
             AddDelete(existing, batch);
             await batch.SubmitBatchAsync();
         }
@@ -440,7 +440,7 @@ namespace NuGet.Insights.WideEntities
         public async Task<WideEntity> ReplaceAsync(string tableName, WideEntity existing, ReadOnlyMemory<byte> content)
         {
             var table = await GetTableAsync(tableName);
-            var batch = new MutableTableTransactionalBatch(table);
+            var batch = new MutableTableTransactionalBatch(table, WideEntitySegment.ClientRequestIdPropertyName);
             var segments = await AddReplaceAsync(existing, content, batch);
             await batch.SubmitBatchAsync();
             return new WideEntity(segments);
@@ -462,7 +462,7 @@ namespace NuGet.Insights.WideEntities
         public async Task<WideEntity> InsertAsync(string tableName, string partitionKey, string rowKey, ReadOnlyMemory<byte> content)
         {
             var table = await GetTableAsync(tableName);
-            var batch = new MutableTableTransactionalBatch(table);
+            var batch = new MutableTableTransactionalBatch(table, WideEntitySegment.ClientRequestIdPropertyName);
             var segments = await AddInsertAsync(partitionKey, rowKey, content, batch);
             await batch.SubmitBatchAsync();
             return new WideEntity(segments);
@@ -485,7 +485,7 @@ namespace NuGet.Insights.WideEntities
         public async Task<WideEntity> InsertOrReplaceAsync(string tableName, string partitionKey, string rowKey, ReadOnlyMemory<byte> content)
         {
             var table = await GetTableAsync(tableName);
-            var batch = new MutableTableTransactionalBatch(table);
+            var batch = new MutableTableTransactionalBatch(table, WideEntitySegment.ClientRequestIdPropertyName);
             var segments = await AddInsertOrReplaceAsync(tableName, partitionKey, rowKey, content, batch);
             await batch.SubmitBatchAsync();
             return new WideEntity(segments);

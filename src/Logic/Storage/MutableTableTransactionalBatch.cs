@@ -16,12 +16,19 @@ namespace NuGet.Insights
     {
         private string _partitionKey;
 
-        public MutableTableTransactionalBatch(TableClientWithRetryContext tableClient)
+        public MutableTableTransactionalBatch(TableClientWithRetryContext tableClient, string clientRequestIdColumn)
         {
             TableClient = tableClient;
+            ClientRequestIdColumn = clientRequestIdColumn;
+        }
+
+        public MutableTableTransactionalBatch(TableClientWithRetryContext tableClient)
+            : this(tableClient, nameof(ITableEntityWithClientRequestId.ClientRequestId))
+        {
         }
 
         public TableClientWithRetryContext TableClient { get; }
+        public string ClientRequestIdColumn { get; }
 
         public void AddEntities<T>(IEnumerable<T> entities) where T : class, ITableEntity, new()
         {
@@ -37,7 +44,7 @@ namespace NuGet.Insights
             Add(new TableTransactionOperation(
                 entity,
                 new TableTransactionAction(TableTransactionActionType.Add, entity),
-                table => table.AddEntityAsync(entity)));
+                table => table.AddEntityAsync(entity, ClientRequestIdColumn)));
         }
 
         public void DeleteEntity(string partitionKey, string rowKey, ETag ifMatch)
@@ -61,7 +68,7 @@ namespace NuGet.Insights
             Add(new TableTransactionOperation(
                 entity,
                 new TableTransactionAction(actionType, entity, ifMatch),
-                table => table.UpdateEntityAsync(entity, ifMatch, mode)));
+                table => table.UpdateEntityAsync(entity, ifMatch, mode, ClientRequestIdColumn)));
         }
 
         public void UpsertEntity<T>(T entity, TableUpdateMode mode) where T : class, ITableEntity, new()
@@ -125,7 +132,7 @@ namespace NuGet.Insights
             }
             else
             {
-                var batchResponse = await TableClient.SubmitTransactionAsync(this.Select(x => x.TransactionAction));
+                var batchResponse = await TableClient.SubmitTransactionAsync(this.Select(x => x.TransactionAction), ClientRequestIdColumn);
                 for (var i = 0; i < batchResponse.Value.Count; i++)
                 {
                     if (this[i].Entity != null)
