@@ -92,6 +92,10 @@ namespace NuGet.Insights.Worker
             {
                 if (!TryGetMatchingInterface(info.Type, typeof(IReadOnlyList<>), out _))
                 {
+                    // This exception may thrown in supported scenarios, but swallowed by System.Text.Json. One such
+                    // case is when a string is stored as an object and System.Text.Json needs to evaluate polymorphism
+                    // options. This leads to all of System.String's interfaces getting passed in here, such as
+                    // IEnumerable which will be rejected.
                     throw new NotImplementedException($"Enumerables must implement IReadOnlyList<T>, i.e. they must have a defined order. The type {info.Type.FullName} will not be serialized.");
                 }
             }
@@ -245,7 +249,6 @@ namespace NuGet.Insights.Worker
                 }
 
                 return false;
-
             }
 
             public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)

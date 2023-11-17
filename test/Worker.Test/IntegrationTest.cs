@@ -136,6 +136,7 @@ namespace NuGet.Insights.Worker
             [Fact]
             public async Task Execute()
             {
+                // Arrange
                 ConfigureSettings = x =>
                 {
                     x.DownloadsV1Urls = new List<string> { $"http://localhost/{TestData}/DownloadsToCsv/{Step1}/downloads.v1.json" };
@@ -149,7 +150,6 @@ namespace NuGet.Insights.Worker
                     x.AutoStartVerifiedPackagesToCsv = true;
                 };
 
-                // Arrange
                 HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
                 {
                     if (Options.Value.DownloadsV1Urls.Contains(req.RequestUri.AbsoluteUri)
@@ -332,6 +332,7 @@ namespace NuGet.Insights.Worker
             [Fact]
             public async Task Execute()
             {
+                // Arrange
                 ConfigureSettings = x =>
                 {
                     x.MaxTempMemoryStreamSize = 0;
@@ -384,7 +385,6 @@ namespace NuGet.Insights.Worker
                     return null;
                 };
 
-                // Arrange
                 await WorkflowService.InitializeAsync();
 
                 foreach (var type in CatalogScanCursorService.StartableDriverTypes)
@@ -448,6 +448,7 @@ namespace NuGet.Insights.Worker
             [Fact]
             public async Task Execute()
             {
+                // Arrange
                 ConfigureSettings = x =>
                 {
                     x.LegacyReadmeUrlPattern = "https://api.nuget.org/legacy-readmes/{0}/{1}/README.md"; // fake
@@ -459,7 +460,6 @@ namespace NuGet.Insights.Worker
                     x.AppendResultStorageBucketCount = 1;
                 };
 
-                // Arrange
                 await CatalogScanService.InitializeAsync();
 
                 var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z", CultureInfo.InvariantCulture);
