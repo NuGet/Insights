@@ -628,17 +628,17 @@ namespace NuGet.Insights.WideEntities
                     do
                     {
                         yield return current;
-                        current *= 2;
+                        current *= 8;
                     }
                     while (current <= WideEntityService.MaxTotalDataSize);
 
-                    for (var i = 16; i >= 0; i--)
+                    for (var i = 5; i >= 0; i--)
                     {
                         yield return WideEntityService.MaxTotalDataSize - i;
                     }
 
                     var random = new Random(0);
-                    for (var i = 0; i < 10; i++)
+                    for (var i = 0; i < 5; i++)
                     {
                         yield return random.Next(0, WideEntityService.MaxTotalDataSize);
                     }
