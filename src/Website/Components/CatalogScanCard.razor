@@ -23,9 +23,7 @@
         statusTitle = "A catalog scan is running.";
     }
 
-    var title = Model.DriverType.ToString().Humanize()
-        .Replace(" csv", " CSV")
-        .Replace("Nu get package explorer", "NuGet Package Explorer");
+    var title = Model.DriverType.GetTitle();
 }
 <CollapseCard IdPrefix="@Model.DriverType.ToString()" Title="@title" StatusText="@statusText" StatusTitle="@statusTitle" BorderClass="@borderClass">
     <ul class="list-group list-group-flush">
@@ -120,18 +118,7 @@
                     <td>@scan.State</td>
                     <td>@scan.Min?.ToZulu()</td>
                     <td>@scan.Max?.ToZulu()</td>
-                    <td>
-                        @if (scan.Started.HasValue)
-                        {
-                            var runtime = scan.Completed.GetValueOrDefault(DateTimeOffset.UtcNow) - scan.Started.Value;
-                            var runtimeStr = runtime.ToString("d\\.hh\\:mm\\:ss");
-                            if (runtimeStr.StartsWith("0.", StringComparison.Ordinal))
-                            {
-                                runtimeStr = runtimeStr.Substring(2);
-                            }
-                            <text>@runtimeStr</text>
-                        }
-                    </td>
+                    <td>@scan.Completed.GetRuntime(scan.Started)</td>
                 </tr>
             }
 

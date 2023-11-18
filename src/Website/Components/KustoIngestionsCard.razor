@@ -32,18 +32,7 @@
                     <td>@ingestion.IngestionId</td>
                     <td>@ingestion.State</td>
                     <td>@ingestion.AttemptCount</td>
-                    <td>
-                        @if (ingestion.Started.HasValue)
-                        {
-                            var runtime = ingestion.Completed.GetValueOrDefault(DateTimeOffset.UtcNow) - ingestion.Started.Value;
-                            var runtimeStr = runtime.ToString("d\\.hh\\:mm\\:ss");
-                            if (runtimeStr.StartsWith("0.", StringComparison.Ordinal))
-                            {
-                                runtimeStr = runtimeStr.Substring(2);
-                            }
-                            <text>@runtimeStr</text>
-                        }
-                    </td>
+                    <td>@ingestion.Completed.GetRuntime(ingestion.Started)</td>
                 </tr>
             }
 

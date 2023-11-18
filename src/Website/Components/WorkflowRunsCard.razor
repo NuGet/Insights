@@ -35,13 +35,7 @@
                     <td>
                         @if (run.State != WorkflowRunState.Created)
                         {
-                            var runtime = run.Completed.GetValueOrDefault(DateTimeOffset.UtcNow) - run.Created;
-                            var runtimeStr = runtime.ToString("d\\.hh\\:mm\\:ss");
-                            if (runtimeStr.StartsWith("0.", StringComparison.Ordinal))
-                            {
-                                runtimeStr = runtimeStr.Substring(2);
-                            }
-                            <text>@runtimeStr</text>
+                            <text>@run.Completed.GetRuntime(run.Created)</text>
                         }
                     </td>
                 </tr>
