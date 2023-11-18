@@ -1,4 +1,5 @@
 @using NuGet.Insights.Worker.KustoIngestion;
+@using NuGet.Insights.Worker.TimedReprocess
 @using NuGet.Insights.Worker.Workflow;
 @model AdminViewModel
 @{
@@ -7,6 +8,7 @@
 
     var isWorkflowEnabled = Model.TimerStates.Single(x => x.Name == WorkflowTimer.TimerName).IsEnabledInConfig;
     var isKustoIngestionEnabled = Model.TimerStates.Single(x => x.Name == KustoIngestionTimer.TimerName).IsEnabledInConfig;
+    var isTimedReprocessEnabled = Model.TimerStates.Single(x => x.Name == TimedReprocessTimer.TimerName).IsEnabledInConfig;
 }
 
 <component type="typeof(WorkerQueueCard)"
@@ -49,7 +51,7 @@
                param-Url="Url" />
 }
 
-@if (isWorkflowEnabled || isKustoIngestionEnabled)
+@if (isWorkflowEnabled || isTimedReprocessEnabled || isKustoIngestionEnabled)
 {
     <h3>Timer history</h3>
 
@@ -58,6 +60,13 @@
         <component type="typeof(WorkflowRunsCard)"
                    render-mode="Static"
                    param-Model="Model.WorkflowRuns" />
+    }
+
+    @if (isTimedReprocessEnabled)
+    {
+        <component type="typeof(TimedReprocessRunsCard)"
+                   render-mode="Static"
+                   param-Model="Model.TimedReprocess" />
     }
 
     @if (isKustoIngestionEnabled)

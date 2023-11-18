@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.KustoIngestion;
 using NuGet.Insights.Worker.ReferenceTracking;
+using NuGet.Insights.Worker.TimedReprocess;
 
 namespace NuGet.Insights.Worker.Workflow
 {
@@ -18,6 +19,7 @@ namespace NuGet.Insights.Worker.Workflow
         private readonly WorkflowStorageService _workflowStorageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly SpecificTimerExecutionService _timerExecutionService;
+        private readonly TimedReprocessTimer _timedReprocessTimer;
         private readonly CatalogScanUpdateTimer _catalogScanUpdateTimer;
         private readonly IReadOnlyList<ICleanupOrphanRecordsTimer> _cleanupOrphanRecordsTimers;
         private readonly IReadOnlyList<IAuxiliaryFileUpdaterTimer> _auxiliaryFileUpdaterTimers;
@@ -30,6 +32,7 @@ namespace NuGet.Insights.Worker.Workflow
             WorkflowStorageService workflowStorageService,
             AutoRenewingStorageLeaseService leaseService,
             SpecificTimerExecutionService timerExecutionService,
+            TimedReprocessTimer timedReprocessTimer,
             CatalogScanUpdateTimer catalogScanUpdateTimer,
             IEnumerable<ICleanupOrphanRecordsTimer> cleanupOrphanRecordsTimers,
             IEnumerable<IAuxiliaryFileUpdaterTimer> auxiliaryFileUpdaterTimers,
@@ -40,11 +43,12 @@ namespace NuGet.Insights.Worker.Workflow
             _workflowStorageService = workflowStorageService;
             _leaseService = leaseService;
             _timerExecutionService = timerExecutionService;
+            _timedReprocessTimer = timedReprocessTimer;
             _catalogScanUpdateTimer = catalogScanUpdateTimer;
             _cleanupOrphanRecordsTimers = cleanupOrphanRecordsTimers.ToList();
             _auxiliaryFileUpdaterTimers = auxiliaryFileUpdaterTimers.ToList();
             _kustoIngestionTimer = kustoIngestionTimer;
-            var timers = new List<ITimer> { _catalogScanUpdateTimer };
+            var timers = new List<ITimer> { _timedReprocessTimer, _catalogScanUpdateTimer };
             timers.AddRange(_cleanupOrphanRecordsTimers);
             timers.AddRange(_auxiliaryFileUpdaterTimers);
             timers.Add(_kustoIngestionTimer);
@@ -137,6 +141,11 @@ namespace NuGet.Insights.Worker.Workflow
             return false;
         }
 
+        internal async Task StartTimedReprocessAsync()
+        {
+            await StartTimerAsync(_timedReprocessTimer);
+        }
+
         internal async Task StartCatalogScansAsync()
         {
             await StartTimerAsync(_catalogScanUpdateTimer);
@@ -183,6 +192,11 @@ namespace NuGet.Insights.Worker.Workflow
             {
                 throw new InvalidOperationException($"The {timer.Name} timer could not be started.");
             }
+        }
+
+        internal async Task<bool> IsTimedReprocessRunningAsync()
+        {
+            return await _timedReprocessTimer.IsRunningAsync();
         }
 
         internal async Task<bool> AreCatalogScansRunningAsync()

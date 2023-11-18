@@ -6,6 +6,7 @@ namespace NuGet.Insights.Worker.Workflow
     public enum WorkflowRunState
     {
         Created,
+        TimedReprocessWorking,
         CatalogScanWorking,
         CleanupOrphanRecordsWorking,
         AuxiliaryFilesWorking,

@@ -32,6 +32,7 @@ using NuGet.Insights.Worker.PackageCertificateToCsv;
 #endif
 using NuGet.Insights.Worker.ReferenceTracking;
 using NuGet.Insights.Worker.TableCopy;
+using NuGet.Insights.Worker.TimedReprocess;
 using NuGet.Insights.Worker.Workflow;
 
 namespace NuGet.Insights.Worker
@@ -225,6 +226,7 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddLoadPackageVersion();
             serviceCollection.AddTableCopy();
             serviceCollection.AddBuildVersionSet();
+            serviceCollection.AddTimedReprocess();
 
             foreach (var serviceType in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementing<ITimer>())
             {
@@ -507,6 +509,13 @@ namespace NuGet.Insights.Worker
         {
             serviceCollection.AddTransient<LoadPackageVersionDriver>();
             serviceCollection.AddTransient<PackageVersionStorageService>();
+        }
+
+        private static void AddTimedReprocess(this IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddTransient<TimedReprocessService>();
+            serviceCollection.AddTransient<TimedReprocessStorageService>();
+            serviceCollection.AddTransient<TimedReprocessTimer>();
         }
     }
 }

@@ -18,6 +18,7 @@ namespace NuGet.Insights.Website
         public DateTimeOffset DefaultMax { get; set; }
         public IReadOnlyList<CatalogScanViewModel> CatalogScans { get; set; }
         public IReadOnlyList<WorkflowRun> WorkflowRuns { get; set; }
+        public TimedReprocessViewModel TimedReprocess { get; set; }
         public IReadOnlyList<KustoIngestionEntity> KustoIngestions { get; set; }
         public IReadOnlyList<TimerState> TimerStates { get; set; }
     }

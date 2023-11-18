@@ -1,0 +1,98 @@
+@using NuGet.Insights.Worker.LoadBucketedPackage;
+@using NuGet.Insights.Worker.TimedReprocess;
+@{
+    string statusText = null;
+    string statusTitle = null;
+    var latestIsAborted = Model.Runs.FirstOrDefault()?.Run.State == TimedReprocessState.Aborted;
+    var isRunning = Model.Runs.Any(x => !x.Run.State.IsTerminal());
+    if (latestIsAborted)
+    {
+        statusText = "⚠️";
+        statusTitle = "The latest timed reprocess run has been aborted.";
+    }
+    else if (isRunning)
+    {
+        statusText = "⌛";
+        statusTitle = "The timed reprocess is running.";
+    }
+}
+<CollapseCard IdPrefix="TimedReprocessRuns" Title="Timed reprocess runs" StatusText="@statusText" StatusTitle="@statusTitle">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Run ID</th>
+                <th>State</th>
+                <th>Buckets</th>
+                <th>Runtime</th>
+            </tr>
+        </thead>
+        <tbody class="smaller-text">
+            @foreach (var model in Model.Runs)
+            {
+                <tr>
+                    <td>@model.Run.RunId</td>
+                    <td>@model.Run.State</td>
+                    <td>@model.Run.BucketRanges</td>
+                    <td>@model.Run.Completed.GetRuntime(model.Run.Started)</td>
+                </tr>
+
+                if (model.Scans is not null && model.Scans.Count > 0)
+                {
+                    <tr>
+                        <td colspan="4">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Driver type</th>
+                                        <th>Scan ID</th>
+                                        <th>State</th>
+                                        <th>Runtime</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="smaller-text">
+                                    @foreach ((var reprocessScan, var indexScan) in model.Scans)
+                                    {
+                                        <tr>
+                                            <td>@reprocessScan.DriverType.GetTitle()</td>
+                                            <td>@reprocessScan.ScanId</td>
+                                            <td>@(indexScan is null ? (reprocessScan.Completed ? "Complete" : "Running") : indexScan.State)</td>
+                                            <td>@(indexScan?.Completed.GetRuntime(indexScan.Started))</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                }
+            }
+
+            @if (Model.Runs.Count == 0)
+            {
+                <tr>
+                    <td colspan="4" class="text-center">
+                        <i>No timed reprocess runs have been started.</i>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item"><b>Max buckets per run:</b> @Model.Details.MaxBuckets</li>
+        <li class="list-group-item"><b>Bucket stale rate:</b> every @Model.Details.BucketSize.Humanize()</li>
+        <li class="list-group-item"><b>Current time window:</b> @Model.Details.WindowStart.ToZuluDate() to @Model.Details.WindowEnd.ToZuluDate() (@Model.Details.Window.Humanize())</li>
+        <li class="list-group-item"><b>Current stale threshold:</b> bucket index @Model.Details.CurrentBucket</li>
+        <li class="list-group-item">
+            <b>Stale buckets:</b>
+            @Model.StaleBuckets.Count
+            @if (Model.StaleBuckets.Count > 0)
+            {
+                <text> (@(BucketRange.BucketsToRanges(Model.StaleBuckets).Replace(",", ", ")))</text>
+            }
+        </li>
+    </ul>
+</CollapseCard>
+
+@code {
+    [Parameter]
+    public TimedReprocessViewModel Model { get; set; }
+}

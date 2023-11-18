@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.KustoIngestion;
 using NuGet.Insights.Worker.ReferenceTracking;
+using NuGet.Insights.Worker.TimedReprocess;
 using NuGet.Insights.Worker.Workflow;
 
 namespace NuGet.Insights.Worker
@@ -20,6 +21,8 @@ namespace NuGet.Insights.Worker
         private static readonly IReadOnlyList<Func<Type, bool>> DesiredGrouping = new Func<Type, bool>[]
         {
             x => x.IsAssignableTo(typeof(WorkflowTimer)),
+
+            x => x.IsAssignableTo(typeof(TimedReprocessTimer)),
 
             x => x.IsAssignableTo(typeof(CatalogScanUpdateTimer)),
 

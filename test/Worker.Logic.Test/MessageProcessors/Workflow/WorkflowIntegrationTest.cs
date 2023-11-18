@@ -185,7 +185,7 @@ namespace NuGet.Insights.Worker.Workflow
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => UpdateAsync(workflow));
             Assert.Equal("The CatalogScanUpdate timer could not be started.", ex.Message);
             workflow = await WorkflowStorageService.GetRunAsync(workflow.RunId);
-            Assert.Equal(WorkflowRunState.Created, workflow.State);
+            Assert.Equal(WorkflowRunState.TimedReprocessWorking, workflow.State);
             Assert.Equal(1, workflow.AttemptCount);
             var scans = await CatalogScanStorageService.GetIndexScansAsync();
             var onlyScan = Assert.Single(scans);

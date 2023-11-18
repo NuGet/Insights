@@ -221,6 +221,7 @@ namespace NuGet.Insights.Worker
                 tables.Remove(nameof(NuGetInsightsWorkerSettings.CursorTableName));
                 tables.Remove(nameof(NuGetInsightsWorkerSettings.KustoIngestionTableName));
                 tables.Remove(nameof(NuGetInsightsWorkerSettings.TaskStateTableName));
+                tables.Remove(nameof(NuGetInsightsWorkerSettings.TimedReprocessTableName));
                 tables.Remove(nameof(NuGetInsightsWorkerSettings.TimerTableName));
                 tables.Remove(nameof(NuGetInsightsWorkerSettings.WorkflowRunTableName));
 
@@ -330,6 +331,10 @@ namespace NuGet.Insights.Worker
 
                 await WorkflowService.InitializeAsync();
 
+                // Run the LoadBucketedPackage driver to so the timed reprocess can process something.
+                await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);
+                var initialLBP = await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, max1);
+
                 foreach (var type in CatalogScanCursorService.StartableDriverTypes)
                 {
                     await SetCursorAsync(type, min0);
@@ -365,7 +370,10 @@ namespace NuGet.Insights.Worker
                 Assert.All(indexScans, x => Assert.Equal(CatalogIndexScanState.Complete, x.State));
                 Assert.Equal(
                     CatalogScanCursorService.StartableDriverTypes.ToArray(),
-                    indexScans.Select(x => x.DriverType).Order().ToArray());
+                    indexScans.Where(x => x.BucketRanges is null && x.ScanId != initialLBP.ScanId).Select(x => x.DriverType).Order().ToArray());
+                Assert.Equal(
+                    TimedReprocessService.GetReprocessBatches().SelectMany(b => b).Order().ToArray(),
+                    indexScans.Where(x => x.BucketRanges is not null).Select(x => x.DriverType).Order().ToArray());
 
                 // Make sure all of the containers are have ingestions
                 var containerNames = Host.Services.GetRequiredService<CsvResultStorageContainers>().GetContainerNames();

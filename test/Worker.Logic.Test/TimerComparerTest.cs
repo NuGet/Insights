@@ -9,6 +9,7 @@ using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.KustoIngestion;
 using NuGet.Insights.Worker.PackageCertificateToCsv;
 using NuGet.Insights.Worker.ReferenceTracking;
+using NuGet.Insights.Worker.TimedReprocess;
 using NuGet.Insights.Worker.Workflow;
 using Xunit;
 using Xunit.Abstractions;
@@ -24,6 +25,11 @@ namespace NuGet.Insights.Worker
                 new List<Type>
                 {
                     typeof(WorkflowTimer),
+                },
+
+                new List<Type>
+                {
+                    typeof(TimedReprocessTimer),
                 },
 
                 new List<Type>

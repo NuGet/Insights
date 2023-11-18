@@ -36,6 +36,7 @@ using NuGet.Insights.ReferenceTracking;
 using NuGet.Insights.StorageNoOpRetry;
 using NuGet.Insights.Worker.BuildVersionSet;
 using NuGet.Insights.Worker.KustoIngestion;
+using NuGet.Insights.Worker.TimedReprocess;
 using NuGet.Insights.Worker.Workflow;
 using NuGet.Versioning;
 using Xunit;
@@ -90,6 +91,8 @@ namespace NuGet.Insights.Worker
         public CatalogScanCursorService CatalogScanCursorService => Host.Services.GetRequiredService<CatalogScanCursorService>();
         public CursorStorageService CursorStorageService => Host.Services.GetRequiredService<CursorStorageService>();
         public CatalogScanStorageService CatalogScanStorageService => Host.Services.GetRequiredService<CatalogScanStorageService>();
+        public TimedReprocessService TimedReprocessService => Host.Services.GetRequiredService<TimedReprocessService>();
+        public TimedReprocessStorageService TimedReprocessStorageService => Host.Services.GetRequiredService<TimedReprocessStorageService>();
         public TaskStateStorageService TaskStateStorageService => Host.Services.GetRequiredService<TaskStateStorageService>();
         public KustoIngestionService KustoIngestionService => Host.Services.GetRequiredService<KustoIngestionService>();
         public KustoIngestionStorageService KustoIngestionStorageService => Host.Services.GetRequiredService<KustoIngestionStorageService>();
@@ -117,6 +120,7 @@ namespace NuGet.Insights.Worker
 
         protected void ConfigureWorkerDefaultsAndSettings(NuGetInsightsWorkerSettings x)
         {
+            x.TimedReprocessIsEnabled = true;
             x.DisableMessageDelay = true;
             x.AppendResultStorageBucketCount = 3;
             x.KustoDatabaseName = "TestKustoDb";
@@ -158,6 +162,7 @@ namespace NuGet.Insights.Worker
             x.SymbolPackageArchiveContainerName = $"{StoragePrefix}1sa2c1";
             x.SymbolPackageArchiveEntryContainerName = $"{StoragePrefix}1sae2c1";
             x.TaskStateTableName = $"{StoragePrefix}1ts1";
+            x.TimedReprocessTableName = $"{StoragePrefix}1tr1";
             x.VerifiedPackageContainerName = $"{StoragePrefix}1vp1";
             x.VersionSetAggregateTableName = $"{StoragePrefix}1vsa1";
             x.VersionSetContainerName = $"{StoragePrefix}1vs1";
@@ -217,6 +222,27 @@ namespace NuGet.Insights.Worker
         {
             var result = await CatalogScanService.UpdateAsync(driverType, max, onlyLatestLeaves);
             return await UpdateAsync(result.Scan);
+        }
+
+        protected async Task<TimedReprocessRun> UpdateAsync(TimedReprocessRun run)
+        {
+            Assert.NotNull(run);
+            await ProcessQueueAsync(async () =>
+            {
+                run = await TimedReprocessStorageService.GetRunAsync(run.RunId);
+
+                if (!run.State.IsTerminal())
+                {
+                    await Task.Delay(TimeSpan.FromMilliseconds(100));
+                    return false;
+                }
+
+                Assert.Equal(TimedReprocessState.Complete, run.State);
+
+                return true;
+            });
+
+            return run;
         }
 
         protected async Task<WorkflowRun> UpdateAsync(WorkflowRun run)

@@ -4,8 +4,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using NuGet.Insights.Worker;
 using NuGet.Insights.Worker.KustoIngestion;
+using NuGet.Insights.Worker.TimedReprocess;
 using NuGet.Insights.Worker.Workflow;
 
 namespace NuGet.Insights.Website
@@ -23,8 +25,10 @@ namespace NuGet.Insights.Website
         private readonly TimerExecutionService _timerExecutionService;
         private readonly WorkflowService _workflowService;
         private readonly WorkflowStorageService _workflowStorageService;
+        private readonly TimedReprocessStorageService _timedReprocessStorageService;
         private readonly KustoIngestionStorageService _kustoIngestionStorageService;
         private readonly MoveMessagesTaskQueue _moveMessagesTaskQueue;
+        private readonly IOptions<NuGetInsightsWebsiteSettings> _options;
 
         public ViewModelFactory(
             CatalogCommitTimestampProvider catalogCommitTimestampProvider,
@@ -36,8 +40,10 @@ namespace NuGet.Insights.Website
             TimerExecutionService timerExecutionService,
             WorkflowService workflowService,
             WorkflowStorageService workflowStorageService,
+            TimedReprocessStorageService timedReprocessStorageService,
             KustoIngestionStorageService kustoIngestionStorageService,
-            MoveMessagesTaskQueue moveMessagesTaskQueue)
+            MoveMessagesTaskQueue moveMessagesTaskQueue,
+            IOptions<NuGetInsightsWebsiteSettings> options)
         {
             _catalogCommitTimestampProvider = catalogCommitTimestampProvider;
             _rawMessageEnqueuer = rawMessageEnqueuer;
@@ -48,8 +54,10 @@ namespace NuGet.Insights.Website
             _timerExecutionService = timerExecutionService;
             _workflowService = workflowService;
             _workflowStorageService = workflowStorageService;
+            _timedReprocessStorageService = timedReprocessStorageService;
             _kustoIngestionStorageService = kustoIngestionStorageService;
             _moveMessagesTaskQueue = moveMessagesTaskQueue;
+            _options = options;
         }
 
         public async Task<AdminViewModel> GetAdminViewModelAsync()
@@ -61,6 +69,7 @@ namespace NuGet.Insights.Website
             var isWorkflowRunningTask = _workflowService.IsWorkflowRunningAsync();
             var timerStatesTask = _timerExecutionService.GetStateAsync();
             var workflowRunsTask = GetWorkflowRunsAsync();
+            var timedReprocessRunsTask = GetTimedReprocessRunsAsync(catalogScansTask);
             var kustoIngestionsTask = GetKustoIngestionsAsync();
             var catalogCommitTimestampTask = _remoteCursorClient.GetCatalogAsync();
 
@@ -72,6 +81,7 @@ namespace NuGet.Insights.Website
                 isWorkflowRunningTask,
                 timerStatesTask,
                 workflowRunsTask,
+                timedReprocessRunsTask,
                 kustoIngestionsTask,
                 catalogCommitTimestampTask);
 
@@ -115,6 +125,7 @@ namespace NuGet.Insights.Website
                 ExpandQueue = await expandQueueTask,
                 CatalogScans = catalogScans,
                 WorkflowRuns = await workflowRunsTask,
+                TimedReprocess = await timedReprocessRunsTask,
                 KustoIngestions = await kustoIngestionsTask,
                 TimerStates = await timerStatesTask,
             };
@@ -125,6 +136,46 @@ namespace NuGet.Insights.Website
         private async Task<IReadOnlyList<WorkflowRun>> GetWorkflowRunsAsync()
         {
             return await _workflowStorageService.GetLatestRunsAsync(HistoryCount);
+        }
+
+        private async Task<TimedReprocessViewModel> GetTimedReprocessRunsAsync(Task<Dictionary<CatalogScanDriverType, List<CatalogIndexScan>>> catalogScansTask)
+        {
+            var staleBucketsTask = _timedReprocessStorageService.GetAllStaleBucketsAsync();
+            var runsTask = _timedReprocessStorageService.GetLatestRunsAsync(HistoryCount);
+
+            var runs = await runsTask;
+
+            var runViewModels = new List<TimedReprocessRunViewModel>();
+            for (var i = 0; i < runs.Count; i++)
+            {
+                List<(TimedReprocessCatalogScan ReprocessScan, CatalogIndexScan IndexScan)> scans = null;
+                if (i == 0)
+                {
+                    var reprocessScans = await _timedReprocessStorageService.GetScansAsync(runs[i].RunId);
+                    var allCatalogScans = await catalogScansTask;
+                    scans = new();
+
+                    foreach (var reprocessScan in reprocessScans)
+                    {
+                        CatalogIndexScan catalogScan = null;
+                        if (allCatalogScans.TryGetValue(reprocessScan.DriverType, out var catalogScans))
+                        {
+                            catalogScan = catalogScans.FirstOrDefault(x => x.ScanId == reprocessScan.ScanId);
+                        }
+
+                        scans.Add((reprocessScan, catalogScan));
+                    }
+                }
+
+                runViewModels.Add(new TimedReprocessRunViewModel { Run = runs[i], Scans = scans });
+            }
+
+            return new TimedReprocessViewModel
+            {
+                StaleBuckets = await staleBucketsTask,
+                Details = TimedReprocessDetails.Create(_options.Value),
+                Runs = runViewModels,
+            };
         }
 
         private async Task<IReadOnlyList<KustoIngestionEntity>> GetKustoIngestionsAsync()

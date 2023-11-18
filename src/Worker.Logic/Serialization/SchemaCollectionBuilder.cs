@@ -29,6 +29,7 @@ using NuGet.Insights.Worker.PackageVersionToCsv;
 using NuGet.Insights.Worker.ReferenceTracking;
 using NuGet.Insights.Worker.SymbolPackageArchiveToCsv;
 using NuGet.Insights.Worker.TableCopy;
+using NuGet.Insights.Worker.TimedReprocess;
 using NuGet.Insights.Worker.Workflow;
 
 namespace NuGet.Insights.Worker
@@ -48,6 +49,8 @@ namespace NuGet.Insights.Worker
             new SchemaV1<KustoIngestionMessage>("ki"),
             new SchemaV1<KustoContainerIngestionMessage>("kci"),
             new SchemaV1<KustoBlobIngestionMessage>("kbi"),
+
+            new SchemaV1<TimedReprocessMessage>("tr"),
 
             new SchemaV1<WorkflowRunMessage>("wr"),
 

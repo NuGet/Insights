@@ -23,10 +23,35 @@ namespace NuGet.Insights.Worker
         public int OldWorkflowRunsToKeep { get; set; } = 49;
         public int WorkflowMaxAttempts { get; set; } = 5;
 
+        public bool TimedReprocessIsEnabled { get; set; } = false;
+
+        /// <summary>
+        /// This is the desired amount of time it will take to reprocess all packages. For content like legacy README or
+        /// symbol packages that can be modified without any event in the catalog, this is the maximum staleness of that
+        /// information stored in NuGet.Insights.
+        /// </summary>
+        public TimeSpan TimedReprocessWindow { get; set; } = TimeSpan.FromDays(14);
+
+        /// <summary>
+        /// This is the frequency that the timed preprocess service processes a set of package buckets. If you're using
+        /// the workflow system, this configuration value is overridden by <see cref="WorkflowFrequency"/>.
+        /// </summary>
+        public TimeSpan TimedReprocessFrequency { get; set; } = TimeSpan.FromHours(6);
+
+        /// <summary>
+        /// This is the maximum number of buckets to reprocess in a single execution. This configuration exists so that if
+        /// the reprocessing flow is for a long time or takes too long, the next attempt won't overload the system by
+        /// reprocessing too many packages at once. This number should be larger than <see cref="TimedReprocessWindow"/>
+        /// divided by <see cref="TimedReprocessFrequency"/> so that the reprocessor does not get behind.
+        /// </summary>
+        public int TimedReprocessMaxBuckets { get; set; } = 25;
+
         public bool AutoStartCatalogScanUpdate { get; set; } = false;
         public bool AutoStartDownloadToCsv { get; set; } = false;
         public bool AutoStartOwnersToCsv { get; set; } = false;
         public bool AutoStartVerifiedPackagesToCsv { get; set; } = false;
+        public bool AutoStartTimedReprocess { get; set; } = false;
+
         public TimeSpan CatalogScanUpdateFrequency { get; set; } = TimeSpan.FromHours(6);
         public TimeSpan DownloadToCsvFrequency { get; set; } = TimeSpan.FromHours(3);
         public TimeSpan OwnersToCsvFrequency { get; set; } = TimeSpan.FromHours(3);
@@ -66,6 +91,7 @@ namespace NuGet.Insights.Worker
         public string KustoIngestionTableName { get; set; } = "kustoingestions";
         public string WorkflowRunTableName { get; set; } = "workflowruns";
         public string BucketedPackageTableName { get; set; } = "bucketedpackages";
+        public string TimedReprocessTableName { get; set; } = "timedreprocess";
 
         public string LatestPackageLeafTableName { get; set; } = "latestpackageleaves";
         public string PackageAssetContainerName { get; set; } = "packageassets";

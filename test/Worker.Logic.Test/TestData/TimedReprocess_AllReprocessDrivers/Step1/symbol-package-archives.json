@@ -1,0 +1,72 @@
+[
+  {
+    "PartitionKey": "dawnx.npoi",
+    "RowKey": "1.0.10",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2018-12-06T03:17:41.9986142+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dawnx.npoi",
+    "RowKey": "1.0.5.3",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2018-12-06T03:17:41.9986142+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dawnx.npoi",
+    "RowKey": "1.0.5",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2018-12-06T03:17:41.9986142+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dawnx.npoi",
+    "RowKey": "1.0.7.12",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2018-12-06T03:17:41.9986142+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dawnx.npoi",
+    "RowKey": "1.0.7.6",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2018-12-06T03:17:41.9986142+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "dawnx.npoi",
+    "RowKey": "1.0.9",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2018-12-06T03:17:41.9986142+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  },
+  {
+    "PartitionKey": "glr.afy.utils",
+    "RowKey": "1.1.0.13",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": "2018-12-06T03:17:41.9986142+00:00",
+      "HttpHeaders": null,
+      "MZipHash": null
+    }
+  }
+]
