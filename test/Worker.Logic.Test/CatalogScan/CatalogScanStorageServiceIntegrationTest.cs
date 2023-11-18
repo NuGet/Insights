@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -11,6 +14,91 @@ namespace NuGet.Insights.Worker
 {
     public class CatalogScanStorageServiceIntegrationTest : BaseWorkerLogicIntegrationTest
     {
+        public class TheReplaceAsyncMethodForIndexScan : CatalogScanStorageServiceIntegrationTest
+        {
+            [Fact]
+            public async Task EmitsExpectedTelemetry()
+            {
+                await Target.InitializeAsync();
+                var scan = new CatalogIndexScan
+                {
+                    Completed = new DateTimeOffset(2023, 11, 18, 3, 0, 0, TimeSpan.Zero),
+                    ContinueUpdate = true,
+                    Created = new DateTimeOffset(2023, 11, 18, 1, 0, 0, TimeSpan.Zero),
+                    CursorName = "my-cursor",
+                    Min = new DateTimeOffset(2023, 1, 10, 10, 0, 0, TimeSpan.Zero),
+                    Max = new DateTimeOffset(2023, 1, 10, 15, 0, 0, TimeSpan.Zero),
+                    OnlyLatestLeaves = true,
+                    ParentDriverType = CatalogScanDriverType.LoadPackageArchive,
+                    ParentScanId = "my-parent-scan-id",
+                    PartitionKey = CatalogScanDriverType.Internal_FindLatestCatalogLeafScan.ToString(),
+                    Result = CatalogIndexScanResult.ExpandLatestLeaves,
+                    RowKey = "my-scan-id",
+                    Started = new DateTimeOffset(2023, 11, 18, 2, 0, 0, TimeSpan.Zero),
+                    State = CatalogIndexScanState.Enqueuing,
+                    StorageSuffix = "my-storage-suffix",
+                };
+                await Target.InsertAsync(scan);
+
+                await Target.ReplaceAsync(scan);
+
+                var formattedProperties = GetFormattedTelemetryProperties();
+                Assert.Equal(
+                    """
+                    {
+                      "Completed": "2023-11-18T03:00:00.0000000\u002B00:00",
+                      "ContinueUpdate": "True",
+                      "Created": "2023-11-18T01:00:00.0000000\u002B00:00",
+                      "CursorName": "my-cursor",
+                      "DriverType": "Internal_FindLatestCatalogLeafScan",
+                      "Max": "2023-01-10T15:00:00.0000000\u002B00:00",
+                      "Min": "2023-01-10T10:00:00.0000000\u002B00:00",
+                      "OnlyLatestLeaves": "True",
+                      "ParentDriverType": "LoadPackageArchive",
+                      "ParentScanId": "my-parent-scan-id",
+                      "Result": "ExpandLatestLeaves",
+                      "ScanId": "my-scan-id",
+                      "Started": "2023-11-18T02:00:00.0000000\u002B00:00",
+                      "State": "Enqueuing",
+                      "StorageSuffix": "my-storage-suffix"
+                    }
+                    """,
+                    formattedProperties);
+                var actualKeys = JsonSerializer
+                    .Deserialize<Dictionary<string, string>>(formattedProperties)
+                    .Keys
+                    .Order(StringComparer.Ordinal);
+                var expectedKeys = typeof(CatalogIndexScan)
+                    .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                    .Select(p => p.Name)
+                    .Except(new[]
+                    {
+                        nameof(CatalogIndexScan.ClientRequestId),
+                        nameof(CatalogIndexScan.ETag),
+                        nameof(CatalogIndexScan.PartitionKey),
+                        nameof(CatalogIndexScan.RowKey),
+                        nameof(CatalogIndexScan.Timestamp),
+                    })
+                    .Order(StringComparer.Ordinal);
+                Assert.Equal(expectedKeys, actualKeys);
+            }
+
+            private string GetFormattedTelemetryProperties()
+            {
+                var prefix = "Metric emitted: CatalogIndexScan.RuntimeMinutes = 60 with properties ";
+                var telemetry = LogMessages.FirstOrDefault(x => x.Contains(prefix, StringComparison.Ordinal));
+                Assert.NotNull(telemetry);
+
+                var properties = JsonSerializer.Deserialize<Dictionary<string, string>>(telemetry.Split(prefix)[1]);
+                var formattedProperties = JsonSerializer.Serialize(properties, new JsonSerializerOptions { WriteIndented = true });
+                return formattedProperties;
+            }
+
+            public TheReplaceAsyncMethodForIndexScan(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
+        }
+
         public class TheInsertAsyncMethodForIndexScan : CatalogScanStorageServiceIntegrationTest
         {
             [Fact]

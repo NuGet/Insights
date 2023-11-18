@@ -320,11 +320,35 @@ namespace NuGet.Insights.Worker
                 .GetEntityOrNullAsync<CatalogLeafScan>(CatalogLeafScan.GetPartitionKey(scanId, pageId), leafId);
         }
 
-        public async Task ReplaceAsync(CatalogIndexScan indexScan)
+        public async Task ReplaceAsync(CatalogIndexScan scan)
         {
-            _logger.LogInformation("Replacing catalog index scan {ScanId}, state: {State}.", indexScan.ScanId, indexScan.State);
-            var response = await (await GetIndexScanTableAsync()).UpdateEntityAsync(indexScan, indexScan.ETag, TableUpdateMode.Replace);
-            indexScan.UpdateETag(response);
+            var runtime = scan.Started.HasValue ? (scan.Completed ?? DateTimeOffset.UtcNow) - scan.Started.Value : TimeSpan.Zero;
+
+            _telemetryClient.TrackMetric(
+                $"{nameof(CatalogIndexScan)}.RuntimeMinutes",
+                runtime.TotalMinutes,
+                new Dictionary<string, string>
+                {
+                    { nameof(scan.Completed), scan.Completed?.ToString("O") },
+                    { nameof(scan.ContinueUpdate), scan.ContinueUpdate.ToString() },
+                    { nameof(scan.Created), scan.Created.ToString("O") },
+                    { nameof(scan.CursorName), scan.CursorName },
+                    { nameof(scan.DriverType), scan.DriverType.ToString() },
+                    { nameof(scan.Max), scan.Max?.ToString("O") },
+                    { nameof(scan.Min), scan.Min?.ToString("O") },
+                    { nameof(scan.OnlyLatestLeaves), scan.OnlyLatestLeaves?.ToString() },
+                    { nameof(scan.ParentDriverType), scan.ParentDriverType?.ToString() },
+                    { nameof(scan.ParentScanId), scan.ParentScanId },
+                    { nameof(scan.Result), scan.Result?.ToString() },
+                    { nameof(scan.ScanId), scan.ScanId },
+                    { nameof(scan.Started), scan.Started?.ToString("O") },
+                    { nameof(scan.State), scan.State.ToString() },
+                    { nameof(scan.StorageSuffix), scan.StorageSuffix },
+                });
+
+            _logger.LogInformation("Replacing catalog index scan {ScanId}, state: {State}.", scan.ScanId, scan.State);
+            var response = await (await GetIndexScanTableAsync()).UpdateEntityAsync(scan, scan.ETag, TableUpdateMode.Replace);
+            scan.UpdateETag(response);
         }
 
         public async Task ReplaceAsync(CatalogPageScan pageScan)
