@@ -15,12 +15,15 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Azure;
+using Azure.Data.Tables;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using MessagePack;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using NuGet.Insights.WideEntities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -173,6 +176,32 @@ namespace NuGet.Insights
         public ILogger Logger => Host.Services.GetRequiredService<ILogger<BaseLogicIntegrationTest>>();
         public ConcurrentQueue<string> LogMessages { get; } = new ConcurrentQueue<string>();
 
+        protected async Task<List<T>> GetEntitiesAsync<T>(string tableName) where T : class, ITableEntity
+        {
+            var client = await ServiceClientFactory.GetTableServiceClientAsync();
+            var table = client.GetTableClient(tableName);
+            return await table.QueryAsync<T>().ToListAsync();
+        }
+
+        protected async Task<List<(string PartitionKey, string RowKey, T Entity)>> GetWideEntitiesAsync<T>(
+        string tableName,
+            Func<Stream, T> deserializeEntity = null)
+        {
+            deserializeEntity ??= stream => MessagePackSerializer.Deserialize<T>(stream, NuGetInsightsMessagePack.Options);
+
+            var service = Host.Services.GetRequiredService<WideEntityService>();
+
+            var wideEntities = await service.RetrieveAsync(tableName);
+            var entities = new List<(string PartitionKey, string RowKey, T Entity)>();
+            foreach (var wideEntity in wideEntities)
+            {
+                var entity = deserializeEntity(wideEntity.GetStream());
+                entities.Add((wideEntity.PartitionKey, wideEntity.RowKey, entity));
+            }
+
+            return entities;
+        }
+
         protected async Task AssertBlobCountAsync(string containerName, int expected)
         {
             var client = await ServiceClientFactory.GetBlobServiceClientAsync();
@@ -181,7 +210,7 @@ namespace NuGet.Insights
             Assert.Equal(expected, blobs.Count);
         }
 
-        protected async Task AssertCsvBlobAsync<T>(string containerName, string testName, string stepName, string fileName, string blobName) where T : ICsvRecord
+        protected async Task<string> AssertCsvBlobAsync<T>(string containerName, string testName, string stepName, string fileName, string blobName) where T : ICsvRecord
         {
             Assert.EndsWith(".csv.gz", blobName, StringComparison.Ordinal);
             var actual = await AssertBlobAsync(containerName, testName, stepName, fileName, blobName, gzip: true);
@@ -189,6 +218,7 @@ namespace NuGet.Insights
             var stringWriter = new StringWriter { NewLine = "\n" };
             headerFactory.WriteHeader(stringWriter);
             Assert.StartsWith(stringWriter.ToString(), actual, StringComparison.Ordinal);
+            return actual;
         }
 
         protected async Task<BlobClient> GetBlobAsync(string containerName, string blobName)

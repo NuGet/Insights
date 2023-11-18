@@ -4,11 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
-using MessagePack;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -34,13 +31,13 @@ namespace NuGet.Insights.Worker.LoadPackageArchive
             await UpdateAsync(max1);
 
             // Assert
-            await AssertOutputAsync(LoadPackageArchiveDir, Step1);
+            await AssertPackageArchiveTableAsync(LoadPackageArchiveDir, Step1);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertOutputAsync(LoadPackageArchiveDir, Step2);
+            await AssertPackageArchiveTableAsync(LoadPackageArchiveDir, Step2);
         }
 
         [Fact]
@@ -59,13 +56,13 @@ namespace NuGet.Insights.Worker.LoadPackageArchive
             await UpdateAsync(max1);
 
             // Assert
-            await AssertOutputAsync(LoadPackageArchive_WithDeleteDir, Step1);
+            await AssertPackageArchiveTableAsync(LoadPackageArchive_WithDeleteDir, Step1);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertOutputAsync(LoadPackageArchive_WithDeleteDir, Step2);
+            await AssertPackageArchiveTableAsync(LoadPackageArchive_WithDeleteDir, Step2);
         }
 
         public LoadPackageArchiveIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
@@ -79,38 +76,6 @@ namespace NuGet.Insights.Worker.LoadPackageArchive
         protected override IEnumerable<string> GetExpectedTableNames()
         {
             return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageArchiveTableName });
-        }
-
-        private async Task AssertOutputAsync(string testName, string stepName)
-        {
-            await AssertWideEntityOutputAsync(
-                Options.Value.PackageArchiveTableName,
-                Path.Combine(testName, stepName),
-                stream =>
-                {
-                    var entity = MessagePackSerializer.Deserialize<PackageFileService.PackageFileInfoVersions>(stream, NuGetInsightsMessagePack.Options);
-
-                    string mzipHash = null;
-                    string signatureHash = null;
-                    SortedDictionary<string, List<string>> httpHeaders = null;
-
-                    if (entity.V1.Available)
-                    {
-                        using var algorithm = SHA256.Create();
-                        mzipHash = algorithm.ComputeHash(entity.V1.MZipBytes.ToArray()).ToLowerHex();
-                        signatureHash = algorithm.ComputeHash(entity.V1.SignatureBytes.ToArray()).ToLowerHex();
-                        httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders, ignore: Enumerable.Empty<string>());
-                    }
-
-                    return new
-                    {
-                        entity.V1.Available,
-                        entity.V1.CommitTimestamp,
-                        HttpHeaders = httpHeaders,
-                        MZipHash = mzipHash,
-                        SignatureHash = signatureHash,
-                    };
-                });
         }
     }
 }

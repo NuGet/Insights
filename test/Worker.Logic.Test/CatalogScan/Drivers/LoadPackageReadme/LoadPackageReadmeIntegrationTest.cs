@@ -4,11 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
-using MessagePack;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -34,13 +31,13 @@ namespace NuGet.Insights.Worker.LoadPackageReadme
             await UpdateAsync(max1);
 
             // Assert
-            await AssertOutputAsync(LoadPackageReadmeDir, Step1);
+            await AssertPackageReadmeTableAsync(LoadPackageReadmeDir, Step1);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertOutputAsync(LoadPackageReadmeDir, Step2);
+            await AssertPackageReadmeTableAsync(LoadPackageReadmeDir, Step2);
         }
 
         [Fact]
@@ -59,13 +56,13 @@ namespace NuGet.Insights.Worker.LoadPackageReadme
             await UpdateAsync(max1);
 
             // Assert
-            await AssertOutputAsync(LoadPackageReadme_WithDeleteDir, Step1);
+            await AssertPackageReadmeTableAsync(LoadPackageReadme_WithDeleteDir, Step1);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertOutputAsync(LoadPackageReadme_WithDeleteDir, Step2);
+            await AssertPackageReadmeTableAsync(LoadPackageReadme_WithDeleteDir, Step2);
         }
 
         protected override IEnumerable<string> GetExpectedTableNames()
@@ -80,37 +77,5 @@ namespace NuGet.Insights.Worker.LoadPackageReadme
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.LoadPackageReadme;
         public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
-
-        private async Task AssertOutputAsync(string testName, string stepName)
-        {
-            Assert.Empty(HttpMessageHandlerFactory.Responses.Where(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".nupkg", StringComparison.Ordinal)));
-            Assert.NotEmpty(HttpMessageHandlerFactory.Responses.Where(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith("/readme", StringComparison.Ordinal)));
-
-            await AssertWideEntityOutputAsync(
-                Options.Value.PackageReadmeTableName,
-                Path.Combine(testName, stepName),
-                stream =>
-                {
-                    var entity = MessagePackSerializer.Deserialize<PackageReadmeService.PackageReadmeInfoVersions>(stream, NuGetInsightsMessagePack.Options);
-
-                    string readmeHash = null;
-                    SortedDictionary<string, List<string>> httpHeaders = null;
-
-                    if (entity.V1.ReadmeType != ReadmeType.None)
-                    {
-                        using var algorithm = SHA256.Create();
-                        readmeHash = algorithm.ComputeHash(entity.V1.ReadmeBytes.ToArray()).ToLowerHex();
-                        httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders, ignore: new[] { "Content-MD5" } );
-                    }
-
-                    return new
-                    {
-                        entity.V1.ReadmeType,
-                        entity.V1.CommitTimestamp,
-                        HttpHeaders = httpHeaders,
-                        ReadmeHash = readmeHash,
-                    };
-                });
-        }
     }
 }

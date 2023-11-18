@@ -34,7 +34,6 @@ using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Insights.ReferenceTracking;
 using NuGet.Insights.StorageNoOpRetry;
-using NuGet.Insights.WideEntities;
 using NuGet.Insights.Worker.BuildVersionSet;
 using NuGet.Insights.Worker.KustoIngestion;
 using NuGet.Insights.Worker.Workflow;
@@ -363,9 +362,9 @@ namespace NuGet.Insights.Worker
             await messageProcessor.ProcessSingleAsync(queue, message.Body.ToMemory(), message.DequeueCount);
         }
 
-        protected async Task AssertCompactAsync<T>(string containerName, string testName, string stepName, int bucket, string fileName = null) where T : ICsvRecord
+        protected async Task<string> AssertCompactAsync<T>(string containerName, string testName, string stepName, int bucket, string fileName = null) where T : ICsvRecord
         {
-            await AssertCsvBlobAsync<T>(containerName, testName, stepName, fileName, $"compact_{bucket}.csv.gz");
+            return await AssertCsvBlobAsync<T>(containerName, testName, stepName, fileName, $"compact_{bucket}.csv.gz");
         }
 
         public async Task<IKustoIngestionResult> MakeTableReportIngestionResultAsync(StorageSourceOptions options, Status status)
@@ -525,7 +524,73 @@ namespace NuGet.Insights.Worker
             Assert.Equal(expected, actual);
         }
 
-        protected async Task AssertSymbolPackageArchiveOutputAsync(string testName, string stepName)
+        protected async Task AssertPackageArchiveTableAsync(string testName, string stepName, string fileName = null)
+        {
+            await AssertWideEntityOutputAsync(
+                Options.Value.PackageArchiveTableName,
+                Path.Combine(testName, stepName),
+                stream =>
+                {
+                    var entity = MessagePackSerializer.Deserialize<PackageFileService.PackageFileInfoVersions>(stream, NuGetInsightsMessagePack.Options);
+
+                    string mzipHash = null;
+                    string signatureHash = null;
+                    SortedDictionary<string, List<string>> httpHeaders = null;
+
+                    if (entity.V1.Available)
+                    {
+                        using var algorithm = SHA256.Create();
+                        mzipHash = algorithm.ComputeHash(entity.V1.MZipBytes.ToArray()).ToLowerHex();
+                        signatureHash = algorithm.ComputeHash(entity.V1.SignatureBytes.ToArray()).ToLowerHex();
+                        httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders, ignore: Enumerable.Empty<string>());
+                    }
+
+                    return new
+                    {
+                        entity.V1.Available,
+                        entity.V1.CommitTimestamp,
+                        HttpHeaders = httpHeaders,
+                        MZipHash = mzipHash,
+                        SignatureHash = signatureHash,
+                    };
+                },
+                fileName);
+        }
+
+        protected async Task AssertPackageReadmeTableAsync(string testName, string stepName, string fileName = null)
+        {
+            Assert.Empty(HttpMessageHandlerFactory.Responses.Where(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".nupkg", StringComparison.Ordinal)));
+            Assert.NotEmpty(HttpMessageHandlerFactory.Responses.Where(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith("/readme", StringComparison.Ordinal)));
+
+            await AssertWideEntityOutputAsync(
+                Options.Value.PackageReadmeTableName,
+                Path.Combine(testName, stepName),
+                stream =>
+                {
+                    var entity = MessagePackSerializer.Deserialize<PackageReadmeService.PackageReadmeInfoVersions>(stream, NuGetInsightsMessagePack.Options);
+
+                    string readmeHash = null;
+                    SortedDictionary<string, List<string>> httpHeaders = null;
+
+                    if (entity.V1.ReadmeType != ReadmeType.None)
+                    {
+                        using var algorithm = SHA256.Create();
+                        readmeHash = algorithm.ComputeHash(entity.V1.ReadmeBytes.ToArray()).ToLowerHex();
+                        httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders, ignore: new[] { "Content-MD5" });
+                    }
+
+                    return new
+                    {
+                        entity.V1.ReadmeType,
+                        entity.V1.CommitTimestamp,
+                        HttpHeaders = httpHeaders,
+                        ReadmeHash = readmeHash,
+                    };
+                },
+                fileName);
+        }
+
+        protected async Task AssertSymbolPackageArchiveTableAsync(string testName, string stepName, string fileName = null)
         {
             await AssertWideEntityOutputAsync(
                 Options.Value.SymbolPackageArchiveTableName,
@@ -550,7 +615,8 @@ namespace NuGet.Insights.Worker
                         HttpHeaders = httpHeaders,
                         MZipHash = mzipHash,
                     };
-                });
+                },
+                fileName);
         }
 
         protected void MakeDeletedPackageAvailable(string id = "BehaviorSample", string version = "1.0.0")
@@ -648,19 +714,12 @@ namespace NuGet.Insights.Worker
         protected async Task AssertWideEntityOutputAsync<T>(
             string tableName,
             string dir,
-            Func<Stream, T> deserializeEntity,
-            string fileName = "entities.json")
+            Func<Stream, T> deserializeEntity = null,
+            string fileName = null)
         {
-            var service = Host.Services.GetRequiredService<WideEntityService>();
+            fileName ??= "entities.json";
 
-            var wideEntities = await service.RetrieveAsync(tableName);
-            var entities = new List<(string PartitionKey, string RowKey, T Entity)>();
-            foreach (var wideEntity in wideEntities)
-            {
-                var entity = deserializeEntity(wideEntity.GetStream());
-                entities.Add((wideEntity.PartitionKey, wideEntity.RowKey, entity));
-            }
-
+            var entities = await GetWideEntitiesAsync(tableName, deserializeEntity);
             var actual = SerializeTestJson(entities.Select(x => new { x.PartitionKey, x.RowKey, x.Entity }));
             var testDataFile = Path.Combine(TestData, dir, fileName);
             AssertEqualWithDiff(testDataFile, actual);

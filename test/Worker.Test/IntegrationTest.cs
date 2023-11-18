@@ -302,7 +302,7 @@ namespace NuGet.Insights.Worker
             {
                 var sw = Stopwatch.StartNew();
                 bool complete;
-                while (!(complete = await isCompleteAsync()) && sw.Elapsed < TimeSpan.FromMinutes(5))
+                while (!(complete = await isCompleteAsync()) && sw.Elapsed < TimeSpan.FromSeconds(5 * 60))
                 {
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }

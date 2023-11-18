@@ -31,13 +31,13 @@ namespace NuGet.Insights.Worker.LoadSymbolPackageArchive
             await UpdateAsync(max1);
 
             // Assert
-            await AssertSymbolPackageArchiveOutputAsync(LoadSymbolPackageArchiveDir, Step1);
+            await AssertSymbolPackageArchiveTableAsync(LoadSymbolPackageArchiveDir, Step1);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertSymbolPackageArchiveOutputAsync(LoadSymbolPackageArchiveDir, Step2);
+            await AssertSymbolPackageArchiveTableAsync(LoadSymbolPackageArchiveDir, Step2);
         }
 
         [Fact]
@@ -56,13 +56,13 @@ namespace NuGet.Insights.Worker.LoadSymbolPackageArchive
             await UpdateAsync(max1);
 
             // Assert
-            await AssertSymbolPackageArchiveOutputAsync(LoadSymbolPackageArchive_WithDeleteDir, Step1);
+            await AssertSymbolPackageArchiveTableAsync(LoadSymbolPackageArchive_WithDeleteDir, Step1);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertSymbolPackageArchiveOutputAsync(LoadSymbolPackageArchive_WithDeleteDir, Step2);
+            await AssertSymbolPackageArchiveTableAsync(LoadSymbolPackageArchive_WithDeleteDir, Step2);
         }
 
         public LoadSymbolPackageArchiveIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
