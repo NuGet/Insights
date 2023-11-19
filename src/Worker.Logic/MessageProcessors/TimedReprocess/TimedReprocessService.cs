@@ -23,11 +23,13 @@ namespace NuGet.Insights.Worker.TimedReprocess
                 // Symbol package files (.snupkg) can be replaced and removed without a catalog update.
                 CatalogScanDriverType.LoadSymbolPackageArchive => true,
 
+#if ENABLE_NPE
                 // Internally the NPE analysis APIs read symbols from the Microsoft and NuGet.org symbol servers. This
                 // means that the results are unstable for a similar reason as LoadSymbolPackageArchive. Additionally,
                 // some analysis times out (NuGetPackageExplorerResultType.Timeout). However this driver is relatively
                 // costly and slow to run. Therefore we won't consider it for reprocessing.
                 CatalogScanDriverType.NuGetPackageExplorerToCsv => false,
+#endif
 
                 // This driver uses a compatibility map baked into NuGet/NuGetGallery which uses the NuGet.Frameworks
                 // package for framework compatibility. We could choose to periodically reprocess package compatibility
@@ -43,10 +45,12 @@ namespace NuGet.Insights.Worker.TimedReprocess
                 // this driver.
                 CatalogScanDriverType.PackageAssetToCsv => false,
 
+#if ENABLE_CRYPTOAPI
                 // Certificate data is not stable because certificates can expire or be revoked. Also, certificate
                 // chain resolution is non-deterministic, so different intermediate certificates can be resolved over
                 // time. Despite this, the changes are not to significant over time so we won't reprocess.
                 CatalogScanDriverType.PackageCertificateToCsv => false,
+#endif
 
                 // If an SPDX support license becomes deprecated, the results of this driver will change when the
                 // NuGet.Package dependency is updated. This is rare, so we won't reprocess.

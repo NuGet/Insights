@@ -7,12 +7,15 @@ using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.KustoIngestion;
-using NuGet.Insights.Worker.PackageCertificateToCsv;
-using NuGet.Insights.Worker.ReferenceTracking;
 using NuGet.Insights.Worker.TimedReprocess;
 using NuGet.Insights.Worker.Workflow;
 using Xunit;
 using Xunit.Abstractions;
+#if ENABLE_CRYPTOAPI
+using NuGet.Insights.Worker.PackageCertificateToCsv;
+using NuGet.Insights.Worker.ReferenceTracking;
+#endif
+
 namespace NuGet.Insights.Worker
 {
     public class TimerComparerTest : BaseWorkerLogicIntegrationTest
