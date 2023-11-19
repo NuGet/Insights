@@ -229,5 +229,63 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
                 SHA512 = getNextField(),
             };
         }
+
+        public void SetEmptyStrings()
+        {
+            if (LowerId is null)
+            {
+                LowerId = string.Empty;
+            }
+
+            if (Identity is null)
+            {
+                Identity = string.Empty;
+            }
+
+            if (Id is null)
+            {
+                Id = string.Empty;
+            }
+
+            if (Version is null)
+            {
+                Version = string.Empty;
+            }
+
+            if (Comment is null)
+            {
+                Comment = string.Empty;
+            }
+
+            if (HeaderMD5 is null)
+            {
+                HeaderMD5 = string.Empty;
+            }
+
+            if (HeaderSHA512 is null)
+            {
+                HeaderSHA512 = string.Empty;
+            }
+
+            if (MD5 is null)
+            {
+                MD5 = string.Empty;
+            }
+
+            if (SHA1 is null)
+            {
+                SHA1 = string.Empty;
+            }
+
+            if (SHA256 is null)
+            {
+                SHA256 = string.Empty;
+            }
+
+            if (SHA512 is null)
+            {
+                SHA512 = string.Empty;
+            }
+        }
     }
 }

@@ -69,7 +69,13 @@ namespace NuGet.Insights.Worker
 
             foreach (var group in bucketGroups)
             {
-                await AppendAsync(srcTable, group.Key, group.ToList());
+                var records = group.ToList();
+                foreach (var record in records)
+                {
+                    record.SetEmptyStrings();
+                }
+
+                await AppendAsync(srcTable, group.Key, records);
             }
         }
 

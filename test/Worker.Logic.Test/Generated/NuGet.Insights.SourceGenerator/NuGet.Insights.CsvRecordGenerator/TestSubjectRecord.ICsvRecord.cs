@@ -89,5 +89,18 @@ namespace NuGet.Insights.Worker.ReferenceTracking
                 IsOrphan = bool.Parse(getNextField()),
             };
         }
+
+        public void SetEmptyStrings()
+        {
+            if (BucketKey is null)
+            {
+                BucketKey = string.Empty;
+            }
+
+            if (Id is null)
+            {
+                Id = string.Empty;
+            }
+        }
     }
 }

@@ -205,5 +205,48 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
                 DuplicateContent = CsvUtility.ParseNullable(getNextField(), bool.Parse),
             };
         }
+
+        public void SetEmptyStrings()
+        {
+            if (LowerId is null)
+            {
+                LowerId = string.Empty;
+            }
+
+            if (Identity is null)
+            {
+                Identity = string.Empty;
+            }
+
+            if (Id is null)
+            {
+                Id = string.Empty;
+            }
+
+            if (Version is null)
+            {
+                Version = string.Empty;
+            }
+
+            if (Path is null)
+            {
+                Path = string.Empty;
+            }
+
+            if (FileExtension is null)
+            {
+                FileExtension = string.Empty;
+            }
+
+            if (SHA256 is null)
+            {
+                SHA256 = string.Empty;
+            }
+
+            if (Content is null)
+            {
+                Content = string.Empty;
+            }
+        }
     }
 }

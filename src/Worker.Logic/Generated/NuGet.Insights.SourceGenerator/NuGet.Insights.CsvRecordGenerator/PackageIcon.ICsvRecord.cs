@@ -261,5 +261,78 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
                 FrameAttributeNames = getNextField(),
             };
         }
+
+        public void SetEmptyStrings()
+        {
+            if (LowerId is null)
+            {
+                LowerId = string.Empty;
+            }
+
+            if (Identity is null)
+            {
+                Identity = string.Empty;
+            }
+
+            if (Id is null)
+            {
+                Id = string.Empty;
+            }
+
+            if (Version is null)
+            {
+                Version = string.Empty;
+            }
+
+            if (MD5 is null)
+            {
+                MD5 = string.Empty;
+            }
+
+            if (SHA1 is null)
+            {
+                SHA1 = string.Empty;
+            }
+
+            if (SHA256 is null)
+            {
+                SHA256 = string.Empty;
+            }
+
+            if (SHA512 is null)
+            {
+                SHA512 = string.Empty;
+            }
+
+            if (ContentType is null)
+            {
+                ContentType = string.Empty;
+            }
+
+            if (HeaderFormat is null)
+            {
+                HeaderFormat = string.Empty;
+            }
+
+            if (Signature is null)
+            {
+                Signature = string.Empty;
+            }
+
+            if (FrameFormats is null)
+            {
+                FrameFormats = string.Empty;
+            }
+
+            if (FrameDimensions is null)
+            {
+                FrameDimensions = string.Empty;
+            }
+
+            if (FrameAttributeNames is null)
+            {
+                FrameAttributeNames = string.Empty;
+            }
+        }
     }
 }

@@ -277,5 +277,53 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
                 IsLatestStableSemVer2 = bool.Parse(getNextField()),
             };
         }
+
+        public void SetEmptyStrings()
+        {
+            if (LowerId is null)
+            {
+                LowerId = string.Empty;
+            }
+
+            if (Identity is null)
+            {
+                Identity = string.Empty;
+            }
+
+            if (Id is null)
+            {
+                Id = string.Empty;
+            }
+
+            if (Version is null)
+            {
+                Version = string.Empty;
+            }
+
+            if (OriginalVersion is null)
+            {
+                OriginalVersion = string.Empty;
+            }
+
+            if (FullVersion is null)
+            {
+                FullVersion = string.Empty;
+            }
+
+            if (Release is null)
+            {
+                Release = string.Empty;
+            }
+
+            if (ReleaseLabels is null)
+            {
+                ReleaseLabels = string.Empty;
+            }
+
+            if (Metadata is null)
+            {
+                Metadata = string.Empty;
+            }
+        }
     }
 }

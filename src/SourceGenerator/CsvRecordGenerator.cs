@@ -87,6 +87,11 @@ namespace {0}
 {12}
             }};
         }}
+
+        public void SetEmptyStrings()
+        {{
+{14}
+        }}
     }}
 }}
 ";
@@ -242,6 +247,7 @@ namespace NuGet.Insights
                 var writeTextWriterBuilder = new WriteTextWriterBuilder(indent: 12);
                 var writeAsyncTextWriterBuilder = new WriteAsyncTextWriterBuilder(indent: 12);
                 var readerBuilder = new ReadBuilder(indent: 16);
+                var setEmptyStringsBuilder = new SetEmptyStringsBuilder(indent: 12);
                 var kustoTableConstantBuilder = new KustoTableBuilder(indent: 4);
                 var kustoPartitioningPolicyConstantBuilder = new KustoPartitioningPolicyBuilder(indent: 0, escapeQuotes: true);
                 var kustoMappingConstantBuilder = new KustoMappingBuilder(indent: 4, escapeQuotes: true);
@@ -256,6 +262,7 @@ namespace NuGet.Insights
                     writeTextWriterBuilder,
                     writeAsyncTextWriterBuilder,
                     readerBuilder,
+                    setEmptyStringsBuilder,
                     kustoTableConstantBuilder,
                     kustoPartitioningPolicyConstantBuilder,
                     kustoMappingConstantBuilder,
@@ -328,7 +335,8 @@ namespace NuGet.Insights
                             writeTextWriterBuilder.GetResult(),
                             writeAsyncTextWriterBuilder.GetResult(),
                             readerBuilder.GetResult(),
-                            KustoDDL.CsvMappingName),
+                            KustoDDL.CsvMappingName,
+                            setEmptyStringsBuilder.GetResult()),
                         Encoding.UTF8));
 
                 if (!isTestAssembly && !hasNoDDLAttribute)

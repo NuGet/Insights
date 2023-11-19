@@ -229,5 +229,63 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 NuGetGalleryBadges = getNextField(),
             };
         }
+
+        public void SetEmptyStrings()
+        {
+            if (LowerId is null)
+            {
+                LowerId = string.Empty;
+            }
+
+            if (Identity is null)
+            {
+                Identity = string.Empty;
+            }
+
+            if (Id is null)
+            {
+                Id = string.Empty;
+            }
+
+            if (Version is null)
+            {
+                Version = string.Empty;
+            }
+
+            if (BrokenFrameworks is null)
+            {
+                BrokenFrameworks = string.Empty;
+            }
+
+            if (NuspecReader is null)
+            {
+                NuspecReader = string.Empty;
+            }
+
+            if (NU1202 is null)
+            {
+                NU1202 = string.Empty;
+            }
+
+            if (NuGetGallery is null)
+            {
+                NuGetGallery = string.Empty;
+            }
+
+            if (NuGetGalleryEscaped is null)
+            {
+                NuGetGalleryEscaped = string.Empty;
+            }
+
+            if (NuGetGallerySupported is null)
+            {
+                NuGetGallerySupported = string.Empty;
+            }
+
+            if (NuGetGalleryBadges is null)
+            {
+                NuGetGalleryBadges = string.Empty;
+            }
+        }
     }
 }

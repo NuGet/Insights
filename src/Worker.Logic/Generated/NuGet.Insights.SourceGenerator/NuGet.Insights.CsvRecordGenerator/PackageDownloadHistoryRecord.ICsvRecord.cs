@@ -121,5 +121,28 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 TotalDownloads = long.Parse(getNextField()),
             };
         }
+
+        public void SetEmptyStrings()
+        {
+            if (LowerId is null)
+            {
+                LowerId = string.Empty;
+            }
+
+            if (Identity is null)
+            {
+                Identity = string.Empty;
+            }
+
+            if (Id is null)
+            {
+                Id = string.Empty;
+            }
+
+            if (Version is null)
+            {
+                Version = string.Empty;
+            }
+        }
     }
 }

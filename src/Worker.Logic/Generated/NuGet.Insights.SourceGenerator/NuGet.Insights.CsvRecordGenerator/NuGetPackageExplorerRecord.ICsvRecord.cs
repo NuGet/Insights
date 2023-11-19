@@ -165,5 +165,28 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                 IsSignedByAuthor = CsvUtility.ParseNullable(getNextField(), bool.Parse),
             };
         }
+
+        public void SetEmptyStrings()
+        {
+            if (LowerId is null)
+            {
+                LowerId = string.Empty;
+            }
+
+            if (Identity is null)
+            {
+                Identity = string.Empty;
+            }
+
+            if (Id is null)
+            {
+                Id = string.Empty;
+            }
+
+            if (Version is null)
+            {
+                Version = string.Empty;
+            }
+        }
     }
 }

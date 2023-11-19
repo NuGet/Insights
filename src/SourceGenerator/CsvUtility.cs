@@ -13,16 +13,20 @@ namespace NuGet.Insights
         private const string DateTimeOffsetUtcFormat = "yyyy-MM-ddTHH:mm:ss.FFFFFFFZ";
         private const string DateTimeOffsetFormat = "yyyy-MM-ddTHH:mm:ss.FFFFFFFzzz";
 
+        private const string NoNullString = "A null string cannot be written to CSV. It will round trip as an empty string. Set the property to an empty string instead.";
+
+        private static readonly char[] QuotableChars = [',', '"', '\r', '\n'];
+
         public static void WriteWithQuotes(TextWriter writer, string value)
         {
             if (value == null)
             {
-                return;
+                throw new ArgumentNullException(nameof(value), NoNullString);
             }
 
             if (value.StartsWith(" ", StringComparison.Ordinal)
                 || value.EndsWith(" ", StringComparison.Ordinal)
-                || value.IndexOfAny(new[] { ',', '"', '\r', '\n' }) > -1)
+                || value.IndexOfAny(QuotableChars) > -1)
             {
                 writer.Write('"');
                 writer.Write(value.Replace("\"", "\"\""));
@@ -38,12 +42,12 @@ namespace NuGet.Insights
         {
             if (value == null)
             {
-                return;
+                throw new ArgumentNullException(nameof(value),  NoNullString);
             }
 
             if (value.StartsWith(" ", StringComparison.Ordinal)
                 || value.EndsWith(" ", StringComparison.Ordinal)
-                || value.IndexOfAny(new[] { ',', '"', '\r', '\n' }) > -1)
+                || value.IndexOfAny(QuotableChars) > -1)
             {
                 await writer.WriteAsync('"');
                 await writer.WriteAsync(value.Replace("\"", "\"\""));

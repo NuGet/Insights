@@ -95,5 +95,18 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
                 IsVerified = bool.Parse(getNextField()),
             };
         }
+
+        public void SetEmptyStrings()
+        {
+            if (LowerId is null)
+            {
+                LowerId = string.Empty;
+            }
+
+            if (Id is null)
+            {
+                Id = string.Empty;
+            }
+        }
     }
 }

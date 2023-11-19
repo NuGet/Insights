@@ -309,5 +309,73 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
                 Policies = getNextField(),
             };
         }
+
+        public void SetEmptyStrings()
+        {
+            if (Fingerprint is null)
+            {
+                Fingerprint = string.Empty;
+            }
+
+            if (FingerprintSHA256Hex is null)
+            {
+                FingerprintSHA256Hex = string.Empty;
+            }
+
+            if (FingerprintSHA1Hex is null)
+            {
+                FingerprintSHA1Hex = string.Empty;
+            }
+
+            if (Subject is null)
+            {
+                Subject = string.Empty;
+            }
+
+            if (Issuer is null)
+            {
+                Issuer = string.Empty;
+            }
+
+            if (SerialNumber is null)
+            {
+                SerialNumber = string.Empty;
+            }
+
+            if (SignatureAlgorithmOid is null)
+            {
+                SignatureAlgorithmOid = string.Empty;
+            }
+
+            if (Extensions is null)
+            {
+                Extensions = string.Empty;
+            }
+
+            if (PublicKeyOid is null)
+            {
+                PublicKeyOid = string.Empty;
+            }
+
+            if (RawData is null)
+            {
+                RawData = string.Empty;
+            }
+
+            if (IssuerFingerprint is null)
+            {
+                IssuerFingerprint = string.Empty;
+            }
+
+            if (RootFingerprint is null)
+            {
+                RootFingerprint = string.Empty;
+            }
+
+            if (Policies is null)
+            {
+                Policies = string.Empty;
+            }
+        }
     }
 }

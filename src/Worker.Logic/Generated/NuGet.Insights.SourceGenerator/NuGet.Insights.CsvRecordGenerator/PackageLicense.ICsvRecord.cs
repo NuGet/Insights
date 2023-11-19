@@ -229,5 +229,78 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
                 FileContent = getNextField(),
             };
         }
+
+        public void SetEmptyStrings()
+        {
+            if (LowerId is null)
+            {
+                LowerId = string.Empty;
+            }
+
+            if (Identity is null)
+            {
+                Identity = string.Empty;
+            }
+
+            if (Id is null)
+            {
+                Id = string.Empty;
+            }
+
+            if (Version is null)
+            {
+                Version = string.Empty;
+            }
+
+            if (Url is null)
+            {
+                Url = string.Empty;
+            }
+
+            if (Expression is null)
+            {
+                Expression = string.Empty;
+            }
+
+            if (File is null)
+            {
+                File = string.Empty;
+            }
+
+            if (GeneratedUrl is null)
+            {
+                GeneratedUrl = string.Empty;
+            }
+
+            if (ExpressionParsed is null)
+            {
+                ExpressionParsed = string.Empty;
+            }
+
+            if (ExpressionLicenses is null)
+            {
+                ExpressionLicenses = string.Empty;
+            }
+
+            if (ExpressionExceptions is null)
+            {
+                ExpressionExceptions = string.Empty;
+            }
+
+            if (ExpressionNonStandardLicenses is null)
+            {
+                ExpressionNonStandardLicenses = string.Empty;
+            }
+
+            if (FileSHA256 is null)
+            {
+                FileSHA256 = string.Empty;
+            }
+
+            if (FileContent is null)
+            {
+                FileContent = string.Empty;
+            }
+        }
     }
 }

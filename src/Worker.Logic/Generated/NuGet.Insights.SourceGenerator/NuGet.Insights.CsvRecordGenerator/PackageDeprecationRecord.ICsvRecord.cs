@@ -165,5 +165,48 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
                 AlternateVersionRange = getNextField(),
             };
         }
+
+        public void SetEmptyStrings()
+        {
+            if (LowerId is null)
+            {
+                LowerId = string.Empty;
+            }
+
+            if (Identity is null)
+            {
+                Identity = string.Empty;
+            }
+
+            if (Id is null)
+            {
+                Id = string.Empty;
+            }
+
+            if (Version is null)
+            {
+                Version = string.Empty;
+            }
+
+            if (Message is null)
+            {
+                Message = string.Empty;
+            }
+
+            if (Reasons is null)
+            {
+                Reasons = string.Empty;
+            }
+
+            if (AlternatePackageId is null)
+            {
+                AlternatePackageId = string.Empty;
+            }
+
+            if (AlternateVersionRange is null)
+            {
+                AlternateVersionRange = string.Empty;
+            }
+        }
     }
 }

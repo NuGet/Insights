@@ -389,5 +389,158 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
                 SplitTags = getNextField(),
             };
         }
+
+        public void SetEmptyStrings()
+        {
+            if (LowerId is null)
+            {
+                LowerId = string.Empty;
+            }
+
+            if (Identity is null)
+            {
+                Identity = string.Empty;
+            }
+
+            if (Id is null)
+            {
+                Id = string.Empty;
+            }
+
+            if (Version is null)
+            {
+                Version = string.Empty;
+            }
+
+            if (OriginalId is null)
+            {
+                OriginalId = string.Empty;
+            }
+
+            if (OriginalVersion is null)
+            {
+                OriginalVersion = string.Empty;
+            }
+
+            if (MinClientVersion is null)
+            {
+                MinClientVersion = string.Empty;
+            }
+
+            if (Authors is null)
+            {
+                Authors = string.Empty;
+            }
+
+            if (Copyright is null)
+            {
+                Copyright = string.Empty;
+            }
+
+            if (Description is null)
+            {
+                Description = string.Empty;
+            }
+
+            if (Icon is null)
+            {
+                Icon = string.Empty;
+            }
+
+            if (IconUrl is null)
+            {
+                IconUrl = string.Empty;
+            }
+
+            if (Language is null)
+            {
+                Language = string.Empty;
+            }
+
+            if (LicenseUrl is null)
+            {
+                LicenseUrl = string.Empty;
+            }
+
+            if (Owners is null)
+            {
+                Owners = string.Empty;
+            }
+
+            if (ProjectUrl is null)
+            {
+                ProjectUrl = string.Empty;
+            }
+
+            if (Readme is null)
+            {
+                Readme = string.Empty;
+            }
+
+            if (ReleaseNotes is null)
+            {
+                ReleaseNotes = string.Empty;
+            }
+
+            if (Summary is null)
+            {
+                Summary = string.Empty;
+            }
+
+            if (Tags is null)
+            {
+                Tags = string.Empty;
+            }
+
+            if (Title is null)
+            {
+                Title = string.Empty;
+            }
+
+            if (PackageTypes is null)
+            {
+                PackageTypes = string.Empty;
+            }
+
+            if (LicenseMetadata is null)
+            {
+                LicenseMetadata = string.Empty;
+            }
+
+            if (RepositoryMetadata is null)
+            {
+                RepositoryMetadata = string.Empty;
+            }
+
+            if (ReferenceGroups is null)
+            {
+                ReferenceGroups = string.Empty;
+            }
+
+            if (ContentFiles is null)
+            {
+                ContentFiles = string.Empty;
+            }
+
+            if (DependencyGroups is null)
+            {
+                DependencyGroups = string.Empty;
+            }
+
+            if (FrameworkAssemblyGroups is null)
+            {
+                FrameworkAssemblyGroups = string.Empty;
+            }
+
+            if (FrameworkRefGroups is null)
+            {
+                FrameworkRefGroups = string.Empty;
+            }
+
+            if (SplitTags is null)
+            {
+                SplitTags = string.Empty;
+            }
+        }
     }
 }

@@ -381,5 +381,118 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
                 PackageOwners = getNextField(),
             };
         }
+
+        public void SetEmptyStrings()
+        {
+            if (LowerId is null)
+            {
+                LowerId = string.Empty;
+            }
+
+            if (Identity is null)
+            {
+                Identity = string.Empty;
+            }
+
+            if (Id is null)
+            {
+                Id = string.Empty;
+            }
+
+            if (Version is null)
+            {
+                Version = string.Empty;
+            }
+
+            if (HashValue is null)
+            {
+                HashValue = string.Empty;
+            }
+
+            if (AuthorSHA1 is null)
+            {
+                AuthorSHA1 = string.Empty;
+            }
+
+            if (AuthorSHA256 is null)
+            {
+                AuthorSHA256 = string.Empty;
+            }
+
+            if (AuthorSubject is null)
+            {
+                AuthorSubject = string.Empty;
+            }
+
+            if (AuthorIssuer is null)
+            {
+                AuthorIssuer = string.Empty;
+            }
+
+            if (AuthorTimestampSHA1 is null)
+            {
+                AuthorTimestampSHA1 = string.Empty;
+            }
+
+            if (AuthorTimestampSHA256 is null)
+            {
+                AuthorTimestampSHA256 = string.Empty;
+            }
+
+            if (AuthorTimestampSubject is null)
+            {
+                AuthorTimestampSubject = string.Empty;
+            }
+
+            if (AuthorTimestampIssuer is null)
+            {
+                AuthorTimestampIssuer = string.Empty;
+            }
+
+            if (RepositorySHA1 is null)
+            {
+                RepositorySHA1 = string.Empty;
+            }
+
+            if (RepositorySHA256 is null)
+            {
+                RepositorySHA256 = string.Empty;
+            }
+
+            if (RepositorySubject is null)
+            {
+                RepositorySubject = string.Empty;
+            }
+
+            if (RepositoryIssuer is null)
+            {
+                RepositoryIssuer = string.Empty;
+            }
+
+            if (RepositoryTimestampSHA1 is null)
+            {
+                RepositoryTimestampSHA1 = string.Empty;
+            }
+
+            if (RepositoryTimestampSHA256 is null)
+            {
+                RepositoryTimestampSHA256 = string.Empty;
+            }
+
+            if (RepositoryTimestampSubject is null)
+            {
+                RepositoryTimestampSubject = string.Empty;
+            }
+
+            if (RepositoryTimestampIssuer is null)
+            {
+                RepositoryTimestampIssuer = string.Empty;
+            }
+
+            if (PackageOwners is null)
+            {
+                PackageOwners = string.Empty;
+            }
+        }
     }
 }

@@ -197,5 +197,48 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                 PdbType = CsvUtility.ParseNullable(getNextField(), Enum.Parse<NuGetPe.AssemblyMetadata.PdbType>),
             };
         }
+
+        public void SetEmptyStrings()
+        {
+            if (LowerId is null)
+            {
+                LowerId = string.Empty;
+            }
+
+            if (Identity is null)
+            {
+                Identity = string.Empty;
+            }
+
+            if (Id is null)
+            {
+                Id = string.Empty;
+            }
+
+            if (Version is null)
+            {
+                Version = string.Empty;
+            }
+
+            if (Path is null)
+            {
+                Path = string.Empty;
+            }
+
+            if (Extension is null)
+            {
+                Extension = string.Empty;
+            }
+
+            if (CompilerFlags is null)
+            {
+                CompilerFlags = string.Empty;
+            }
+
+            if (SourceUrlRepoInfo is null)
+            {
+                SourceUrlRepoInfo = string.Empty;
+            }
+        }
     }
 }

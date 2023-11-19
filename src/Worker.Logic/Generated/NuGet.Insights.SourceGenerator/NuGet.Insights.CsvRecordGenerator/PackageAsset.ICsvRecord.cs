@@ -285,5 +285,118 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
                 PlatformVersion = getNextField(),
             };
         }
+
+        public void SetEmptyStrings()
+        {
+            if (LowerId is null)
+            {
+                LowerId = string.Empty;
+            }
+
+            if (Identity is null)
+            {
+                Identity = string.Empty;
+            }
+
+            if (Id is null)
+            {
+                Id = string.Empty;
+            }
+
+            if (Version is null)
+            {
+                Version = string.Empty;
+            }
+
+            if (PropertyAnyValue is null)
+            {
+                PropertyAnyValue = string.Empty;
+            }
+
+            if (PropertyCodeLanguage is null)
+            {
+                PropertyCodeLanguage = string.Empty;
+            }
+
+            if (PropertyTargetFrameworkMoniker is null)
+            {
+                PropertyTargetFrameworkMoniker = string.Empty;
+            }
+
+            if (PropertyLocale is null)
+            {
+                PropertyLocale = string.Empty;
+            }
+
+            if (PropertyManagedAssembly is null)
+            {
+                PropertyManagedAssembly = string.Empty;
+            }
+
+            if (PropertyMSBuild is null)
+            {
+                PropertyMSBuild = string.Empty;
+            }
+
+            if (PropertyRuntimeIdentifier is null)
+            {
+                PropertyRuntimeIdentifier = string.Empty;
+            }
+
+            if (PropertySatelliteAssembly is null)
+            {
+                PropertySatelliteAssembly = string.Empty;
+            }
+
+            if (Path is null)
+            {
+                Path = string.Empty;
+            }
+
+            if (FileName is null)
+            {
+                FileName = string.Empty;
+            }
+
+            if (FileExtension is null)
+            {
+                FileExtension = string.Empty;
+            }
+
+            if (TopLevelFolder is null)
+            {
+                TopLevelFolder = string.Empty;
+            }
+
+            if (RoundTripTargetFrameworkMoniker is null)
+            {
+                RoundTripTargetFrameworkMoniker = string.Empty;
+            }
+
+            if (FrameworkName is null)
+            {
+                FrameworkName = string.Empty;
+            }
+
+            if (FrameworkVersion is null)
+            {
+                FrameworkVersion = string.Empty;
+            }
+
+            if (FrameworkProfile is null)
+            {
+                FrameworkProfile = string.Empty;
+            }
+
+            if (PlatformName is null)
+            {
+                PlatformName = string.Empty;
+            }
+
+            if (PlatformVersion is null)
+            {
+                PlatformVersion = string.Empty;
+            }
+        }
     }
 }

@@ -149,5 +149,33 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
                 RelationshipTypes = Enum.Parse<CertificateRelationshipTypes>(getNextField()),
             };
         }
+
+        public void SetEmptyStrings()
+        {
+            if (LowerId is null)
+            {
+                LowerId = string.Empty;
+            }
+
+            if (Identity is null)
+            {
+                Identity = string.Empty;
+            }
+
+            if (Id is null)
+            {
+                Id = string.Empty;
+            }
+
+            if (Version is null)
+            {
+                Version = string.Empty;
+            }
+
+            if (Fingerprint is null)
+            {
+                Fingerprint = string.Empty;
+            }
+        }
     }
 }

@@ -95,5 +95,23 @@ namespace NuGet.Insights.Worker.OwnersToCsv
                 Owners = getNextField(),
             };
         }
+
+        public void SetEmptyStrings()
+        {
+            if (LowerId is null)
+            {
+                LowerId = string.Empty;
+            }
+
+            if (Id is null)
+            {
+                Id = string.Empty;
+            }
+
+            if (Owners is null)
+            {
+                Owners = string.Empty;
+            }
+        }
     }
 }

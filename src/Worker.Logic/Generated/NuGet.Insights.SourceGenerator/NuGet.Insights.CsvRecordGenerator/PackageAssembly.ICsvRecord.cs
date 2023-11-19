@@ -301,5 +301,83 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 CustomAttributesTotalDataLength = CsvUtility.ParseNullable(getNextField(), int.Parse),
             };
         }
+
+        public void SetEmptyStrings()
+        {
+            if (LowerId is null)
+            {
+                LowerId = string.Empty;
+            }
+
+            if (Identity is null)
+            {
+                Identity = string.Empty;
+            }
+
+            if (Id is null)
+            {
+                Id = string.Empty;
+            }
+
+            if (Version is null)
+            {
+                Version = string.Empty;
+            }
+
+            if (Path is null)
+            {
+                Path = string.Empty;
+            }
+
+            if (FileName is null)
+            {
+                FileName = string.Empty;
+            }
+
+            if (FileExtension is null)
+            {
+                FileExtension = string.Empty;
+            }
+
+            if (TopLevelFolder is null)
+            {
+                TopLevelFolder = string.Empty;
+            }
+
+            if (FileSHA256 is null)
+            {
+                FileSHA256 = string.Empty;
+            }
+
+            if (AssemblyName is null)
+            {
+                AssemblyName = string.Empty;
+            }
+
+            if (Culture is null)
+            {
+                Culture = string.Empty;
+            }
+
+            if (PublicKeyToken is null)
+            {
+                PublicKeyToken = string.Empty;
+            }
+
+            if (PublicKeySHA1 is null)
+            {
+                PublicKeySHA1 = string.Empty;
+            }
+
+            if (CustomAttributes is null)
+            {
+                CustomAttributes = string.Empty;
+            }
+
+            if (CustomAttributesFailedDecode is null)
+            {
+                CustomAttributesFailedDecode = string.Empty;
+            }
+        }
     }
 }

@@ -209,5 +209,63 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
                 Vulnerabilities = getNextField(),
             };
         }
+
+        public void SetEmptyStrings()
+        {
+            if (CommitId is null)
+            {
+                CommitId = string.Empty;
+            }
+
+            if (LowerId is null)
+            {
+                LowerId = string.Empty;
+            }
+
+            if (Identity is null)
+            {
+                Identity = string.Empty;
+            }
+
+            if (Id is null)
+            {
+                Id = string.Empty;
+            }
+
+            if (Version is null)
+            {
+                Version = string.Empty;
+            }
+
+            if (Url is null)
+            {
+                Url = string.Empty;
+            }
+
+            if (PageUrl is null)
+            {
+                PageUrl = string.Empty;
+            }
+
+            if (PackageHash is null)
+            {
+                PackageHash = string.Empty;
+            }
+
+            if (PackageHashAlgorithm is null)
+            {
+                PackageHashAlgorithm = string.Empty;
+            }
+
+            if (Deprecation is null)
+            {
+                Deprecation = string.Empty;
+            }
+
+            if (Vulnerabilities is null)
+            {
+                Vulnerabilities = string.Empty;
+            }
+        }
     }
 }

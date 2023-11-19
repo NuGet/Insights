@@ -237,5 +237,53 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
                 Comment = getNextField(),
             };
         }
+
+        public void SetEmptyStrings()
+        {
+            if (LowerId is null)
+            {
+                LowerId = string.Empty;
+            }
+
+            if (Identity is null)
+            {
+                Identity = string.Empty;
+            }
+
+            if (Id is null)
+            {
+                Id = string.Empty;
+            }
+
+            if (Version is null)
+            {
+                Version = string.Empty;
+            }
+
+            if (Path is null)
+            {
+                Path = string.Empty;
+            }
+
+            if (FileName is null)
+            {
+                FileName = string.Empty;
+            }
+
+            if (FileExtension is null)
+            {
+                FileExtension = string.Empty;
+            }
+
+            if (TopLevelFolder is null)
+            {
+                TopLevelFolder = string.Empty;
+            }
+
+            if (Comment is null)
+            {
+                Comment = string.Empty;
+            }
+        }
     }
 }

@@ -165,5 +165,38 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
                 Content = getNextField(),
             };
         }
+
+        public void SetEmptyStrings()
+        {
+            if (LowerId is null)
+            {
+                LowerId = string.Empty;
+            }
+
+            if (Identity is null)
+            {
+                Identity = string.Empty;
+            }
+
+            if (Id is null)
+            {
+                Id = string.Empty;
+            }
+
+            if (Version is null)
+            {
+                Version = string.Empty;
+            }
+
+            if (SHA256 is null)
+            {
+                SHA256 = string.Empty;
+            }
+
+            if (Content is null)
+            {
+                Content = string.Empty;
+            }
+        }
     }
 }
