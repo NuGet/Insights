@@ -64,7 +64,12 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             Assert.Empty(Assert.Single(output.Value.Sets1).Records);
             Assert.Empty(Assert.Single(output.Value.Sets2).Records);
-            Assert.Contains("Metric emitted: FileDownloader.GetZipDirectoryReaderAsync.NotFound NuGet.Platform 1.0.0 Nupkg DefaultMiniZip = 1", LogMessages);
+            Assert.True(TelemetryClient.Metrics.TryGetValue(
+                new("FileDownloader.GetZipDirectoryReaderAsync.NotFound", "PackageId", "PackageVersion", "ArtifactFileType", "DownloadMode"),
+                out var metric));
+            var value = Assert.Single(metric.MetricValues);
+            Assert.Equal(1, value.MetricValue);
+            Assert.Equal(["NuGet.Platform", "1.0.0", "Nupkg", "DefaultMiniZip"], value.DimensionValues);
         }
 
         [Fact]

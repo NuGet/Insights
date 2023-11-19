@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -21,6 +22,8 @@ namespace NuGet.Insights
             _logger = ShouldLogMetric(metricId) ? logger : NullLogger.Instance;
         }
 
+        public ConcurrentQueue<(double MetricValue, string[] DimensionValues)> MetricValues { get; } = new();
+
         private static bool ShouldLogMetric(string metricId)
         {
             if (metricId.Contains(QueryLoopMetrics.MetricIdSubstring, StringComparison.Ordinal))
@@ -34,6 +37,7 @@ namespace NuGet.Insights
         public void TrackValue(double metricValue)
         {
             AssertDimensionCount(0);
+            MetricValues.Enqueue((metricValue, Array.Empty<string>()));
             _logger.LogInformation("Metric emitted: {MetricId} = {MetricValue}", _metricId, metricValue);
         }
 
@@ -48,6 +52,7 @@ namespace NuGet.Insights
         public bool TrackValue(double metricValue, string dimension1Value)
         {
             AssertDimensionCount(1);
+            MetricValues.Enqueue((metricValue, [dimension1Value]));
             _logger.LogInformation("Metric emitted: {MetricId} {Dimension1Name} = {MetricValue}", _metricId, dimension1Value, metricValue);
             return true;
         }
@@ -55,6 +60,7 @@ namespace NuGet.Insights
         public bool TrackValue(double metricValue, string dimension1Value, string dimension2Value)
         {
             AssertDimensionCount(2);
+            MetricValues.Enqueue((metricValue, [dimension1Value, dimension2Value]));
             _logger.LogInformation("Metric emitted: {MetricId} {Dimension1Name} {Dimension2Name} = {MetricValue}", _metricId, dimension1Value, dimension2Value, metricValue);
             return true;
         }
@@ -62,6 +68,7 @@ namespace NuGet.Insights
         public bool TrackValue(double metricValue, string dimension1Value, string dimension2Value, string dimension3Value)
         {
             AssertDimensionCount(3);
+            MetricValues.Enqueue((metricValue, [dimension1Value, dimension2Value, dimension3Value]));
             _logger.LogInformation("Metric emitted: {MetricId} {Dimension1Name} {Dimension2Name} {Dimension3Name} = {MetricValue}", _metricId, dimension1Value, dimension2Value, dimension3Value, metricValue);
             return true;
         }
@@ -69,6 +76,7 @@ namespace NuGet.Insights
         public bool TrackValue(double metricValue, string dimension1Value, string dimension2Value, string dimension3Value, string dimension4Value)
         {
             AssertDimensionCount(4);
+            MetricValues.Enqueue((metricValue, [dimension1Value, dimension2Value, dimension3Value, dimension4Value]));
             _logger.LogInformation("Metric emitted: {MetricId} {Dimension1Name} {Dimension2Name} {Dimension3Name} {Dimension4Name} = {MetricValue}", _metricId, dimension1Value, dimension2Value, dimension3Value, dimension4Value, metricValue);
             return true;
         }

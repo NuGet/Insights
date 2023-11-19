@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -103,13 +102,14 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             // Assert
             if (expectLogs)
             {
-                Assert.Contains(LogMessages, x => x.Contains("Metric emitted: CatalogScanExpandService.EnqueueLeafScansAsync.CatalogLeafScan = 1", StringComparison.Ordinal));
-                Assert.Contains(LogMessages, x => x.Contains("Metric emitted: CatalogLeafScanMessageProcessor.ToProcess.CatalogLeafScan = 1", StringComparison.Ordinal));
-                Assert.Contains(LogMessages, x => x.Contains("Metric emitted: CatalogScanStorageService.DeleteAsync.Single.CatalogLeafScan = 1", StringComparison.Ordinal));
+                Assert.Contains(TelemetryClient.MetricValues, x => x.MetricId == "CatalogScanExpandService.EnqueueLeafScansAsync.CatalogLeafScan");
+                Assert.Contains(TelemetryClient.MetricValues, x => x.MetricId == "CatalogLeafScanMessageProcessor.ToProcess.CatalogLeafScan");
+                Assert.Contains(TelemetryClient.MetricValues, x => x.MetricId == "CatalogScanStorageService.DeleteAsync.Single.CatalogLeafScan");
             }
             else
             {
-                Assert.DoesNotContain(LogMessages, x => new Regex("Metric emitted: (.+?)\\.CatalogLeafScan = ").IsMatch(x));
+                Assert.Empty(TelemetryClient.MetricValues.Where(x => x.MetricId.EndsWith(".CatalogLeafScan", StringComparison.Ordinal)));
+                Assert.Empty(TelemetryClient.Metrics.Where(x => x.Key.MetricId.EndsWith(".CatalogLeafScan", StringComparison.Ordinal)));
             }
         }
 

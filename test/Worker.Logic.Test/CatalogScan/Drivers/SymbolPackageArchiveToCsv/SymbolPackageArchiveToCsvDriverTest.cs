@@ -64,7 +64,12 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             Assert.Equal(ArchiveResultType.DoesNotExist, record.ResultType);
             var entry = Assert.Single(Assert.Single(output.Value.Sets2).Records);
             Assert.Equal(ArchiveResultType.DoesNotExist, entry.ResultType);
-            Assert.Contains("Metric emitted: FileDownloader.GetZipDirectoryReaderAsync.NotFound NuGet.Platform 1.0.0 Snupkg DefaultMiniZip = 1", LogMessages);
+            Assert.True(TelemetryClient.Metrics.TryGetValue(
+                new("FileDownloader.GetZipDirectoryReaderAsync.NotFound", "PackageId", "PackageVersion", "ArtifactFileType", "DownloadMode"),
+                out var metric));
+            var value = Assert.Single(metric.MetricValues);
+            Assert.Equal(1, value.MetricValue);
+            Assert.Equal(["NuGet.Platform", "1.0.0", "Snupkg", "DefaultMiniZip"], value.DimensionValues);
         }
 
         [Fact]

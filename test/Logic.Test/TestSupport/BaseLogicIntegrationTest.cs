@@ -83,7 +83,8 @@ namespace NuGet.Insights
 
                     serviceCollection.AddSingleton((INuGetInsightsHttpMessageHandlerFactory)HttpMessageHandlerFactory);
 
-                    serviceCollection.AddTransient<ITelemetryClient>(s => new LoggerTelemetryClient(s.GetRequiredService<ILogger<LoggerTelemetryClient>>()));
+                    serviceCollection.AddSingleton(s => new LoggerTelemetryClient(s.GetRequiredService<ILogger<LoggerTelemetryClient>>()));
+                    serviceCollection.AddSingleton<ITelemetryClient>(s => s.GetRequiredService<LoggerTelemetryClient>());
 
                     serviceCollection.AddLogging(o =>
                     {
@@ -172,7 +173,7 @@ namespace NuGet.Insights
         public Action<NuGetInsightsSettings> ConfigureSettings { get; set; }
         public IHost Host => _lazyHost.Value;
         public ServiceClientFactory ServiceClientFactory => Host.Services.GetRequiredService<ServiceClientFactory>();
-        public ITelemetryClient TelemetryClient => Host.Services.GetRequiredService<ITelemetryClient>();
+        public LoggerTelemetryClient TelemetryClient => Host.Services.GetRequiredService<LoggerTelemetryClient>();
         public ILogger Logger => Host.Services.GetRequiredService<ILogger<BaseLogicIntegrationTest>>();
         public ConcurrentQueue<string> LogMessages { get; } = new ConcurrentQueue<string>();
 

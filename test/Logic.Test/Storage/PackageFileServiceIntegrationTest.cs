@@ -84,7 +84,8 @@ namespace NuGet.Insights
             HttpMessageHandlerFactory.OnSendAsync = (r, b, t) =>
             {
                 if (r.Headers.Range is not null
-                    && LogMessages.Any(m => m.Contains("Metric emitted: FileDownloader.GetZipDirectoryReaderAsync.DurationMs Nupkg", StringComparison.Ordinal)))
+                    && TelemetryClient.Metrics.TryGetValue(new("FileDownloader.GetZipDirectoryReaderAsync.DurationMs", "ArtifactFileType", "DownloadMode"), out var metric)
+                    && metric.MetricValues.Any(x => x.DimensionValues.Contains("Nupkg")))
                 {
                     return Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest) { RequestMessage = r });
                 }

@@ -87,13 +87,12 @@ namespace NuGet.Insights.Worker
 
             private string GetFormattedTelemetryProperties()
             {
-                var prefix = "Metric emitted: CatalogIndexScan.RuntimeMinutes = 60 with properties ";
-                var telemetry = LogMessages.FirstOrDefault(x => x.Contains(prefix, StringComparison.Ordinal));
-                Assert.NotNull(telemetry);
+                var value = Assert.Single(TelemetryClient.MetricValues, x => x.MetricId == "CatalogIndexScan.RuntimeMinutes");
+                Assert.Equal(60, value.MetricValue);
 
-                var properties = JsonSerializer.Deserialize<Dictionary<string, string>>(telemetry.Split(prefix)[1]);
-                var formattedProperties = JsonSerializer.Serialize(properties, new JsonSerializerOptions { WriteIndented = true });
-                return formattedProperties;
+                return JsonSerializer.Serialize(
+                    new SortedDictionary<string, string>(value.MetricProperties, StringComparer.Ordinal),
+                    new JsonSerializerOptions { WriteIndented = true });
             }
 
             public TheReplaceAsyncMethodForIndexScan(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

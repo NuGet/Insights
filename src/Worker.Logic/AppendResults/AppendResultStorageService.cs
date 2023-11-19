@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
 using MessagePack;
 using Microsoft.Extensions.Logging;
 using NuGet.Insights.WideEntities;
@@ -107,7 +108,7 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        private async Task AppendToTableAsync(int bucket, string srcTable, IReadOnlyList<ICsvRecord> records)
+        private async Task AppendToTableAsync<T>(int bucket, string srcTable, IReadOnlyList<T> records) where T : ICsvRecord
         {
             var bytes = Serialize(records);
             try
@@ -140,6 +141,10 @@ namespace NuGet.Insights.Worker
                 && ex.Status == (int)HttpStatusCode.RequestEntityTooLarge
                 && ex.ErrorCode == "RequestBodyTooLarge")
             {
+                var recordName = typeof(T).FullName;
+                GetTooLargeRecordCountMetric().TrackValue(records.Count, recordName);
+                GetTooLargeSizeInBytesMetric().TrackValue(bytes.Length, recordName);
+
                 var firstHalf = records.Take(records.Count / 2).ToList();
                 var secondHalf = records.Skip(firstHalf.Count).ToList();
                 await AppendToTableAsync(bucket, srcTable, firstHalf);
@@ -205,6 +210,20 @@ namespace NuGet.Insights.Worker
             GetCompactDurationMsMetric().TrackValue(stopwatch.Elapsed.TotalMilliseconds, destContainer, recordType);
         }
 
+        private IMetric GetTooLargeRecordCountMetric()
+        {
+            return _telemetryClient.GetMetric(
+                $"{nameof(AppendResultStorageService)}.{nameof(AppendToTableAsync)}.TooLarge.RecordCount",
+                "RecordType");
+        }
+
+        private IMetric GetTooLargeSizeInBytesMetric()
+        {
+            return _telemetryClient.GetMetric(
+                $"{nameof(AppendResultStorageService)}.{nameof(AppendToTableAsync)}.TooLarge.SizeInBytes",
+                "RecordType");
+        }
+
         private IMetric GetCompactDurationMsMetric()
         {
             return _telemetryClient.GetMetric(
@@ -247,6 +266,30 @@ namespace NuGet.Insights.Worker
                 "RecordType");
         }
 
+        private IMetric GetCompressedSizeMetric()
+        {
+            return _telemetryClient.GetMetric(
+                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.CompressedSizeInBytes",
+                "DestContainer",
+                "RecordType");
+        }
+
+        private IMetric GetUncompressedSizeMetric()
+        {
+            return _telemetryClient.GetMetric(
+                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.UncompressedSizeInBytes",
+                "DestContainer",
+                "RecordType");
+        }
+
+        private IMetric GetBlobChangeMetric()
+        {
+            return _telemetryClient.GetMetric(
+                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.BlobChange",
+                "DestContainer",
+                "RecordType");
+        }
+
         private async Task CompactAsync<T>(
             List<T> records,
             string destContainer,
@@ -257,14 +300,16 @@ namespace NuGet.Insights.Worker
             var compactBlob = await GetCompactBlobAsync(destContainer, bucket);
 
             BlobRequestConditions requestConditions;
+            BlobDownloadDetails previousDetails;
             try
             {
-                (var existingRecords, var etag) = await DeserializeBlobAsync<T>(compactBlob);
+                (var existingRecords, previousDetails) = await DeserializeBlobAsync<T>(compactBlob);
                 records.AddRange(existingRecords);
-                requestConditions = new BlobRequestConditions { IfMatch = etag };
+                requestConditions = new BlobRequestConditions { IfMatch = previousDetails.ETag };
             }
             catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
             {
+                previousDetails = null;
                 requestConditions = new BlobRequestConditions { IfNoneMatch = ETag.All };
             }
 
@@ -280,7 +325,7 @@ namespace NuGet.Insights.Worker
 
             using var stream = SerializeRecords(records, writeHeader: true, gzip: true, out var uncompressedLength);
 
-            await compactBlob.UploadAsync(
+            BlobContentInfo info = await compactBlob.UploadAsync(
                 stream,
                 new BlobUploadOptions
                 {
@@ -298,18 +343,23 @@ namespace NuGet.Insights.Worker
                         },
                     },
                 });
+
+            GetCompressedSizeMetric().TrackValue(stream.Length, destContainer, recordType);
+            GetUncompressedSizeMetric().TrackValue(uncompressedLength, destContainer, recordType);
+            var changed = previousDetails is null || !previousDetails.ContentHash.SequenceEqual(info.ContentHash);
+            GetBlobChangeMetric().TrackValue(changed ? 1 : 0, destContainer, recordType);
         }
 
-        private async Task<(List<T> records, ETag etag)> DeserializeBlobAsync<T>(BlobClient blob) where T : ICsvRecord
+        private async Task<(List<T> records, BlobDownloadDetails details)> DeserializeBlobAsync<T>(BlockBlobClient blob) where T : ICsvRecord
         {
             var bufferSize = 32 * 1024;
             do
             {
-                (var result, var etag) = await DeserializeBlobAsync<T>(blob, bufferSize);
+                (var result, var details) = await DeserializeBlobAsync<T>(blob, bufferSize);
                 switch (result.Type)
                 {
                     case CsvReaderResultType.Success:
-                        return (result.Records, etag);
+                        return (result.Records, details);
 
                     case CsvReaderResultType.BufferTooSmall:
                         bufferSize = CsvReaderAdapter.MaxBufferSize;
@@ -324,7 +374,7 @@ namespace NuGet.Insights.Worker
             throw new InvalidOperationException($"Could not deserialize blob after trying buffers up to {bufferSize} bytes in size.");
         }
 
-        private async Task<(CsvReaderResult<T> result, ETag etag)> DeserializeBlobAsync<T>(BlobClient blob, int bufferSize)
+        private async Task<(CsvReaderResult<T> result, BlobDownloadDetails details)> DeserializeBlobAsync<T>(BlockBlobClient blob, int bufferSize)
             where T : ICsvRecord
         {
             using BlobDownloadInfo info = await blob.DownloadAsync();
@@ -348,7 +398,7 @@ namespace NuGet.Insights.Worker
                         "Actual: " + actualHeader);
                 }
 
-                return (_csvReader.GetRecords<T>(reader, bufferSize), info.Details.ETag);
+                return (_csvReader.GetRecords<T>(reader, bufferSize), info.Details);
             }
             finally
             {
@@ -389,12 +439,12 @@ namespace NuGet.Insights.Worker
             return blob.Uri;
         }
 
-        private async Task<BlobClient> GetCompactBlobAsync(string destContainer, int bucket)
+        private async Task<BlockBlobClient> GetCompactBlobAsync(string destContainer, int bucket)
         {
-            return (await GetContainerAsync(destContainer)).GetBlobClient($"{CompactPrefix}{bucket}.csv.gz");
+            return (await GetContainerAsync(destContainer)).GetBlockBlobClient($"{CompactPrefix}{bucket}.csv.gz");
         }
 
-        private static byte[] Serialize(IReadOnlyList<ICsvRecord> records)
+        private static byte[] Serialize<T>(IReadOnlyList<T> records) where T : ICsvRecord
         {
             return MessagePackSerializer.Serialize(records, NuGetInsightsMessagePack.Options);
         }
