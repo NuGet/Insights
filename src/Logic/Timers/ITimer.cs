@@ -15,11 +15,6 @@ namespace NuGet.Insights
         bool CanAbort { get; }
         bool CanDestroy { get; }
 
-        /// <summary>
-        /// Use to group timers that can be run in parallel. Return 0 (<c>default</c>) for simple, parallel execution.
-        /// </summary>
-        int Order { get; }
-
         Task<bool> IsRunningAsync();
         Task InitializeAsync();
         Task DestroyAsync();

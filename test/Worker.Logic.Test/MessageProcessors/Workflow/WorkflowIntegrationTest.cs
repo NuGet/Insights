@@ -77,8 +77,7 @@ namespace NuGet.Insights.Worker.Workflow
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, max1);
-            await SetCursorAsync(CatalogScanDriverType.PackageManifestToCsv, min0);
-            await SetCursorAsync(CatalogScanDriverType.CatalogDataToCsv, min0);
+            await SetCursorsAsync([CatalogScanDriverType.PackageManifestToCsv, CatalogScanDriverType.CatalogDataToCsv], min0);
 
             // Act
             var workflow = await WorkflowService.StartAsync();

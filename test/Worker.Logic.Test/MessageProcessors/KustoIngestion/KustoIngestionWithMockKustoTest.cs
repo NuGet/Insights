@@ -302,8 +302,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, max1);
-            await SetCursorAsync(CatalogScanDriverType.PackageManifestToCsv, min0);
-            await SetCursorAsync(CatalogScanDriverType.CatalogDataToCsv, min0);
+            await SetCursorsAsync([CatalogScanDriverType.PackageManifestToCsv, CatalogScanDriverType.CatalogDataToCsv], min0);
             var packageManifestToCsvResult = await CatalogScanService.UpdateAsync(CatalogScanDriverType.PackageManifestToCsv, max1);
             var catalogDataToCsvResult = await CatalogScanService.UpdateAsync(CatalogScanDriverType.CatalogDataToCsv, max1);
             await UpdateAsync(packageManifestToCsvResult.Scan);

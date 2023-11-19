@@ -313,6 +313,8 @@ namespace NuGet.Insights
             Timer.Setup(x => x.AutoStart).Returns(true);
             Timer.Setup(x => x.Frequency).Returns(TimeSpan.FromMinutes(5));
             Timer.Setup(x => x.ExecuteAsync()).ReturnsAsync(true);
+
+            TimerComparer = new Mock<IComparer<ITimer>>();
         }
 
         private readonly Fixture _fixture;
@@ -322,6 +324,7 @@ namespace NuGet.Insights
         public string TimerName { get; }
         public Mock<ITimer> Timer { get; }
         public List<ITimer> Timers { get; }
+        public Mock<IComparer<ITimer>> TimerComparer { get; }
 
         public TimerExecutionService Target
         {
@@ -333,6 +336,7 @@ namespace NuGet.Insights
                     _fixture.GetLeaseService(serviceClientFactory, _output.GetLoggerFactory()),
                     new SpecificTimerExecutionService(
                         serviceClientFactory,
+                        TimerComparer.Object,
                         _fixture.Options.Object,
                         _output.GetTelemetryClient(),
                         _output.GetLogger<SpecificTimerExecutionService>()),

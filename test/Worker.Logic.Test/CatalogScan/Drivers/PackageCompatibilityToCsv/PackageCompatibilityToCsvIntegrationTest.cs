@@ -27,8 +27,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             var max2 = DateTimeOffset.Parse("2020-11-27T19:36:50.4909042Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
-            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
-            await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, max2);
+            await SetCursorsAsync([CatalogScanDriverType.LoadPackageArchive, CatalogScanDriverType.LoadPackageManifest], max2);
             await SetCursorAsync(min0);
 
             // Act

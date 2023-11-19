@@ -32,7 +32,6 @@ namespace NuGet.Insights.Worker
         public TimeSpan Frequency => _options.Value.CatalogScanUpdateFrequency;
         public bool AutoStart => _options.Value.AutoStartCatalogScanUpdate;
         public bool IsEnabled => true;
-        public int Order => 10;
         public bool CanAbort => false;
         public bool CanDestroy => false;
 

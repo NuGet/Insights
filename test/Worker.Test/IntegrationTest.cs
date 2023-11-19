@@ -16,12 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
-using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.KustoIngestion;
-#if ENABLE_CRYPTOAPI
-using NuGet.Insights.Worker.PackageCertificateToCsv;
-using NuGet.Insights.Worker.ReferenceTracking;
-#endif
 using NuGet.Insights.Worker.Workflow;
 using Xunit;
 using Xunit.Abstractions;
@@ -61,58 +56,6 @@ namespace NuGet.Insights.Worker
                     break;
                 default:
                     throw new NotImplementedException();
-            }
-        }
-
-        public class TimersAreInProperOrder : IntegrationTest
-        {
-            public TimersAreInProperOrder(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
-            {
-            }
-
-            [Fact]
-            public void Execute()
-            {
-                var expected = new List<List<Type>>
-                {
-                    new List<Type>
-                    {
-                        typeof(WorkflowTimer),
-                    },
-                    new List<Type>
-                    {
-                        typeof(CatalogScanUpdateTimer),
-                    },
-#if ENABLE_CRYPTOAPI
-                    new List<Type>
-                    {
-                        typeof(CleanupOrphanRecordsTimer<CertificateRecord>),
-                    },
-#endif
-                    new List<Type>
-                    {
-                        typeof(AuxiliaryFileUpdaterTimer<AsOfData<PackageDownloads>>),
-                        typeof(AuxiliaryFileUpdaterTimer<AsOfData<PackageOwner>>),
-                        typeof(AuxiliaryFileUpdaterTimer<AsOfData<VerifiedPackage>>),
-                    },
-                    new List<Type>
-                    {
-                        typeof(KustoIngestionTimer),
-                    },
-                };
-                var actual = Host
-                    .Services
-                    .GetRequiredService<IEnumerable<ITimer>>()
-                    .GroupBy(x => x.Order)
-                    .OrderBy(x => x.Key)
-                    .Select(x => x.OrderBy(x => x.Name, StringComparer.Ordinal).Select(x => x.GetType()).ToList())
-                    .ToList();
-
-                Assert.Equal(expected.Count, actual.Count);
-                for (var i = 0; i < expected.Count; i++)
-                {
-                    Assert.Equal(expected[i], actual[i]);
-                }
             }
         }
 

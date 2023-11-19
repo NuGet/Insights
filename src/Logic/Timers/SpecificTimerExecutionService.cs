@@ -17,17 +17,20 @@ namespace NuGet.Insights
         public static readonly string PartitionKey = string.Empty;
 
         private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly IComparer<ITimer> _timerComparer;
         private readonly IOptions<NuGetInsightsSettings> _options;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<SpecificTimerExecutionService> _logger;
 
         public SpecificTimerExecutionService(
             ServiceClientFactory serviceClientFactory,
+            IComparer<ITimer> timerComparer,
             IOptions<NuGetInsightsSettings> options,
             ITelemetryClient telemetryClient,
             ILogger<SpecificTimerExecutionService> logger)
         {
             _serviceClientFactory = serviceClientFactory;
+            _timerComparer = timerComparer;
             _options = options;
             _telemetryClient = telemetryClient;
             _logger = logger;
@@ -52,7 +55,7 @@ namespace NuGet.Insights
         public async Task<IReadOnlyList<TimerState>> GetStateAsync(IEnumerable<ITimer> timers)
         {
             var pairs = timers
-                .OrderBy(x => x.Order)
+                .Order(_timerComparer)
                 .ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
@@ -158,13 +161,40 @@ namespace NuGet.Insights
 
             // Execute timers in ordered groups.
             var allExecuted = true;
-            foreach (var group in toExecute.GroupBy(x => x.timer.Order).OrderBy(x => x.Key))
+            foreach (var group in GroupAndOrder(toExecute, x => x.timer, _timerComparer))
             {
                 var executed = await Task.WhenAll(group.Select(x => ExecuteAsync(x.timer, x.entity, x.persistAsync, now)));
                 allExecuted &= executed.All(x => x);
             }
 
             return allExecuted;
+        }
+
+        public static IEnumerable<List<T>> GroupAndOrder<T>(IEnumerable<T> items, Func<T, ITimer> getTimer, IComparer<ITimer> comparer)
+        {
+            List<T> currentGroup = null; 
+
+            foreach (var timer in items.OrderBy(getTimer, comparer))
+            {
+                if (currentGroup is not null && comparer.Compare(getTimer(currentGroup[0]), getTimer(timer)) == 0)
+                {
+                    currentGroup.Add(timer);
+                }
+                else
+                {
+                    if (currentGroup is not null)
+                    {
+                        yield return currentGroup;
+                    }
+
+                    currentGroup = [timer];
+                }
+            }
+
+            if (currentGroup is not null)
+            {
+                yield return currentGroup;
+            }
         }
 
         private async Task<bool> ExecuteAsync(ITimer timer, TimerEntity entity, Func<Task> persistAsync, DateTimeOffset now)

@@ -24,7 +24,6 @@ namespace NuGet.Insights.Worker.Workflow
         public TimeSpan Frequency => _options.Value.WorkflowFrequency;
         public bool AutoStart => false;
         public bool IsEnabled => true;
-        public int Order => default;
         public bool CanAbort => true;
         public bool CanDestroy => false;
 
