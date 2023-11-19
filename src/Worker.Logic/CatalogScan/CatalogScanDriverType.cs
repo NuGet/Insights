@@ -22,6 +22,13 @@ namespace NuGet.Insights.Worker
         Internal_FindLatestCatalogLeafScanPerId,
 
         /// <summary>
+        /// Implemented by <see cref="LoadBucketedPackage.BucketedPackageStorage"/> and <see cref="FindLatestLeafDriver{T}"/>.
+        /// This driver records the latest catalog leaf URL for each package version to Azure Table Storage partitions them
+        /// into 1000 buckets.
+        /// </summary>
+        LoadBucketedPackage,
+
+        /// <summary>
         /// Implemented by <see cref="LoadPackageArchive.LoadPackageArchiveDriver"/>. Downloads interesting parts of the .nupkg
         /// file stored in the V3 flat container and stores the data in Azure Table Storage for other drivers to use.
         /// </summary>
@@ -57,13 +64,6 @@ namespace NuGet.Insights.Worker
         /// This driver records the latest catalog leaf URL for each package version to Azure Table Storage.
         /// </summary>
         LoadLatestPackageLeaf,
-
-        /// <summary>
-        /// Implemented by <see cref="LoadBucketedPackage.BucketedPackageStorage"/> and <see cref="FindLatestLeafDriver{T}"/>.
-        /// This driver records the latest catalog leaf URL for each package version to Azure Table Storage partitions them
-        /// into 1000 buckets.
-        /// </summary>
-        LoadBucketedPackage,
 
         /// <summary>
         /// Implemented by <see cref="BuildVersionSet.BuildVersionSetDriver"/>. Builds a compact data structure that

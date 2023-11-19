@@ -96,6 +96,7 @@ namespace NuGet.Insights.Website
                     CursorAge = catalogCommitTimestamp - min,
                     DriverType = driverType,
                     LatestScans = latestScans,
+                    Dependencies = CatalogScanCursorService.GetDependencies(driverType),
                     OnlyLatestLeavesSupport = _catalogScanService.GetOnlyLatestLeavesSupport(driverType),
                     IsEnabled = _catalogScanService.IsEnabled(driverType),
                 });

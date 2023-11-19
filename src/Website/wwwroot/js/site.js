@@ -59,13 +59,15 @@
             card.find('button[name="overrideCursor"]').toggle(this.checked);
         });
 
-        $('.btn-danger').on('click', function () {
-            var message = $(this).data('message');
-            if (!message) {
-                message = "Are you sure you want to do this?";
-            }
+        $('button').on('click', function () {
+            if ($(this).hasClass('btn-danger')) {
+                var message = $(this).data('message');
+                if (!message) {
+                    message = "Are you sure you want to do this?";
+                }
 
-            return confirm(message);
+                return confirm(message);
+            }
         })
 
         $('.collapse-remember').on('hide.bs.collapse show.bs.collapse', function (e) {

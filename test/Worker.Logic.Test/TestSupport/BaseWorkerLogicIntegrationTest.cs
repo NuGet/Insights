@@ -188,11 +188,12 @@ namespace NuGet.Insights.Worker
                 .Callback(new TryGetVersion((string id, string version, out string outVersion) => outVersion = version));
         }
 
-        protected async Task SetCursorAsync(CatalogScanDriverType driverType, DateTimeOffset min)
+        protected async Task<CursorTableEntity> SetCursorAsync(CatalogScanDriverType driverType, DateTimeOffset min)
         {
             var cursor = await CatalogScanCursorService.GetCursorAsync(driverType);
             cursor.Value = min;
             await CursorStorageService.UpdateAsync(cursor);
+            return cursor;
         }
 
         public ConcurrentBag<CatalogIndexScan> ExpectedCatalogIndexScans { get; } = new ConcurrentBag<CatalogIndexScan>();

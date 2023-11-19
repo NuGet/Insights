@@ -29,6 +29,9 @@
     <ul class="list-group list-group-flush">
         <li class="list-group-item"><b>Cursor:</b> @Model.Cursor.Value.ToZulu()</li>
         <li class="list-group-item"><b>Cursor age:</b> @Model.CursorAge.Humanize(precision: 7, maxUnit: Humanizer.Localisation.TimeUnit.Year, minUnit: Humanizer.Localisation.TimeUnit.Second)</li>
+        <li class="list-group-item">
+            <b>Driver dependencies:</b> @string.Join(", ", Model.Dependencies.Select(x => x.GetTitle()).DefaultIfEmpty("none"))
+        </li>
     </ul>
 
     <div class="card-body border-top">
