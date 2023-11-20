@@ -49,7 +49,7 @@ namespace NuGet.Insights.Worker
             var metric = TelemetryClient.Metrics[new("AppendResultStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
             var value = Assert.Single(metric.MetricValues);
             Assert.Equal(1, value.MetricValue);
-            Assert.Equal([DestContainer, typeof(PackageDeprecationRecord).FullName], value.DimensionValues);
+            Assert.Equal<string[]>([DestContainer, typeof(PackageDeprecationRecord).FullName], value.DimensionValues);
         }
 
         [Fact]

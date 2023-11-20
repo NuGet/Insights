@@ -55,6 +55,10 @@ $files = [ordered]@{
             @{
                 Description = "Remove unused property from ``PackageFramework`` and make ``FrameworkName`` settable"
                 Path        = "0003-Remove-unused-property-and-make-framework-name-setta.patch"
+            },
+            @{
+                Description = "Use NuGetFrameworkSorter.Instance to avoid obsolete warning"
+                Path        = "0005-Use-NuGetFrameworkSorter.Instance-to-avoid-obsolete-.patch"
             }
         )
     };

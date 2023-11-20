@@ -18,8 +18,6 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 {
     public class PackageCompatibilityToCsvDriver : ICatalogLeafToCsvDriver<PackageCompatibility>, ICsvResultStorage<PackageCompatibility>
     {
-        private static readonly NuGetFrameworkSorter Sorter = new NuGetFrameworkSorter();
-
         private readonly CatalogClient _catalogClient;
         private readonly PackageFileService _packageFileService;
         private readonly PackageManifestService _packageManifestService;
@@ -216,14 +214,14 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             try
             {
                 var originalFrameworks = getFrameworks()
-                    .OrderBy(x => x, Sorter)
+                    .OrderBy(x => x, NuGetFrameworkSorter.Instance)
                     .ToList();
                 var originalShortFolderNames = originalFrameworks
                     .Select(x => x.GetShortFolderName())
                     .ToList();
                 roundTripFrameworks = originalShortFolderNames
-                    .Select(x => NuGetFramework.Parse(x))
-                    .OrderBy(x => x, Sorter)
+                    .Select(NuGetFramework.Parse)
+                    .OrderBy(x => x, NuGetFrameworkSorter.Instance)
                     .ToList();
                 roundTripShortFolderNames = roundTripFrameworks
                     .Select(x => x.GetShortFolderName())

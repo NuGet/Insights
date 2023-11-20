@@ -69,7 +69,7 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
                 out var metric));
             var value = Assert.Single(metric.MetricValues);
             Assert.Equal(1, value.MetricValue);
-            Assert.Equal(["NuGet.Platform", "1.0.0", "Snupkg", "DefaultMiniZip"], value.DimensionValues);
+            Assert.Equal<string[]>(["NuGet.Platform", "1.0.0", "Snupkg", "DefaultMiniZip"], value.DimensionValues);
         }
 
         [Fact]

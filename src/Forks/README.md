@@ -52,6 +52,7 @@ Files:
 
 Patches:
   - [Remove unused property from `PackageFramework` and make `FrameworkName` settable](0003-Remove-unused-property-and-make-framework-name-setta.patch)
+  - [Use NuGetFrameworkSorter.Instance to avoid obsolete warning](0005-Use-NuGetFrameworkSorter.Instance-to-avoid-obsolete-.patch)
 
 # [NuGet/ServerCommon](https://github.com/NuGet/ServerCommon)
 

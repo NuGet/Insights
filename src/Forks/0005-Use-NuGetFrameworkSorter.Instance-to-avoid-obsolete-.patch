@@ -1,0 +1,24 @@
+From bdc8ef56bfa9f921e18ac5472d48e3c5d2840c7f Mon Sep 17 00:00:00 2001
+Date: Mon, 20 Nov 2023 09:55:36 -0500
+Subject: [PATCH] Use NuGetFrameworkSorter.Instance to avoid obsolete warning
+
+---
+ .../Frameworks/PackageFrameworkCompatibilityFactory.cs          | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Forks/NuGet/NuGetGallery/src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityFactory.cs b/src/Forks/NuGet/NuGetGallery/src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityFactory.cs
+index c18b129e..b99bc517 100644
+--- a/src/Forks/NuGet/NuGetGallery/src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityFactory.cs
++++ b/src/Forks/NuGet/NuGetGallery/src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityFactory.cs
+@@ -19,7 +19,7 @@ namespace NuGetGallery.Frameworks
+             FrameworkProductNames.NetStandard,
+             FrameworkProductNames.NetFramework
+         };
+-        private readonly NuGetFrameworkSorter Sorter = new NuGetFrameworkSorter();
++        private readonly NuGetFrameworkSorter Sorter = NuGetFrameworkSorter.Instance;
+         private readonly int NetStartingMajorVersion = 5;
+ 
+         public PackageFrameworkCompatibility Create(ICollection<PackageFramework> packageFrameworks)
+-- 
+2.40.0.windows.1
+
