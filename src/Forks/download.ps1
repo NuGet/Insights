@@ -42,7 +42,6 @@ $files = [ordered]@{
             "src/NuGet.Services.Entities/PackageFramework.cs",
             "src/NuGetGallery.Core/Frameworks/FrameworkCompatibilityService.cs",
             "src/NuGetGallery.Core/Frameworks/FrameworkProductNames.cs",
-            "src/NuGetGallery.Core/Frameworks/IFrameworkCompatibilityService.cs",
             "src/NuGetGallery.Core/Frameworks/IPackageFrameworkCompatibilityFactory.cs",
             "src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibility.cs",
             "src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityBadges.cs",
@@ -51,7 +50,7 @@ $files = [ordered]@{
             "src/NuGetGallery.Core/Frameworks/SupportedFrameworks.cs",
             "src/NuGetGallery.Core/Services/AssetFrameworkHelper.cs"
         );
-        Revision = "3382ee77c723ef3bf87d84fc79964f5bba780d18"
+        Revision = "bc567a1a1e975d54dddc28b6f33af1fc3c76bca8"
         Patches  = @(
             @{
                 Description = "Remove unused property from ``PackageFramework`` and make ``FrameworkName`` settable"

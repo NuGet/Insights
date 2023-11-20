@@ -23,6 +23,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         private readonly CatalogClient _catalogClient;
         private readonly PackageFileService _packageFileService;
         private readonly PackageManifestService _packageManifestService;
+        private readonly IPackageFrameworkCompatibilityFactory _compatibilityFactory;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<PackageCompatibilityToCsvDriver> _logger;
 
@@ -30,12 +31,14 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             CatalogClient catalogClient,
             PackageFileService packageFileService,
             PackageManifestService packageManifestService,
+            IPackageFrameworkCompatibilityFactory compatibilityFactory,
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<PackageCompatibilityToCsvDriver> logger)
         {
             _catalogClient = catalogClient;
             _packageFileService = packageFileService;
             _packageManifestService = packageManifestService;
+            _compatibilityFactory = compatibilityFactory;
             _options = options;
             _logger = logger;
         }
@@ -149,14 +152,11 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 
                 if (nuGetGallery != null)
                 {
-                    var compatibilityService = new FrameworkCompatibilityService();
-                    var compatibilityFactory = new PackageFrameworkCompatibilityFactory(compatibilityService);
-
                     var frameworks = nuGetGallery
                         .Select(x => new PackageFramework { FrameworkName = x })
                         .ToList();
 
-                    var compatibility = compatibilityFactory.Create(frameworks);
+                    var compatibility = _compatibilityFactory.Create(frameworks);
 
                     output.NuGetGallerySupported = KustoDynamicSerializer.Serialize(compatibility
                         .Table

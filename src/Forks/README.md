@@ -35,14 +35,13 @@ Patches:
 
 Copied license: [`LICENSE.txt`](NuGet/NuGetGallery/LICENSE.txt)
 
-Copied revision: [`3382ee77c723ef3bf87d84fc79964f5bba780d18`](https://github.com/NuGet/NuGetGallery/tree/3382ee77c723ef3bf87d84fc79964f5bba780d18)
+Copied revision: [`bc567a1a1e975d54dddc28b6f33af1fc3c76bca8`](https://github.com/NuGet/NuGetGallery/tree/bc567a1a1e975d54dddc28b6f33af1fc3c76bca8)
 
 Files:
   - [`src/NuGet.Services.Entities/IEntity.cs`](NuGet/NuGetGallery/src/NuGet.Services.Entities/IEntity.cs)
   - [`src/NuGet.Services.Entities/PackageFramework.cs`](NuGet/NuGetGallery/src/NuGet.Services.Entities/PackageFramework.cs)
   - [`src/NuGetGallery.Core/Frameworks/FrameworkCompatibilityService.cs`](NuGet/NuGetGallery/src/NuGetGallery.Core/Frameworks/FrameworkCompatibilityService.cs)
   - [`src/NuGetGallery.Core/Frameworks/FrameworkProductNames.cs`](NuGet/NuGetGallery/src/NuGetGallery.Core/Frameworks/FrameworkProductNames.cs)
-  - [`src/NuGetGallery.Core/Frameworks/IFrameworkCompatibilityService.cs`](NuGet/NuGetGallery/src/NuGetGallery.Core/Frameworks/IFrameworkCompatibilityService.cs)
   - [`src/NuGetGallery.Core/Frameworks/IPackageFrameworkCompatibilityFactory.cs`](NuGet/NuGetGallery/src/NuGetGallery.Core/Frameworks/IPackageFrameworkCompatibilityFactory.cs)
   - [`src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibility.cs`](NuGet/NuGetGallery/src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibility.cs)
   - [`src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityBadges.cs`](NuGet/NuGetGallery/src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityBadges.cs)

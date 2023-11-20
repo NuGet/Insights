@@ -34,6 +34,7 @@ using NuGet.Insights.Worker.ReferenceTracking;
 using NuGet.Insights.Worker.TableCopy;
 using NuGet.Insights.Worker.TimedReprocess;
 using NuGet.Insights.Worker.Workflow;
+using NuGetGallery.Frameworks;
 
 namespace NuGet.Insights.Worker
 {
@@ -213,6 +214,8 @@ namespace NuGet.Insights.Worker
             {
                 serviceCollection.AddCleanupOrphanRecordsService(serviceType, implementationType);
             }
+
+            serviceCollection.AddSingleton<IPackageFrameworkCompatibilityFactory>(new PackageFrameworkCompatibilityFactory());
 
             serviceCollection.AddLoadLatestPackageLeaf();
             serviceCollection.AddLoadBucketedPackage();
