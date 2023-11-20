@@ -69,7 +69,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
                         if (timedScan == null)
                         {
                             var descendingId = StorageUtility.GenerateDescendingId();
-                            var scanId = $"{descendingId}-r{BucketRange.ParseBuckets(run.BucketRanges).Count()}";
+                            var scanId = CatalogScanService.GetBucketRangeScanId(BucketRange.ParseBuckets(run.BucketRanges), descendingId);
                             var storageSuffix = descendingId.Unique;
                             timedScan = new TimedReprocessCatalogScan(run.RunId, driverType, scanId, storageSuffix);
 

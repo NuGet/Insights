@@ -218,8 +218,9 @@ namespace NuGet.Insights.Website.Controllers
                     }
 
                     var descendingId = StorageUtility.GenerateDescendingId();
+                    var scanId = CatalogScanService.GetBucketRangeScanId(parsedBuckets, descendingId);
                     result = await _catalogScanService.UpdateAsync(
-                        descendingId.ToString() + $"-r{parsedBuckets.Count}",
+                        scanId,
                         descendingId.Unique,
                         driverType,
                         parsedBuckets);

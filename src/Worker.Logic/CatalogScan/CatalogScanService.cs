@@ -473,6 +473,11 @@ namespace NuGet.Insights.Worker
             }
         }
 
+        public static string GetBucketRangeScanId(IEnumerable<int> buckets, StorageId storageId)
+        {
+            return $"{storageId}-r{buckets.Count()}";
+        }
+
         private async Task<CatalogScanServiceResult> UpdateAsync(
             CatalogScanDriverType driverType,
             bool? onlyLatestLeaves,
