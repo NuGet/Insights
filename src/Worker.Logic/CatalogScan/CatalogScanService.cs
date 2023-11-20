@@ -67,7 +67,7 @@ namespace NuGet.Insights.Worker
         /// - false: the driver type cannot run with "only latest leaves = false"
         /// - true: the driver type can only run with "only latest leaves = true"
         /// </summary>
-        public bool? GetOnlyLatestLeavesSupport(CatalogScanDriverType driverType)
+        public static bool? GetOnlyLatestLeavesSupport(CatalogScanDriverType driverType)
         {
             switch (driverType)
             {
@@ -302,7 +302,7 @@ namespace NuGet.Insights.Worker
                     return await UpdateAsync(
                         driverType,
                         onlyLatestLeaves.GetValueOrDefault(true),
-                        onlyLatestLeaves.GetValueOrDefault(true) ? CatalogClient.NuGetOrgMinDeleted : CatalogClient.NuGetOrgMinAvailable,
+                        min: CatalogClient.NuGetOrgMinDeleted,
                         max,
                         continueWithDependents);
 
@@ -362,7 +362,7 @@ namespace NuGet.Insights.Worker
                 max);
         }
 
-        public bool SupportsBucketRangeProcessing(CatalogScanDriverType driverType)
+        public static bool SupportsBucketRangeProcessing(CatalogScanDriverType driverType)
         {
             switch (driverType)
             {

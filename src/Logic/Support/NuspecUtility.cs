@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,7 +14,6 @@ namespace NuGet.Insights
     public static class NuspecUtility
     {
         private static readonly Regex IsAlphabet = new Regex(@"^[a-zA-Z]+$", RegexOptions.Compiled);
-        private static readonly NuGetFrameworkNameComparer NuGetFrameworkNameComparer = new NuGetFrameworkNameComparer();
         private static readonly HashSet<string> CollidingMetadataElementNames = new HashSet<string>
         {
             "created",

@@ -52,6 +52,11 @@ namespace NuGet.Insights
         /// published and includes all packages that were repository signed at push time. In other words, we can start
         /// start cursors just before this time and still see all available packages. Using this as a min skips
         /// 2,331,705 catalog leaves (4,251 pages). This is about 35% of the total, as of February, 2021.
+        ///
+        /// Generally this should not be used because it entirely skips some deleted packages and the data files
+        /// include empty, marker records for deleted packages. If the data files are built using this min timestamp
+        /// then these records will be missing and will fail to import into Kusto during the data consistency
+        /// (validation) step with the catalog leaf item table.
         /// </summary>
         public static readonly DateTimeOffset NuGetOrgMinAvailable = DateTimeOffset
             .Parse("2018-08-08T16:29:16.4488298Z", CultureInfo.InvariantCulture)

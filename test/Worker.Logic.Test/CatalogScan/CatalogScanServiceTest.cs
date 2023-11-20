@@ -429,8 +429,71 @@ namespace NuGet.Insights.Worker
             }
 
             [Theory]
-            [MemberData(nameof(SetsDefaultMinData))]
-            public async Task SetsDefaultMin(CatalogScanDriverType type, DateTimeOffset expected)
+            [MemberData(nameof(SetsDefaultMin_WithAllLeaves_MinCatalogData))]
+            public async Task SetsDefaultMin_WithAllLeaves_MinCatalog(CatalogScanDriverType type)
+            {
+                // Arrange
+                await CatalogScanService.InitializeAsync();
+                await SetDependencyCursorsAsync(type, CursorValue);
+
+                // Act
+                var result = await CatalogScanService.UpdateAsync(type, max: null, onlyLatestLeaves: false);
+
+                // Assert
+                Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
+                Assert.Equal(CatalogClient.NuGetOrgMin, result.Scan.Min);
+            }
+
+            public static IEnumerable<object[]> SetsDefaultMin_WithAllLeaves_MinCatalogData => TypeToInfo
+                .Where(x => x.Value.DefaultMin == CatalogClient.NuGetOrgMin)
+                .Select(x => new object[] { x.Key });
+
+            [Theory]
+            [MemberData(nameof(SetsDefaultMin_WithAllLeaves_MinDeletedData))]
+            public async Task SetsDefaultMin_WithAllLeaves_MinDeleted(CatalogScanDriverType type)
+            {
+                // Arrange
+                await CatalogScanService.InitializeAsync();
+                await SetDependencyCursorsAsync(type, CursorValue);
+
+                // Act
+                var result = await CatalogScanService.UpdateAsync(type, max: null, onlyLatestLeaves: false);
+
+                // Assert
+                Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
+                Assert.Equal(CatalogClient.NuGetOrgMinDeleted, result.Scan.Min);
+            }
+
+            public static IEnumerable<object[]> SetsDefaultMin_WithAllLeaves_MinDeletedData => TypeToInfo
+                .Where(x => !CatalogScanService.GetOnlyLatestLeavesSupport(x.Key).GetValueOrDefault(false))
+                .Select(x => x.Key)
+                .Except(SetsDefaultMin_WithAllLeaves_MinCatalogData.Select(x => x[0]).Cast<CatalogScanDriverType>())
+                .Select(x => new object[] { x });
+
+            [Theory]
+            [MemberData(nameof(SetsDefaultMin_WithOnlyLatestLeavesData))]
+            public async Task SetsDefaultMin_WithOnlyLatestLeaves(CatalogScanDriverType type)
+            {
+                // Arrange
+                await CatalogScanService.InitializeAsync();
+                await SetDependencyCursorsAsync(type, CursorValue);
+
+                // Act
+                var result = await CatalogScanService.UpdateAsync(type, max: null, onlyLatestLeaves: true);
+
+                // Assert
+                Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
+                Assert.Equal(CatalogClient.NuGetOrgMinDeleted, result.Scan.Min);
+            }
+
+            public static IEnumerable<object[]> SetsDefaultMin_WithOnlyLatestLeavesData => TypeToInfo
+                .Where(x => CatalogScanService.GetOnlyLatestLeavesSupport(x.Key).GetValueOrDefault(true))
+                .Select(x => x.Key)
+                .Select(x => new object[] { x });
+
+            [Theory]
+            [MemberData(nameof(SetsDefaultMin_WithDefaultFindLatestData))]
+            public async Task SetsDefaultMin_WithDefaultFindLatest(CatalogScanDriverType type, DateTimeOffset expected)
             {
                 // Arrange
                 await CatalogScanService.InitializeAsync();
@@ -444,7 +507,7 @@ namespace NuGet.Insights.Worker
                 Assert.Equal(expected, result.Scan.Min);
             }
 
-            public static IEnumerable<object[]> SetsDefaultMinData => TypeToInfo
+            public static IEnumerable<object[]> SetsDefaultMin_WithDefaultFindLatestData => TypeToInfo
                 .Select(x => new object[] { x.Key, x.Value.DefaultMin });
 
             [Theory]

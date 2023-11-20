@@ -178,7 +178,7 @@ namespace NuGet.Insights.Website.Controllers
             bool overrideCursor,
             bool reset)
         {
-            if (!_catalogScanService.GetOnlyLatestLeavesSupport(driverType).HasValue
+            if (!CatalogScanService.GetOnlyLatestLeavesSupport(driverType).HasValue
                 && !onlyLatestLeaves.HasValue)
             {
                 onlyLatestLeaves = false;

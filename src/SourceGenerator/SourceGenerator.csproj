@@ -3,6 +3,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>NuGet.Insights.SourceGenerator</AssemblyName>
     <RootNamespace>NuGet.Insights</RootNamespace>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="KustoDDL.cs" />
