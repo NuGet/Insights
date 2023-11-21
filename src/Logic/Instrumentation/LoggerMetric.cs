@@ -5,7 +5,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace NuGet.Insights
 {
@@ -19,20 +18,11 @@ namespace NuGet.Insights
         {
             _metricId = metricId;
             _dimensionNames = dimensionNames;
-            _logger = ShouldLogMetric(metricId) ? logger : NullLogger.Instance;
+            _logger = logger;
         }
 
         public ConcurrentQueue<(double MetricValue, string[] DimensionValues)> MetricValues { get; } = new();
-
-        private static bool ShouldLogMetric(string metricId)
-        {
-            if (metricId.Contains(QueryLoopMetrics.MetricIdSubstring, StringComparison.Ordinal))
-            {
-                return false;
-            }
-
-            return true;
-        }
+        public static object GenericMessageProcessor { get; private set; }
 
         public void TrackValue(double metricValue)
         {

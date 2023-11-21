@@ -14,6 +14,10 @@ namespace NuGet.Insights.Worker
 {
     public class GenericMessageProcessor : IGenericMessageProcessor
     {
+        public const string MessageProcessedCountMetricId = "MessageProcessedCount";
+        public const string BatchMessageProcessorDurationMsMetricId = "BatchMessageProcessorDurationMs";
+        public const string MessageProcessorDurationMsMetricId = "MessageProcessorDurationMs";
+
         private readonly SchemaSerializer _serializer;
         private readonly IServiceProvider _serviceProvider;
         private readonly ITelemetryClient _telemetryClient;
@@ -194,7 +198,7 @@ namespace NuGet.Insights.Worker
                 }
                 finally
                 {
-                    EmitMetric(isBatch, queue, schemaName, stopwatch, status);
+                    EmitMetrics(isBatch, queue, schemaName, stopwatch, status, messages.Count);
                 }
             }
             else
@@ -239,7 +243,7 @@ namespace NuGet.Insights.Worker
                     }
                     finally
                     {
-                        EmitMetric(isBatch, queue, schemaName, stopwatch, success ? "Success" : "Exception");
+                        EmitMetrics(isBatch, queue, schemaName, stopwatch, success ? "Success" : "Exception", 1);
                     }
                 }
 
@@ -254,17 +258,23 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        private void EmitMetric(bool isBatch, QueueType? queue, string schemaName, Stopwatch stopwatch, string status)
+        private void EmitMetrics(bool isBatch, QueueType? queue, string schemaName, Stopwatch stopwatch, string status, int messageCount)
         {
+            _telemetryClient
+                .GetMetric(MessageProcessedCountMetricId, "Status", "SchemaName", "IsBatch")
+                .TrackValue(messageCount, status, schemaName, isBatch ? "true" : "false");
+
             if (isBatch)
             {
-                var metric = _telemetryClient.GetMetric($"BatchMessageProcessorDurationMs", "Status", "SchemaName");
-                metric.TrackValue(stopwatch.Elapsed.TotalMilliseconds, status, schemaName);
+                _telemetryClient
+                    .GetMetric(BatchMessageProcessorDurationMsMetricId, "Status", "SchemaName")
+                    .TrackValue(stopwatch.Elapsed.TotalMilliseconds, status, schemaName);
             }
             else
             {
-                var metric = _telemetryClient.GetMetric($"MessageProcessorDurationMs", "Status", "SchemaName", "QueueType");
-                metric.TrackValue(stopwatch.Elapsed.TotalMilliseconds, status, schemaName, queue.Value.ToString());
+                _telemetryClient
+                    .GetMetric(MessageProcessorDurationMsMetricId, "Status", "SchemaName", "QueueType")
+                    .TrackValue(stopwatch.Elapsed.TotalMilliseconds, status, schemaName, queue.Value.ToString());
             }
         }
 

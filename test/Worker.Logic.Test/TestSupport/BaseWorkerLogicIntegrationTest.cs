@@ -114,6 +114,11 @@ namespace NuGet.Insights.Worker
             hostBuilder.ConfigureServices(serviceCollection =>
             {
                 serviceCollection.AddNuGetInsightsWorker();
+
+                serviceCollection.AddSingleton(s => new LoggerTelemetryClient(
+                    TestOutputHelperExtensions.ShouldIgnoreMetricLog,
+                    s.GetRequiredService<ILogger<LoggerTelemetryClient>>()));
+
                 serviceCollection.Configure((Action<NuGetInsightsWorkerSettings>)ConfigureWorkerDefaultsAndSettings);
             });
         }

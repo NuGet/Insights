@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
@@ -32,9 +33,16 @@ namespace NuGet.Insights
             return output.GetLoggerFactory().CreateLogger<T>();
         }
 
-        public static ITelemetryClient GetTelemetryClient(this ITestOutputHelper output)
+        internal static bool ShouldIgnoreMetricLog(LoggerTelemetryClient.MetricKey key)
         {
-            return new LoggerTelemetryClient(output.GetLogger<LoggerTelemetryClient>());
+            return key.MetricId.Contains(QueryLoopMetrics.MetricIdSubstring, StringComparison.Ordinal);
+        }
+
+        internal static LoggerTelemetryClient GetTelemetryClient(this ITestOutputHelper output)
+        {
+            return new LoggerTelemetryClient(
+                ShouldIgnoreMetricLog,
+                output.GetLogger<LoggerTelemetryClient>());
         }
     }
 }

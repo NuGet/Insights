@@ -83,7 +83,9 @@ namespace NuGet.Insights
 
                     serviceCollection.AddSingleton((INuGetInsightsHttpMessageHandlerFactory)HttpMessageHandlerFactory);
 
-                    serviceCollection.AddSingleton(s => new LoggerTelemetryClient(s.GetRequiredService<ILogger<LoggerTelemetryClient>>()));
+                    serviceCollection.AddSingleton(s => new LoggerTelemetryClient(
+                        TestOutputHelperExtensions.ShouldIgnoreMetricLog,
+                        s.GetRequiredService<ILogger<LoggerTelemetryClient>>()));
                     serviceCollection.AddSingleton<ITelemetryClient>(s => s.GetRequiredService<LoggerTelemetryClient>());
 
                     serviceCollection.AddLogging(o =>
