@@ -35,6 +35,11 @@ namespace NuGet.Insights.Worker
 
         public async Task<IReadOnlyList<CursorTableEntity>> GetOrCreateAllAsync(IReadOnlyList<string> names)
         {
+            return await GetOrCreateAllAsync(names, CursorTableEntity.Min);
+        }
+
+        public async Task<IReadOnlyList<CursorTableEntity>> GetOrCreateAllAsync(IReadOnlyList<string> names, DateTimeOffset defaultValue)
+        {
             if (names.Count == 0)
             {
                 return Array.Empty<CursorTableEntity>();
@@ -66,7 +71,7 @@ namespace NuGet.Insights.Worker
                     }
                     else
                     {
-                        var cursor = new CursorTableEntity(name);
+                        var cursor = new CursorTableEntity(name) { Value = defaultValue };
                         _logger.LogInformation("Creating cursor {Name} to timestamp {Value:O}.", name, cursor.Value);
                         batch.AddEntity(cursor);
                         output.Add(cursor);
@@ -79,7 +84,7 @@ namespace NuGet.Insights.Worker
             return output;
         }
 
-        public async Task<CursorTableEntity> GetOrCreateAsync(string name)
+        public async Task<CursorTableEntity> GetOrCreateAsync(string name, DateTimeOffset defaultValue)
         {
             var table = await GetTableAsync();
             var cursor = await table.GetEntityOrNullAsync<CursorTableEntity>(string.Empty, name);
@@ -89,12 +94,17 @@ namespace NuGet.Insights.Worker
             }
             else
             {
-                cursor = new CursorTableEntity(name);
+                cursor = new CursorTableEntity(name) { Value = defaultValue };
                 _logger.LogInformation("Creating cursor {Name} to timestamp {Value:O}.", name, cursor.Value);
                 var response = await table.AddEntityAsync(cursor);
                 cursor.UpdateETag(response);
                 return cursor;
             }
+        }
+
+        public async Task<CursorTableEntity> GetOrCreateAsync(string name)
+        {
+            return await GetOrCreateAsync(name, CursorTableEntity.Min);
         }
 
         public async Task UpdateAsync(CursorTableEntity cursor)
@@ -103,6 +113,20 @@ namespace NuGet.Insights.Worker
             _logger.LogInformation("Updating cursor {Name} to timestamp {NewValue:O}.", cursor.Name, cursor.Value);
             var response = await table.UpdateEntityAsync(cursor, cursor.ETag, TableUpdateMode.Replace);
             cursor.UpdateETag(response);
+        }
+
+        public async Task UpdateAllAsync(IEnumerable<CursorTableEntity> cursors)
+        {
+            var table = await GetTableAsync();
+            var batch = new MutableTableTransactionalBatch(table);
+            foreach (var cursor in cursors)
+            {
+                _logger.LogInformation("Updating cursor {Name} to timestamp {NewValue:O}.", cursor.Name, cursor.Value);
+                batch.UpdateEntity(cursor, cursor.ETag, TableUpdateMode.Replace);
+                await batch.SubmitBatchIfFullAsync();
+            }
+
+            await batch.SubmitBatchIfNotEmptyAsync();
         }
 
         private async Task<TableClientWithRetryContext> GetTableAsync()

@@ -84,7 +84,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
                 }
             }
 
-            await _versionSetService.UpdateAsync(indexScan.Max.Value, idToVersionToDeleted);
+            await _versionSetService.UpdateAsync(indexScan.Max, idToVersionToDeleted);
         }
 
         public Task<bool> IsAggregateCompleteAsync(CatalogIndexScan indexScan)

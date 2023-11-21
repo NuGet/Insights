@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -35,7 +34,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "Soneta.Business",
                 PackageVersion = "1905.0.1",
-            };
+            }.SetDefaults();
             await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
@@ -66,7 +65,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 LeafType = CatalogLeafType.PackageDetails,
                 PackageId = "Serilog",
                 PackageVersion = "0.1.12",
-            };
+            }.SetDefaults();
             await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
@@ -94,10 +93,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.10.11.03.47.42/sharepointpnpcoreonline.2.21.1712.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2018-10-11T03:47:42.1892419Z", CultureInfo.InvariantCulture),
                 PackageId = "SharePointPnPCoreOnline",
                 PackageVersion = "2.21.1712",
-            };
+            }.SetDefaults();
             await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
@@ -119,10 +117,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.10.22.19.27.07/humanizer.core.zh-cn.2.2.0.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2018-10-22T19:27:07.7689589Z", CultureInfo.InvariantCulture),
                 PackageId = "Humanizer.Core.zh-CN",
                 PackageVersion = "2.2.0",
-            };
+            }.SetDefaults();
             await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
@@ -140,10 +137,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.12.13.22.09.48/system.runtime.handles.4.3.0.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2018-12-13T22:09:48.4043804Z", CultureInfo.InvariantCulture),
                 PackageId = "System.Runtime.Handles",
                 PackageVersion = "4.3.0",
-            };
+            }.SetDefaults();
             await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
@@ -162,10 +158,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2021.07.01.04.25.53/txtcsvhelper.1.2.8.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2021-07-01T04:25:53.5053628Z", CultureInfo.InvariantCulture),
                 PackageId = "TxtCsvHelper",
                 PackageVersion = "1.2.8",
-            };
+            }.SetDefaults();
             await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
@@ -185,10 +180,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2021.03.26.13.21.32/kentico.xperience.aspnet.mvc5.libraries.13.0.18.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2021-03-26T13:21:32.0964414Z", CultureInfo.InvariantCulture),
                 PackageId = "Kentico.Xperience.AspNet.Mvc5.Libraries",
                 PackageVersion = "13.0.18",
-            };
+            }.SetDefaults();
             await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
@@ -207,10 +201,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2020.02.23.11.43.38/citizenfx.framework.client.0.1.0.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2020-02-23T11:43:38.8666289Z", CultureInfo.InvariantCulture),
                 PackageId = "CitizenFX.Framework.Client",
                 PackageVersion = "0.1.0",
-            };
+            }.SetDefaults();
             await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
@@ -229,10 +222,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2021.07.12.03.40.51/txtcsvhelper.1.2.9.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2021-07-12T03:40:51.9884006Z", CultureInfo.InvariantCulture),
                 PackageId = "TxtCsvHelper",
                 PackageVersion = "1.2.9",
-            };
+            }.SetDefaults();
             await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
@@ -252,10 +244,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2021.08.13.18.49.00/ewl.69.0.0-pr00249.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2021-07-14T19:04:24.75Z", CultureInfo.InvariantCulture),
                 PackageId = "Ewl",
                 PackageVersion = "69.0.0-pr00249",
-            };
+            }.SetDefaults();
             await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
@@ -274,10 +265,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.11.02.02.58.09/realm.3.0.0.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2018-11-02T02:58:09.1470115Z", CultureInfo.InvariantCulture),
                 PackageId = "Realm",
                 PackageVersion = "3.0.0",
-            };
+            }.SetDefaults();
             await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
@@ -296,10 +286,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2021.04.13.08.32.33/gembox.document.33.0.1173-hotfix.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2021-04-13T08:32:33.3109749Z", CultureInfo.InvariantCulture),
                 PackageId = "GemBox.Document",
                 PackageVersion = "33.0.1173-hotfix",
-            };
+            }.SetDefaults();
             await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
@@ -320,10 +309,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.12.13.22.10.24/system.runtime.4.3.0.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2018-12-13T22:10:24.250425Z", CultureInfo.InvariantCulture),
                 PackageId = "System.Runtime",
                 PackageVersion = "4.3.0",
-            };
+            }.SetDefaults();
             await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
@@ -346,10 +334,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.10.27.13.06.16/quickgraph.3.6.61119.7.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2018-10-27T13:06:16.1670248Z", CultureInfo.InvariantCulture),
                 PackageId = "QuickGraph",
                 PackageVersion = "3.6.61119.7",
-            };
+            }.SetDefaults();
             await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
@@ -372,10 +359,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.12.19.06.05.27/awesomesocket.1.2.0.1.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2018-12-19T06:05:27.3158923Z", CultureInfo.InvariantCulture),
                 PackageId = "AwesomeSocket",
                 PackageVersion = "1.2.0.1",
-            };
+            }.SetDefaults();
             await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
@@ -411,10 +397,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2021.02.23.22.21.34/moq.4.16.1.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2021-02-23T22:21:34.6558267Z", CultureInfo.InvariantCulture),
                 PackageId = "Moq",
                 PackageVersion = "4.16.1",
-            };
+            }.SetDefaults();
             await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
@@ -435,10 +420,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.12.18.08.44.52/enyutrynuget.1.0.0.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2018-12-18T08:44:52.1808182Z", CultureInfo.InvariantCulture),
                 PackageId = "EnyuTryNuget",
                 PackageVersion = "1.0.0",
-            };
+            }.SetDefaults();
             await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
@@ -461,10 +445,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.12.11.04.41.19/getaddress.azuretablestorage.1.0.0.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2018-12-11T04:41:19.7918122Z", CultureInfo.InvariantCulture),
                 PackageId = "getAddress.AzureTableStorage",
                 PackageVersion = "1.0.0",
-            };
+            }.SetDefaults();
             await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
@@ -486,10 +469,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.12.14.10.06.47/microsoft.dotnet.interop.1.0.0-prerelease-0002.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2018-12-14T10:06:47.962422Z", CultureInfo.InvariantCulture),
                 PackageId = "Microsoft.DotNet.Interop",
                 PackageVersion = "1.0.0-prerelease-0002",
-            };
+            }.SetDefaults();
             await Target.InitializeAsync();
 
             var output = await Target.ProcessLeafAsync(leaf);
@@ -525,7 +507,6 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 {
                     Url = "https://api.nuget.org/v3/catalog0/data/2018.12.14.10.06.47/microsoft.dotnet.interop.1.0.0-prerelease-0002.json",
                     LeafType = CatalogLeafType.PackageDetails,
-                    CommitTimestamp = DateTimeOffset.Parse("2018-12-14T10:06:47.962422Z", CultureInfo.InvariantCulture),
                     PackageId = "Microsoft.DotNet.Interop",
                     PackageVersion = "1.0.0-prerelease-0002",
                 };

@@ -1,13 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 
-namespace NuGet.Insights.Worker.KustoIngestion
+namespace NuGet.Insights.Worker
 {
-    public record CsvResultStorage : ICsvResultStorage
+    public record CsvRecordStorage : ICsvRecordStorage
     {
-        public CsvResultStorage(string containerName, Type recordType, string blobNamePrefix)
+        public CsvRecordStorage(string containerName, Type recordType, string blobNamePrefix)
         {
             ContainerName = containerName;
             RecordType = recordType;

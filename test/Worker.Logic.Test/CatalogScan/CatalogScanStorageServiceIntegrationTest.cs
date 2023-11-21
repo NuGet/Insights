@@ -109,7 +109,7 @@ namespace NuGet.Insights.Worker
                 var scan = new CatalogIndexScan(DriverType, StorageUtility.GenerateDescendingId().ToString(), StorageSuffix)
                 {
                     State = CatalogIndexScanState.Created,
-                };
+                }.SetDefaults();
                 await Target.InsertAsync(scan);
 
                 await Target.InsertAsync(scan);
@@ -136,7 +136,7 @@ namespace NuGet.Insights.Worker
                     .Select(x => new CatalogIndexScan(DriverType, StorageUtility.GenerateDescendingId().ToString(), StorageSuffix)
                     {
                         State = CatalogIndexScanState.Complete,
-                    })
+                    }.SetDefaults())
                     .OrderBy(x => x.ScanId, StringComparer.Ordinal)
                     .ToList();
                 await Task.WhenAll(scans.Select(x => Target.InsertAsync(x)));
@@ -162,7 +162,7 @@ namespace NuGet.Insights.Worker
                     .Select(x => new CatalogIndexScan(DriverType, StorageUtility.GenerateDescendingId().ToString(), StorageSuffix)
                     {
                         State = CatalogIndexScanState.Created,
-                    })
+                    }.SetDefaults())
                     .OrderBy(x => x.ScanId, StringComparer.Ordinal)
                     .ToList();
                 await Task.WhenAll(scans.Select(x => Target.InsertAsync(x)));

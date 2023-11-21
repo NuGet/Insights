@@ -28,7 +28,6 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2017.11.08.17.42.28/nuget.platform.1.0.0.json",
                 LeafType = CatalogLeafType.PackageDelete,
-                CommitTimestamp = DateTimeOffset.Parse("2017-11-08T17:42:28.5677911Z", CultureInfo.InvariantCulture),
                 PackageId = "NuGet.Platform",
                 PackageVersion = "1.0.0",
             };
@@ -51,7 +50,6 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2015.06.13.03.41.09/nuget.platform.1.0.0.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2015-06-13T03:41:09.5185838Z", CultureInfo.InvariantCulture),
                 PackageId = "NuGet.Platform",
                 PackageVersion = "1.0.0",
             };
@@ -79,7 +77,6 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2021.08.06.00.31.41/knapcode.torsharp.2.6.0.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("021-08-06T00:31:41.2929519Z", CultureInfo.InvariantCulture),
                 PackageId = "Knapcode.TorSharp",
                 PackageVersion = "2.6.0",
             };

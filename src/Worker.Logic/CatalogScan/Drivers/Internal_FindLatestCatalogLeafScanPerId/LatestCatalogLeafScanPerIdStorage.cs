@@ -38,8 +38,8 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId
             return Task.FromResult(new CatalogLeafScanPerId(_indexScan.StorageSuffix, _indexScan.ScanId, GetPageId(item.PackageId), LeafId)
             {
                 DriverType = _indexScan.DriverType,
-                Min = _indexScan.Min.Value,
-                Max = _indexScan.Max.Value,
+                Min = _indexScan.Min,
+                Max = _indexScan.Max,
                 Url = item.Url,
                 PageUrl = _pageUrl,
                 LeafType = item.Type,

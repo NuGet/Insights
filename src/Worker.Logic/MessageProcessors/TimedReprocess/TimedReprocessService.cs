@@ -99,64 +99,12 @@ namespace NuGet.Insights.Worker.TimedReprocess
 
         public IReadOnlyList<IReadOnlyList<CatalogScanDriverType>> GetReprocessBatches()
         {
-            var reprocess = CatalogScanCursorService
+            var dependsOnReprocess = CatalogScanCursorService
                 .StartableDriverTypes
-                .Where(HasUpdatesOutsideOfCatalog)
+                .Where(x => CatalogScanCursorService.GetTransitiveClosure(x).Any(HasUpdatesOutsideOfCatalog))
                 .ToHashSet();
 
-            var isOrDependsOnReprocess = CatalogScanCursorService
-                .StartableDriverTypes
-                .Where(x => CatalogScanCursorService.GetTransitiveClosure(x).Any(reprocess.Contains))
-                .ToList();
-
-            // key: driver, value: direct dependencies
-            var graph = new Dictionary<CatalogScanDriverType, HashSet<CatalogScanDriverType>>();
-            foreach (var self in isOrDependsOnReprocess)
-            {
-                if (_options.Value.DisabledDrivers.Contains(self))
-                {
-                    continue;
-                }
-
-                graph.Add(self, CatalogScanCursorService.GetDependencies(self).ToHashSet());
-            }
-
-            // Collect batches of drivers that can run in parallel.
-            var batches = new List<IReadOnlyList<CatalogScanDriverType>>();
-            while (graph.Count > 0)
-            {
-                var batch = graph.Where(pair => pair.Value.Count == 0).Select(x => x.Key).ToHashSet();
-                if (batch.Count == 0)
-                {
-                    var unresolved = graph
-                        .Select(pair => new { Driver = pair.Key, Missing = pair.Value.Where(x => !graph.ContainsKey(x)).Order().ToList() })
-                        .Where(x => x.Missing.Count > 0)
-                        .OrderBy(x => x.Driver)
-                        .Select(x => $"{x.Driver} depends on {string.Join(", ", x.Missing)}")
-                        .ToList();
-
-                    throw new InvalidOperationException($"Check the {nameof(NuGetInsightsWorkerSettings)}.{nameof(NuGetInsightsWorkerSettings.DisabledDrivers)} option. Some drivers are missing dependencies: {string.Join("; ", unresolved)}");
-                }
-
-                foreach (var type in batch)
-                {
-                    graph.Remove(type);
-                }
-
-                foreach (var dependencies in graph.Values)
-                {
-                    dependencies.ExceptWith(batch);
-                }
-
-                // Only keep drivers that need reprocessing or drivers that depend on a driver that needs reprocessing.
-                batch.IntersectWith(isOrDependsOnReprocess);
-                if (batch.Count > 0)
-                {
-                    batches.Add(batch.OrderBy(x => x.ToString()).ToList());
-                }
-            }
-
-            return batches;
+            return CatalogScanCursorService.GetParallelBatches(dependsOnReprocess.Contains, _options.Value.DisabledDrivers.Contains);
         }
 
         public async Task AbortAsync()

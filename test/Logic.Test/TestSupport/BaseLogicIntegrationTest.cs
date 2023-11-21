@@ -213,15 +213,20 @@ namespace NuGet.Insights
             Assert.Equal(expected, blobs.Count);
         }
 
-        protected async Task<string> AssertCsvBlobAsync<T>(string containerName, string testName, string stepName, string fileName, string blobName) where T : ICsvRecord
+        protected async Task<string> AssertCsvBlobAsync(Type recordType, string containerName, string testName, string stepName, string fileName, string blobName)
         {
             Assert.EndsWith(".csv.gz", blobName, StringComparison.Ordinal);
             var actual = await AssertBlobAsync(containerName, testName, stepName, fileName, blobName, gzip: true);
-            var headerFactory = Activator.CreateInstance<T>();
+            var headerFactory = (ICsvRecord)Activator.CreateInstance(recordType);
             var stringWriter = new StringWriter { NewLine = "\n" };
             headerFactory.WriteHeader(stringWriter);
             Assert.StartsWith(stringWriter.ToString(), actual, StringComparison.Ordinal);
             return actual;
+        }
+
+        protected async Task<string> AssertCsvBlobAsync<T>(string containerName, string testName, string stepName, string fileName, string blobName) where T : ICsvRecord
+        {
+            return await AssertCsvBlobAsync(typeof(T), containerName, testName, stepName, fileName, blobName);
         }
 
         protected async Task<BlobClient> GetBlobAsync(string containerName, string blobName)
@@ -287,11 +292,15 @@ namespace NuGet.Insights
         }
 
         private static readonly ConcurrentDictionary<string, object> StringLock = new ConcurrentDictionary<string, object>();
+        private static readonly IReadOnlySet<string> ProjectDirs = new HashSet<string> { "Worker.Test", "Worker.Logic.Test", "Logic.Test" };
 
         protected static void OverwriteTestDataAndCopyToSource(string testDataFile, string actual)
         {
             var sourcePath = Path.GetFullPath(testDataFile);
-            var projectDir = sourcePath.Contains("Worker.Logic.Test", StringComparison.Ordinal) ? "Worker.Logic.Test" : "Logic.Test";
+            var projectDir = sourcePath
+                .Split(Path.DirectorySeparatorChar)
+                .Reverse()
+                .First(ProjectDirs.Contains);
             var repoDir = TestSettings.GetRepositoryRoot();
             var destPath = Path.Combine(repoDir, "test", projectDir, testDataFile);
 

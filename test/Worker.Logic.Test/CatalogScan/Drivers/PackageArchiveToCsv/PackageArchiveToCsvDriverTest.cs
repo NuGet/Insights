@@ -30,7 +30,6 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2017.11.08.17.42.28/nuget.platform.1.0.0.json",
                 LeafType = CatalogLeafType.PackageDelete,
-                CommitTimestamp = DateTimeOffset.Parse("2017-11-08T17:42:28.5677911Z", CultureInfo.InvariantCulture),
                 PackageId = "NuGet.Platform",
                 PackageVersion = "1.0.0",
             };
@@ -53,7 +52,6 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2015.06.13.03.41.09/nuget.platform.1.0.0.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2015-06-13T03:41:09.5185838Z", CultureInfo.InvariantCulture),
                 PackageId = "NuGet.Platform",
                 PackageVersion = "1.0.0",
             };
@@ -79,7 +77,6 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2018.08.28.22.26.57/loshar.my.package.1.0.0.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2018-08-28T22:26:57.4218948Z", CultureInfo.InvariantCulture),
                 PackageId = "Loshar.My.Package",
                 PackageVersion = "1.0.0",
             };
@@ -198,7 +195,6 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2021.08.06.00.31.41/knapcode.torsharp.2.6.0.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2021-08-06T00:31:41.2929519Z", CultureInfo.InvariantCulture),
                 PackageId = "Knapcode.TorSharp",
                 PackageVersion = "2.6.0",
             };
@@ -224,7 +220,6 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2019.12.03.16.44.55/microsoft.extensions.configuration.3.1.0.json",
                 LeafType = CatalogLeafType.PackageDetails,
-                CommitTimestamp = DateTimeOffset.Parse("2019-12-03T16:44:55.0668686Z", CultureInfo.InvariantCulture),
                 PackageId = "Microsoft.Extensions.Configuration",
                 PackageVersion = "3.1.0",
             };
@@ -281,7 +276,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         private async Task InitializeAsync(CatalogLeafScan leaf)
         {
             await PackageAssemblyToCsv.InitializeAsync();
-            await PackageAssemblyToCsv.ProcessLeafAsync(leaf);
+            await PackageAssemblyToCsv.ProcessLeafAsync(leaf.SetDefaults());
             await Target.InitializeAsync();
         }
     }

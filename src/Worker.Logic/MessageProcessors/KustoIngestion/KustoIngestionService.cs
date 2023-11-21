@@ -16,7 +16,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         private readonly KustoIngestionStorageService _storageService;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly AutoRenewingStorageLeaseService _leaseService;
-        private readonly CsvResultStorageContainers _csvRecordContainers;
+        private readonly CsvRecordContainers _csvRecordContainers;
         private readonly ICslAdminProvider _kustoAdminClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<KustoIngestionService> _logger;
@@ -25,7 +25,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             KustoIngestionStorageService storageService,
             IMessageEnqueuer messageEnqueuer,
             AutoRenewingStorageLeaseService leaseService,
-            CsvResultStorageContainers csvRecordContainers,
+            CsvRecordContainers csvRecordContainers,
             ICslAdminProvider kustoAdminClient,
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<KustoIngestionService> logger)
@@ -101,7 +101,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public async Task DestroyTablesAsync()
         {
             var tableNames = _csvRecordContainers
-                .GetContainerNames()
+                .ContainerNames
                 .SelectMany(x => new[]
                 {
                     _csvRecordContainers.GetOldKustoTableName(x),

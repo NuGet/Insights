@@ -32,12 +32,12 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
 
         public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
         {
-            return Task.FromResult(CatalogIndexScanResult.ExpandLatestLeaves);
+            return Task.FromResult(indexScan.OnlyLatestLeaves ? CatalogIndexScanResult.ExpandLatestLeaves : CatalogIndexScanResult.ExpandAllLeaves);
         }
 
         public Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(CatalogPageScanResult.ExpandRemoveDuplicates);
         }
 
         public async Task<BatchMessageProcessorResult<CatalogLeafScan>> ProcessLeavesAsync(IReadOnlyList<CatalogLeafScan> leafScans)

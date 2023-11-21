@@ -25,16 +25,16 @@ namespace NuGet.Insights.Worker.KustoIngestion
     public class KustoDataValidator
     {
         private readonly ICslQueryProvider _queryProvider;
-        private readonly IReadOnlyDictionary<Type, ICsvResultStorage> _typeToStorage;
-        private readonly CsvResultStorageContainers _containers;
+        private readonly IReadOnlyDictionary<Type, ICsvRecordStorage> _typeToStorage;
+        private readonly CsvRecordContainers _containers;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<KustoDataValidator> _logger;
 
         public KustoDataValidator(
             ICslQueryProvider queryProvider,
-            IEnumerable<ICsvResultStorage> csvResultStorage,
-            CsvResultStorageContainers containers,
+            IEnumerable<ICsvRecordStorage> csvResultStorage,
+            CsvRecordContainers containers,
             IOptions<NuGetInsightsWorkerSettings> options,
             ITelemetryClient telemetryClient,
             ILogger<KustoDataValidator> logger)
@@ -275,7 +275,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         }
 #endif
 
-        private async Task<bool> HasBlobsAsync(ICsvResultStorage storage)
+        private async Task<bool> HasBlobsAsync(ICsvRecordStorage storage)
         {
             var blobs = await _containers.GetBlobsAsync(storage.ContainerName);
             return blobs.Count > 0;
@@ -283,7 +283,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
         private async Task<IReadOnlyList<Validation>> GetSetValidationsAsync(string column, bool required)
         {
-            var storageWithBlobs = new List<ICsvResultStorage>();
+            var storageWithBlobs = new List<ICsvRecordStorage>();
             foreach (var storage in _typeToStorage.Values)
             {
                 if (await HasBlobsAsync(storage))

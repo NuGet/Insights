@@ -21,4 +21,9 @@
     <ProjectReference Include="..\..\src\Worker\Worker.csproj" />
     <ProjectReference Include="..\Worker.Logic.Test\Worker.Logic.Test.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="TestData\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

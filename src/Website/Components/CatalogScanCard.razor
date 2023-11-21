@@ -138,8 +138,8 @@
                     <td>@scan.State</td>
                     @if (scan.BucketRanges is null)
                     {
-                        <td>@scan.Min?.ToZulu()</td>
-                        <td>@scan.Max?.ToZulu()</td>
+                        <td>@scan.Min.ToZulu()</td>
+                        <td>@scan.Max.ToZulu()</td>
                         if (anyBucketRanges)
                         {
                             <td></td>

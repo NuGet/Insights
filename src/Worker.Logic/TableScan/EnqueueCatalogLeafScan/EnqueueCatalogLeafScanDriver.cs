@@ -11,7 +11,7 @@ namespace NuGet.Insights.Worker.EnqueueCatalogLeafScan
 {
     public class EnqueueCatalogLeafScansDriver : ITableScanDriver<CatalogLeafScan>
     {
-        private static readonly IList<string> _selectColumns = new[]
+        private static readonly IList<string> DefaultSelectColumns = new[]
         {
             StorageUtility.PartitionKey,
             StorageUtility.RowKey, // this is the LeafId
@@ -34,7 +34,7 @@ namespace NuGet.Insights.Worker.EnqueueCatalogLeafScan
             _expandService = expandService;
         }
 
-        public IList<string> SelectColumns => _selectColumns;
+        public IList<string> SelectColumns => DefaultSelectColumns;
 
         public Task InitializeAsync(JsonElement? parameters)
         {

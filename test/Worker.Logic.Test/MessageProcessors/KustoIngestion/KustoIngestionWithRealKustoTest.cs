@@ -72,7 +72,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
         private async Task<(string DefaultTableName, List<string[]> Data)> GetTableData(IEnumerable<string> expectedContainers, string table)
         {
-            var containers = Host.Services.GetRequiredService<CsvResultStorageContainers>();
+            var containers = Host.Services.GetRequiredService<CsvRecordContainers>();
             var tableToDefaultTable = expectedContainers.ToDictionary(
                 x => containers.GetKustoTableName(x),
                 x => containers.GetDefaultKustoTableName(x));

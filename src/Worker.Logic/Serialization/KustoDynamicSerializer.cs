@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
@@ -79,6 +80,14 @@ namespace NuGet.Insights.Worker
             return false;
         }
 
+        /// <summary>
+        /// This method may throw exceptions in supported scenarios, but swallowed by System.Text.Json. One such case
+        /// is when a string is stored as an object and System.Text.Json needs to evaluate polymorphism options. This
+        /// leads to all of System.String's interfaces getting passed in here, such as IEnumerable which will be
+        /// rejected. We apply <see cref="DebuggerHiddenAttribute"/> to avoid the debugger breaking on these exceptions
+        /// and stalling normal execution.
+        /// </summary>
+        [DebuggerHidden]
         private static void SortObjectProperties(JsonTypeInfo info)
         {
             // These should be handled by a converter.
@@ -92,10 +101,6 @@ namespace NuGet.Insights.Worker
             {
                 if (!TryGetMatchingInterface(info.Type, typeof(IReadOnlyList<>), out _))
                 {
-                    // This exception may thrown in supported scenarios, but swallowed by System.Text.Json. One such
-                    // case is when a string is stored as an object and System.Text.Json needs to evaluate polymorphism
-                    // options. This leads to all of System.String's interfaces getting passed in here, such as
-                    // IEnumerable which will be rejected.
                     throw new NotImplementedException($"Enumerables must implement IReadOnlyList<T>, i.e. they must have a defined order. The type {info.Type.FullName} will not be serialized.");
                 }
             }

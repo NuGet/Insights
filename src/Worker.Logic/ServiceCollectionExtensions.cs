@@ -116,7 +116,6 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient<KustoIngestionStorageService>();
             serviceCollection.AddTransient<KustoDataValidator>();
             serviceCollection.AddTransient<KustoIngestionTimer>();
-            serviceCollection.AddTransient<CsvResultStorageContainers>();
             serviceCollection.AddTransient(x =>
             {
                 var options = x.GetRequiredService<IOptions<NuGetInsightsWorkerSettings>>();
@@ -209,6 +208,7 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient<AppendResultStorageService>();
             serviceCollection.AddTransient<TaskStateStorageService>();
             serviceCollection.AddTransient<ICsvReader, CsvReaderAdapter>();
+            serviceCollection.AddSingleton<CsvRecordContainers>();
 
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICleanupOrphanRecordsAdapter<>)))
             {
@@ -249,6 +249,7 @@ namespace NuGet.Insights.Worker
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IAuxiliaryFileUpdater<>)))
             {
                 serviceCollection.AddTransient(serviceType, implementationType);
+                serviceCollection.AddTransient(typeof(IAuxiliaryFileUpdater), implementationType);
 
                 var dataType = serviceType.GenericTypeArguments.Single();
                 var messageType = typeof(AuxiliaryFileUpdaterMessage<>).MakeGenericType(dataType);
@@ -263,14 +264,14 @@ namespace NuGet.Insights.Worker
                     typeof(AuxiliaryFileUpdaterService<>).MakeGenericType(dataType));
 
                 // Add the generic CSV storage
-                var getContainerName = serviceType.GetProperty(nameof(IAuxiliaryFileUpdater<IAsOfData>.ContainerName));
-                var getRecordType = serviceType.GetProperty(nameof(IAuxiliaryFileUpdater<IAsOfData>.RecordType));
-                var getBlobName = serviceType.GetProperty(nameof(IAuxiliaryFileUpdater<IAsOfData>.BlobName));
-                serviceCollection.AddTransient<ICsvResultStorage>(x =>
+                var getContainerName = typeof(IAuxiliaryFileUpdater).GetProperty(nameof(IAuxiliaryFileUpdater.ContainerName));
+                var getRecordType = typeof(IAuxiliaryFileUpdater).GetProperty(nameof(IAuxiliaryFileUpdater.RecordType));
+                var getBlobName = typeof(IAuxiliaryFileUpdater).GetProperty(nameof(IAuxiliaryFileUpdater.BlobName));
+                serviceCollection.AddTransient<ICsvRecordStorage>(x =>
                 {
                     var updater = x.GetRequiredService(serviceType);
                     var blobName = AuxiliaryFileUpdaterProcessor<IAsOfData>.GetLatestBlobName((string)getBlobName.GetValue(updater));
-                    return new CsvResultStorage(
+                    return new CsvRecordStorage(
                         (string)getContainerName.GetValue(updater),
                         (Type)getRecordType.GetValue(updater),
                         blobName);
@@ -315,10 +316,10 @@ namespace NuGet.Insights.Worker
                 // Add the generic CSV storage
                 var recordType = serviceType.GenericTypeArguments.Single();
                 var getContainerName = serviceType.GetProperty(nameof(ICsvResultStorage<ICsvRecord>.ResultContainerName));
-                serviceCollection.AddTransient<ICsvResultStorage>(x =>
+                serviceCollection.AddTransient<ICsvRecordStorage>(x =>
                 {
                     var storage = x.GetRequiredService(serviceType);
-                    return new CsvResultStorage(
+                    return new CsvRecordStorage(
                         (string)getContainerName.GetValue(storage),
                         recordType,
                         AppendResultStorageService.CompactPrefix);

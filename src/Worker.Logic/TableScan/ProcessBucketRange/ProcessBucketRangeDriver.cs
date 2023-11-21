@@ -56,8 +56,8 @@ namespace NuGet.Insights.Worker.ProcessBucketRange
                     CommitTimestamp = bucketedPackage.CommitTimestamp,
                     PackageId = bucketedPackage.PackageId,
                     PackageVersion = bucketedPackage.PackageVersion,
-                    Min = indexScan.Min.Value,
-                    Max = indexScan.Max.Value,
+                    Min = indexScan.Min,
+                    Max = indexScan.Max,
                 })
                 .ToList();
 

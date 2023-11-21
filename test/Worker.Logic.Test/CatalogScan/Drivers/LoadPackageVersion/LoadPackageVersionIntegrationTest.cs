@@ -100,7 +100,7 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
         }
 
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.LoadPackageVersion;
-        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => Enumerable.Empty<CatalogScanDriverType>();
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
 
         protected override IEnumerable<string> GetExpectedTableNames()

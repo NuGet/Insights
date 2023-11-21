@@ -409,12 +409,13 @@ namespace NuGet.Insights.Worker
             CatalogScanDriverType driverType,
             HashSet<ConfiguredStorage> existingContainers)
         {
-            testExecution.Output.WriteLine("Running driver type: " + driver.GetType().FullName);
+            testExecution.Output.WriteLine("Running driver type: " + driverType);
 
             var scanId = StorageUtility.GenerateDescendingId();
 
             var indexScan = new CatalogIndexScan(driverType, scanId.ToString(), scanId.Unique)
             {
+                OnlyLatestLeaves = CatalogScanService.GetOnlyLatestLeavesSupport(driverType).GetValueOrDefault(true),
                 Min = DateTimeOffset.Parse("2019-02-04T10:17:53.4035243Z", CultureInfo.InvariantCulture) - TimeSpan.FromTicks(1),
                 Max = DateTimeOffset.Parse("2019-02-04T10:17:53.4035243Z", CultureInfo.InvariantCulture),
             };
@@ -422,8 +423,9 @@ namespace NuGet.Insights.Worker
             var pageScan = new CatalogPageScan(indexScan.StorageSuffix, indexScan.ScanId, "page")
             {
                 DriverType = driverType,
-                Min = indexScan.Min.Value,
-                Max = indexScan.Max.Value,
+                OnlyLatestLeaves = indexScan.OnlyLatestLeaves,
+                Min = indexScan.Min,
+                Max = indexScan.Max,
                 Url = "https://api.nuget.org/v3/catalog0/page7967.json",
                 Rank = 7967,
             };
@@ -434,7 +436,7 @@ namespace NuGet.Insights.Worker
                 Min = pageScan.Min,
                 Max = pageScan.Max,
                 PageUrl = pageScan.Url,
-                CommitTimestamp = indexScan.Max.Value,
+                CommitTimestamp = indexScan.Max,
                 CommitId = "c9c0205b-210b-4540-8ac7-bea3fa61f455",
                 LeafType = CatalogLeafType.PackageDetails,
                 Url = "https://api.nuget.org/v3/catalog0/data/2019.02.04.10.17.53/dotnet-sos.1.0.0.json",

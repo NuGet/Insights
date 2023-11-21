@@ -27,9 +27,6 @@ namespace NuGet.Insights.Worker
                 CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId,
             })
             .ToHashSet();
-        private static readonly IReadOnlyList<CatalogScanDriverType> SortedDriverTypes = ValidDriverTypes
-            .Order()
-            .ToList();
 
         private static readonly IReadOnlyDictionary<CatalogScanDriverType, IReadOnlyList<CatalogScanDriverType>> Dependencies = new Dictionary<CatalogScanDriverType, CatalogScanDriverType[]>
         {
@@ -156,26 +153,44 @@ namespace NuGet.Insights.Worker
             await _cursorStorageService.InitializeAsync();
         }
 
-        public static IReadOnlyList<CatalogScanDriverType> StartableDriverTypes => SortedDriverTypes;
+        public static IReadOnlyList<CatalogScanDriverType> StartableDriverTypes { get; } =
+            ValidDriverTypes
+                .Order()
+                .ToList();
 
         public static string GetCursorName(CatalogScanDriverType driverType)
         {
             return $"CatalogScan-{driverType}";
         }
 
-        public async Task SetCursorAsync(CatalogScanDriverType driverType, DateTimeOffset value)
+        public async Task<CursorTableEntity> SetCursorAsync(CatalogScanDriverType driverType, DateTimeOffset value)
         {
-            var entity = await _cursorStorageService.GetOrCreateAsync(GetCursorName(driverType));
-            entity.Value = value;
-            await _cursorStorageService.UpdateAsync(entity);
+            var entity = await _cursorStorageService.GetOrCreateAsync(GetCursorName(driverType), value);
+            if (entity.Value != value)
+            {
+                entity.Value = value;
+                await _cursorStorageService.UpdateAsync(entity);
+            }
+
+            return entity;
+        }
+
+        public async Task SetAllCursorsAsync(IEnumerable<CatalogScanDriverType> driverTypes, DateTimeOffset value)
+        {
+            var cursorNames = driverTypes.Select(GetCursorName).ToList();
+            var cursors = await _cursorStorageService.GetOrCreateAllAsync(cursorNames, value);
+            var cursorsToUpdate = cursors.Where(x => x.Value != value).ToList();
+            foreach (var cursor in cursorsToUpdate)
+            {
+                cursor.Value = value;
+            }
+
+            await _cursorStorageService.UpdateAllAsync(cursorsToUpdate);
         }
 
         public async Task SetAllCursorsAsync(DateTimeOffset value)
         {
-            foreach (var driverType in SortedDriverTypes)
-            {
-                await SetCursorAsync(driverType, value);
-            }
+            await SetAllCursorsAsync(StartableDriverTypes, value);
         }
 
         public async Task<Dictionary<CatalogScanDriverType, CursorTableEntity>> GetCursorsAsync()
@@ -223,6 +238,70 @@ namespace NuGet.Insights.Worker
             }
 
             return KeyValuePair.Create(dependencyName, max);
+        }
+
+        public static IReadOnlyList<IReadOnlyList<CatalogScanDriverType>> GetParallelBatches(
+            Func<CatalogScanDriverType, bool> isDesired,
+            Func<CatalogScanDriverType, bool> isRejected)
+        {
+            var isOrDependsOnIncluded = StartableDriverTypes
+                .Where(isDesired)
+                .SelectMany(GetTransitiveClosure)
+                .ToList();
+
+            // key: driver, value: direct dependencies
+            var graph = new Dictionary<CatalogScanDriverType, HashSet<CatalogScanDriverType>>();
+            foreach (var self in StartableDriverTypes)
+            {
+                foreach (var type in GetTransitiveClosure(self))
+                {
+                    if (isRejected(type) || graph.ContainsKey(type))
+                    {
+                        continue;
+                    }
+
+                    graph.Add(self, GetDependencies(self).ToHashSet());
+                }
+            }
+
+            // Collect batches of drivers that can run in parallel.
+            var batches = new List<IReadOnlyList<CatalogScanDriverType>>();
+            while (graph.Count > 0)
+            {
+                var batch = graph.Where(pair => pair.Value.Count == 0).Select(x => x.Key).ToHashSet();
+                if (batch.Count == 0)
+                {
+                    var unresolved = graph
+                        .Select(pair => new { Driver = pair.Key, Missing = pair.Value.Where(x => !graph.ContainsKey(x)).Order().ToList() })
+                        .Where(x => x.Missing.Count > 0)
+                        .OrderBy(x => x.Driver)
+                        .Select(x => $"{x.Driver} depends on {string.Join(", ", x.Missing)}")
+                        .ToList();
+
+                    throw new InvalidOperationException(
+                        $"Check the {nameof(NuGetInsightsWorkerSettings)}.{nameof(NuGetInsightsWorkerSettings.DisabledDrivers)} option. " +
+                        $"Some drivers are missing dependencies: {string.Join("; ", unresolved)}");
+                }
+
+                foreach (var type in batch)
+                {
+                    graph.Remove(type);
+                }
+
+                foreach (var dependencies in graph.Values)
+                {
+                    dependencies.ExceptWith(batch);
+                }
+
+                // Only keep drivers that need reprocessing or drivers that depend on a driver that needs reprocessing.
+                batch.IntersectWith(isOrDependsOnIncluded);
+                if (batch.Count > 0)
+                {
+                    batches.Add(batch.OrderBy(x => x.ToString()).ToList());
+                }
+            }
+
+            return batches;
         }
 
         private static ConcurrentDictionary<CatalogScanDriverType, IReadOnlyList<CatalogScanDriverType>> TransitiveClosureCache = new();

@@ -1,0 +1,12 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,SequenceNumber,Path,FileName,FileExtension,TopLevelFolder,Flags,CompressionMethod,LastModified,Crc32,CompressedSize,UncompressedSize,LocalHeaderOffset,Comment
+,,archimedes.library,archimedes.library/1.0.245,Archimedes.Library,1.0.245,2020-11-27T19:35:06.0046046Z,2020-11-27T19:33:25.687Z,DoesNotExist,0,,,,,0,0,0001-01-01T00:00:00Z,0,0,0,0,
+,,danilovsoft.microorm,danilovsoft.microorm/3.3.4,DanilovSoft.MicroORM,3.3.4,2020-11-27T19:34:44.6917011Z,2020-11-27T19:33:08.023Z,DoesNotExist,0,,,,,0,0,0001-01-01T00:00:00Z,0,0,0,0,
+,,eto.forms.templates,eto.forms.templates/2.5.8,Eto.Forms.Templates,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:25.937Z,DoesNotExist,0,,,,,0,0,0001-01-01T00:00:00Z,0,0,0,0,
+,,eto.platform.direct2d,eto.platform.direct2d/2.5.8,Eto.Platform.Direct2D,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:28.433Z,DoesNotExist,0,,,,,0,0,0001-01-01T00:00:00Z,0,0,0,0,
+,,eto.platform.gtk,eto.platform.gtk/2.5.8,Eto.Platform.Gtk,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:27.157Z,DoesNotExist,0,,,,,0,0,0001-01-01T00:00:00Z,0,0,0,0,
+,,eto.platform.gtk2,eto.platform.gtk2/2.5.8,Eto.Platform.Gtk2,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:29.14Z,DoesNotExist,0,,,,,0,0,0001-01-01T00:00:00Z,0,0,0,0,
+,,eto.platform.gtk3,eto.platform.gtk3/2.5.8,Eto.Platform.Gtk3,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:30.26Z,DoesNotExist,0,,,,,0,0,0001-01-01T00:00:00Z,0,0,0,0,
+,,eto.platform.mac64,eto.platform.mac64/2.5.8,Eto.Platform.Mac64,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:28.137Z,DoesNotExist,0,,,,,0,0,0001-01-01T00:00:00Z,0,0,0,0,
+,,eto.platform.windows,eto.platform.windows/2.5.8,Eto.Platform.Windows,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:29.887Z,DoesNotExist,0,,,,,0,0,0001-01-01T00:00:00Z,0,0,0,0,
+,,eto.platform.wpf,eto.platform.wpf/2.5.8,Eto.Platform.Wpf,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:26.367Z,DoesNotExist,0,,,,,0,0,0001-01-01T00:00:00Z,0,0,0,0,
+,,eto.serialization.xaml,eto.serialization.xaml/2.5.8,Eto.Serialization.Xaml,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:26.743Z,DoesNotExist,0,,,,,0,0,0001-01-01T00:00:00Z,0,0,0,0,

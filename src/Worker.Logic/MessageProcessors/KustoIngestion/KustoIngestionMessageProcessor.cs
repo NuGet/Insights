@@ -14,7 +14,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
     public class KustoIngestionMessageProcessor : IMessageProcessor<KustoIngestionMessage>
     {
         private readonly KustoIngestionStorageService _storageService;
-        private readonly CsvResultStorageContainers _csvRecordContainers;
+        private readonly CsvRecordContainers _csvRecordContainers;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly ICslAdminProvider _kustoAdminClient;
         private readonly KustoDataValidator _kustoDataValidator;
@@ -24,7 +24,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
         public KustoIngestionMessageProcessor(
             KustoIngestionStorageService storageService,
-            CsvResultStorageContainers csvRecordContainers,
+            CsvRecordContainers csvRecordContainers,
             IMessageEnqueuer messageEnqueuer,
             ICslAdminProvider kustoAdminClient,
             KustoDataValidator kustoDataValidator,
@@ -65,8 +65,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             {
                 await _storageService.InitializeChildTableAsync(ingestion.StorageSuffix);
 
-                var allContainerNames = _csvRecordContainers.GetContainerNames();
-                await _storageService.AddContainersAsync(ingestion, allContainerNames);
+                await _storageService.AddContainersAsync(ingestion, _csvRecordContainers.ContainerNames);
 
                 ingestion.State = KustoIngestionState.Enqueuing;
                 await _storageService.ReplaceIngestionAsync(ingestion);

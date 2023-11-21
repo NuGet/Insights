@@ -61,56 +61,6 @@ namespace NuGet.Insights.Worker
             return _options.Value.DisabledDrivers == null || !_options.Value.DisabledDrivers.Contains(type);
         }
 
-        /// <summary>
-        /// The tri-state return type has the following meanings:
-        /// - null: the driver type supports run with or without the latest leaves scan
-        /// - false: the driver type cannot run with "only latest leaves = false"
-        /// - true: the driver type can only run with "only latest leaves = true"
-        /// </summary>
-        public static bool? GetOnlyLatestLeavesSupport(CatalogScanDriverType driverType)
-        {
-            switch (driverType)
-            {
-                case CatalogScanDriverType.BuildVersionSet:
-                case CatalogScanDriverType.CatalogDataToCsv:
-                    return false;
-
-                case CatalogScanDriverType.LoadLatestPackageLeaf:
-                case CatalogScanDriverType.LoadBucketedPackage:
-                    return true;
-
-                case CatalogScanDriverType.PackageArchiveToCsv:
-                case CatalogScanDriverType.SymbolPackageArchiveToCsv:
-                case CatalogScanDriverType.PackageAssemblyToCsv:
-                case CatalogScanDriverType.PackageAssetToCsv:
-#if ENABLE_CRYPTOAPI
-                case CatalogScanDriverType.PackageCertificateToCsv:
-#endif
-                case CatalogScanDriverType.PackageSignatureToCsv:
-                case CatalogScanDriverType.PackageManifestToCsv:
-                case CatalogScanDriverType.PackageReadmeToCsv:
-                case CatalogScanDriverType.PackageLicenseToCsv:
-                case CatalogScanDriverType.PackageVersionToCsv:
-#if ENABLE_NPE
-                case CatalogScanDriverType.NuGetPackageExplorerToCsv:
-#endif
-                case CatalogScanDriverType.PackageCompatibilityToCsv:
-                case CatalogScanDriverType.PackageIconToCsv:
-                case CatalogScanDriverType.PackageContentToCsv:
-                    return null;
-
-                case CatalogScanDriverType.LoadPackageArchive:
-                case CatalogScanDriverType.LoadSymbolPackageArchive:
-                case CatalogScanDriverType.LoadPackageManifest:
-                case CatalogScanDriverType.LoadPackageReadme:
-                case CatalogScanDriverType.LoadPackageVersion:
-                    return true;
-
-                default:
-                    throw new NotSupportedException();
-            }
-        }
-
         public async Task<List<CatalogIndexScan>> AbortAllAsync()
         {
             var scans = new List<CatalogIndexScan>();
@@ -249,23 +199,96 @@ namespace NuGet.Insights.Worker
             return await UpdateAsync(driverType, max, onlyLatestLeaves, continueWithDependents: false);
         }
 
+        /// <summary>
+        /// The tri-state return type has the following meanings:
+        /// - null: the driver type supports run with or without the latest leaves scan
+        /// - false: the driver type cannot run with "only latest leaves = false"
+        /// - true: the driver type can only run with "only latest leaves = true"
+        /// </summary>
+        public static bool? GetOnlyLatestLeavesSupport(CatalogScanDriverType driverType)
+        {
+            switch (driverType)
+            {
+                case CatalogScanDriverType.BuildVersionSet: // only needs catalog pages, not leaves
+                case CatalogScanDriverType.CatalogDataToCsv: // needs all catalog leaves, not just latest
+                case CatalogScanDriverType.LoadBucketedPackage: // uses find latest driver 
+                case CatalogScanDriverType.LoadLatestPackageLeaf: // uses find latest driver
+                case CatalogScanDriverType.LoadPackageVersion: // internally uses find latest driver
+                    return false;
+
+                case CatalogScanDriverType.PackageVersionToCsv: // processes individual IDs not versions
+                    return true;
+
+                case CatalogScanDriverType.LoadPackageArchive:
+                case CatalogScanDriverType.LoadPackageManifest:
+                case CatalogScanDriverType.LoadPackageReadme:
+                case CatalogScanDriverType.LoadSymbolPackageArchive:
+#if ENABLE_NPE
+                case CatalogScanDriverType.NuGetPackageExplorerToCsv:
+#endif
+                case CatalogScanDriverType.PackageArchiveToCsv:
+                case CatalogScanDriverType.PackageAssemblyToCsv:
+                case CatalogScanDriverType.PackageAssetToCsv:
+#if ENABLE_CRYPTOAPI
+                case CatalogScanDriverType.PackageCertificateToCsv:
+#endif
+                case CatalogScanDriverType.PackageCompatibilityToCsv:
+                case CatalogScanDriverType.PackageContentToCsv:
+                case CatalogScanDriverType.PackageIconToCsv:
+                case CatalogScanDriverType.PackageLicenseToCsv:
+                case CatalogScanDriverType.PackageManifestToCsv:
+                case CatalogScanDriverType.PackageReadmeToCsv:
+                case CatalogScanDriverType.PackageSignatureToCsv:
+                case CatalogScanDriverType.SymbolPackageArchiveToCsv:
+                    return null;
+
+                default:
+                    throw new NotSupportedException();
+            }
+        }
+
+        public static bool SupportsBucketRangeProcessing(CatalogScanDriverType driverType)
+        {
+            switch (driverType)
+            {
+                case CatalogScanDriverType.BuildVersionSet: // only needs catalog pages, not leaves
+                case CatalogScanDriverType.CatalogDataToCsv: // needs all catalog leaves, not just latest
+                case CatalogScanDriverType.LoadBucketedPackage: // uses find latest driver and bucket range processing depends on this data
+                case CatalogScanDriverType.LoadLatestPackageLeaf: // uses find latest driver
+                case CatalogScanDriverType.PackageVersionToCsv: // processes individual IDs not versions
+                    return false;
+
+                case CatalogScanDriverType.LoadPackageArchive:
+                case CatalogScanDriverType.LoadPackageManifest:
+                case CatalogScanDriverType.LoadPackageReadme:
+                case CatalogScanDriverType.LoadPackageVersion:
+                case CatalogScanDriverType.LoadSymbolPackageArchive:
+#if ENABLE_NPE
+                case CatalogScanDriverType.NuGetPackageExplorerToCsv:
+#endif
+                case CatalogScanDriverType.PackageArchiveToCsv:
+                case CatalogScanDriverType.PackageAssemblyToCsv:
+                case CatalogScanDriverType.PackageAssetToCsv:
+#if ENABLE_CRYPTOAPI
+                case CatalogScanDriverType.PackageCertificateToCsv:
+#endif
+                case CatalogScanDriverType.PackageCompatibilityToCsv:
+                case CatalogScanDriverType.PackageContentToCsv:
+                case CatalogScanDriverType.PackageIconToCsv:
+                case CatalogScanDriverType.PackageLicenseToCsv:
+                case CatalogScanDriverType.PackageManifestToCsv:
+                case CatalogScanDriverType.PackageReadmeToCsv:
+                case CatalogScanDriverType.PackageSignatureToCsv:
+                case CatalogScanDriverType.SymbolPackageArchiveToCsv:
+                    return true;
+
+                default:
+                    throw new NotSupportedException();
+            }
+        }
+
         private async Task<CatalogScanServiceResult> UpdateAsync(CatalogScanDriverType driverType, DateTimeOffset? max, bool? onlyLatestLeaves, bool continueWithDependents)
         {
-            var onlyLatestLeavesSupport = GetOnlyLatestLeavesSupport(driverType);
-            if (onlyLatestLeavesSupport.HasValue
-                && onlyLatestLeaves.HasValue
-                && onlyLatestLeaves != onlyLatestLeavesSupport)
-            {
-                if (onlyLatestLeavesSupport.Value)
-                {
-                    throw new ArgumentException("Only using latest leaves is supported for this driver type.", nameof(onlyLatestLeaves));
-                }
-                else
-                {
-                    throw new ArgumentException("Only using all leaves is supported for this driver type.", nameof(onlyLatestLeaves));
-                }
-            }
-
             _telemetryClient.TrackMetric(
                 "CatalogScan.Update",
                 1,
@@ -276,47 +299,40 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.CatalogDataToCsv:
                     return await UpdateAsync(
                         driverType,
-                        onlyLatestLeaves: false,
+                        onlyLatestLeaves,
                         CatalogClient.NuGetOrgMin,
                         max,
                         continueWithDependents);
 
+                case CatalogScanDriverType.BuildVersionSet:
+                case CatalogScanDriverType.LoadBucketedPackage:
+                case CatalogScanDriverType.LoadLatestPackageLeaf:
+                case CatalogScanDriverType.LoadPackageArchive:
+                case CatalogScanDriverType.LoadPackageManifest:
+                case CatalogScanDriverType.LoadPackageReadme:
+                case CatalogScanDriverType.LoadPackageVersion:
+                case CatalogScanDriverType.LoadSymbolPackageArchive:
+#if ENABLE_NPE
+                case CatalogScanDriverType.NuGetPackageExplorerToCsv:
+#endif
                 case CatalogScanDriverType.PackageArchiveToCsv:
-                case CatalogScanDriverType.SymbolPackageArchiveToCsv:
                 case CatalogScanDriverType.PackageAssemblyToCsv:
                 case CatalogScanDriverType.PackageAssetToCsv:
 #if ENABLE_CRYPTOAPI
                 case CatalogScanDriverType.PackageCertificateToCsv:
 #endif
-                case CatalogScanDriverType.PackageSignatureToCsv:
+                case CatalogScanDriverType.PackageCompatibilityToCsv:
+                case CatalogScanDriverType.PackageContentToCsv:
+                case CatalogScanDriverType.PackageIconToCsv:
+                case CatalogScanDriverType.PackageLicenseToCsv:
                 case CatalogScanDriverType.PackageManifestToCsv:
                 case CatalogScanDriverType.PackageReadmeToCsv:
-                case CatalogScanDriverType.PackageLicenseToCsv:
+                case CatalogScanDriverType.PackageSignatureToCsv:
                 case CatalogScanDriverType.PackageVersionToCsv:
-#if ENABLE_NPE
-                case CatalogScanDriverType.NuGetPackageExplorerToCsv:
-#endif
-                case CatalogScanDriverType.PackageCompatibilityToCsv:
-                case CatalogScanDriverType.PackageIconToCsv:
-                case CatalogScanDriverType.PackageContentToCsv:
+                case CatalogScanDriverType.SymbolPackageArchiveToCsv:
                     return await UpdateAsync(
                         driverType,
-                        onlyLatestLeaves.GetValueOrDefault(true),
-                        min: CatalogClient.NuGetOrgMinDeleted,
-                        max,
-                        continueWithDependents);
-
-                case CatalogScanDriverType.BuildVersionSet:
-                case CatalogScanDriverType.LoadLatestPackageLeaf:
-                case CatalogScanDriverType.LoadBucketedPackage:
-                case CatalogScanDriverType.LoadPackageArchive:
-                case CatalogScanDriverType.LoadSymbolPackageArchive:
-                case CatalogScanDriverType.LoadPackageManifest:
-                case CatalogScanDriverType.LoadPackageReadme:
-                case CatalogScanDriverType.LoadPackageVersion:
-                    return await UpdateAsync(
-                        driverType,
-                        onlyLatestLeaves: null,
+                        onlyLatestLeaves,
                         min: CatalogClient.NuGetOrgMinDeleted,
                         max,
                         continueWithDependents);
@@ -362,44 +378,13 @@ namespace NuGet.Insights.Worker
                 max);
         }
 
-        public static bool SupportsBucketRangeProcessing(CatalogScanDriverType driverType)
+        public async Task<CatalogScanServiceResult> UpdateAsync(
+            CatalogScanDriverType driverType,
+            IReadOnlyCollection<int> buckets)
         {
-            switch (driverType)
-            {
-                case CatalogScanDriverType.LoadBucketedPackage: // bucket range processing depends on this driver
-                case CatalogScanDriverType.CatalogDataToCsv: // needs all catalog leaves, not just latest
-                case CatalogScanDriverType.PackageVersionToCsv: // processes individual IDs not versions
-                    return false;
-
-                case CatalogScanDriverType.BuildVersionSet:
-                case CatalogScanDriverType.LoadLatestPackageLeaf:
-                case CatalogScanDriverType.PackageArchiveToCsv:
-                case CatalogScanDriverType.SymbolPackageArchiveToCsv:
-                case CatalogScanDriverType.PackageAssemblyToCsv:
-                case CatalogScanDriverType.PackageAssetToCsv:
-#if ENABLE_CRYPTOAPI
-                case CatalogScanDriverType.PackageCertificateToCsv:
-#endif
-                case CatalogScanDriverType.PackageSignatureToCsv:
-                case CatalogScanDriverType.PackageManifestToCsv:
-                case CatalogScanDriverType.PackageReadmeToCsv:
-                case CatalogScanDriverType.PackageLicenseToCsv:
-#if ENABLE_NPE
-                case CatalogScanDriverType.NuGetPackageExplorerToCsv:
-#endif
-                case CatalogScanDriverType.PackageCompatibilityToCsv:
-                case CatalogScanDriverType.PackageIconToCsv:
-                case CatalogScanDriverType.PackageContentToCsv:
-                case CatalogScanDriverType.LoadPackageArchive:
-                case CatalogScanDriverType.LoadSymbolPackageArchive:
-                case CatalogScanDriverType.LoadPackageManifest:
-                case CatalogScanDriverType.LoadPackageReadme:
-                case CatalogScanDriverType.LoadPackageVersion:
-                    return true;
-
-                default:
-                    throw new NotSupportedException();
-            }
+            var descendingId = StorageUtility.GenerateDescendingId();
+            var scanId = GetBucketRangeScanId(buckets, descendingId);
+            return await UpdateAsync(scanId, descendingId.Unique, driverType, buckets);
         }
 
         public async Task<CatalogScanServiceResult> UpdateAsync(
@@ -456,6 +441,10 @@ namespace NuGet.Insights.Worker
                     return disabledOrStarted;
                 }
 
+                // Set the catalog scan min and max. These aren't used for a proper catalog scan but may be used for logging or analysis purposes.
+                var min = CatalogClient.NuGetOrgMinDeleted;
+                var max = loadBucketedPackageCursor;
+
                 var newScan = await StartWithoutLeaseAsync(
                     driverType,
                     scanId,
@@ -464,8 +453,8 @@ namespace NuGet.Insights.Worker
                     parentDriverType: null,
                     parentScanId: null,
                     cursorName: NoCursor,
-                    min: null,
-                    max: null,
+                    min,
+                    max,
                     bucketRanges: BucketRange.BucketsToRanges(buckets),
                     continueWithDependents: false);
 
@@ -485,6 +474,26 @@ namespace NuGet.Insights.Worker
             DateTimeOffset? max,
             bool continueWithDependents)
         {
+            var onlyLatestLeavesSupport = GetOnlyLatestLeavesSupport(driverType);
+            if (onlyLatestLeavesSupport.HasValue
+                && onlyLatestLeaves.HasValue
+                && onlyLatestLeaves != onlyLatestLeavesSupport)
+            {
+                if (onlyLatestLeavesSupport.Value)
+                {
+                    throw new ArgumentException($"Only using latest leaves is supported for driver {driverType}.", nameof(onlyLatestLeaves));
+                }
+                else
+                {
+                    throw new ArgumentException($"Only using all leaves is supported for driver {driverType}.", nameof(onlyLatestLeaves));
+                }
+            }
+
+            if (!onlyLatestLeaves.HasValue)
+            {
+                onlyLatestLeaves = onlyLatestLeavesSupport.GetValueOrDefault(true);
+            }
+
             var disabledOrStarted = await CheckForDisabledOrStartAsync(driverType);
             if (disabledOrStarted is not null)
             {
@@ -562,7 +571,7 @@ namespace NuGet.Insights.Worker
                     driverType,
                     descendingId.ToString(),
                     descendingId.Unique,
-                    onlyLatestLeaves,
+                    onlyLatestLeaves.Value,
                     parentDriverType: null,
                     parentScanId: null,
                     cursor.Name,
@@ -627,7 +636,7 @@ namespace NuGet.Insights.Worker
                     driverType,
                     scanId,
                     storageSuffix,
-                    onlyLatestLeaves: null,
+                    onlyLatestLeaves: false,
                     parentDriverType,
                     parentScanId,
                     NoCursor,
@@ -642,17 +651,17 @@ namespace NuGet.Insights.Worker
             CatalogScanDriverType driverType,
             string scanId,
             string storageSuffix,
-            bool? onlyLatestLeaves,
+            bool onlyLatestLeaves,
             CatalogScanDriverType? parentDriverType,
             string parentScanId,
             string cursorName,
-            DateTimeOffset? min,
-            DateTimeOffset? max,
+            DateTimeOffset min,
+            DateTimeOffset max,
             string bucketRanges,
             bool continueWithDependents)
         {
             // Start a new scan.
-            _logger.LogInformation("Attempting to start a {DriverType} catalog index scan from ({Min}, {Max}].", driverType, min, max);
+            _logger.LogInformation("Attempting to start a {DriverType} catalog index scan from ({Min:O}, {Max:O}] with scan ID {ScanId}.", driverType, min, max, scanId);
 
             var catalogIndexScanMessage = new CatalogIndexScanMessage
             {

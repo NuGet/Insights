@@ -27,10 +27,10 @@ namespace NuGet.Insights.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType }.SetDefaults(),
                 };
                 await InitializeScansAsync(scans);
                 var messages = MakeMessages(scans);
@@ -49,7 +49,7 @@ namespace NuGet.Insights.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType }.SetDefaults(),
                 };
                 var messages = MakeMessages(scans);
 
@@ -67,10 +67,10 @@ namespace NuGet.Insights.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType }.SetDefaults(),
                 };
                 await InitializeScansAsync(scans);
                 var messages = MakeMessages(scans);
@@ -96,10 +96,10 @@ namespace NuGet.Insights.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType }.SetDefaults(),
                 };
                 await InitializeScansAsync(scans);
                 var messages = MakeMessages(scans);
@@ -123,10 +123,10 @@ namespace NuGet.Insights.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType, AttemptCount = 11 },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType, AttemptCount = 11 },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType, AttemptCount = 11 }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType, AttemptCount = 11 }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType }.SetDefaults(),
                 };
                 await InitializeScansAsync(scans);
                 var messages = MakeMessages(scans);
@@ -145,10 +145,10 @@ namespace NuGet.Insights.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType }.SetDefaults(),
                 };
                 await InitializeScansAsync(scans);
                 var messages = MakeMessages(scans);
@@ -182,10 +182,10 @@ namespace NuGet.Insights.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType }.SetDefaults(),
                 };
                 await InitializeScansAsync(scans.Skip(2).ToList());
                 var messages = MakeMessages(scans);
@@ -204,10 +204,10 @@ namespace NuGet.Insights.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType, NextAttempt = DateTimeOffset.UtcNow + TimeSpan.FromDays(7), },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType, NextAttempt = DateTimeOffset.UtcNow + TimeSpan.FromDays(7) }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType }.SetDefaults(),
                 };
                 await InitializeScansAsync(scans);
                 var messages = MakeMessages(scans);
@@ -262,10 +262,10 @@ namespace NuGet.Insights.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType }.SetDefaults(),
                 };
                 await InitializeScansAsync(scans);
                 var messages = MakeMessages(scans);
@@ -284,10 +284,10 @@ namespace NuGet.Insights.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType }.SetDefaults(),
                 };
                 await InitializeScansAsync(scans);
                 var messages = MakeMessages(scans);
@@ -310,10 +310,10 @@ namespace NuGet.Insights.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType }.SetDefaults(),
                 };
                 await InitializeScansAsync(scans);
                 var messages = MakeMessages(scans);
@@ -336,10 +336,10 @@ namespace NuGet.Insights.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType, AttemptCount = 11 },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType, AttemptCount = 11 },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType, AttemptCount = 11 }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType, AttemptCount = 11 }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType }.SetDefaults(),
                 };
                 await InitializeScansAsync(scans);
                 var messages = MakeMessages(scans);
@@ -358,10 +358,10 @@ namespace NuGet.Insights.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType }.SetDefaults(),
                 };
                 await InitializeScansAsync(scans);
                 var messages = MakeMessages(scans);
@@ -397,10 +397,10 @@ namespace NuGet.Insights.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType }.SetDefaults(),
                 };
                 await InitializeScansAsync(scans.Skip(2).ToList());
                 var messages = MakeMessages(scans);
@@ -419,10 +419,10 @@ namespace NuGet.Insights.Worker
                 // Arrange
                 var scans = new[]
                 {
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType, NextAttempt = DateTimeOffset.UtcNow + TimeSpan.FromDays(7), },
-                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType },
-                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType },
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType, NextAttempt = DateTimeOffset.UtcNow + TimeSpan.FromDays(7) }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-2") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-3") { DriverType = DriverType }.SetDefaults(),
+                    new CatalogLeafScan(StorageSuffixB, ScanId, PageId, "li-4") { DriverType = DriverType }.SetDefaults(),
                 };
                 await InitializeScansAsync(scans);
                 var messages = MakeMessages(scans);

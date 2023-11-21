@@ -130,7 +130,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
             Assert.Equal(min0, lspa[0].Min);
             Assert.Equal(max1, lspa[0].Max);
             Assert.Null(lspa[0].BucketRanges);
-            Assert.Equal(CatalogClient.NuGetOrgMin, lspa[1].Min);
+            Assert.Equal(CatalogClient.NuGetOrgMinDeleted, lspa[1].Min);
             Assert.Equal(max1, lspa[1].Max);
             Assert.Equal("375,401,826-829", lspa[1].BucketRanges);
             Assert.True(lspa[0].Completed <= lspa[1].Created);

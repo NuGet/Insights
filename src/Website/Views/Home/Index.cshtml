@@ -99,7 +99,7 @@
                 .SelectMany(x => x.LatestScans)
                 .Where(x => x.State == CatalogIndexScanState.Complete)
                 .Where(x => x.Completed.Value < kustoIngestion.Completed.Value)
-                .GroupBy(x => x.Max.Value)
+                .GroupBy(x => x.Max)
                 .MaxBy(x => x.Key);
 
             if (maxGroup is not null)

@@ -98,6 +98,7 @@ namespace NuGet.Insights.Worker
         public KustoIngestionStorageService KustoIngestionStorageService => Host.Services.GetRequiredService<KustoIngestionStorageService>();
         public WorkflowService WorkflowService => Host.Services.GetRequiredService<WorkflowService>();
         public WorkflowStorageService WorkflowStorageService => Host.Services.GetRequiredService<WorkflowStorageService>();
+        public CsvRecordContainers CsvRecordContainers => Host.Services.GetRequiredService<CsvRecordContainers>();
         public IMessageEnqueuer MessageEnqueuer => Host.Services.GetRequiredService<IMessageEnqueuer>();
         public IWorkerQueueFactory WorkerQueueFactory => Host.Services.GetRequiredService<IWorkerQueueFactory>();
 
@@ -200,20 +201,12 @@ namespace NuGet.Insights.Worker
 
         protected async Task SetCursorsAsync(IEnumerable<CatalogScanDriverType> driverTypes, DateTimeOffset min)
         {
-            foreach (var driverType in driverTypes)
-            {
-                var cursor = await CatalogScanCursorService.GetCursorAsync(driverType);
-                cursor.Value = min;
-                await CursorStorageService.UpdateAsync(cursor);
-            }
+            await CatalogScanCursorService.SetAllCursorsAsync(driverTypes, min);
         }
 
         protected async Task<CursorTableEntity> SetCursorAsync(CatalogScanDriverType driverType, DateTimeOffset min)
         {
-            var cursor = await CatalogScanCursorService.GetCursorAsync(driverType);
-            cursor.Value = min;
-            await CursorStorageService.UpdateAsync(cursor);
-            return cursor;
+            return await CatalogScanCursorService.SetCursorAsync(driverType, min);
         }
 
         public ConcurrentBag<CatalogIndexScan> ExpectedCatalogIndexScans { get; } = new ConcurrentBag<CatalogIndexScan>();
@@ -290,7 +283,7 @@ namespace NuGet.Insights.Worker
             return ingestion;
         }
 
-        protected async Task<CatalogIndexScan> UpdateAsync(CatalogIndexScan indexScan)
+        protected async Task<CatalogIndexScan> UpdateAsync(CatalogIndexScan indexScan, int workerCount = 1)
         {
             Assert.NotNull(indexScan);
             await ProcessQueueAsync(async () =>
@@ -306,7 +299,7 @@ namespace NuGet.Insights.Worker
                 Assert.Equal(CatalogIndexScanState.Complete, indexScan.State);
 
                 return true;
-            });
+            }, workerCount);
 
             ExpectedCatalogIndexScans.Add(indexScan);
 
@@ -379,7 +372,8 @@ namespace NuGet.Insights.Worker
                                 {
                                     await queue.DeleteMessageAsync(message.MessageId, message.PopReceipt);
                                 }
-                                catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+                                catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound
+                                                                     || ex.Status == (int)HttpStatusCode.BadRequest)
                                 {
                                     // Ignore, some other thread processed the message and completed it first.
                                 }
@@ -404,9 +398,14 @@ namespace NuGet.Insights.Worker
             await messageProcessor.ProcessSingleAsync(queue, message.Body.ToMemory(), message.DequeueCount);
         }
 
+        protected async Task<string> AssertCompactAsync(Type recordType, string containerName, string testName, string stepName, int bucket, string fileName = null)
+        {
+            return await AssertCsvBlobAsync(recordType, containerName, testName, stepName, fileName, $"compact_{bucket}.csv.gz");
+        }
+
         protected async Task<string> AssertCompactAsync<T>(string containerName, string testName, string stepName, int bucket, string fileName = null) where T : ICsvRecord
         {
-            return await AssertCsvBlobAsync<T>(containerName, testName, stepName, fileName, $"compact_{bucket}.csv.gz");
+            return await AssertCompactAsync(typeof(T), containerName, testName, stepName, bucket, fileName);
         }
 
         public async Task<IKustoIngestionResult> MakeTableReportIngestionResultAsync(StorageSourceOptions options, Status status)

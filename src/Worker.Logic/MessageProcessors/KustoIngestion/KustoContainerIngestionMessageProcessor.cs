@@ -17,7 +17,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
     {
         private readonly KustoIngestionStorageService _storageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
-        private readonly CsvResultStorageContainers _csvRecordContainers;
+        private readonly CsvRecordContainers _csvRecordContainers;
         private readonly ICslAdminProvider _kustoAdminClient;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly ITelemetryClient _telemetryClient;
@@ -27,7 +27,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public KustoContainerIngestionMessageProcessor(
             KustoIngestionStorageService storageService,
             AutoRenewingStorageLeaseService leaseService,
-            CsvResultStorageContainers csvRecordContainers,
+            CsvRecordContainers csvRecordContainers,
             ICslAdminProvider kustoAdminClient,
             IMessageEnqueuer messageEnqueuer,
             ITelemetryClient telemetryClient,

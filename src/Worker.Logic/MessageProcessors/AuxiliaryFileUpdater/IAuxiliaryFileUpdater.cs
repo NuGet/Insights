@@ -8,7 +8,7 @@ using NuGet.Insights.Worker.BuildVersionSet;
 
 namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 {
-    public interface IAuxiliaryFileUpdater<T> where T : IAsOfData
+    public interface IAuxiliaryFileUpdater
     {
         string OperationName { get; }
         string BlobName { get; }
@@ -17,6 +17,10 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
         bool HasRequiredConfiguration { get; }
         bool AutoStart { get; }
         TimeSpan Frequency { get; }
+    }
+
+    public interface IAuxiliaryFileUpdater<T> : IAuxiliaryFileUpdater where T : IAsOfData
+    {
         Task<T> GetDataAsync();
         Task WriteAsync(IVersionSet versionSet, T data, TextWriter writer);
     }

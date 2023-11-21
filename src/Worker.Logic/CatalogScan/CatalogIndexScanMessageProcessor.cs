@@ -75,6 +75,12 @@ namespace NuGet.Insights.Worker
                 return;
             }
 
+            _logger.LogInformation(
+                "Processing catalog index scan {ScanId} of type {DriverType}. The current state is {State}.",
+                scan.ScanId,
+                scan.DriverType,
+                scan.State);
+
             var driver = _driverFactory.Create(scan.DriverType);
 
             // Created: initialize the storage for the driver and set the started time
@@ -95,14 +101,22 @@ namespace NuGet.Insights.Worker
                 switch (scan.Result.Value)
                 {
                     case CatalogIndexScanResult.ExpandAllLeaves:
+                        if (scan.OnlyLatestLeaves)
+                        {
+                            throw new NotSupportedException($"Catalog index scan result '{scan.Result.Value}' is not supported when {nameof(CatalogIndexScan.OnlyLatestLeaves)} is true.");
+                        }
+
                         await _storageService.InitializePageScanTableAsync(scan.StorageSuffix);
                         await _storageService.InitializeLeafScanTableAsync(scan.StorageSuffix);
                         break;
                     case CatalogIndexScanResult.ExpandLatestLeaves:
                     case CatalogIndexScanResult.ExpandLatestLeavesPerId:
+                        if (!scan.OnlyLatestLeaves)
+                        {
+                            throw new NotSupportedException($"Catalog index scan result '{scan.Result.Value}' is not supported when {nameof(CatalogIndexScan.OnlyLatestLeaves)} is false.");
+                        }
+
                         await _storageService.InitializeLeafScanTableAsync(scan.StorageSuffix);
-                        break;
-                    case CatalogIndexScanResult.Processed:
                         break;
                     default:
                         throw new NotSupportedException($"Catalog index scan result '{scan.Result}' is not supported.");
@@ -124,9 +138,6 @@ namespace NuGet.Insights.Worker
                     case CatalogIndexScanResult.ExpandLatestLeavesPerId:
                         await ExpandLatestLeavesAsync(message, scan, driver, perId: true);
                         break;
-                    case CatalogIndexScanResult.Processed:
-                        await CompleteAsync(scan);
-                        break;
                     default:
                         throw new NotSupportedException($"Catalog index scan result '{scan.Result}' is not supported.");
                 }
@@ -144,8 +155,9 @@ namespace NuGet.Insights.Worker
 
         private async Task ExpandAllLeavesAsync(CatalogIndexScanMessage message, CatalogIndexScan scan, ICatalogScanDriver driver)
         {
-            var lazyIndexTask = await HandleInitializedStateAsync(scan, nextState: CatalogIndexScanState.Expanding);
+            await HandleInitializedStateAsync(scan, nextState: CatalogIndexScanState.Expanding);
 
+            var lazyIndexTask = new Lazy<Task<CatalogIndex>>(GetCatalogIndexAsync);
             var lazyPageScansTask = new Lazy<Task<List<CatalogPageScan>>>(async () => GetPageScans(scan, await lazyIndexTask.Value));
 
             // Expanding: create a record for each page
@@ -207,8 +219,8 @@ namespace NuGet.Insights.Worker
                         storageSuffix,
                         scan.DriverType,
                         scan.ScanId,
-                        scan.Min.Value,
-                        scan.Max.Value);
+                        scan.Min,
+                        scan.Max);
                 }
                 else
                 {
@@ -217,8 +229,8 @@ namespace NuGet.Insights.Worker
                         storageSuffix,
                         scan.DriverType,
                         scan.ScanId,
-                        scan.Min.Value,
-                        scan.Max.Value);
+                        scan.Min,
+                        scan.Max);
                 }
 
                 if (!findLatestScan.State.IsTerminal())
@@ -278,12 +290,6 @@ namespace NuGet.Insights.Worker
             // Initialized: add task states for the table scans per bucket range
             if (scan.State == CatalogIndexScanState.Initialized)
             {
-                // Set the catalog scan min and max. These aren't used for a proper catalog scan but may be used for logging or analysis purposes.
-                scan.Min = CatalogClient.NuGetOrgMin;
-                var cursorName = CatalogScanCursorService.GetCursorName(CatalogScanDriverType.LoadBucketedPackage);
-                var cursor = await _cursorStorageService.GetOrCreateAsync(cursorName);
-                scan.Max = cursor.Value;
-
                 // Create task states.
                 await _taskStateStorageService.InitializeAsync(scan.StorageSuffix);
                 await _taskStateStorageService.AddAsync(
@@ -406,30 +412,15 @@ namespace NuGet.Insights.Worker
             return true;
         }
 
-        private async Task<Lazy<Task<CatalogIndex>>> HandleInitializedStateAsync(CatalogIndexScan scan, CatalogIndexScanState nextState)
+        private async Task HandleInitializedStateAsync(CatalogIndexScan scan, CatalogIndexScanState nextState)
         {
-            var lazyIndexTask = new Lazy<Task<CatalogIndex>>(GetCatalogIndexAsync);
-
-            // Initialized: determine the real time bounds for the scan.
+            // Initialized: set the started timestamp
             if (scan.State == CatalogIndexScanState.Initialized)
             {
-                var catalogIndex = await lazyIndexTask.Value;
-
-                var min = scan.Min ?? CatalogClient.NuGetOrgMin;
-                var max = new[] { scan.Max ?? DateTimeOffset.MaxValue, catalogIndex.CommitTimestamp }.Min();
-                if (scan.Min != min || scan.Max != max)
-                {
-                    scan.Min = min;
-                    scan.Max = max;
-                    await _storageService.ReplaceAsync(scan);
-                }
-
                 scan.State = nextState;
                 scan.Started = DateTimeOffset.UtcNow;
                 await _storageService.ReplaceAsync(scan);
             }
-
-            return lazyIndexTask;
         }
 
         private async Task HandleEnqueueAggregateAndFinalizeStatesAsync(
@@ -519,9 +510,9 @@ namespace NuGet.Insights.Worker
                 if (scan.CursorName != CatalogScanService.NoCursor)
                 {
                     var cursor = await _cursorStorageService.GetOrCreateAsync(scan.CursorName);
-                    if (cursor.Value <= scan.Max.Value)
+                    if (cursor.Value <= scan.Max)
                     {
-                        cursor.Value = scan.Max.Value;
+                        cursor.Value = scan.Max;
                         await _cursorStorageService.UpdateAsync(cursor);
                     }
                 }
@@ -529,7 +520,7 @@ namespace NuGet.Insights.Worker
                 // Continue the update, if directed.
                 if (scan.ContinueUpdate)
                 {
-                    await _catalogScanService.UpdateAllAsync(scan.Max.Value);
+                    await _catalogScanService.UpdateAllAsync(scan.Max);
                 }
 
                 // Delete old scans
@@ -558,14 +549,14 @@ namespace NuGet.Insights.Worker
         {
             var pageItemToRank = catalogIndex.GetPageItemToRank();
 
-            var pages = catalogIndex.GetPagesInBounds(scan.Min.Value, scan.Max.Value);
+            var pages = catalogIndex.GetPagesInBounds(scan.Min, scan.Max);
 
             _logger.LogInformation(
                 "Starting {DriverType} scan of {PageCount} pages from ({Min:O}, {Max:O}].",
                 scan.DriverType,
                 pages.Count,
-                scan.Min.Value,
-                scan.Max.Value);
+                scan.Min,
+                scan.Max);
 
             return pages
                 .OrderBy(x => pageItemToRank[x])
@@ -585,8 +576,8 @@ namespace NuGet.Insights.Worker
                 ParentDriverType = scan.ParentDriverType,
                 ParentScanId = scan.ParentScanId,
                 State = CatalogPageScanState.Created,
-                Min = scan.Min.Value,
-                Max = scan.Max.Value,
+                Min = scan.Min,
+                Max = scan.Max,
                 Url = url,
                 Rank = rank,
             };

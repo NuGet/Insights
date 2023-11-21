@@ -29,15 +29,15 @@ namespace NuGet.Insights.Worker
         public string StorageSuffix { get; set; }
         public DateTimeOffset Created { get; set; }
         public CatalogScanDriverType DriverType { get; set; }
-        public DateTimeOffset Min { get; set; } = StorageUtility.MinTimestamp;
-        public DateTimeOffset Max { get; set; } = StorageUtility.MinTimestamp;
+        public DateTimeOffset Min { get; set; }
+        public DateTimeOffset Max { get; set; }
         public string ScanId { get; set; }
         public string PageId { get; set; }
         public string Url { get; set; }
         public string PageUrl { get; set; }
         public CatalogLeafType LeafType { get; set; }
         public string CommitId { get; set; }
-        public DateTimeOffset CommitTimestamp { get; set; } = StorageUtility.MinTimestamp;
+        public DateTimeOffset CommitTimestamp { get; set; }
         public string PackageId { get; set; }
         public string PackageVersion { get; set; }
         public DateTimeOffset? NextAttempt { get; set; }

@@ -217,13 +217,7 @@ namespace NuGet.Insights.Website.Controllers
                         return Redirect(success: false, message: $"At least one bucket must be specified.", fragment);
                     }
 
-                    var descendingId = StorageUtility.GenerateDescendingId();
-                    var scanId = CatalogScanService.GetBucketRangeScanId(parsedBuckets, descendingId);
-                    result = await _catalogScanService.UpdateAsync(
-                        scanId,
-                        descendingId.Unique,
-                        driverType,
-                        parsedBuckets);
+                    result = await _catalogScanService.UpdateAsync(driverType, parsedBuckets);
                 }
                 else
                 {

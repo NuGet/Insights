@@ -16,7 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
-using NuGet.Insights.Worker.KustoIngestion;
+using NuGet.Insights.Worker.LoadBucketedPackage;
 using NuGet.Insights.Worker.Workflow;
 using Xunit;
 using Xunit.Abstractions;
@@ -255,6 +255,120 @@ namespace NuGet.Insights.Worker
             }
         }
 
+
+        public class CatalogRangeProducesSameOutputAsBucketRange : IntegrationTest
+        {
+            public CatalogRangeProducesSameOutputAsBucketRange(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
+
+            [Fact]
+            public async Task Execute()
+            {
+                // Arrange
+                ConfigureWorkerSettings = x =>
+                {
+                    x.AppendResultStorageBucketCount = 1;
+                    x.DisabledDrivers = CatalogScanCursorService
+                        .StartableDriverTypes
+                        .Where(x => !CatalogScanService.SupportsBucketRangeProcessing(x))
+                        .Except(new[] { CatalogScanDriverType.LoadBucketedPackage })
+                        .ToList();
+                };
+
+                var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z", CultureInfo.InvariantCulture);
+                var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z", CultureInfo.InvariantCulture);
+
+                var expectedContainers = new List<(string ContainerName, Type RecordType, string DefaultTableName)>();
+                foreach (var recordType in CsvRecordContainers.RecordTypes)
+                {
+                    var producer = CsvRecordContainers.GetProducer(recordType);
+                    if (producer.Type == CsvRecordProducerType.CatalogScanDriver
+                        && !Options.Value.DisabledDrivers.Contains(producer.CatalogScanDriverType.Value))
+                    {
+                        expectedContainers.Add((
+                            CsvRecordContainers.GetContainerName(recordType),
+                            recordType,
+                            CsvRecordContainers.GetDefaultKustoTableName(recordType)));
+                    }
+                }
+
+                await CatalogScanService.InitializeAsync();
+                await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);
+                await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, max1);
+                await SetCursorsAsync(CatalogScanCursorService.StartableDriverTypes, max1);
+                var buckets = Enumerable.Range(0, BucketedPackage.BucketCount).ToList();
+
+                // Act
+                Output.WriteHorizontalRule();
+                Output.WriteLine("Beginning bucket range processing.");
+                Output.WriteHorizontalRule();
+
+                foreach (var batch in CatalogScanCursorService.GetParallelBatches(
+                    CatalogScanService.SupportsBucketRangeProcessing,
+                    Options.Value.DisabledDrivers.Contains))
+                {
+                    var scans = new List<CatalogIndexScan>();
+                    foreach (var driverType in batch)
+                    {
+                        var descendingId = StorageUtility.GenerateDescendingId();
+                        var scanId = CatalogScanService.GetBucketRangeScanId(buckets, descendingId);
+                        var scan = await CatalogScanService.UpdateAsync(
+                            scanId,
+                            descendingId.Unique,
+                            driverType,
+                            buckets);
+                        Assert.Equal(CatalogScanServiceResultType.NewStarted, scan.Type);
+                        scans.Add(scan.Scan);
+                    }
+
+                    foreach (var scan in scans)
+                    {
+                        await UpdateAsync(scan, workerCount: 8);
+                    }
+                }
+
+                // Assert
+                foreach (var (containerName, recordType, defaultTableName) in expectedContainers)
+                {
+                    await AssertCompactAsync(recordType, containerName, nameof(CatalogRangeProducesSameOutputAsBucketRange), Step1, 0, $"{defaultTableName}.csv");
+                    await (await GetBlobAsync(containerName, $"compact_0.csv.gz")).DeleteAsync();
+                }
+
+                // Arrange
+                await SetCursorsAsync(CatalogScanCursorService.StartableDriverTypes, min0);
+
+                // Act
+                Output.WriteHorizontalRule();
+                Output.WriteLine("Beginning catalog range processing.");
+                Output.WriteHorizontalRule();
+
+                foreach (var batch in CatalogScanCursorService.GetParallelBatches(
+                    CatalogScanService.SupportsBucketRangeProcessing,
+                    Options.Value.DisabledDrivers.Contains))
+                {
+                    var scans = new List<CatalogIndexScan>();
+                    foreach (var driverType in batch)
+                    {
+                        var scan = await CatalogScanService.UpdateAsync(driverType, max1);
+                        Assert.Equal(CatalogScanServiceResultType.NewStarted, scan.Type);
+                        scans.Add(scan.Scan);
+                    }
+
+                    foreach (var scan in scans)
+                    {
+                        await UpdateAsync(scan, workerCount: 8);
+                    }
+                }
+
+                // Assert
+                foreach (var (containerName, recordType, defaultTableName) in expectedContainers)
+                {
+                    await AssertCompactAsync(recordType, containerName, nameof(CatalogRangeProducesSameOutputAsBucketRange), Step1, 0, $"{defaultTableName}.csv");
+                }
+            }
+        }
+
         public class ExecutesEntireWorkflow : IntegrationTest
         {
             public ExecutesEntireWorkflow(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
@@ -376,8 +490,7 @@ namespace NuGet.Insights.Worker
                     indexScans.Where(x => x.BucketRanges is not null).Select(x => x.DriverType).Order().ToArray());
 
                 // Make sure all of the containers are have ingestions
-                var containerNames = Host.Services.GetRequiredService<CsvResultStorageContainers>().GetContainerNames();
-                foreach (var containerName in containerNames)
+                foreach (var containerName in CsvRecordContainers.ContainerNames)
                 {
                     MockKustoQueueIngestClient.Verify(x => x.IngestFromStorageAsync(
                         It.Is<string>(y => y.Contains(containerName)),

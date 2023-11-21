@@ -41,28 +41,33 @@ namespace NuGet.Insights.Worker
 
         public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
         {
-            if (indexScan.OnlyLatestLeaves == false)
+            if (_driver.SingleMessagePerId)
             {
-                return Task.FromResult(CatalogIndexScanResult.ExpandAllLeaves);
-            }
-            else if (_driver.SingleMessagePerId)
-            {
+                if (!indexScan.OnlyLatestLeaves)
+                {
+                    throw new NotSupportedException($"If a single message per ID is desired, {nameof(CatalogIndexScan.OnlyLatestLeaves)} must be true.");
+                }
+
                 return Task.FromResult(CatalogIndexScanResult.ExpandLatestLeavesPerId);
+            }
+            else if (indexScan.OnlyLatestLeaves)
+            {
+                return Task.FromResult(CatalogIndexScanResult.ExpandLatestLeaves);
             }
             else
             {
-                return Task.FromResult(CatalogIndexScanResult.ExpandLatestLeaves);
+                return Task.FromResult(CatalogIndexScanResult.ExpandAllLeaves);
             }
         }
 
         public Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)
         {
-            if (pageScan.OnlyLatestLeaves == false)
+            if (pageScan.OnlyLatestLeaves)
             {
-                return Task.FromResult(CatalogPageScanResult.ExpandAllowDuplicates);
+                throw new NotSupportedException($"To process catalog pages, {nameof(CatalogIndexScan.OnlyLatestLeaves)} must be false.");
             }
 
-            throw new NotSupportedException();
+            return Task.FromResult(CatalogPageScanResult.ExpandAllowDuplicates);
         }
 
         public async Task StartAggregateAsync(CatalogIndexScan indexScan)

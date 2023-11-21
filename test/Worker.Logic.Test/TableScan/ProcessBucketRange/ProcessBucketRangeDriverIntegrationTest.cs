@@ -81,8 +81,8 @@ namespace NuGet.Insights.Worker.ProcessBucketRange
                 Assert.InRange(l.Created, createdBefore, createdAfter);
                 Assert.Equal(indexScan.DriverType, l.DriverType);
                 Assert.Equal(indexScan.ScanId, l.ScanId);
-                Assert.Equal(indexScan.Min.Value, l.Min);
-                Assert.Equal(indexScan.Max.Value, l.Max);
+                Assert.Equal(indexScan.Min, l.Min);
+                Assert.Equal(indexScan.Max, l.Max);
                 Assert.Equal($"{bp.PartitionKey}-{bp.PackageId.ToLowerInvariant()}", l.PageId);
                 Assert.Equal(bp.Url, l.Url);
                 Assert.Equal(bp.PageUrl, l.PageUrl);
