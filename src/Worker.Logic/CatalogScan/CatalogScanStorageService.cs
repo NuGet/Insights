@@ -147,7 +147,7 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        public async Task InsertMissingAsync(IReadOnlyList<CatalogLeafScan> leafScans)
+        public async Task InsertMissingAsync(IReadOnlyList<CatalogLeafScan> leafScans, bool allowExtra)
         {
             foreach (var group in leafScans.GroupBy(x => new { x.StorageSuffix, x.ScanId, x.PageId }))
             {
@@ -158,9 +158,18 @@ namespace NuGet.Insights.Worker
                 var createdUrls = createdLeaves.Select(x => x.Url).ToHashSet();
                 var uncreatedUrls = allUrls.Except(createdUrls).ToHashSet();
 
-                if (createdUrls.Except(allUrls).Any())
+                if (!allowExtra)
                 {
-                    throw new InvalidOperationException("There should not be any extra leaf scan entities.");
+                    var extraUrls = createdUrls.Except(allUrls).Order(StringComparer.Ordinal).ToList();
+
+                    if (extraUrls.Count > 0)
+                    {
+                        _logger.LogError(
+                            "{Count} extra leaf scan entities were found. Sample: {ExtraUrls}",
+                            extraUrls.Count,
+                            extraUrls.Take(5));
+                        throw new InvalidOperationException("There should not be any extra leaf scan entities.");
+                    }
                 }
 
                 var uncreatedLeafScans = group

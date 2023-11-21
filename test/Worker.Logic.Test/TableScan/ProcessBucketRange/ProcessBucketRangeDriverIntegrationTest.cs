@@ -18,6 +18,7 @@ namespace NuGet.Insights.Worker.ProcessBucketRange
     public class ProcessBucketRangeDriverIntegrationTest : BaseWorkerLogicIntegrationTest
     {
         private const string ProcessBucketRange_WithoutEnqueueDir = nameof(ProcessBucketRange_WithoutEnqueue);
+        private const string ProcessBucketRange_WithMultiplePartitionKeyWritesDir = nameof(ProcessBucketRange_WithMultiplePartitionKeyWrites);
         private const string ProcessBucketRange_WithEnqueueDir = nameof(ProcessBucketRange_WithEnqueue);
 
         [Fact]
@@ -100,6 +101,52 @@ namespace NuGet.Insights.Worker.ProcessBucketRange
             await AssertEntityOutputAsync<CatalogLeafScan>(
                 leafScanTable,
                 Path.Combine(ProcessBucketRange_WithoutEnqueueDir, Step1),
+                cleanEntity: x => x.Created = DateTimeOffset.Parse("2023-01-03T00:00:00Z", CultureInfo.InvariantCulture));
+        }
+
+        [Fact]
+        public async Task ProcessBucketRange_WithMultiplePartitionKeyWrites()
+        {
+            var min0 = DateTimeOffset.Parse("2023-04-20T15:28:51.3459132Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2023-04-20T15:29:24.2230035Z", CultureInfo.InvariantCulture);
+
+            var bucketMin = 0;
+            var bucketMax = BucketedPackage.BucketCount - 1;
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);
+            await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, onlyLatestLeaves: null, max1);
+
+            var scanId = new StorageId("aaa", "bbb");
+            var indexScan = new CatalogIndexScan(CatalogScanDriverType.LoadSymbolPackageArchive, scanId.ToString(), scanId.Unique)
+            {
+                Min = min0,
+                Max = max1,
+            };
+            await CatalogScanStorageService.InsertAsync(indexScan);
+            await CatalogScanStorageService.InitializeLeafScanTableAsync(indexScan.StorageSuffix);
+
+            var taskStateStorageSuffix = "buckets";
+            await TaskStateStorageService.InitializeAsync(taskStateStorageSuffix);
+            var taskStateKey = new TaskStateKey(taskStateStorageSuffix, "buckets", "buckets");
+            await TaskStateStorageService.AddAsync(taskStateKey);
+
+            // Act
+            await TableScanService.StartProcessingBucketRangeAsync(
+                taskStateKey,
+                bucketMin,
+                bucketMax,
+                indexScan.DriverType,
+                indexScan.ScanId,
+                enqueue: false,
+                takeCount: 1);
+            await UpdateAsync(taskStateKey);
+
+            // Assert
+            var leafScanTable = await CatalogScanStorageService.GetLeafScanTableAsync(indexScan.StorageSuffix);
+            await AssertEntityOutputAsync<CatalogLeafScan>(
+                leafScanTable,
+                Path.Combine(ProcessBucketRange_WithMultiplePartitionKeyWritesDir, Step1),
                 cleanEntity: x => x.Created = DateTimeOffset.Parse("2023-01-03T00:00:00Z", CultureInfo.InvariantCulture));
         }
 

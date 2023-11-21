@@ -76,7 +76,7 @@ namespace NuGet.Insights.Worker
             if (scan.State == CatalogPageScanState.Expanding)
             {
                 var leafScans = await lazyLeafScansTask.Value;
-                await _storageService.InsertMissingAsync(leafScans);
+                await _storageService.InsertMissingAsync(leafScans, allowExtra: false);
 
                 scan.State = CatalogPageScanState.Enqueuing;
                 await _storageService.ReplaceAsync(scan);

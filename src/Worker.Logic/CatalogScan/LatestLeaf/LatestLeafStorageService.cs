@@ -73,17 +73,19 @@ namespace NuGet.Insights.Worker
 
             // Update or insert the rows.
             var batch = new MutableTableTransactionalBatch(storage.Table);
+            T lastEntity = null;
             for (var i = 0; i < rowKeysToUpsert.Count; i++)
             {
                 if (batch.Count >= MaxBatchSize)
                 {
-                    await ExecuteBatchAsync(batch);
+                    await ExecuteBatchAsync(batch, lastEntity);
                     batch = new MutableTableTransactionalBatch(storage.Table);
                 }
 
                 var rowKey = rowKeysToUpsert[i];
                 var leaf = rowKeyToItem[rowKey];
                 var entity = await storage.MapAsync(leaf);
+                lastEntity = entity;
 
                 if (rowKeyToETag.TryGetValue(rowKey, out var etag))
                 {
@@ -98,7 +100,7 @@ namespace NuGet.Insights.Worker
 
             if (batch.Count > 0)
             {
-                await ExecuteBatchAsync(batch);
+                await ExecuteBatchAsync(batch, lastEntity);
             }
         }
 
@@ -156,9 +158,14 @@ namespace NuGet.Insights.Worker
             return (rowKeyToItem, rowKeyToEtag);
         }
 
-        private async Task ExecuteBatchAsync(MutableTableTransactionalBatch batch)
+        private async Task ExecuteBatchAsync(MutableTableTransactionalBatch batch, T lastEntity)
         {
-            _logger.LogInformation("Upserting {Count} latest package leaf rows of type {T}.", batch.Count, typeof(T).FullName);
+            _logger.LogInformation(
+                "Upserting {Count} latest package leaf rows of type {LeafType} with partition key: {PartitionKey}. Last row key: {RowKey}.",
+                batch.Count,
+                typeof(T).FullName,
+                lastEntity.PartitionKey,
+                lastEntity.RowKey);
             await batch.SubmitBatchAsync();
         }
     }

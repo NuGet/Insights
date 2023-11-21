@@ -560,7 +560,7 @@ namespace NuGet.Insights.Worker
                 await CatalogScanStorageService.InitializeLeafScanTableAsync(storageSuffix);
             }
 
-            await CatalogScanStorageService.InsertMissingAsync(scans);
+            await CatalogScanStorageService.InsertMissingAsync(scans, allowExtra: false);
         }
 
         private static List<CatalogLeafScanMessage> MakeMessages(IEnumerable<CatalogLeafScan> scans)

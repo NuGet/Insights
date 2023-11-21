@@ -58,7 +58,8 @@ namespace NuGet.Insights.Worker
             int maxBucketIndex,
             CatalogScanDriverType driverType,
             string scanId,
-            bool enqueue)
+            bool enqueue,
+            int takeCount = StorageUtility.MaxTakeCount)
         {
             var partitionKeyLowerBound = minBucketIndex > 0 ? BucketedPackage.GetBucketString(minBucketIndex - 1) : null;
             var partitionKeyUpperBound = maxBucketIndex < BucketedPackage.BucketCount - 1 ? BucketedPackage.GetBucketString(maxBucketIndex + 1) : null;
@@ -68,7 +69,7 @@ namespace NuGet.Insights.Worker
                 TableScanDriverType.ProcessBucketRange,
                 _options.Value.BucketedPackageTableName,
                 TableScanStrategy.PrefixScan,
-                StorageUtility.MaxTakeCount,
+                takeCount,
                 expandPartitionKeys: true,
                 partitionKeyPrefix: string.Empty,
                 partitionKeyLowerBound: partitionKeyLowerBound,

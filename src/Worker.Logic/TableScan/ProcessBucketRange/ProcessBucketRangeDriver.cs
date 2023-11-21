@@ -61,7 +61,7 @@ namespace NuGet.Insights.Worker.ProcessBucketRange
                 })
                 .ToList();
 
-            await _storageService.InsertMissingAsync(leafScans);
+            await _storageService.InsertMissingAsync(leafScans, allowExtra: true);
 
             if (deserializedParameters.Enqueue)
             {
