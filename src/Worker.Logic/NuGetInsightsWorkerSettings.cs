@@ -23,7 +23,7 @@ namespace NuGet.Insights.Worker
         public int OldWorkflowRunsToKeep { get; set; } = 49;
         public int WorkflowMaxAttempts { get; set; } = 5;
 
-        public bool TimedReprocessIsEnabled { get; set; } = false;
+        public bool TimedReprocessIsEnabled { get; set; } = true;
 
         /// <summary>
         /// This is the desired amount of time it will take to reprocess all packages. For content like legacy README or
@@ -44,7 +44,7 @@ namespace NuGet.Insights.Worker
         /// reprocessing too many packages at once. This number should be larger than <see cref="TimedReprocessWindow"/>
         /// divided by <see cref="TimedReprocessFrequency"/> so that the reprocessor does not get behind.
         /// </summary>
-        public int TimedReprocessMaxBuckets { get; set; } = 25;
+        public int TimedReprocessMaxBuckets { get; set; } = 50;
 
         public bool AutoStartCatalogScanUpdate { get; set; } = false;
         public bool AutoStartDownloadToCsv { get; set; } = false;
