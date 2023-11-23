@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -25,7 +23,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
         {
             // Arrange
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
-            ConfigureAndSetLastModified();
+            Configure();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
@@ -55,7 +53,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
         public async Task OwnersToCsv_NoOp()
         {
             // Arrange
-            ConfigureAndSetLastModified();
+            Configure();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
@@ -86,7 +84,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
         public async Task OwnersToCsv_DifferentVersionSet()
         {
             // Arrange
-            ConfigureAndSetLastModified();
+            Configure();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
@@ -119,7 +117,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
         {
             // Arrange
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
-            ConfigureAndSetLastModified();
+            Configure();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
@@ -158,7 +156,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             // Arrange
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
 
-            ConfigureAndSetLastModified();
+            Configure();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
@@ -176,7 +174,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
         public async Task OwnersToCsv_JustLatest()
         {
             // Arrange
-            ConfigureAndSetLastModified();
+            Configure();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
@@ -204,20 +202,9 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             await ProcessQueueAsync(async () => !await service.IsRunningAsync());
         }
 
-        private void ConfigureAndSetLastModified()
+        private void Configure()
         {
             ConfigureSettings = x => x.OwnersV2Urls = new List<string> { $"http://localhost/{TestData}/{OwnersToCsvDir}/owners.v2.json" };
-
-            // Set the Last-Modified date
-            var fileA = new FileInfo(Path.Combine(TestData, OwnersToCsvDir, Step1, "owners.v2.json"))
-            {
-                LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z", CultureInfo.InvariantCulture)
-            };
-            var fileB = new FileInfo(Path.Combine(TestData, OwnersToCsvDir, Step2, "owners.v2.json"))
-            {
-                LastWriteTimeUtc = DateTime.Parse("2021-01-15T19:00:00Z", CultureInfo.InvariantCulture)
-            };
-
             SetData(Step1);
         }
 

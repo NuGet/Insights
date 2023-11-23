@@ -33,11 +33,29 @@ namespace NuGet.Insights
     {
         static BaseLogicIntegrationTest()
         {
+            // move temp directory to isolate test file leaks
             var oldTemp = Environment.GetEnvironmentVariable("TEMP");
             var newTemp = Path.GetFullPath(Path.Join(oldTemp, "NuGet.Insights.Temp"));
             Directory.CreateDirectory(newTemp);
             Environment.SetEnvironmentVariable("TEMP", newTemp);
             Environment.SetEnvironmentVariable("TMP", newTemp);
+
+            // update the last modified for test data
+            SetLastModified("OwnersToCsv", Step1, "owners.v2.json", "2021-01-14T18:00:00Z");
+            SetLastModified("VerifiedPackagesToCsv", Step1, "verifiedPackages.json", "2021-01-14T18:00:00Z");
+            SetLastModified("deltax.1.0.0.nupkg.testdata", "2021-01-14T18:00:00Z");
+        }
+
+        protected static void SetLastModified(string testName, string stepName, string fileName, string lastModified)
+        {
+            SetLastModified(Path.Combine(testName, stepName, fileName), lastModified);
+        }
+
+        protected static void SetLastModified(string path, string lastModified)
+        {
+            var fileInfo = new FileInfo(Path.Combine(TestData, path));
+            var parsedLastModified = DateTimeOffset.Parse(lastModified, CultureInfo.InvariantCulture);
+            fileInfo.LastWriteTimeUtc = parsedLastModified.UtcDateTime;
         }
 
         public const string ProgramName = "NuGet.Insights.Logic.Test";

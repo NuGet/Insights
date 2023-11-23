@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -296,18 +294,6 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
         private void ConfigureAndSetLastModified(string dirName = DownloadsToCsvDir)
         {
             ConfigureSettings = x => x.DownloadsV1Urls = new List<string> { $"http://localhost/{TestData}/{dirName}/downloads.v1.json" };
-
-            // Set the Last-Modified date
-            var fileA = new FileInfo(Path.Combine(TestData, dirName, Step1, "downloads.v1.json"))
-            {
-                LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z", CultureInfo.InvariantCulture)
-            };
-            var fileB = new FileInfo(Path.Combine(TestData, dirName, Step2, "downloads.v1.json"));
-            if (fileB.Exists)
-            {
-                fileB.LastWriteTimeUtc = DateTime.Parse("2021-01-15T19:00:00Z", CultureInfo.InvariantCulture);
-            }
-
             SetData(Step1, dirName);
         }
 

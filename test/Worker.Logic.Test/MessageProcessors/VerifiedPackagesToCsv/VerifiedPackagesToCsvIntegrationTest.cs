@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -26,7 +24,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             // Arrange
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
 
-            ConfigureAndSetLastModified();
+            Configure();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
@@ -56,7 +54,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
         public async Task VerifiedPackagesToCsv_NoOp()
         {
             // Arrange
-            ConfigureAndSetLastModified();
+            Configure();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
@@ -87,7 +85,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
         public async Task VerifiedPackagesToCsv_DifferentVersionSet()
         {
             // Arrange
-            ConfigureAndSetLastModified();
+            Configure();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
@@ -121,7 +119,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             // Arrange
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
 
-            ConfigureAndSetLastModified();
+            Configure();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
@@ -160,7 +158,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             // Arrange
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
 
-            ConfigureAndSetLastModified();
+            Configure();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
@@ -178,7 +176,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
         public async Task VerifiedPackagesToCsv_JustLatest()
         {
             // Arrange
-            ConfigureAndSetLastModified();
+            Configure();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
@@ -206,20 +204,9 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             await ProcessQueueAsync(async () => !await service.IsRunningAsync());
         }
 
-        private void ConfigureAndSetLastModified()
+        private void Configure()
         {
             ConfigureSettings = x => x.VerifiedPackagesV1Urls = new List<string> { $"http://localhost/{TestData}/{VerifiedPackagesToCsvDir}/verifiedPackages.json" };
-
-            // Set the Last-Modified date
-            var fileA = new FileInfo(Path.Combine(TestData, VerifiedPackagesToCsvDir, Step1, "verifiedPackages.json"))
-            {
-                LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z", CultureInfo.InvariantCulture)
-            };
-            var fileB = new FileInfo(Path.Combine(TestData, VerifiedPackagesToCsvDir, Step2, "verifiedPackages.json"))
-            {
-                LastWriteTimeUtc = DateTime.Parse("2021-01-15T19:00:00Z", CultureInfo.InvariantCulture)
-            };
-
             SetData(Step1);
         }
 

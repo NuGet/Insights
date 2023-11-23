@@ -5,7 +5,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -46,6 +45,25 @@ namespace NuGet.Insights.Worker
 {
     public abstract class BaseWorkerLogicIntegrationTest : BaseLogicIntegrationTest
     {
+        static BaseWorkerLogicIntegrationTest()
+        {
+            SetLastModified("DownloadsToCsv", Step1, "downloads.v1.json", "2021-01-14T18:00:00Z");
+            SetLastModified("DownloadsToCsv", Step2, "downloads.v1.json", "2021-01-15T19:00:00Z");
+
+            SetLastModified("DownloadsToCsv_UnicodeDuplicates", Step1, "downloads.v1.json", "2021-01-14T18:00:00Z");
+
+            SetLastModified("OwnersToCsv", Step1, "owners.v2.json", "2021-01-14T18:00:00Z");
+            SetLastModified("OwnersToCsv", Step2, "owners.v2.json", "2021-01-15T19:00:00Z");
+
+            SetLastModified("VerifiedPackagesToCsv", Step1, "verifiedPackages.json", "2021-01-14T18:00:00Z");
+            SetLastModified("VerifiedPackagesToCsv", Step2, "verifiedPackages.json", "2021-01-15T19:00:00Z");
+
+            SetLastModified("behaviorsample.1.0.0.nupkg.testdata", "2021-01-14T18:00:00Z");
+            SetLastModified("behaviorsample.1.0.0.nuspec", "2021-01-14T19:00:00Z");
+            SetLastModified("behaviorsample.1.0.0.md", "2021-01-14T20:00:00Z");
+            SetLastModified("behaviorsample.1.0.0.snupkg.testdata", "2021-01-14T21:00:00Z");
+        }
+
         public delegate void TryGetId(string id, out string outId);
         public delegate void TryGetVersion(string id, string version, out string outVersion);
 
@@ -665,11 +683,6 @@ namespace NuGet.Insights.Worker
             var lowerId = id.ToLowerInvariant();
             var lowerVersion = NuGetVersion.Parse(version).ToNormalizedString().ToLowerInvariant();
 
-            var nupkgFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.nupkg.testdata"));
-            var nuspecFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.nuspec"));
-            var readmeFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.md"));
-            var snupkgFile = new FileInfo(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.snupkg.testdata"));
-
             HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
             {
                 if (req.RequestUri.AbsolutePath.EndsWith($"/{lowerId}.{lowerVersion}.nupkg", StringComparison.Ordinal))
@@ -705,32 +718,12 @@ namespace NuGet.Insights.Worker
                     newReq.RequestUri = new Uri($"http://localhost/{TestData}/{lowerId}.{lowerVersion}.snupkg.testdata");
                     var response = await TestDataHttpClient.SendAsync(newReq);
                     response.EnsureSuccessStatusCode();
-                    SetBlobResponseHeaders(response, snupkgFile.FullName);
+                    SetBlobResponseHeaders(response, Path.GetFullPath(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.snupkg.testdata")));
                     return response;
                 }
 
                 return null;
             };
-
-            if (nupkgFile.Exists)
-            {
-                nupkgFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T18:00:00Z", CultureInfo.InvariantCulture);
-            }
-
-            if (nuspecFile.Exists)
-            {
-                nuspecFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T19:00:00Z", CultureInfo.InvariantCulture);
-            }
-
-            if (readmeFile.Exists)
-            {
-                readmeFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T20:00:00Z", CultureInfo.InvariantCulture);
-            }
-
-            if (snupkgFile.Exists)
-            {
-                snupkgFile.LastWriteTimeUtc = DateTime.Parse("2021-01-14T21:00:00Z", CultureInfo.InvariantCulture);
-            }
         }
 
         private static void SetBlobResponseHeaders(HttpResponseMessage response, string sourcePath)

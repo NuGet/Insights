@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -39,12 +38,7 @@ namespace NuGet.Insights
             };
 
             // Set the Last-Modified date
-            var asOfTimestamp = DateTime.Parse("2021-01-14T18:00:00Z", CultureInfo.InvariantCulture);
-            var downloadsFile = new FileInfo(Path.Combine(TestData, OwnersToCsvDir, Step1, "owners.v2.json"))
-            {
-                LastWriteTimeUtc = asOfTimestamp,
-            };
-
+            var asOfTimestamp = DateTimeOffset.Parse("2021-01-14T18:00:00Z", CultureInfo.InvariantCulture);
             var client = Host.Services.GetRequiredService<PackageOwnersClient>();
 
             // Act
