@@ -46,7 +46,7 @@ namespace NuGet.Insights.Worker
             var tryAgainLater = new List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan, TimeSpan NotBefore)>();
             var noMatchingScan = new List<CatalogLeafScanMessage>();
             var poison = new List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan)>();
-            var countMetric = _telemetryClient.GetMetric("CatalogLeafScan.Count", "DriverType", "IsBatch", "RangeType");
+            var countMetric = _telemetryClient.GetMetric("CatalogLeafScan.Count", "DriverType", "RangeType");
 
             foreach (var pageGroup in messages.GroupBy(x => (x.StorageSuffix, x.ScanId, x.PageId)))
             {
