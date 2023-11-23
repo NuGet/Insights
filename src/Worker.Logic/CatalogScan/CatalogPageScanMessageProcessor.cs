@@ -16,6 +16,7 @@ namespace NuGet.Insights.Worker
         private readonly ICatalogScanDriverFactory _driverFactory;
         private readonly CatalogScanStorageService _storageService;
         private readonly CatalogScanExpandService _expandService;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<CatalogPageScanMessageProcessor> _logger;
 
         public CatalogPageScanMessageProcessor(
@@ -23,12 +24,14 @@ namespace NuGet.Insights.Worker
             ICatalogScanDriverFactory driverFactory,
             CatalogScanStorageService storageService,
             CatalogScanExpandService expandService,
+            ITelemetryClient telemetryClient,
             ILogger<CatalogPageScanMessageProcessor> logger)
         {
             _catalogClient = catalogClient;
             _driverFactory = driverFactory;
             _storageService = storageService;
             _expandService = expandService;
+            _telemetryClient = telemetryClient;
             _logger = logger;
         }
 
@@ -49,6 +52,7 @@ namespace NuGet.Insights.Worker
             {
                 case CatalogPageScanResult.Processed:
                     await _storageService.DeleteAsync(scan);
+                    EmitCountMetric(scan);
                     break;
                 case CatalogPageScanResult.ExpandAllowDuplicates:
                     await ExpandAsync(scan, excludeRedundantLeaves: false);
@@ -61,6 +65,13 @@ namespace NuGet.Insights.Worker
             }
         }
 
+        private void EmitCountMetric(CatalogPageScan scan)
+        {
+            _telemetryClient
+                .GetMetric("CatalogPageScan.Count", "DriverType", "ParentDriverType", "RangeType")
+                .TrackValue(1, scan.DriverType.ToString(), scan.ParentDriverType?.ToString() ?? "none", scan.BucketRanges is not null ? "Bucket" : "Commit");
+        }
+
         private async Task ExpandAsync(CatalogPageScan scan, bool excludeRedundantLeaves)
         {
             var lazyLeafScansTask = new Lazy<Task<List<CatalogLeafScan>>>(() => InitializeLeavesAsync(scan, excludeRedundantLeaves));
@@ -70,6 +81,8 @@ namespace NuGet.Insights.Worker
             {
                 scan.State = CatalogPageScanState.Expanding;
                 await _storageService.ReplaceAsync(scan);
+
+                EmitCountMetric(scan);
             }
 
             // Expanding: create a record for each leaf

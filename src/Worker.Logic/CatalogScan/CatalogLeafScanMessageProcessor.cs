@@ -46,6 +46,7 @@ namespace NuGet.Insights.Worker
             var tryAgainLater = new List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan, TimeSpan NotBefore)>();
             var noMatchingScan = new List<CatalogLeafScanMessage>();
             var poison = new List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan)>();
+            var countMetric = _telemetryClient.GetMetric("CatalogLeafScan.Count", "DriverType", "IsBatch", "RangeType");
 
             foreach (var pageGroup in messages.GroupBy(x => (x.StorageSuffix, x.ScanId, x.PageId)))
             {
@@ -61,6 +62,9 @@ namespace NuGet.Insights.Worker
                 foreach ((var driverType, var toProcess) in driverTypeToProcess)
                 {
                     var batchDriver = _driverFactory.CreateBatchDriverOrNull(driverType);
+
+                    EmitCountMetric(countMetric, driverType, toProcess.Select(x => x.Scan));
+
                     if (batchDriver != null)
                     {
                         await ProcessBatchAsync(batchDriver, dequeueCount, failed, tryAgainLater, toProcess, throwOnException);
@@ -107,6 +111,35 @@ namespace NuGet.Insights.Worker
             return new BatchMessageProcessorResult<CatalogLeafScanMessage>(
                 failed,
                 tryAgainLater.Select(x => (x.Message, x.NotBefore)));
+        }
+
+        private void EmitCountMetric(IMetric metric, CatalogScanDriverType driverType, IEnumerable<CatalogLeafScan> scans)
+        {
+            var driverTypeString = driverType.ToString();
+            var bucketRangeCount = 0;
+            var catalogRangeCount = 0;
+
+            foreach (var scan in scans)
+            {
+                if (scan.BucketRanges is not null)
+                {
+                    bucketRangeCount++;
+                }
+                else
+                {
+                    catalogRangeCount++;
+                }
+            }
+
+            if (bucketRangeCount > 0)
+            {
+                metric.TrackValue(bucketRangeCount, driverTypeString, "Bucket");
+            }
+
+            if (catalogRangeCount > 0)
+            {
+                metric.TrackValue(catalogRangeCount, driverTypeString, "Commit");
+            }
         }
 
         private async Task CategorizeMessagesAsync(

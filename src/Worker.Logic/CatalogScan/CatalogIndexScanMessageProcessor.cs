@@ -21,6 +21,7 @@ namespace NuGet.Insights.Worker
         private readonly CatalogScanService _catalogScanService;
         private readonly TaskStateStorageService _taskStateStorageService;
         private readonly TableScanService _tableScanService;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<CatalogIndexScanMessageProcessor> _logger;
 
         public CatalogIndexScanMessageProcessor(
@@ -32,6 +33,7 @@ namespace NuGet.Insights.Worker
             CatalogScanService catalogScanService,
             TaskStateStorageService taskStateStorageService,
             TableScanService tableScanService,
+            ITelemetryClient telemetryClient,
             ILogger<CatalogIndexScanMessageProcessor> logger)
         {
             _catalogClient = catalogClient;
@@ -42,6 +44,7 @@ namespace NuGet.Insights.Worker
             _catalogScanService = catalogScanService;
             _taskStateStorageService = taskStateStorageService;
             _tableScanService = tableScanService;
+            _telemetryClient = telemetryClient;
             _logger = logger;
         }
 
@@ -91,6 +94,10 @@ namespace NuGet.Insights.Worker
                 scan.State = CatalogIndexScanState.Initialized;
                 scan.Started = DateTimeOffset.UtcNow;
                 await _storageService.ReplaceAsync(scan);
+
+                _telemetryClient
+                    .GetMetric("CatalogIndexScan.Count", "DriverType", "ParentDriverType", "RangeType")
+                    .TrackValue(1, scan.DriverType.ToString(), scan.ParentDriverType?.ToString() ?? "none", scan.BucketRanges is not null ? "Bucket" : "Commit");
             }
 
             // Created with null result: determine the index scan result, i.e. the mode and initialize the child tables
