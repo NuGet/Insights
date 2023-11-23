@@ -24,7 +24,7 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
             PartitionKey = GetPartitionKey(item.PackageId);
             RowKey = GetRowKey(item.PackageVersion);
             Url = item.Url;
-            LeafType = item.Type;
+            LeafType = item.LeafType;
             CommitId = item.CommitId;
             CommitTimestamp = item.CommitTimestamp;
             PackageId = item.PackageId;

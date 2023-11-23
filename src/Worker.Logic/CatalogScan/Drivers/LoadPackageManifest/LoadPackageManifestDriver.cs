@@ -41,7 +41,7 @@ namespace NuGet.Insights.Worker.LoadPackageManifest
 
             foreach (var group in leafScans.GroupBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase))
             {
-                var leafItems = group.Cast<ICatalogLeafItem>().ToList();
+                var leafItems = group.Select(x => x.ToPackageIdentityCommit()).ToList();
                 try
                 {
                     await _packageManifestService.UpdateBatchAsync(group.Key, leafItems);

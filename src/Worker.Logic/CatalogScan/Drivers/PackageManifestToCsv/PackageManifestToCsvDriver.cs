@@ -66,7 +66,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
-                var result = await _packageManifestService.GetNuspecReaderAndSizeAsync(leafScan);
+                var result = await _packageManifestService.GetNuspecReaderAndSizeAsync(leafScan.ToPackageIdentityCommit());
                 if (result == null)
                 {
                     // Ignore packages where the .nuspec is missing. A subsequent scan will produce a deleted asset record.

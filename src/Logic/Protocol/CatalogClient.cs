@@ -173,7 +173,7 @@ namespace NuGet.Insights
 
         public async Task<CatalogLeaf> GetCatalogLeafAsync(ICatalogLeafItem leaf)
         {
-            return await GetCatalogLeafAsync(leaf.Type, leaf.Url);
+            return await GetCatalogLeafAsync(leaf.LeafType, leaf.Url);
         }
 
         public async Task<CatalogLeaf> GetCatalogLeafAsync(CatalogLeafType type, string url)

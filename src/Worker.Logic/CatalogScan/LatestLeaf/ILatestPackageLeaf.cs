@@ -10,6 +10,7 @@ namespace NuGet.Insights.Worker
     {
         string PackageId { get; }
         string PackageVersion { get; }
+        CatalogLeafType LeafType { get; }
         DateTimeOffset CommitTimestamp { get; }
     }
 }

@@ -22,7 +22,10 @@ namespace NuGet.Insights
 
         private ConcurrentQueue<HttpRequestMessage> Requests { get; } = new ConcurrentQueue<HttpRequestMessage>();
 
-        public ConcurrentQueue<HttpResponseMessage> Responses { get; } = new ConcurrentQueue<HttpResponseMessage>();
+        public ConcurrentQueue<(HttpRequestMessage OriginalRequest, HttpResponseMessage Response)> RequestAndResponses { get; } = new ConcurrentQueue<(HttpRequestMessage OriginalRequest, HttpResponseMessage Response)>();
+
+        public IEnumerable<HttpResponseMessage> Responses => RequestAndResponses
+            .Select(x => x.Response);
 
         public IEnumerable<HttpRequestMessage> SuccessRequests => Responses
             .Where(x => x.IsSuccessStatusCode && x.RequestMessage is not null)
@@ -31,7 +34,7 @@ namespace NuGet.Insights
         public void LogResponses(ITestOutputHelper output)
         {
             var logger = output.GetLogger<TestHttpMessageHandler>();
-            logger.LogInformation("Responses captured by {ClassName}: {ResponseCount}x", nameof(TestHttpMessageHandlerFactory), Responses.Count);
+            logger.LogInformation("Responses captured by {ClassName}: {ResponseCount}x", nameof(TestHttpMessageHandlerFactory), RequestAndResponses.Count);
             foreach (var response in Responses)
             {
                 logger.LogInformation(
@@ -48,7 +51,7 @@ namespace NuGet.Insights
         public void Clear()
         {
             Requests.Clear();
-            Responses.Clear();
+            RequestAndResponses.Clear();
         }
 
         public DelegatingHandler Create()
@@ -61,7 +64,7 @@ namespace NuGet.Insights
                 }
 
                 return null;
-            }, Requests, Responses);
+            }, Requests, RequestAndResponses);
         }
     }
 }

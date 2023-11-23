@@ -20,7 +20,7 @@ namespace NuGet.Insights.Worker.LoadBucketedPackage
             PartitionKey = GetPartitionKey(item);
             RowKey = GetRowKey(item);
             Url = item.Url;
-            LeafType = item.Type;
+            LeafType = item.LeafType;
             CommitId = item.CommitId;
             CommitTimestamp = item.CommitTimestamp;
             PackageId = item.PackageId;
@@ -41,9 +41,6 @@ namespace NuGet.Insights.Worker.LoadBucketedPackage
         public DateTimeOffset? Timestamp { get; set; }
         public ETag ETag { get; set; }
         public Guid? ClientRequestId { get; set; }
-
-        CatalogLeafType ICatalogLeafItem.Type => LeafType;
-        DateTimeOffset? IPackageIdentityCommit.CommitTimestamp => CommitTimestamp;
 
         public int GetBucket()
         {

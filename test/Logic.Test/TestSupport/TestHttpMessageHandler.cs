@@ -12,12 +12,12 @@ namespace NuGet.Insights
     {
         private readonly SendMessageWithBaseAsync _onSendAsync;
         private readonly ConcurrentQueue<HttpRequestMessage> _requestQueue;
-        private readonly ConcurrentQueue<HttpResponseMessage> _responseQueue;
+        private readonly ConcurrentQueue<(HttpRequestMessage OriginalRequest, HttpResponseMessage Response)> _responseQueue;
 
         public TestHttpMessageHandler(
             SendMessageWithBaseAsync onSendAsync,
             ConcurrentQueue<HttpRequestMessage> requestQueue,
-            ConcurrentQueue<HttpResponseMessage> responseQueue)
+            ConcurrentQueue<(HttpRequestMessage OriginalRequest, HttpResponseMessage Response)> responseQueue)
         {
             _onSendAsync = onSendAsync;
             _requestQueue = requestQueue;
@@ -33,14 +33,14 @@ namespace NuGet.Insights
             if (response != null)
             {
                 token.ThrowIfCancellationRequested();
-                _responseQueue.Enqueue(response);
+                _responseQueue.Enqueue((request, response));
                 return response;
             }
 
             response = await base.SendAsync(request, token);
 
             token.ThrowIfCancellationRequested();
-            _responseQueue.Enqueue(response);
+            _responseQueue.Enqueue((request, response));
 
             return response;
         }

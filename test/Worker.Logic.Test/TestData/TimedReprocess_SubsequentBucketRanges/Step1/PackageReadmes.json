@@ -4,7 +4,7 @@
     "RowKey": "1.0.10",
     "Entity": {
       "ReadmeType": "None",
-      "CommitTimestamp": "2018-12-06T03:17:41.9986142+00:00",
+      "CommitTimestamp": null,
       "HttpHeaders": null,
       "ReadmeHash": null
     }
@@ -14,7 +14,7 @@
     "RowKey": "1.0.5.3",
     "Entity": {
       "ReadmeType": "None",
-      "CommitTimestamp": "2018-12-06T03:17:41.9986142+00:00",
+      "CommitTimestamp": null,
       "HttpHeaders": null,
       "ReadmeHash": null
     }
@@ -24,7 +24,7 @@
     "RowKey": "1.0.9",
     "Entity": {
       "ReadmeType": "None",
-      "CommitTimestamp": "2018-12-06T03:17:41.9986142+00:00",
+      "CommitTimestamp": null,
       "HttpHeaders": null,
       "ReadmeHash": null
     }
@@ -34,7 +34,7 @@
     "RowKey": "1.1.0.13",
     "Entity": {
       "ReadmeType": "None",
-      "CommitTimestamp": "2018-12-06T03:17:41.9986142+00:00",
+      "CommitTimestamp": null,
       "HttpHeaders": null,
       "ReadmeHash": null
     }

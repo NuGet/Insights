@@ -81,7 +81,7 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
-                (var zipDirectory, var size, var headers) = await _symbolPackageFileService.GetZipDirectoryFromLeafItemAsync(leafScan);
+                (var zipDirectory, var size, var headers) = await _symbolPackageFileService.GetZipDirectoryFromLeafItemAsync(leafScan.ToPackageIdentityCommit());
                 if (zipDirectory == null)
                 {
                     return (

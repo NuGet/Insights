@@ -74,15 +74,16 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             else
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
+                var item = leafScan.ToPackageIdentityCommit();
 
-                var zipDirectory = await _packageFileService.GetZipDirectoryAsync(leafScan);
+                var zipDirectory = await _packageFileService.GetZipDirectoryAsync(item);
                 if (zipDirectory == null)
                 {
                     // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted record.
                     return new List<PackageCompatibility>();
                 }
 
-                var result = await _packageManifestService.GetBytesAndNuspecReaderAsync(leafScan);
+                var result = await _packageManifestService.GetBytesAndNuspecReaderAsync(item);
                 if (result == null)
                 {
                     // Ignore packages where the .nuspec is missing. A subsequent scan will produce a deleted record.

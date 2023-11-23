@@ -33,7 +33,7 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
 
         public async Task<PackageVersionEntity> MapAsync(ICatalogLeafItem item)
         {
-            if (item.Type == CatalogLeafType.PackageDelete)
+            if (item.LeafType == CatalogLeafType.PackageDelete)
             {
                 return new PackageVersionEntity(
                     item,

@@ -37,7 +37,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             Identity = $"{LowerId}/{leaf.ParsePackageVersion().ToNormalizedString().ToLowerInvariant()}";
             Id = leaf.PackageId;
             Version = leaf.PackageVersion;
-            Type = leaf.Type;
+            Type = leaf.LeafType;
             Url = leaf.Url;
             PageUrl = pageUrl ?? throw new ArgumentNullException(nameof(pageUrl));
         }

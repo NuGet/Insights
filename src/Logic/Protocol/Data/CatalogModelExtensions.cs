@@ -114,7 +114,7 @@ namespace NuGet.Insights
         /// </summary>
         /// <param name="leaf">The catalog leaf.</param>
         /// <returns>The package version.</returns>
-        public static NuGetVersion ParsePackageVersion(this IPackageIdentityCommit leaf)
+        public static NuGetVersion ParsePackageVersion(this ICatalogLeafItem leaf)
         {
             return NuGetVersion.Parse(leaf.PackageVersion);
         }
@@ -161,7 +161,7 @@ namespace NuGet.Insights
         /// <returns>True if the catalog leaf represents a package delete.</returns>
         public static bool IsPackageDelete(this ICatalogLeafItem leaf)
         {
-            return leaf.Type == CatalogLeafType.PackageDelete;
+            return leaf.LeafType == CatalogLeafType.PackageDelete;
         }
 
         /// <summary>
@@ -171,7 +171,7 @@ namespace NuGet.Insights
         /// <returns>True if the catalog leaf contains package details.</returns>
         public static bool IsPackageDetails(this ICatalogLeafItem leaf)
         {
-            return leaf.Type == CatalogLeafType.PackageDetails;
+            return leaf.LeafType == CatalogLeafType.PackageDetails;
         }
 
         /// <summary>

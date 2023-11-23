@@ -13,7 +13,7 @@ namespace NuGet.Insights
 
         [JsonPropertyName("@type")]
         [JsonConverter(typeof(CatalogLeafTypeConverter))]
-        public CatalogLeafType Type { get; set; }
+        public CatalogLeafType LeafType { get; set; }
 
         [JsonPropertyName("catalog:commitId")]
         public string CommitId { get; set; }
@@ -29,7 +29,5 @@ namespace NuGet.Insights
 
         [JsonPropertyName("version")]
         public string PackageVersion { get; set; }
-
-        DateTimeOffset? IPackageIdentityCommit.CommitTimestamp => CommitTimestamp;
     }
 }

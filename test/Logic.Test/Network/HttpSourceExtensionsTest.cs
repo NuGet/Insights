@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -57,7 +58,7 @@ namespace NuGet.Insights
 
                 var innerEx = Assert.IsType<IOException>(ex.InnerException);
                 Assert.Equal("It's not a big truck!", innerEx.Message);
-                Assert.Equal(3, HttpMessageHandlerFactory.Responses.Count);
+                Assert.Equal(3, HttpMessageHandlerFactory.Responses.Count());
             }
 
             [Fact]
@@ -68,7 +69,7 @@ namespace NuGet.Insights
                 var ex = await AssertThrowsAfterReadAsStreamAsync<IOException>();
 
                 Assert.Equal("It's not a big truck!", ex.Message);
-                Assert.Equal(3, HttpMessageHandlerFactory.Responses.Count);
+                Assert.Equal(3, HttpMessageHandlerFactory.Responses.Count());
             }
 
             [Fact]
@@ -79,7 +80,7 @@ namespace NuGet.Insights
                 var ex = await AssertThrowsAfterReadAsStringAsync<OperationCanceledException>();
 
                 Assert.Equal("It's not a big truck!", ex.Message);
-                Assert.Equal(3, HttpMessageHandlerFactory.Responses.Count);
+                Assert.Equal(3, HttpMessageHandlerFactory.Responses.Count());
             }
 
             [Fact]
@@ -90,7 +91,7 @@ namespace NuGet.Insights
                 var ex = await AssertThrowsAfterReadAsStreamAsync<OperationCanceledException>();
 
                 Assert.Equal("It's not a big truck!", ex.Message);
-                Assert.Equal(3, HttpMessageHandlerFactory.Responses.Count);
+                Assert.Equal(3, HttpMessageHandlerFactory.Responses.Count());
             }
 
             private async Task<T> AssertThrowsAfterReadAsStringAsync<T>() where T : Exception
@@ -143,7 +144,7 @@ namespace NuGet.Insights
                 var ex = await AssertThrowsAfterReadAsStreamAsync<IOException>();
 
                 Assert.Equal("It's not a big truck!", ex.Message);
-                Assert.Equal(3, HttpMessageHandlerFactory.Responses.Count);
+                Assert.Equal(3, HttpMessageHandlerFactory.Responses.Count());
             }
 
             [Fact]
@@ -154,7 +155,7 @@ namespace NuGet.Insights
                 var ex = await AssertThrowsAfterReadAsStreamAsync<OperationCanceledException>();
 
                 Assert.Equal("It's not a big truck!", ex.Message);
-                Assert.Equal(3, HttpMessageHandlerFactory.Responses.Count);
+                Assert.Equal(3, HttpMessageHandlerFactory.Responses.Count());
             }
 
             private async Task<T> AssertThrowsAfterReadAsStreamAsync<T>() where T : Exception

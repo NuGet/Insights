@@ -205,7 +205,7 @@ namespace NuGet.Insights
                 // new data.
                 //
                 // If the incoming item has a non-null commit timestamp, that means a catalog leaf likely triggered the
-                // this method call. This means the package owner or the site admin did something notable to the
+                // this method call. This means the package owner or the NuGet.org site admin did something notable to the
                 // package. If the incoming item has a null commit timestamp, it was triggered by some automated process
                 // like a timer instead of the catalog. This means it's quite possible nothing changed related to this
                 // package but we may want to check anyway (as indicated by the "force update" parameter).

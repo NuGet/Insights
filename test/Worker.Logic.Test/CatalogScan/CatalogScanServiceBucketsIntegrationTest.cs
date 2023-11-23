@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using NuGet.Insights.Worker.LoadBucketedPackage;
 using NuGet.Insights.Worker.PackageSignatureToCsv;
@@ -74,6 +76,155 @@ namespace NuGet.Insights.Worker
                 Assert.Equal(bp.ParsePackageVersion().ToNormalizedString().ToLowerInvariant(), pa.RowKey);
                 Assert.StartsWith($",,{pa.PartitionKey},{pa.PartitionKey}/{pa.RowKey},", csvLine, StringComparison.Ordinal);
             });
+        }
+
+        [Fact]
+        public async Task CatalogScanService_BucketRangeUpdatesDataCachedByBucketRange()
+        {
+            await CatalogScanService_TestCachedData(bucketRangeFirst: true, bucketRangeSecond: true, expectCached: false);
+        }
+
+        [Fact]
+        public async Task CatalogScanService_BucketRangeUpdatesDataCachedByCatalogRange()
+        {
+            await CatalogScanService_TestCachedData(bucketRangeFirst: false, bucketRangeSecond: true, expectCached: false);
+        }
+
+        [Fact]
+        public async Task CatalogScanService_CatalogRangeUpdatesDataCachedByBucketRange()
+        {
+            await CatalogScanService_TestCachedData(bucketRangeFirst: true, bucketRangeSecond: false, expectCached: false);
+        }
+
+        [Fact]
+        public async Task CatalogScanService_CatalogRangeUsesDataCachedByCatalogRange()
+        {
+            await CatalogScanService_TestCachedData(bucketRangeFirst: false, bucketRangeSecond: false, expectCached: true);
+        }
+
+        private async Task CatalogScanService_TestCachedData(bool bucketRangeFirst, bool bucketRangeSecond, bool expectCached)
+        {
+            // Arrange
+            ConfigureWorkerSettings = x =>
+            {
+                x.AppendResultStorageBucketCount = 1;
+                x.OldCatalogIndexScansToKeep = 0;
+            };
+
+            var dir = nameof(CatalogScanService_TestCachedData);
+            var min0 = DateTimeOffset.Parse("2020-05-11T20:11:38.5525171Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-05-11T20:12:56.9143404Z", CultureInfo.InvariantCulture);
+            var bucket = 0;
+            var buckets = Enumerable.Range(0, BucketedPackage.BucketCount).ToList();
+            var driversUnderTest = TimedReprocessService
+                .GetReprocessBatches()
+                .SelectMany(x => x)
+                .ToHashSet();
+            var recordTypes = driversUnderTest
+                .SelectMany(x => CsvRecordContainers.TryGetRecordTypes(x, out var types) ? types : Enumerable.Empty<Type>())
+                .ToList();
+
+            HttpMessageHandlerFactory.OnSendAsync = (r, b, t) =>
+            {
+                if (r.RequestUri.AbsolutePath.EndsWith("/readme", StringComparison.Ordinal))
+                {
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        RequestMessage = r,
+                        Content = new StringContent("# My package"),
+                    });
+                }
+
+                return Task.FromResult<HttpResponseMessage>(null);
+            };
+
+            // Act
+            await RunAllDriversAsync(
+                driversUnderTest,
+                async () =>
+                {
+                    await CatalogScanService.InitializeAsync();
+
+                    if (bucketRangeFirst || bucketRangeSecond)
+                    {
+                        await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);
+                        await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, max1);
+                    }
+
+                    await SetCursorsAsync(CatalogScanCursorService.StartableDriverTypes, bucketRangeFirst ? max1 : min0);
+                },
+                async driverType =>
+                {
+                    if (bucketRangeFirst)
+                    {
+                        return await CatalogScanService.UpdateAsync(driverType, buckets);
+                    }
+                    else
+                    {
+                        return await CatalogScanService.UpdateAsync(driverType, max1);
+                    }
+                });
+
+            // Assert
+            foreach (var recordType in recordTypes)
+            {
+                var containerName = CsvRecordContainers.GetContainerName(recordType);
+                var tableName = CsvRecordContainers.GetDefaultKustoTableName(recordType);
+                await AssertCompactAsync(recordType, containerName, dir, Step1, bucket, $"{tableName}.csv");
+            }
+            Assert.Equal(1, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
+            Assert.Equal(1, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.RequestUri.AbsolutePath.EndsWith("/readme", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
+
+            // Arrange
+            HttpMessageHandlerFactory.OnSendAsync = async (req, b, t) =>
+            {
+                if (req.RequestUri.AbsolutePath.EndsWith("/readme", StringComparison.Ordinal))
+                {
+                    var newReq = Clone(req);
+                    newReq.Headers.TryAddWithoutValidation("Original", req.RequestUri.AbsoluteUri);
+                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/behaviorsample.1.0.0.md");
+                    return await TestDataHttpClient.SendAsync(newReq);
+                }
+
+                if (req.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal))
+                {
+                    var newReq = Clone(req);
+                    newReq.Headers.TryAddWithoutValidation("Original", req.RequestUri.AbsoluteUri);
+                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/behaviorsample.1.0.0.snupkg.testdata");
+                    return await TestDataHttpClient.SendAsync(newReq);
+                }
+
+                return null;
+            };
+
+            // Act
+            await RunAllDriversAsync(
+                driversUnderTest,
+                async () =>
+                {
+                    await SetCursorsAsync(CatalogScanCursorService.StartableDriverTypes, bucketRangeSecond ? max1 : min0);
+                },
+                async driverType =>
+                {
+                    if (bucketRangeSecond)
+                    {
+                        return await CatalogScanService.UpdateAsync(driverType, buckets);
+                    }
+                    else
+                    {
+                        return await CatalogScanService.UpdateAsync(driverType, max1);
+                    }
+                });
+
+            // Assert
+            foreach (var recordType in recordTypes)
+            {
+                var containerName = CsvRecordContainers.GetContainerName(recordType);
+                var tableName = CsvRecordContainers.GetDefaultKustoTableName(recordType);
+                await AssertCompactAsync(recordType, containerName, dir, expectCached ? Step1 : Step2, bucket, $"{tableName}.csv");
+            }
+            Assert.Equal(expectCached ? 1 : 2, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
+            Assert.Equal(expectCached ? 1 : 2, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.RequestUri.AbsolutePath.EndsWith("/readme", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
         }
 
         /// <summary>

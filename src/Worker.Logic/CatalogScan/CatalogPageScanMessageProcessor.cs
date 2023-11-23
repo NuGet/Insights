@@ -128,7 +128,7 @@ namespace NuGet.Insights.Worker
                     BucketRanges = scan.BucketRanges,
                     Url = x.Url,
                     PageUrl = scan.Url,
-                    LeafType = x.Type,
+                    LeafType = x.LeafType,
                     CommitId = x.CommitId,
                     CommitTimestamp = x.CommitTimestamp,
                     PackageId = x.PackageId,

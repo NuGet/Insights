@@ -326,7 +326,13 @@ namespace NuGet.Insights
         {
             TableName = TestSettings.NewStoragePrefix() + "1pwes1";
             CommitTimestamp = new DateTimeOffset(2022, 6, 25, 10, 45, 0, TimeSpan.Zero);
-            Item = new PackageIdentityWithoutCommit("NuGet.Versioning", "6.0.0", CommitTimestamp);
+            Item = new PackageIdentityCommit
+            {
+                PackageId = "NuGet.Versioning",
+                PackageVersion = "6.0.0",
+                LeafType = CatalogLeafType.PackageDetails,
+                CommitTimestamp = CommitTimestamp
+            };
         }
 
         protected async override Task DisposeInternalAsync()
@@ -340,24 +346,8 @@ namespace NuGet.Insights
         public PackageWideEntityService Target => Host.Services.GetRequiredService<PackageWideEntityService>();
         public string TableName { get; }
         public DateTimeOffset CommitTimestamp { get; set; }
-        public PackageIdentityWithoutCommit Item { get; }
+        public PackageIdentityCommit Item { get; }
         public bool DataFetched { get; set; }
-
-        public class PackageIdentityWithoutCommit : IPackageIdentityCommit
-        {
-            public PackageIdentityWithoutCommit(string id, string version, DateTimeOffset? commitTimestamp)
-            {
-                PackageId = id;
-                PackageVersion = version;
-                CommitTimestamp = commitTimestamp;
-            }
-
-            public string PackageId { get; set; }
-
-            public string PackageVersion { get; set; }
-
-            public DateTimeOffset? CommitTimestamp { get; set; }
-        }
 
         [MessagePackObject]
         public class TestPackageWideEntityVersions : PackageWideEntityService.IPackageWideEntity

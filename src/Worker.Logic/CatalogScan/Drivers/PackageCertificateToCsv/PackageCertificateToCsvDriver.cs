@@ -135,7 +135,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         private async Task<List<CsvRecordSet<PackageCertificateRecord>>> ProcessPackageIdAsync(
             CertificateDataBuilder builder,
             string packageId,
-            IReadOnlyList<ICatalogLeafItem> leafItems)
+            IReadOnlyList<CatalogLeafScan> leafItems)
         {
             // Clear package state from a previous iteration, but leave certificate validation results.
             builder.ClearPackages();
@@ -150,18 +150,18 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         private async Task PopulateCertificatesAsync(
             CertificateDataBuilder builder,
             string packageId,
-            IReadOnlyList<ICatalogLeafItem> leafItems)
+            IReadOnlyList<CatalogLeafScan> leafItems)
         {
             foreach (var item in leafItems)
             {
                 var packageIdentity = GetIdentity(packageId, item);
-                if (item.Type == CatalogLeafType.PackageDelete)
+                if (item.LeafType == CatalogLeafType.PackageDelete)
                 {
                     builder.DeletePackage(packageIdentity);
                 }
                 else
                 {
-                    var signature = await _packageFileService.GetPrimarySignatureAsync(item);
+                    var signature = await _packageFileService.GetPrimarySignatureAsync(item.ToPackageIdentityCommit());
                     if (signature == null)
                     {
                         builder.DeletePackage(packageIdentity);
@@ -232,9 +232,9 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
                 var packageIdentity = GetIdentity(packageId, item);
                 var bucketKey = PackageRecord.GetBucketKey(item);
 
-                if (item.Type == CatalogLeafType.PackageDelete)
+                if (item.LeafType == CatalogLeafType.PackageDelete)
                 {
-                    var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                    var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.LeafType, item.Url);
                     csvSets.Add(new CsvRecordSet<PackageCertificateRecord>(
                         bucketKey,
                         new List<PackageCertificateRecord>
@@ -244,7 +244,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
                 }
                 else
                 {
-                    var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.Type, item.Url);
+                    var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.LeafType, item.Url);
                     csvSets.Add(new CsvRecordSet<PackageCertificateRecord>(
                         bucketKey,
                         builder

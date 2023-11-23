@@ -27,12 +27,12 @@ namespace NuGet.Insights
                 // Arrange
                 await Target.InitializeAsync();
 
-                var leafItem = new CatalogLeafItem
+                var leafItem = new PackageIdentityCommit
                 {
                     CommitTimestamp = DateTimeOffset.Parse("2021-03-22T20:13:54.6075418Z", CultureInfo.InvariantCulture),
                     PackageId = "Newtonsoft.Json",
                     PackageVersion = "13.0.1",
-                    Type = CatalogLeafType.PackageDetails,
+                    LeafType = CatalogLeafType.PackageDetails,
                 };
 
                 // Act
@@ -53,12 +53,12 @@ namespace NuGet.Insights
                 // Arrange
                 await Target.InitializeAsync();
 
-                var leafItem = new CatalogLeafItem
+                var leafItem = new PackageIdentityCommit
                 {
                     CommitTimestamp = DateTime.Parse("2018-10-15T01:04:00.4615524Z", CultureInfo.InvariantCulture),
                     PackageId = "Newtonsoft.Json",
                     PackageVersion = "9.0.1",
-                    Type = CatalogLeafType.PackageDetails,
+                    LeafType = CatalogLeafType.PackageDetails,
                 };
 
                 // Act
@@ -88,12 +88,12 @@ namespace NuGet.Insights
                 // Arrange
                 await Target.InitializeAsync();
 
-                var leafItem = new CatalogLeafItem
+                var leafItem = new PackageIdentityCommit
                 {
                     CommitTimestamp = DateTimeOffset.Parse("2021-03-22T20:13:54.6075418Z", CultureInfo.InvariantCulture),
                     PackageId = "Newtonsoft.Json",
                     PackageVersion = "13.0.1",
-                    Type = CatalogLeafType.PackageDetails,
+                    LeafType = CatalogLeafType.PackageDetails,
                 };
                 await Target.GetOrUpdateInfoFromLeafItemAsync(leafItem);
                 HttpMessageHandlerFactory.Clear();

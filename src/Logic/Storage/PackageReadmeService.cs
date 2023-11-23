@@ -15,6 +15,7 @@ using MessagePack;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NuGet.Protocol;
+using NuGet.Versioning;
 
 #nullable enable
 
@@ -55,9 +56,9 @@ namespace NuGet.Insights
             await _wideEntityService.DeleteTableAsync(_options.Value.PackageReadmeTableName);
         }
 
-        public async Task<IReadOnlyDictionary<ICatalogLeafItem, PackageReadmeInfoV1>> UpdateBatchFromLeafItemsAsync(
+        public async Task<IReadOnlyDictionary<IPackageIdentityCommit, PackageReadmeInfoV1>> UpdateBatchFromLeafItemsAsync(
             string id,
-            IReadOnlyCollection<ICatalogLeafItem> leafItems)
+            IReadOnlyCollection<IPackageIdentityCommit> leafItems)
         {
             return await _wideEntityService.UpdateBatchAsync(
                 _options.Value.PackageReadmeTableName,
@@ -68,20 +69,7 @@ namespace NuGet.Insights
                 DataToOutput);
         }
 
-        public async Task<IReadOnlyDictionary<IPackageIdentityCommit, PackageReadmeInfoV1>> UpdateBatchAsync(
-            string id,
-            IReadOnlyCollection<IPackageIdentityCommit> items)
-        {
-            return await _wideEntityService.UpdateBatchAsync(
-                _options.Value.PackageReadmeTableName,
-                id,
-                items,
-                GetInfoAsync,
-                OutputToData,
-                DataToOutput);
-        }
-
-        public async Task<PackageReadmeInfoV1> GetOrUpdateInfoFromLeafItemAsync(ICatalogLeafItem leafItem)
+        public async Task<PackageReadmeInfoV1> GetOrUpdateInfoFromLeafItemAsync(IPackageIdentityCommit leafItem)
         {
             return await _wideEntityService.GetOrUpdateInfoAsync(
                 _options.Value.PackageReadmeTableName,
@@ -91,19 +79,9 @@ namespace NuGet.Insights
                 DataToOutput);
         }
 
-        public async Task<PackageReadmeInfoV1> GetOrUpdateInfoAsync(IPackageIdentityCommit item)
+        private async Task<PackageReadmeInfoV1> GetInfoFromLeafItemAsync(IPackageIdentityCommit leafItem)
         {
-            return await _wideEntityService.GetOrUpdateInfoAsync(
-                _options.Value.PackageReadmeTableName,
-                item,
-                GetInfoAsync,
-                OutputToData,
-                DataToOutput);
-        }
-
-        private async Task<PackageReadmeInfoV1> GetInfoFromLeafItemAsync(ICatalogLeafItem leafItem)
-        {
-            if (leafItem.Type == CatalogLeafType.PackageDelete)
+            if (leafItem.LeafType == CatalogLeafType.PackageDelete)
             {
                 return MakeUnavailableInfo(leafItem);
             }
@@ -120,7 +98,7 @@ namespace NuGet.Insights
             if (_options.Value.LegacyReadmeUrlPattern != null)
             {
                 var lowerId = item.PackageId.ToLowerInvariant();
-                var lowerVersion = item.ParsePackageVersion().ToNormalizedString().ToLowerInvariant();
+                var lowerVersion = NuGetVersion.Parse(item.PackageVersion).ToNormalizedString().ToLowerInvariant();
                 var legacyUrl = string.Format(CultureInfo.InvariantCulture, _options.Value.LegacyReadmeUrlPattern, lowerId, lowerVersion);
 
                 urls.Add((ReadmeType.Legacy, legacyUrl));

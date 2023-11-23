@@ -64,7 +64,7 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
-                var primarySignature = await _packageFileService.GetPrimarySignatureAsync(leafScan);
+                var primarySignature = await _packageFileService.GetPrimarySignatureAsync(leafScan.ToPackageIdentityCommit());
                 if (primarySignature == null)
                 {
                     // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted record.

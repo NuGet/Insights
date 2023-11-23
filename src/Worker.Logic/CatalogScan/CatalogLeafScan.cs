@@ -50,8 +50,16 @@ namespace NuGet.Insights.Worker
         public ETag ETag { get; set; }
         public Guid? ClientRequestId { get; set; }
 
-        CatalogLeafType ICatalogLeafItem.Type => LeafType;
-        DateTimeOffset? IPackageIdentityCommit.CommitTimestamp => CommitTimestamp;
+        public IPackageIdentityCommit ToPackageIdentityCommit()
+        {
+            return new PackageIdentityCommit
+            {
+                PackageId = PackageId,
+                PackageVersion = PackageVersion,
+                LeafType = LeafType,
+                CommitTimestamp = BucketRanges is null ? CommitTimestamp : null,
+            };
+        }
 
         public static string GetPartitionKey(string scanId, string pageId)
         {

@@ -72,8 +72,8 @@ namespace NuGet.Insights
                 Assert.Equal("https://api.nuget.org/v3/catalog0/index.json", page.Parent);
                 Assert.Equal(550, page.Count);
 
-                Assert.Equal(549, page.Items.Count(x => x.Type == CatalogLeafType.PackageDetails));
-                Assert.Equal(1, page.Items.Count(x => x.Type == CatalogLeafType.PackageDelete));
+                Assert.Equal(549, page.Items.Count(x => x.LeafType == CatalogLeafType.PackageDetails));
+                Assert.Equal(1, page.Items.Count(x => x.LeafType == CatalogLeafType.PackageDelete));
             }
 
             public TheGetCatalogPageAsyncMethod(ITestOutputHelper output) : base(output)
@@ -154,7 +154,7 @@ namespace NuGet.Insights
                     CatalogLeafType.PackageDetails,
                     "https://api.nuget.org/v3/catalog0/data/2021.03.22.20.13.54/newtonsoft.json.13.0.1.json");
 
-                Assert.Equal(CatalogLeafType.PackageDetails, leaf.Type);
+                Assert.Equal(CatalogLeafType.PackageDetails, leaf.LeafType);
                 var details = Assert.IsType<PackageDetailsCatalogLeaf>(leaf);
                 Assert.Equal(DateTimeOffset.Parse("2021-03-22T20:10:49.407Z", CultureInfo.InvariantCulture), details.Created);
             }
@@ -166,7 +166,7 @@ namespace NuGet.Insights
                     CatalogLeafType.PackageDelete,
                     "https://api.nuget.org/v3/catalog0/data/2020.04.17.01.07.02/microsoft.aspnetcore.components.webassembly.build.3.2.0-preview4.20210.8.json");
 
-                Assert.Equal(CatalogLeafType.PackageDelete, leaf.Type);
+                Assert.Equal(CatalogLeafType.PackageDelete, leaf.LeafType);
                 Assert.IsType<PackageDeleteCatalogLeaf>(leaf);
             }
 

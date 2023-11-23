@@ -24,12 +24,12 @@ namespace NuGet.Insights
             var timestampA = DateTimeOffset.Parse("2018-10-15T01:04:00.4615524Z", CultureInfo.InvariantCulture);
             var timestampB = timestampA.AddHours(1);
 
-            var leafItem = new CatalogLeafItem
+            var leafItem = new PackageIdentityCommit
             {
                 CommitTimestamp = timestampA,
                 PackageId = "Newtonsoft.Json",
                 PackageVersion = "9.0.1",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
             };
 
             var first = await Target.GetOrUpdateInfoAsync(leafItem);
@@ -55,12 +55,12 @@ namespace NuGet.Insights
             var timestampA = DateTimeOffset.Parse("2018-10-15T01:04:00.4615524Z", CultureInfo.InvariantCulture);
             var timestampB = timestampA.AddHours(-1);
 
-            var leafItem = new CatalogLeafItem
+            var leafItem = new PackageIdentityCommit
             {
                 CommitTimestamp = timestampA,
                 PackageId = "Newtonsoft.Json",
                 PackageVersion = "9.0.1",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
             };
 
             var first = await Target.GetOrUpdateInfoAsync(leafItem);
@@ -95,14 +95,12 @@ namespace NuGet.Insights
 
             await Target.InitializeAsync();
 
-            var leafItem = new CatalogLeafItem
+            var leafItem = new PackageIdentityCommit
             {
-                CommitId = "81ef2283-82dd-487f-a274-8731bb87c413",
                 CommitTimestamp = DateTimeOffset.Parse("2021-08-13T13:44:11.6356345Z", CultureInfo.InvariantCulture),
                 PackageId = "Microsoft.CodeCoverage",
                 PackageVersion = "16.11.0",
-                Type = CatalogLeafType.PackageDetails,
-                Url = "https://api.nuget.org/v3/catalog0/data/2021.08.13.13.44.11/microsoft.codecoverage.16.11.0.json",
+                LeafType = CatalogLeafType.PackageDetails,
             };
 
             // Act
@@ -131,14 +129,12 @@ namespace NuGet.Insights
 
             await Target.InitializeAsync();
 
-            var leafItem = new CatalogLeafItem
+            var leafItem = new PackageIdentityCommit
             {
-                CommitId = "dc9945c1-9199-4479-bdea-22a6554d5b4d",
                 CommitTimestamp = DateTimeOffset.Parse("2018-10-15T01:04:00.4615524Z", CultureInfo.InvariantCulture),
                 PackageId = "Newtonsoft.Json",
                 PackageVersion = "9.0.1",
-                Type = CatalogLeafType.PackageDetails,
-                Url = "https://api.nuget.org/v3/catalog0/data/2018.10.15.01.04.00/newtonsoft.json.9.0.1.json",
+                LeafType = CatalogLeafType.PackageDetails,
             };
 
             // Act
@@ -167,14 +163,12 @@ namespace NuGet.Insights
 
             await Target.InitializeAsync();
 
-            var leafItem = new CatalogLeafItem
+            var leafItem = new PackageIdentityCommit
             {
-                CommitId = "dc9945c1-9199-4479-bdea-22a6554d5b4d",
                 CommitTimestamp = DateTimeOffset.Parse("2018-10-15T01:04:00.4615524Z", CultureInfo.InvariantCulture),
                 PackageId = "Newtonsoft.Json",
                 PackageVersion = "9.0.1",
-                Type = CatalogLeafType.PackageDetails,
-                Url = "https://api.nuget.org/v3/catalog0/data/2018.10.15.01.04.00/newtonsoft.json.9.0.1.json",
+                LeafType = CatalogLeafType.PackageDetails,
             };
 
             // Act
@@ -193,14 +187,12 @@ namespace NuGet.Insights
             // Arrange
             await Target.InitializeAsync();
 
-            var leafItem = new CatalogLeafItem
+            var leafItem = new PackageIdentityCommit
             {
-                CommitId = "dc9945c1-9199-4479-bdea-22a6554d5b4d",
                 CommitTimestamp = DateTimeOffset.Parse("2018-10-15T01:04:00.4615524Z", CultureInfo.InvariantCulture),
                 PackageId = "Newtonsoft.Json",
                 PackageVersion = "9.0.1",
-                Type = CatalogLeafType.PackageDetails,
-                Url = "https://api.nuget.org/v3/catalog0/data/2018.10.15.01.04.00/newtonsoft.json.9.0.1.json",
+                LeafType = CatalogLeafType.PackageDetails,
             };
 
             await Target.GetOrUpdateInfoAsync(leafItem);

@@ -85,7 +85,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
-                var zipDirectory = await _packageFileService.GetZipDirectoryAsync(leafScan);
+                var zipDirectory = await _packageFileService.GetZipDirectoryAsync(leafScan.ToPackageIdentityCommit());
                 if (zipDirectory == null)
                 {
                     return MakeEmptyResults(leaf);

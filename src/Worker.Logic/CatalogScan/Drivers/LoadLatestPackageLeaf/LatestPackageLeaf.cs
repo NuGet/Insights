@@ -19,7 +19,7 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
             PartitionKey = GetPartitionKey(item.PackageId);
             RowKey = GetRowKey(item.PackageVersion);
             Url = item.Url;
-            LeafType = item.Type;
+            LeafType = item.LeafType;
             CommitId = item.CommitId;
             CommitTimestamp = item.CommitTimestamp;
             PackageId = item.PackageId;
@@ -50,9 +50,6 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
         public DateTimeOffset? Timestamp { get; set; }
         public ETag ETag { get; set; }
         public Guid? ClientRequestId { get; set; }
-
-        CatalogLeafType ICatalogLeafItem.Type => LeafType;
-        DateTimeOffset? IPackageIdentityCommit.CommitTimestamp => CommitTimestamp;
 
         public static string GetPartitionKey(string id)
         {

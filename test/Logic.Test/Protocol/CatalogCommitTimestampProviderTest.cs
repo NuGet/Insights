@@ -46,8 +46,8 @@ namespace NuGet.Insights
                 Url = Page0Url,
                 Items = new List<CatalogLeafItem>
                 {
-                    new CatalogLeafItem { Type = CatalogLeafType.PackageDetails, CommitTimestamp = TS0 },
-                    new CatalogLeafItem { Type = CatalogLeafType.PackageDetails, CommitTimestamp = TS1 },
+                    new CatalogLeafItem { LeafType = CatalogLeafType.PackageDetails, CommitTimestamp = TS0 },
+                    new CatalogLeafItem { LeafType = CatalogLeafType.PackageDetails, CommitTimestamp = TS1 },
                 }
             };
             Page1 = new CatalogPage
@@ -56,9 +56,9 @@ namespace NuGet.Insights
                 Url = Page1Url,
                 Items = new List<CatalogLeafItem>
                 {
-                    new CatalogLeafItem { Type = CatalogLeafType.PackageDetails, CommitTimestamp = TS2 },
-                    new CatalogLeafItem { Type = CatalogLeafType.PackageDetails, CommitTimestamp = TS3 },
-                    new CatalogLeafItem { Type = CatalogLeafType.PackageDetails, CommitTimestamp = TS4 },
+                    new CatalogLeafItem { LeafType = CatalogLeafType.PackageDetails, CommitTimestamp = TS2 },
+                    new CatalogLeafItem { LeafType = CatalogLeafType.PackageDetails, CommitTimestamp = TS3 },
+                    new CatalogLeafItem { LeafType = CatalogLeafType.PackageDetails, CommitTimestamp = TS4 },
                 }
             };
             Page2 = new CatalogPage
@@ -67,8 +67,8 @@ namespace NuGet.Insights
                 Url = Page2Url,
                 Items = new List<CatalogLeafItem>
                 {
-                    new CatalogLeafItem { Type = CatalogLeafType.PackageDetails, CommitTimestamp = TS5 },
-                    new CatalogLeafItem { Type = CatalogLeafType.PackageDetails, CommitTimestamp = TS6 },
+                    new CatalogLeafItem { LeafType = CatalogLeafType.PackageDetails, CommitTimestamp = TS5 },
+                    new CatalogLeafItem { LeafType = CatalogLeafType.PackageDetails, CommitTimestamp = TS6 },
                 }
             };
 
@@ -201,7 +201,7 @@ namespace NuGet.Insights
             Index.CommitTimestamp = TS2;
             Index.Items[0].CommitTimestamp = TS2;
             Page0.CommitTimestamp = TS2;
-            Page0.Items.Add(new CatalogLeafItem { Type = CatalogLeafType.PackageDetails, CommitTimestamp = TS2 });
+            Page0.Items.Add(new CatalogLeafItem { LeafType = CatalogLeafType.PackageDetails, CommitTimestamp = TS2 });
 
             // Act
             var min = await Target.GetNextAsync(TS1);

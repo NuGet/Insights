@@ -43,7 +43,7 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId
                 BucketRanges = _indexScan.BucketRanges,
                 Url = item.Url,
                 PageUrl = _pageUrl,
-                LeafType = item.Type,
+                LeafType = item.LeafType,
                 CommitId = item.CommitId,
                 CommitTimestamp = item.CommitTimestamp,
                 PackageId = item.PackageId,

@@ -22,11 +22,11 @@ namespace NuGet.Insights
         {
             // Arrange
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new PackageIdentityCommit
             {
                 PackageId = "Knapcode.TorSharp",
                 PackageVersion = "2.8.1",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 CommitTimestamp = DateTimeOffset.Parse("2021-08-06T00:31:15.51Z", CultureInfo.InvariantCulture),
             };
 
@@ -49,11 +49,11 @@ namespace NuGet.Insights
         {
             // Arrange
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new PackageIdentityCommit
             {
                 PackageId = "Knapcode.TorSharp",
                 PackageVersion = "1.0.0",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 CommitTimestamp = DateTimeOffset.Parse("2021-08-06T00:31:41.2929519Z", CultureInfo.InvariantCulture),
             };
 
@@ -96,11 +96,11 @@ namespace NuGet.Insights
 
             // Arrange
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new PackageIdentityCommit
             {
                 PackageId = "WindowsAzure.Storage",
                 PackageVersion = "9.3.3",
-                Type = CatalogLeafType.PackageDetails,
+                LeafType = CatalogLeafType.PackageDetails,
                 CommitTimestamp = DateTimeOffset.Parse("2020-07-08T17:12:18.5692562Z", CultureInfo.InvariantCulture),
             };
 
@@ -127,11 +127,11 @@ namespace NuGet.Insights
         {
             // Arrange
             await Target.InitializeAsync();
-            var leaf = new CatalogLeafItem
+            var leaf = new PackageIdentityCommit
             {
                 PackageId = "nuget.platform",
                 PackageVersion = "1.0.0",
-                Type = CatalogLeafType.PackageDelete,
+                LeafType = CatalogLeafType.PackageDelete,
                 CommitTimestamp = DateTimeOffset.Parse("2017-11-08T17:42:28.5677911", CultureInfo.InvariantCulture),
             };
 

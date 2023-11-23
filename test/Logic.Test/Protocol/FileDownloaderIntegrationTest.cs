@@ -74,13 +74,13 @@ namespace NuGet.Insights
                     "9.0.1",
                     ArtifactFileType.Nupkg,
                     "https://api.nuget.org/v3-flatcontainer/newtonsoft.json/9.0.1/newtonsoft.json.9.0.1.nupkg");
-                var requestCount = HttpMessageHandlerFactory.Responses.Count;
+                var requestCount = HttpMessageHandlerFactory.Responses.Count();
 
                 // Act
                 await reader.ReadAsync();
 
                 // Act
-                Assert.Equal(requestCount, HttpMessageHandlerFactory.Responses.Count);
+                Assert.Equal(requestCount, HttpMessageHandlerFactory.Responses.Count());
             }
 
             [Fact]
@@ -102,13 +102,13 @@ namespace NuGet.Insights
                     "9.0.1",
                     ArtifactFileType.Nupkg,
                     "https://api.nuget.org/v3-flatcontainer/newtonsoft.json/9.0.1/newtonsoft.json.9.0.1.nupkg");
-                var requestCount = HttpMessageHandlerFactory.Responses.Count;
+                var requestCount = HttpMessageHandlerFactory.Responses.Count();
 
                 // Act
                 await reader.ReadAsync();
 
                 // Act
-                Assert.Equal(requestCount, HttpMessageHandlerFactory.Responses.Count);
+                Assert.Equal(requestCount, HttpMessageHandlerFactory.Responses.Count());
             }
 
             public TheGetZipDirectoryReaderAsyncMethod(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

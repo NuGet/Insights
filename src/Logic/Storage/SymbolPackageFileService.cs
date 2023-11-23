@@ -10,6 +10,7 @@ using CommunityToolkit.HighPerformance;
 using Knapcode.MiniZip;
 using MessagePack;
 using Microsoft.Extensions.Options;
+using NuGet.Versioning;
 
 #nullable enable
 
@@ -44,7 +45,7 @@ namespace NuGet.Insights
             await _wideEntityService.DeleteTableAsync(_options.Value.SymbolPackageArchiveTableName);
         }
 
-        public async Task<(ZipDirectory? directory, long size, ILookup<string, string>? headers)> GetZipDirectoryFromLeafItemAsync(ICatalogLeafItem leafItem)
+        public async Task<(ZipDirectory? directory, long size, ILookup<string, string>? headers)> GetZipDirectoryFromLeafItemAsync(IPackageIdentityCommit leafItem)
         {
             var info = await GetOrUpdateInfoFromLeafItemAsync(leafItem);
             if (!info.Available)
@@ -58,9 +59,9 @@ namespace NuGet.Insights
             return (await reader.ReadAsync(), destStream.Length, info.HttpHeaders);
         }
 
-        public async Task<IReadOnlyDictionary<ICatalogLeafItem, SymbolPackageFileInfoV1>> UpdateBatchFromLeafItemsAsync(
+        public async Task<IReadOnlyDictionary<IPackageIdentityCommit, SymbolPackageFileInfoV1>> UpdateBatchFromLeafItemsAsync(
             string id,
-            IReadOnlyCollection<ICatalogLeafItem> leafItems)
+            IReadOnlyCollection<IPackageIdentityCommit> leafItems)
         {
             return await _wideEntityService.UpdateBatchAsync(
                 _options.Value.SymbolPackageArchiveTableName,
@@ -71,20 +72,7 @@ namespace NuGet.Insights
                 DataToOutput);
         }
 
-        public async Task<IReadOnlyDictionary<IPackageIdentityCommit, SymbolPackageFileInfoV1>> UpdateBatchAsync(
-            string id,
-            IReadOnlyCollection<IPackageIdentityCommit> leafItems)
-        {
-            return await _wideEntityService.UpdateBatchAsync(
-                _options.Value.SymbolPackageArchiveTableName,
-                id,
-                leafItems,
-                GetInfoAsync,
-                OutputToData,
-                DataToOutput);
-        }
-
-        public async Task<SymbolPackageFileInfoV1> GetOrUpdateInfoFromLeafItemAsync(ICatalogLeafItem leafItem)
+        public async Task<SymbolPackageFileInfoV1> GetOrUpdateInfoFromLeafItemAsync(IPackageIdentityCommit leafItem)
         {
             return await _wideEntityService.GetOrUpdateInfoAsync(
                 _options.Value.SymbolPackageArchiveTableName,
@@ -94,19 +82,9 @@ namespace NuGet.Insights
                 DataToOutput);
         }
 
-        public async Task<SymbolPackageFileInfoV1> GetOrUpdateInfoAsync(IPackageIdentityCommit item)
+        private async Task<SymbolPackageFileInfoV1> GetInfoFromLeafItemAsync(IPackageIdentityCommit leafItem)
         {
-            return await _wideEntityService.GetOrUpdateInfoAsync(
-                _options.Value.SymbolPackageArchiveTableName,
-                item,
-                GetInfoAsync,
-                OutputToData,
-                DataToOutput);
-        }
-
-        private async Task<SymbolPackageFileInfoV1> GetInfoFromLeafItemAsync(ICatalogLeafItem leafItem)
-        {
-            if (leafItem.Type == CatalogLeafType.PackageDelete)
+            if (leafItem.LeafType == CatalogLeafType.PackageDelete)
             {
                 return MakeDeletedInfo(leafItem);
             }
@@ -118,7 +96,7 @@ namespace NuGet.Insights
         {
             var url = $"{_options.Value.SymbolPackagesContainerBaseUrl.TrimEnd('/')}/" +
                 $"{item.PackageId.ToLowerInvariant()}." +
-                $"{item.ParsePackageVersion().ToNormalizedString().ToLowerInvariant()}.snupkg";
+                $"{NuGetVersion.Parse(item.PackageVersion).ToNormalizedString().ToLowerInvariant()}.snupkg";
 
             using var reader = await _fileDownloader.GetZipDirectoryReaderAsync(
                 item.PackageId,

@@ -85,7 +85,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
-                (var zipDirectory, var size, var headers) = await _packageFileService.GetZipDirectoryAndSizeAsync(leafScan);
+                (var zipDirectory, var size, var headers) = await _packageFileService.GetZipDirectoryAndSizeAsync(leafScan.ToPackageIdentityCommit());
                 if (zipDirectory == null)
                 {
                     // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted record.
