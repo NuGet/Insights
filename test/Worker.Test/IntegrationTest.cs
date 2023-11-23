@@ -269,6 +269,7 @@ namespace NuGet.Insights.Worker
                 ConfigureWorkerSettings = x =>
                 {
                     x.AppendResultStorageBucketCount = 1;
+                    x.RecordCertificateStatus = false;
                     x.DisabledDrivers = CatalogScanCursorService
                         .StartableDriverTypes
                         .Where(x => !CatalogScanService.SupportsBucketRangeProcessing(x))
