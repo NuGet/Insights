@@ -426,6 +426,7 @@ namespace NuGet.Insights.Worker
                 OnlyLatestLeaves = indexScan.OnlyLatestLeaves,
                 Min = indexScan.Min,
                 Max = indexScan.Max,
+                BucketRanges = indexScan.BucketRanges,
                 Url = "https://api.nuget.org/v3/catalog0/page7967.json",
                 Rank = 7967,
             };
@@ -435,6 +436,7 @@ namespace NuGet.Insights.Worker
                 DriverType = driverType,
                 Min = pageScan.Min,
                 Max = pageScan.Max,
+                BucketRanges = pageScan.BucketRanges,
                 PageUrl = pageScan.Url,
                 CommitTimestamp = indexScan.Max,
                 CommitId = "c9c0205b-210b-4540-8ac7-bea3fa61f455",

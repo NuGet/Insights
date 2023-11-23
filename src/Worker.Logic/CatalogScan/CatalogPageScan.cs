@@ -37,6 +37,7 @@ namespace NuGet.Insights.Worker
         public string ParentScanId { get; set; }
         public DateTimeOffset Min { get; set; }
         public DateTimeOffset Max { get; set; }
+        public string BucketRanges { get; set; }
         public string Url { get; set; }
         public int Rank { get; set; }
 

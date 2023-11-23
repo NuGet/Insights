@@ -39,6 +39,7 @@ namespace NuGet.Insights.Worker.ProcessBucketRange
             {
                 Min = min0,
                 Max = max1,
+                BucketRanges = new BucketRange(bucketMin, bucketMax).ToString(),
             };
             await CatalogScanStorageService.InsertAsync(indexScan);
             await CatalogScanStorageService.InitializeLeafScanTableAsync(indexScan.StorageSuffix);
@@ -122,6 +123,7 @@ namespace NuGet.Insights.Worker.ProcessBucketRange
             {
                 Min = min0,
                 Max = max1,
+                BucketRanges = new BucketRange(bucketMin, bucketMax).ToString(),
             };
             await CatalogScanStorageService.InsertAsync(indexScan);
             await CatalogScanStorageService.InitializeLeafScanTableAsync(indexScan.StorageSuffix);
@@ -168,6 +170,7 @@ namespace NuGet.Insights.Worker.ProcessBucketRange
             {
                 Min = min0,
                 Max = max1,
+                BucketRanges = new BucketRange(bucketMin, bucketMax).ToString(),
             };
             await CatalogScanStorageService.InsertAsync(indexScan);
             await CatalogScanStorageService.InitializeLeafScanTableAsync(indexScan.StorageSuffix);

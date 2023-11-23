@@ -578,6 +578,7 @@ namespace NuGet.Insights.Worker
                 State = CatalogPageScanState.Created,
                 Min = scan.Min,
                 Max = scan.Max,
+                BucketRanges = scan.BucketRanges,
                 Url = url,
                 Rank = rank,
             };

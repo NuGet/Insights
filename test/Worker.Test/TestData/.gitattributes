@@ -1,0 +1,4 @@
+*.nuspec binary
+*.json binary
+*.csv binary
+*.md binary

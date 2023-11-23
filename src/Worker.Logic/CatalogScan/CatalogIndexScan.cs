@@ -37,11 +37,11 @@ namespace NuGet.Insights.Worker
         public string CursorName { get; set; }
         public DateTimeOffset Min { get; set; }
         public DateTimeOffset Max { get; set; }
+        public string BucketRanges { get; set; }
         public DateTimeOffset? Started { get; set; }
         public CatalogIndexScanResult? Result { get; set; }
         public DateTimeOffset? Completed { get; set; }
         public bool ContinueUpdate { get; set; }
-        public string BucketRanges { get; set; }
 
         public string PartitionKey { get; set; }
         public string RowKey { get; set; }

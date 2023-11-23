@@ -58,6 +58,7 @@ namespace NuGet.Insights.Worker.ProcessBucketRange
                     PackageVersion = bucketedPackage.PackageVersion,
                     Min = indexScan.Min,
                     Max = indexScan.Max,
+                    BucketRanges = indexScan.BucketRanges,
                 })
                 .ToList();
 

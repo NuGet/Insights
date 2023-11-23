@@ -125,6 +125,7 @@ namespace NuGet.Insights.Worker
                     DriverType = scan.DriverType,
                     Min = scan.Min,
                     Max = scan.Max,
+                    BucketRanges = scan.BucketRanges,
                     Url = x.Url,
                     PageUrl = scan.Url,
                     LeafType = x.Type,
