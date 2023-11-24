@@ -283,32 +283,58 @@ namespace NuGet.Insights.Worker
         public async Task DeleteOldIndexScansAsync(CatalogScanDriverType driverType, string currentScanId)
         {
             var table = await GetIndexScanTableAsync();
+            var oldScansToDelete = await GetOldIndexScansAsync(table, driverType, currentScanId);
+            _logger.LogInformation("Deleting {Count} old catalog index scans.", oldScansToDelete.Count);
+
+            try
+            {
+                var batch = new MutableTableTransactionalBatch(table);
+                foreach (var scan in oldScansToDelete)
+                {
+                    if (batch.Count >= StorageUtility.MaxBatchSize)
+                    {
+                        await batch.SubmitBatchAsync();
+                        batch = new MutableTableTransactionalBatch(table);
+                    }
+
+                    batch.DeleteEntity(scan.PartitionKey, scan.RowKey, scan.ETag);
+                }
+
+                await batch.SubmitBatchIfNotEmptyAsync();
+                return;
+            }
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+            {
+                _logger.LogTransientWarning("An old catalog index scan in the batch was already deleted.");
+            }
+
+            oldScansToDelete = await GetOldIndexScansAsync(table, driverType, currentScanId);
+            foreach (var scan in oldScansToDelete)
+            {
+                try
+                {
+                    await DeleteAsync(scan);
+                }
+                catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+                {
+                    _logger.LogTransientWarning("The old catalog index scan {ScanId} was already deleted.", scan.ScanId);
+                }
+            }
+        }
+
+        private async Task<List<CatalogIndexScan>> GetOldIndexScansAsync(TableClientWithRetryContext table, CatalogScanDriverType driverType, string currentScanId)
+        {
             var oldScans = await table
                 .QueryAsync<CatalogIndexScan>(x => x.PartitionKey == driverType.ToString()
                                                 && x.RowKey.CompareTo(currentScanId) > 0)
                 .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
 
-            var oldScansToDelete = oldScans
+            return oldScans
                 .OrderByDescending(x => x.Created)
                 .Skip(_options.Value.OldCatalogIndexScansToKeep)
                 .OrderBy(x => x.Created)
                 .Where(x => x.State.IsTerminal())
                 .ToList();
-            _logger.LogInformation("Deleting {Count} old catalog index scans.", oldScansToDelete.Count);
-
-            var batch = new MutableTableTransactionalBatch(table);
-            foreach (var scan in oldScansToDelete)
-            {
-                if (batch.Count >= StorageUtility.MaxBatchSize)
-                {
-                    await batch.SubmitBatchAsync();
-                    batch = new MutableTableTransactionalBatch(table);
-                }
-
-                batch.DeleteEntity(scan.PartitionKey, scan.RowKey, scan.ETag);
-            }
-
-            await batch.SubmitBatchIfNotEmptyAsync();
         }
 
         public async Task<CatalogIndexScan> GetIndexScanAsync(CatalogScanDriverType driverType, string scanId)
