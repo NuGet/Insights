@@ -70,11 +70,14 @@ namespace NuGet.Insights
                 {
                     abbreviateLogLevel += ">" + Abbreviate(mappedLevel);
                 }
-                _output.WriteLine($"[{SinceStart.Elapsed.TotalSeconds:F3}] [{abbreviateLogLevel}] {message}");
-                if (exception != null)
-                {
-                    _output.WriteLine(exception.ToString());
-                }
+
+                _output.WriteLine(
+                    "[{0:F3}] [{1}] {2}{3}{4}",
+                    SinceStart.Elapsed.TotalSeconds,
+                    abbreviateLogLevel,
+                    message,
+                    exception is not null ? Environment.NewLine : string.Empty,
+                    exception is not null ? exception : string.Empty);
             }
             catch (InvalidOperationException ex) when (ex.Message.Contains("There is no currently active test.", StringComparison.Ordinal))
             {

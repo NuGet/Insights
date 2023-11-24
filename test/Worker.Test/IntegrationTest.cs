@@ -117,7 +117,7 @@ namespace NuGet.Insights.Worker
                         .TimerAsync(timerInfo: null);
                 }
 
-                await ProcessQueueAsync(() => Task.FromResult(true));
+                await ProcessQueueAsync(async () => (await service.GetStateAsync()).All(x => !x.IsRunning));
 
                 // Assert
                 await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 1);
@@ -325,7 +325,7 @@ namespace NuGet.Insights.Worker
 
                     foreach (var scan in scans)
                     {
-                        await UpdateAsync(scan, workerCount: 8);
+                        await UpdateAsync(scan, parallel: true);
                     }
                 }
 
@@ -358,7 +358,7 @@ namespace NuGet.Insights.Worker
 
                     foreach (var scan in scans)
                     {
-                        await UpdateAsync(scan, workerCount: 8);
+                        await UpdateAsync(scan, parallel: true);
                     }
                 }
 
@@ -477,7 +477,7 @@ namespace NuGet.Insights.Worker
 
                         return false;
                     },
-                    workerCount: 8);
+                    parallel: true);
 
                 // Assert
                 // Make sure all scans completed.

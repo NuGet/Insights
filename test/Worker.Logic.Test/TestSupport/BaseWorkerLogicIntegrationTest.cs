@@ -159,7 +159,7 @@ namespace NuGet.Insights.Worker
             x.CertificateToPackageTableName = $"{StoragePrefix}1c2p1";
             x.CsvRecordTableName = $"{StoragePrefix}1cr1";
             x.CursorTableName = $"{StoragePrefix}1c1";
-            x.ExpandQueueName = $"{StoragePrefix}1eq1";
+            x.ExpandQueueName = $"{StoragePrefix}1xq1";
             x.KustoIngestionTableName = $"{StoragePrefix}1ki1";
             x.LatestPackageLeafTableName = $"{StoragePrefix}1lpl1";
             x.NuGetPackageExplorerContainerName = $"{StoragePrefix}1npe2c1";
@@ -249,7 +249,6 @@ namespace NuGet.Insights.Worker
 
                 if (!run.State.IsTerminal())
                 {
-                    await Task.Delay(TimeSpan.FromMilliseconds(100));
                     return false;
                 }
 
@@ -270,7 +269,6 @@ namespace NuGet.Insights.Worker
 
                 if (!run.State.IsTerminal())
                 {
-                    await Task.Delay(TimeSpan.FromMilliseconds(100));
                     return false;
                 }
 
@@ -291,7 +289,6 @@ namespace NuGet.Insights.Worker
 
                 if (ingestion.State != KustoIngestionState.Complete && ingestion.State != KustoIngestionState.FailedValidation)
                 {
-                    await Task.Delay(TimeSpan.FromMilliseconds(100));
                     return false;
                 }
 
@@ -301,7 +298,7 @@ namespace NuGet.Insights.Worker
             return ingestion;
         }
 
-        protected async Task<CatalogIndexScan> UpdateAsync(CatalogIndexScan indexScan, int workerCount = 1)
+        protected async Task<CatalogIndexScan> UpdateAsync(CatalogIndexScan indexScan, bool parallel = false, TimeSpan? visibilityTimeout = null)
         {
             Assert.NotNull(indexScan);
             await ProcessQueueAsync(async () =>
@@ -310,14 +307,13 @@ namespace NuGet.Insights.Worker
 
                 if (!indexScan.State.IsTerminal())
                 {
-                    await Task.Delay(TimeSpan.FromMilliseconds(100));
                     return false;
                 }
 
                 Assert.Equal(CatalogIndexScanState.Complete, indexScan.State);
 
                 return true;
-            }, workerCount);
+            }, parallel, visibilityTimeout);
 
             ExpectedCatalogIndexScans.Add(indexScan);
 
@@ -331,7 +327,6 @@ namespace NuGet.Insights.Worker
                 var countLowerBound = await TaskStateStorageService.GetCountLowerBoundAsync(taskStateKey.StorageSuffix, taskStateKey.PartitionKey);
                 if (countLowerBound > 0)
                 {
-                    await Task.Delay(TimeSpan.FromMilliseconds(100));
                     return false;
                 }
 
@@ -339,25 +334,31 @@ namespace NuGet.Insights.Worker
             });
         }
 
-        protected async Task ProcessQueueAsync(Func<Task<bool>> isCompleteAsync, int workerCount = 1)
-        {
-            await ProcessQueueAsync(_ => Task.FromResult(true), isCompleteAsync, workerCount);
-        }
-
-        public async Task ProcessQueueAsync(Func<QueueMessage, Task<bool>> shouldProcessAsync, Func<Task<bool>> isCompleteAsync, int workerCount = 1)
+        public async Task ProcessQueueAsync(Func<Task<bool>> isCompleteAsync, bool parallel = false, TimeSpan? visibilityTimeout = null)
         {
             var expandQueue = await WorkerQueueFactory.GetQueueAsync(QueueType.Expand);
             var workerQueue = await WorkerQueueFactory.GetQueueAsync(QueueType.Work);
 
+            var processingMessages = new Dictionary<string, QueueMessage>();
+            var messageLock = new object();
+
+            async Task WaitForCompleteAsync()
+            {
+                while (processingMessages.Count > 0 || !await isCompleteAsync())
+                {
+                    await Task.Delay(TimeSpan.FromMilliseconds(100));
+                }
+            }
+
             async Task<(QueueType queueType, QueueClient queue, QueueMessage message)> ReceiveMessageAsync()
             {
-                QueueMessage message = await expandQueue.ReceiveMessageAsync();
+                QueueMessage message = await expandQueue.ReceiveMessageAsync(visibilityTimeout);
                 if (message != null)
                 {
                     return (QueueType.Expand, expandQueue, message);
                 }
 
-                message = await workerQueue.ReceiveMessageAsync();
+                message = await workerQueue.ReceiveMessageAsync(visibilityTimeout);
                 if (message != null)
                 {
                     return (QueueType.Work, workerQueue, message);
@@ -366,46 +367,106 @@ namespace NuGet.Insights.Worker
                 return (QueueType.Work, null, null);
             };
 
-            bool isComplete;
-            do
+            async Task<bool> ProcessNextMessageAsync()
             {
-                await Task.WhenAll(Enumerable
-                    .Range(0, workerCount)
-                    .Select(async x =>
+                (var queueType, var queue, var message) = await ReceiveMessageAsync();
+                if (message is null)
+                {
+                    return false;
+                }
+
+                var skip = false;
+                lock (messageLock)
+                {
+                    if (!processingMessages.ContainsKey(message.MessageId))
                     {
-                        while (true)
+                        processingMessages.Add(message.MessageId, message);
+                    }
+                    else
+                    {
+                        Logger.LogTransientWarning(
+                            "Skipping message {MessageId} because it's already being processed. It now has {DequeueCount} dequeues. Message body: {Body}",
+                            message.MessageId,
+                            message.DequeueCount,
+                            message.Body.ToString());
+                        skip = true;
+                    }
+                }
+
+                if (skip)
+                {
+                    try
+                    {
+                        await queue.UpdateMessageAsync(message.MessageId, message.PopReceipt, visibilityTimeout: TimeSpan.FromSeconds(5));
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogTransientWarning(ex, "Unable tp update visibility timeout on message {MessageId}.", message.MessageId);
+                    }
+                }
+
+                try
+                {
+                    try
+                    {
+                        using (var scope = Host.Services.CreateScope())
                         {
-                            (var queueType, var queue, var message) = await ReceiveMessageAsync();
-                            if (message != null)
-                            {
-                                if (await shouldProcessAsync(message))
-                                {
-                                    using (var scope = Host.Services.CreateScope())
-                                    {
-                                        await ProcessMessageAsync(scope.ServiceProvider, queueType, message);
-                                    }
-                                }
-
-                                try
-                                {
-                                    await queue.DeleteMessageAsync(message.MessageId, message.PopReceipt);
-                                }
-                                catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound
-                                                                     || ex.Status == (int)HttpStatusCode.BadRequest)
-                                {
-                                    // Ignore, some other thread processed the message and completed it first.
-                                }
-                            }
-                            else
-                            {
-                                break;
-                            }
+                            await ProcessMessageAsync(scope.ServiceProvider, queueType, message);
                         }
-                    }));
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log using a new logger to not trigger the fail fast on error logs.
+                        Output.GetLogger<BaseWorkerLogicIntegrationTest>().LogError(
+                            ex,
+                            "Processing message {MessageId} failed. Message body: {Body}",
+                            message.MessageId,
+                            message.Body.ToString());
+                        throw;
+                    }
+                }
+                finally
+                {
+                    lock (messageLock)
+                    {
+                        processingMessages.Remove(message.MessageId);
+                    }
+                }
 
-                isComplete = await isCompleteAsync();
+                try
+                {
+                    await queue.DeleteMessageAsync(message.MessageId, message.PopReceipt);
+                }
+                catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound
+                                                     || ex.Status == (int)HttpStatusCode.BadRequest)
+                {
+                    // Ignore, some other thread processed the message and completed it first.
+                    Logger.LogTransientWarning(
+                        ex,
+                        "Failed to delete message {MessageId} failed. Another thread probably completed it first. Message body: {Body}",
+                        message.MessageId,
+                        message.Body.ToString());
+                }
+
+                return true;
             }
-            while (!isComplete);
+
+            var waitForCompleteTask = WaitForCompleteAsync();
+            var workersTask = Task.WhenAll(Enumerable
+                .Range(0, parallel ? 8 : 1)
+                .Select(async x =>
+                {
+                    while (!waitForCompleteTask.IsCompleted)
+                    {
+                        if (!await ProcessNextMessageAsync())
+                        {
+                            await Task.Delay(TimeSpan.FromMilliseconds(100));
+                        }
+                    }
+                }));
+
+            await workersTask;
+            await waitForCompleteTask;
         }
 
         protected virtual async Task ProcessMessageAsync(IServiceProvider serviceProvider, QueueType queue, QueueMessage message)

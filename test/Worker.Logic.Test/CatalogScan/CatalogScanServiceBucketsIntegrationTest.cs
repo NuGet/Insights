@@ -367,7 +367,7 @@ namespace NuGet.Insights.Worker
 
                 foreach (var scan in startedScans)
                 {
-                    await UpdateAsync(scan, workerCount: 8);
+                    await UpdateAsync(scan, parallel: true);
                 }
             }
 

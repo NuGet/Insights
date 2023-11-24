@@ -61,11 +61,11 @@ namespace NuGet.Insights.Worker
             Assert.Equal(
                 new[]
                 {
-                    Options.Value.ExpandQueueName,
-                    Options.Value.ExpandQueueName + "-poison",
                     Options.Value.WorkQueueName,
                     Options.Value.WorkQueueName + "-poison",
-                },
+                    Options.Value.ExpandQueueName,
+                    Options.Value.ExpandQueueName + "-poison",
+                }.Order().ToArray(),
                 queueItems.Select(x => x.Name).ToArray());
 
             foreach (var queueItem in queueItems)

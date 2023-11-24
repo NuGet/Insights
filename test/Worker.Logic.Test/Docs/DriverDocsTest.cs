@@ -500,9 +500,7 @@ namespace NuGet.Insights.Worker
 
             if (!await driver.IsAggregateCompleteAsync(indexScan))
             {
-                await testExecution.ProcessQueueAsync(
-                    m => Task.FromResult(true),
-                    () => driver.IsAggregateCompleteAsync(indexScan));
+                await testExecution.ProcessQueueAsync(() => driver.IsAggregateCompleteAsync(indexScan));
             }
 
             await UpdateIntermediateContainers();
