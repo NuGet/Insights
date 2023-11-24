@@ -543,8 +543,16 @@ namespace NuGet.Insights.Worker
                     await _catalogScanService.UpdateAllAsync(scan.Max);
                 }
 
-                // Delete old scans
-                await _storageService.DeleteOldIndexScansAsync(scan.DriverType, scan.ScanId);
+                // Delete old scans if this scan has no parents. If this scan has a parent it will be cleaned up by its parent instead.
+                if (!scan.ParentDriverType.HasValue)
+                {
+                    if (scan.ParentScanId is not null)
+                    {
+                        throw new InvalidOperationException("The parent scan ID is set but there is not parent driver type.");
+                    }
+
+                    await _storageService.DeleteOldIndexScansAsync(scan.DriverType, scan.ScanId);
+                }
 
                 _logger.LogInformation("The catalog scan is complete.");
                 await CompleteAsync(scan);
