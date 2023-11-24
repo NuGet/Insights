@@ -15,6 +15,7 @@ namespace NuGet.Insights.Worker
     public class CatalogLeafScanMessageProcessor : IBatchMessageProcessor<CatalogLeafScanMessage>
     {
         private const int MaxAttempts = 10;
+        private static readonly TimeSpan TryAgainLaterDuration = TimeSpan.FromMinutes(1);
 
         private readonly ICatalogScanDriverFactory _driverFactory;
         private readonly CatalogScanStorageService _storageService;
@@ -67,7 +68,7 @@ namespace NuGet.Insights.Worker
 
                     if (batchDriver != null)
                     {
-                        await ProcessBatchAsync(batchDriver, dequeueCount, failed, tryAgainLater, toProcess, throwOnException);
+                        await ProcessBatchAsync(driverType, batchDriver, dequeueCount, failed, tryAgainLater, toProcess, throwOnException);
                     }
                     else
                     {
@@ -230,6 +231,7 @@ namespace NuGet.Insights.Worker
         }
 
         private async Task ProcessBatchAsync(
+            CatalogScanDriverType driverType,
             ICatalogLeafScanBatchDriver batchDriver,
             long dequeueCount,
             List<CatalogLeafScanMessage> failed,
@@ -237,19 +239,74 @@ namespace NuGet.Insights.Worker
             List<(CatalogLeafScanMessage Message, CatalogLeafScan Scan)> toProcess,
             bool throwOnException)
         {
-            _logger.LogInformation("Attempting batch of {Count} catalog leaf scans.", toProcess.Count);
+            _logger.LogInformation("Starting batch of {Count} {DriverType} catalog leaf scans.", toProcess.Count, driverType);
 
-            // Increment the attempt counter for all scans
             var scans = new List<CatalogLeafScan>();
             var scanToMessage = new Dictionary<CatalogLeafScan, CatalogLeafScanMessage>(ReferenceEqualityComparer<CatalogLeafScan>.Instance);
+            var attempted = new HashSet<CatalogLeafScan>(ReferenceEqualityComparer<CatalogLeafScan>.Instance);
             foreach ((var message, var scan) in toProcess)
             {
                 scans.Add(scan);
                 scanToMessage.Add(scan, message);
-                StartAttempt(scan, dequeueCount);
             }
 
-            await _storageService.ReplaceAsync(scans);
+            List<CatalogLeafScan> TryAgainLater(IReadOnlyDictionary<TimeSpan, IReadOnlyList<CatalogLeafScan>> notBeforeToScans)
+            {
+                var allTryAgainLaterScans = new List<CatalogLeafScan>();
+                foreach ((var notBefore, var tryAgainLaterScans) in notBeforeToScans)
+                {
+                    foreach (var scan in tryAgainLaterScans)
+                    {
+                        allTryAgainLaterScans.Add(scan);
+                        tryAgainLater.Add((scanToMessage[scan], scan, notBefore));
+                        scanToMessage.Remove(scan);
+                        if (attempted.Remove(scan))
+                        {
+                            ResetAttempt(scan);
+                        }
+                    }
+                }
+
+                return allTryAgainLaterScans;
+            }
+
+            async Task<bool> UpdateCatalogLeafScansAsync(IReadOnlyList<CatalogLeafScan> scans, Func<IReadOnlyList<CatalogLeafScan>, Task> setStorageAsync)
+            {
+                if (scans.Count == 0)
+                {
+                    return true;
+                }
+
+                try
+                {
+                    await setStorageAsync(scans);
+                    return true;
+                }
+                catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+                {
+                    _logger.LogTransientWarning("Another thread already completed one of the catalog leaf scans in the batch. Trying again later.");
+                    TryAgainLater(new Dictionary<TimeSpan, IReadOnlyList<CatalogLeafScan>> { { TryAgainLaterDuration, scans } });
+                    return false;
+                }
+                catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.PreconditionFailed)
+                {
+                    _logger.LogTransientWarning("Another thread is already processing one of the catalog leaf scans in the batch. Trying again later.");
+                    TryAgainLater(new Dictionary<TimeSpan, IReadOnlyList<CatalogLeafScan>> { { TryAgainLaterDuration, scans } });
+                    return false;
+                }
+            }
+
+            // Increment the attempt counter for all scans
+            foreach (var scan in scans)
+            {
+                StartAttempt(scan, dequeueCount);
+                attempted.Add(scan);
+            }
+
+            if (!await UpdateCatalogLeafScansAsync(scans, _storageService.ReplaceAsync))
+            {
+                return;
+            }
 
             // Execute the batch logic
             BatchMessageProcessorResult<CatalogLeafScan> result;
@@ -265,17 +322,7 @@ namespace NuGet.Insights.Worker
             }
 
             // Reduce the attempt counter for all "try again later" scans and remove them from the set to delete (complete)
-            var allTryAgainLaterScans = new List<CatalogLeafScan>();
-            foreach ((var notBefore, var tryAgainLaterScans) in result.TryAgainLater)
-            {
-                foreach (var scan in tryAgainLaterScans)
-                {
-                    allTryAgainLaterScans.Add(scan);
-                    tryAgainLater.Add((scanToMessage[scan], scan, notBefore));
-                    scanToMessage.Remove(scan);
-                    ResetAttempt(scan);
-                }
-            }
+            var allTryAgainLaterScans = TryAgainLater(result.TryAgainLater);
 
             // Remove failed scans from the set to delete (complete)
             foreach (var scan in result.Failed)
@@ -284,17 +331,11 @@ namespace NuGet.Insights.Worker
                 scanToMessage.Remove(scan);
             }
 
-            // Delete all successful scans
-            await _storageService.DeleteAsync(scanToMessage.Keys);
-
             // Update the "try again later" scans
-            await _storageService.ReplaceAsync(allTryAgainLaterScans);
-        }
+            await UpdateCatalogLeafScansAsync(allTryAgainLaterScans, _storageService.ReplaceAsync);
 
-        private static bool Matches(CatalogLeafScan scan, CatalogLeafScan newScan)
-        {
-            return newScan.AttemptCount == scan.AttemptCount
-                                        && newScan.NextAttempt == scan.NextAttempt;
+            // Delete all successful scans
+            await UpdateCatalogLeafScansAsync(scanToMessage.Keys.ToList(), _storageService.DeleteAsync);
         }
 
         private async Task ProcessOneByOneAsync(
@@ -309,37 +350,65 @@ namespace NuGet.Insights.Worker
                 // Rebuild the driver for each message, to minimize interactions.
                 var nonBatchDriver = _driverFactory.CreateNonBatchDriver(scan.DriverType);
 
-                _logger.LogInformation("Attempting catalog leaf scan.");
+                _logger.LogInformation("Starting {DriverType} catalog leaf scan for {Id} {Version}.", scan.DriverType, scan.PackageId, scan.PackageVersion);
+
+                async Task<bool> UpdateCatalogLeafScanAsync(Func<CatalogLeafScan, Task> setStorageAsync)
+                {
+                    try
+                    {
+                        await setStorageAsync(scan);
+                        return true;
+                    }
+                    catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+                    {
+                        _logger.LogTransientWarning("Another thread already completed catalog leaf scan for {Id} {Version}.", scan.PackageId, scan.PackageVersion);
+                        return false;
+                    }
+                    catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.PreconditionFailed)
+                    {
+                        _logger.LogTransientWarning("Another thread is already processing catalog leaf scan for {Id} {Version}. Trying again later.", scan.PackageId, scan.PackageVersion);
+                        tryAgainLater.Add((message, scan, TryAgainLaterDuration));
+                        return false;
+                    }
+                }
 
                 // Increment the attempt counter for the scan
                 StartAttempt(scan, dequeueCount);
-                await _storageService.ReplaceAsync(scan);
+                if (!await UpdateCatalogLeafScanAsync(_storageService.ReplaceAsync))
+                {
+                    continue;
+                }
 
                 // Execute the non-batch logic
+                DriverResult result;
                 try
                 {
-                    var result = await nonBatchDriver.ProcessLeafAsync(scan);
-
-                    switch (result.Type)
-                    {
-                        case DriverResultType.Success:
-                            _logger.LogInformation("Completed catalog leaf scan.");
-                            await _storageService.DeleteAsync(scan);
-                            break;
-                        case DriverResultType.TryAgainLater:
-                            _logger.LogInformation("Catalog leaf scan will be tried again later.");
-                            ResetAttempt(scan);
-                            await _storageService.ReplaceAsync(scan);
-                            tryAgainLater.Add((message, scan, TimeSpan.FromMinutes(1)));
-                            break;
-                        default:
-                            throw new NotImplementedException();
-                    }
+                    result = await nonBatchDriver.ProcessLeafAsync(scan);
                 }
                 catch (Exception ex) when (!throwOnException)
                 {
                     _logger.LogError(ex, "Processing a catalog leaf scan failed for {Id} {Version}.", scan.PackageId, scan.PackageVersion);
                     failed.Add(message);
+                    continue;
+                }
+
+                // Update storage with respect to the driver result
+                switch (result.Type)
+                {
+                    case DriverResultType.Success:
+                        _logger.LogInformation("Completed catalog leaf scan.");
+                        await UpdateCatalogLeafScanAsync(_storageService.DeleteAsync);
+                        break;
+                    case DriverResultType.TryAgainLater:
+                        _logger.LogInformation("Catalog leaf scan will be tried again later.");
+                        ResetAttempt(scan);
+                        if (await UpdateCatalogLeafScanAsync(_storageService.ReplaceAsync))
+                        {
+                            tryAgainLater.Add((message, scan, TryAgainLaterDuration));
+                        }
+                        break;
+                    default:
+                        throw new NotImplementedException();
                 }
             }
         }

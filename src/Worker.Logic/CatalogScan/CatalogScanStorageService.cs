@@ -223,7 +223,7 @@ namespace NuGet.Insights.Worker
             }
             catch (RequestFailedException ex) when (ex.Status > 0)
             {
-                _logger.LogWarning(
+                _logger.LogTransientWarning(
                     ex,
                     "Batch failed due to HTTP {Status}, with storage suffix '{StorageSuffix}', first partition key '{PartitionKey}', first row key '{RowKey}'.",
                     ex.Status,
@@ -493,7 +493,7 @@ namespace NuGet.Insights.Worker
             }
             catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
             {
-                _logger.LogWarning(
+                _logger.LogTransientWarning(
                     ex,
                     "Catalog leaf scan with storage suffix {StorageSuffix}, partition key {PartitionKey}, and row key {RowKey} was already deleted.",
                     leafScan.StorageSuffix,
