@@ -182,19 +182,15 @@ namespace NuGet.Insights.Worker
 
                     return result;
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (!throwOnException)
                 {
                     // Log warning instead of error as to not trigger integration testing fail-fast.
-                    _logger.LogWarning("An exception occurred." + Environment.NewLine + "{ExceptionString}", ex.ToString());
-
-                    if (throwOnException)
-                    {
-                        throw;
-                    }
-                    else
-                    {
-                        return new BatchMessageProcessorResult<object>(messages);
-                    }
+                    _logger.LogWarning(
+                        ex,
+                        "An exception was thrown while processing a batch of {Count} messages with schema {SchemaName}.",
+                        messages.Count,
+                        schemaName);
+                    return new BatchMessageProcessorResult<object>(messages);
                 }
                 finally
                 {
@@ -227,19 +223,14 @@ namespace NuGet.Insights.Worker
                         await (Task)processAsyncMethod.Invoke(processor, new object[] { message, dequeueCount });
                         success = true;
                     }
-                    catch (Exception ex)
+                    catch (Exception ex) when (!throwOnException)
                     {
                         // Log warning instead of error as to not trigger integration testing fail-fast.
-                        _logger.LogWarning("An exception occurred." + Environment.NewLine + "{ExceptionString}", ex.ToString());
-
-                        if (throwOnException)
-                        {
-                            throw;
-                        }
-                        else
-                        {
-                            failed.Add(message);
-                        }
+                        _logger.LogWarning(
+                            ex,
+                            "An exception was thrown while processing a message with schema {SchemaName}.",
+                            schemaName);
+                        failed.Add(message);
                     }
                     finally
                     {

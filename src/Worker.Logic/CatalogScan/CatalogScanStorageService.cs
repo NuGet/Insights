@@ -360,19 +360,19 @@ namespace NuGet.Insights.Worker
             var runtime = scan.Started.HasValue ? (scan.Completed ?? DateTimeOffset.UtcNow) - scan.Started.Value : TimeSpan.Zero;
 
             _telemetryClient.TrackMetric(
-                $"{nameof(CatalogIndexScan)}.RuntimeMinutes",
+                "CatalogIndexScan.RuntimeMinutes",
                 runtime.TotalMinutes,
                 new Dictionary<string, string>
                 {
                     { nameof(scan.BucketRanges), scan.BucketRanges },
                     { nameof(scan.Completed), scan.Completed?.ToString("O") },
-                    { nameof(scan.ContinueUpdate), scan.ContinueUpdate.ToString() },
+                    { nameof(scan.ContinueUpdate), scan.ContinueUpdate ? "true" : "false" },
                     { nameof(scan.Created), scan.Created.ToString("O") },
                     { nameof(scan.CursorName), scan.CursorName },
                     { nameof(scan.DriverType), scan.DriverType.ToString() },
                     { nameof(scan.Max), scan.Max.ToString("O") },
                     { nameof(scan.Min), scan.Min.ToString("O") },
-                    { nameof(scan.OnlyLatestLeaves), scan.OnlyLatestLeaves.ToString() },
+                    { nameof(scan.OnlyLatestLeaves), scan.OnlyLatestLeaves ? "true" : "false" },
                     { nameof(scan.ParentDriverType), scan.ParentDriverType?.ToString() },
                     { nameof(scan.ParentScanId), scan.ParentScanId },
                     { nameof(scan.Result), scan.Result?.ToString() },

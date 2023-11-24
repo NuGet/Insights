@@ -289,20 +289,17 @@ namespace NuGet.Insights.Worker
 
         private async Task<CatalogScanServiceResult> UpdateAsync(CatalogScanDriverType driverType, DateTimeOffset? max, bool? onlyLatestLeaves, bool continueWithDependents)
         {
-            _telemetryClient.TrackMetric(
-                "CatalogScan.Update",
-                1,
-                new Dictionary<string, string> { { "DriverType", driverType.ToString() } });
-
+            CatalogScanServiceResult result;
             switch (driverType)
             {
                 case CatalogScanDriverType.CatalogDataToCsv:
-                    return await UpdateAsync(
+                    result = await UpdateAsync(
                         driverType,
                         onlyLatestLeaves,
                         CatalogClient.NuGetOrgMin,
                         max,
                         continueWithDependents);
+                    break;
 
                 case CatalogScanDriverType.BuildVersionSet:
                 case CatalogScanDriverType.LoadBucketedPackage:
@@ -330,16 +327,36 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.PackageSignatureToCsv:
                 case CatalogScanDriverType.PackageVersionToCsv:
                 case CatalogScanDriverType.SymbolPackageArchiveToCsv:
-                    return await UpdateAsync(
+                    result = await UpdateAsync(
                         driverType,
                         onlyLatestLeaves,
                         min: CatalogClient.NuGetOrgMinDeleted,
                         max,
                         continueWithDependents);
+                    break;
 
                 default:
                     throw new NotSupportedException();
             }
+
+            EmitResultMetric(driverType, result);
+            return result;
+        }
+
+        private void EmitResultMetric(CatalogScanDriverType driverType, CatalogScanServiceResult result)
+        {
+            _telemetryClient.TrackMetric(
+                "CatalogScanService.Update",
+                1,
+                new Dictionary<string, string>
+                {
+                    { "DriverType", driverType.ToString() },
+                    { "ResultType", result.Type.ToString() },
+                    { "ScanId", result.Scan?.ScanId.ToString() },
+                    { "RangeType", result.Scan?.BucketRanges is not null ? "Bucket" : "Commit" },
+                    { "ParentDriverType", result.Scan?.ParentDriverType?.ToString() },
+                    { "ParentScanId", result.Scan?.ParentScanId },
+                });
         }
 
         public async Task<CatalogIndexScan> GetOrStartFindLatestCatalogLeafScanAsync(
@@ -391,6 +408,17 @@ namespace NuGet.Insights.Worker
             string scanId,
             string storageSuffix,
             CatalogScanDriverType driverType,
+            IReadOnlyCollection<int> buckets)
+        {
+            var result = await UpdateInternalAsync(scanId, storageSuffix, driverType, buckets);
+            EmitResultMetric(driverType, result);
+            return result;
+        }
+
+        public async Task<CatalogScanServiceResult> UpdateInternalAsync(
+            string scanId,
+            string storageSuffix,
+            CatalogScanDriverType driverType,
             IEnumerable<int> buckets)
         {
             if (!SupportsBucketRangeProcessing(driverType))
@@ -404,7 +432,7 @@ namespace NuGet.Insights.Worker
                 return new CatalogScanServiceResult(CatalogScanServiceResultType.AlreadyRunning, dependencyName: null, existing);
             }
 
-            var disabledOrStarted = await CheckForDisabledOrStartAsync(driverType);
+            var disabledOrStarted = await CheckForDisabledOrStartedAsync(driverType);
             if (disabledOrStarted is not null)
             {
                 return disabledOrStarted;
@@ -435,7 +463,7 @@ namespace NuGet.Insights.Worker
                     return new CatalogScanServiceResult(CatalogScanServiceResultType.UnavailableLease, dependencyName: null, scan: null);
                 }
 
-                disabledOrStarted = await CheckForDisabledOrStartAsync(driverType);
+                disabledOrStarted = await CheckForDisabledOrStartedAsync(driverType);
                 if (disabledOrStarted is not null)
                 {
                     return disabledOrStarted;
@@ -494,7 +522,7 @@ namespace NuGet.Insights.Worker
                 onlyLatestLeaves = onlyLatestLeavesSupport.GetValueOrDefault(true);
             }
 
-            var disabledOrStarted = await CheckForDisabledOrStartAsync(driverType);
+            var disabledOrStarted = await CheckForDisabledOrStartedAsync(driverType);
             if (disabledOrStarted is not null)
             {
                 return disabledOrStarted;
@@ -560,7 +588,7 @@ namespace NuGet.Insights.Worker
                     return new CatalogScanServiceResult(CatalogScanServiceResultType.UnavailableLease, dependencyName: null, scan: null);
                 }
 
-                disabledOrStarted = await CheckForDisabledOrStartAsync(driverType);
+                disabledOrStarted = await CheckForDisabledOrStartedAsync(driverType);
                 if (disabledOrStarted is not null)
                 {
                     return disabledOrStarted;
@@ -584,7 +612,7 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        private async Task<CatalogScanServiceResult> CheckForDisabledOrStartAsync(CatalogScanDriverType driverType)
+        private async Task<CatalogScanServiceResult> CheckForDisabledOrStartedAsync(CatalogScanDriverType driverType)
         {
             if (!IsEnabled(driverType))
             {

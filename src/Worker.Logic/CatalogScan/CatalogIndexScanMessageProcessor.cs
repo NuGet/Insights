@@ -516,11 +516,24 @@ namespace NuGet.Insights.Worker
                 // Update the cursor, now that the work is done.
                 if (scan.CursorName != CatalogScanService.NoCursor)
                 {
+                    if (scan.BucketRanges is not null)
+                    {
+                        throw new InvalidOperationException("A cursor update is not allow when using bucket ranges.");
+                    }
+
                     var cursor = await _cursorStorageService.GetOrCreateAsync(scan.CursorName);
-                    if (cursor.Value <= scan.Max)
+                    if (cursor.Value < scan.Max)
                     {
                         cursor.Value = scan.Max;
                         await _cursorStorageService.UpdateAsync(cursor);
+                    }
+                    else
+                    {
+                        _logger.LogTransientWarning(
+                            "The cursor {CursorName} already has a value of {ExistingValue:O}. Skipping update an update of {ScanValue}.",
+                            cursor.Name,
+                            cursor.Value,
+                            scan.Max);
                     }
                 }
 
