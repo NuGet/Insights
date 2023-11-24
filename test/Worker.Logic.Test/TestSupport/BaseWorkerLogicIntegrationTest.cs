@@ -330,8 +330,27 @@ namespace NuGet.Insights.Worker
                     return false;
                 }
 
+                if (await AnyMessagesAsync())
+                {
+                    return false;
+                }
+
                 return true;
             });
+        }
+
+        protected async Task<bool> AnyMessagesAsync()
+        {
+            var workerQueue = await WorkerQueueFactory.GetQueueAsync(QueueType.Work);
+            QueueProperties workerProperties = await workerQueue.GetPropertiesAsync();
+            if (workerProperties.ApproximateMessagesCount > 0)
+            {
+                return true;
+            }
+
+            var expandQueue = await WorkerQueueFactory.GetQueueAsync(QueueType.Expand);
+            QueueProperties expandProperties = await expandQueue.GetPropertiesAsync();
+            return expandProperties.ApproximateMessagesCount > 0;
         }
 
         public async Task ProcessQueueAsync(Func<Task<bool>> isCompleteAsync, bool parallel = false, TimeSpan? visibilityTimeout = null)

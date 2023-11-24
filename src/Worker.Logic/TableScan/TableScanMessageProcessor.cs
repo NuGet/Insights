@@ -148,7 +148,7 @@ namespace NuGet.Insights.Worker
                     throw new NotImplementedException();
             }
 
-            // Run as many non-async steps as possible to save needless enqueues but only perform on batch of
+            // Run as many non-async steps as possible to save needless enqueues but only perform one batch of
             // asynchronous steps to reduce runtime.
             var currentSteps = new List<TablePrefixScanStep> { currentStep };
             var enqueueSteps = new List<TablePrefixScanStep>();

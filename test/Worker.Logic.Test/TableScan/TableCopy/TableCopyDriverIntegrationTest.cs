@@ -88,6 +88,7 @@ namespace NuGet.Insights.Worker.TableCopy
                 Assert.True(allSourceEntities.Count > sourceEntities.Count);
             }
 
+            Assert.Equal(sourceEntities.Count, destinationEntities.Count);
             Assert.All(sourceEntities.Zip(destinationEntities), pair =>
             {
                 pair.First.Timestamp = default;
