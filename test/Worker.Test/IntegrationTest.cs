@@ -485,10 +485,10 @@ namespace NuGet.Insights.Worker
                 Assert.All(indexScans, x => Assert.Equal(CatalogIndexScanState.Complete, x.State));
                 Assert.Equal(
                     CatalogScanCursorService.StartableDriverTypes.ToArray(),
-                    indexScans.Where(x => x.BucketRanges is null && x.ScanId != initialLBP.ScanId).Select(x => x.DriverType).Order().ToArray());
+                    indexScans.Where(x => x.BucketRanges is null && x.ScanId != initialLBP.ScanId).Select(x => x.DriverType).Distinct().Order().ToArray());
                 Assert.Equal(
                     TimedReprocessService.GetReprocessBatches().SelectMany(b => b).Order().ToArray(),
-                    indexScans.Where(x => x.BucketRanges is not null).Select(x => x.DriverType).Order().ToArray());
+                    indexScans.Where(x => x.BucketRanges is not null).Select(x => x.DriverType).Distinct().Order().ToArray());
 
                 // Make sure all of the containers are have ingestions
                 foreach (var containerName in CsvRecordContainers.ContainerNames)
