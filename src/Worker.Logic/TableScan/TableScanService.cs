@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Azure.Data.Tables;
 using Microsoft.Extensions.Options;
 using NuGet.Insights.Worker.EnqueueCatalogLeafScan;
-using NuGet.Insights.Worker.ProcessBucketRange;
+using NuGet.Insights.Worker.CopyBucketRange;
 using NuGet.Insights.Worker.LoadBucketedPackage;
 using NuGet.Insights.Worker.TableCopy;
 
@@ -52,13 +52,12 @@ namespace NuGet.Insights.Worker
                 }).AsJsonElement());
         }
 
-        public async Task StartProcessingBucketRangeAsync(
+        public async Task StartCopyBucketRangeAsync(
             TaskStateKey taskStateKey,
             int minBucketIndex,
             int maxBucketIndex,
             CatalogScanDriverType driverType,
             string scanId,
-            bool enqueue,
             int takeCount = StorageUtility.MaxTakeCount)
         {
             var partitionKeyLowerBound = minBucketIndex > 0 ? BucketedPackage.GetBucketString(minBucketIndex - 1) : null;
@@ -66,7 +65,7 @@ namespace NuGet.Insights.Worker
 
             await StartTableScanAsync<BucketedPackage>(
                 taskStateKey,
-                TableScanDriverType.ProcessBucketRange,
+                TableScanDriverType.CopyBucketRange,
                 _options.Value.BucketedPackageTableName,
                 TableScanStrategy.PrefixScan,
                 takeCount,
@@ -76,11 +75,10 @@ namespace NuGet.Insights.Worker
                 partitionKeyUpperBound: partitionKeyUpperBound,
                 segmentsPerFirstPrefix: 1,
                 segmentsPerSubsequentPrefix: 1,
-                _serializer.Serialize(new ProcessBucketRangeParameters
+                _serializer.Serialize(new CopyBucketRangeParameters
                 {
                     DriverType = driverType,
                     ScanId = scanId,
-                    Enqueue = enqueue,
                 }).AsJsonElement());
         }
 

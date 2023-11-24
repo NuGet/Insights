@@ -17,10 +17,10 @@ namespace NuGet.Insights.Worker
 {
     public class CatalogScanServiceIntegrationTest : BaseWorkerLogicIntegrationTest
     {
-        private const string CatalogScanService_UpdateWithBucketsDir = nameof(CatalogScanService_UpdateWithBuckets);
+        private const string CatalogScanService_UpdateWithBucketRangesDir = nameof(CatalogScanService_UpdateWithBucketRanges);
 
         [Fact]
-        public async Task CatalogScanService_UpdateWithBuckets()
+        public async Task CatalogScanService_UpdateWithBucketRanges()
         {
             // Arrange
             ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
@@ -53,7 +53,7 @@ namespace NuGet.Insights.Worker
             Assert.Equal(max1, cursorAfter.Value);
             Assert.Equal(cursorBefore.ETag, cursorAfter.ETag);
 
-            var csvContent = await AssertCompactAsync<PackageSignature>(Options.Value.PackageSignatureContainerName, CatalogScanService_UpdateWithBucketsDir, Step1, 0);
+            var csvContent = await AssertCompactAsync<PackageSignature>(Options.Value.PackageSignatureContainerName, CatalogScanService_UpdateWithBucketRangesDir, Step1, 0);
 
             var bucketedPackages = (await GetEntitiesAsync<BucketedPackage>(Options.Value.BucketedPackageTableName))
                 .Where(x => buckets.Contains(x.GetBucket()))

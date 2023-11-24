@@ -7,6 +7,6 @@ namespace NuGet.Insights.Worker
     {
         TableCopy,
         EnqueueCatalogLeafScans,
-        ProcessBucketRange,
+        CopyBucketRange,
     }
 }

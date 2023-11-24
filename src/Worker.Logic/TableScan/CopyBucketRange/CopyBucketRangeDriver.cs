@@ -7,25 +7,22 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using NuGet.Insights.Worker.LoadBucketedPackage;
 
-namespace NuGet.Insights.Worker.ProcessBucketRange
+namespace NuGet.Insights.Worker.CopyBucketRange
 {
-    public class ProcessBucketRangeDriver : ITableScanDriver<BucketedPackage>
+    public class CopyBucketRangeDriver : ITableScanDriver<BucketedPackage>
     {
         private readonly BucketedPackageService _bucketedPackageService;
         private readonly SchemaSerializer _serializer;
         private readonly CatalogScanStorageService _storageService;
-        private readonly CatalogScanExpandService _expandService;
 
-        public ProcessBucketRangeDriver(
+        public CopyBucketRangeDriver(
             BucketedPackageService bucketedPackageService,
             SchemaSerializer schemaSerializer,
-            CatalogScanStorageService storageService,
-            CatalogScanExpandService expandService)
+            CatalogScanStorageService storageService)
         {
             _bucketedPackageService = bucketedPackageService;
             _serializer = schemaSerializer;
             _storageService = storageService;
-            _expandService = expandService;
         }
 
         public IList<string> SelectColumns => null;
@@ -37,7 +34,7 @@ namespace NuGet.Insights.Worker.ProcessBucketRange
 
         public async Task ProcessEntitySegmentAsync(string tableName, JsonElement? parameters, IReadOnlyList<BucketedPackage> entities)
         {
-            var deserializedParameters = (ProcessBucketRangeParameters)_serializer.Deserialize(parameters.Value).Data;
+            var deserializedParameters = (CopyBucketRangeParameters)_serializer.Deserialize(parameters.Value).Data;
 
             var indexScan = await _storageService.GetIndexScanAsync(deserializedParameters.DriverType, deserializedParameters.ScanId);
 
@@ -63,11 +60,6 @@ namespace NuGet.Insights.Worker.ProcessBucketRange
                 .ToList();
 
             await _storageService.InsertMissingAsync(leafScans, allowExtra: true);
-
-            if (deserializedParameters.Enqueue)
-            {
-                await _expandService.EnqueueLeafScansAsync(leafScans);
-            }
         }
     }
 }

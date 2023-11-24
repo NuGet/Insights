@@ -3,17 +3,14 @@
 
 using System.Text.Json.Serialization;
 
-namespace NuGet.Insights.Worker.ProcessBucketRange
+namespace NuGet.Insights.Worker.CopyBucketRange
 {
-    public class ProcessBucketRangeParameters
+    public class CopyBucketRangeParameters
     {
         [JsonPropertyName("t")]
         public CatalogScanDriverType DriverType { get; set; }
 
         [JsonPropertyName("i")]
         public string ScanId { get; set; }
-
-        [JsonPropertyName("e")]
-        public bool Enqueue { get; set; }
     }
 }

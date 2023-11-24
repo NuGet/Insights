@@ -13,16 +13,15 @@ using NuGet.Insights.Worker.LoadSymbolPackageArchive;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace NuGet.Insights.Worker.ProcessBucketRange
+namespace NuGet.Insights.Worker.CopyBucketRange
 {
-    public class ProcessBucketRangeDriverIntegrationTest : BaseWorkerLogicIntegrationTest
+    public class CopyBucketRangeDriverIntegrationTest : BaseWorkerLogicIntegrationTest
     {
-        private const string ProcessBucketRange_WithoutEnqueueDir = nameof(ProcessBucketRange_WithoutEnqueue);
-        private const string ProcessBucketRange_WithMultiplePartitionKeyWritesDir = nameof(ProcessBucketRange_WithMultiplePartitionKeyWrites);
-        private const string ProcessBucketRange_WithEnqueueDir = nameof(ProcessBucketRange_WithEnqueue);
+        private const string CopyBucketRangeDir = nameof(CopyBucketRange);
+        private const string CopyBucketRange_WithMultiplePartitionKeyWritesDir = nameof(CopyBucketRange_WithMultiplePartitionKeyWrites);
 
         [Fact]
-        public async Task ProcessBucketRange_WithoutEnqueue()
+        public async Task CopyBucketRange()
         {
             var min0 = DateTimeOffset.Parse("2020-11-27T20:58:24.1558179Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2020-11-27T23:41:30.2461308Z", CultureInfo.InvariantCulture);
@@ -50,13 +49,12 @@ namespace NuGet.Insights.Worker.ProcessBucketRange
             await TaskStateStorageService.AddAsync(taskStateKey);
 
             // Act
-            await TableScanService.StartProcessingBucketRangeAsync(
+            await TableScanService.StartCopyBucketRangeAsync(
                 taskStateKey,
                 bucketMin,
                 bucketMax,
                 indexScan.DriverType,
-                indexScan.ScanId,
-                enqueue: false);
+                indexScan.ScanId);
             var createdBefore = DateTimeOffset.UtcNow;
             await UpdateAsync(taskStateKey);
             var createdAfter = DateTimeOffset.UtcNow;
@@ -101,12 +99,12 @@ namespace NuGet.Insights.Worker.ProcessBucketRange
 
             await AssertEntityOutputAsync<CatalogLeafScan>(
                 leafScanTable,
-                Path.Combine(ProcessBucketRange_WithoutEnqueueDir, Step1),
+                Path.Combine(CopyBucketRangeDir, Step1),
                 cleanEntity: x => x.Created = DateTimeOffset.Parse("2023-01-03T00:00:00Z", CultureInfo.InvariantCulture));
         }
 
         [Fact]
-        public async Task ProcessBucketRange_WithMultiplePartitionKeyWrites()
+        public async Task CopyBucketRange_WithMultiplePartitionKeyWrites()
         {
             var min0 = DateTimeOffset.Parse("2023-04-20T15:28:51.3459132Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2023-04-20T15:29:24.2230035Z", CultureInfo.InvariantCulture);
@@ -134,13 +132,12 @@ namespace NuGet.Insights.Worker.ProcessBucketRange
             await TaskStateStorageService.AddAsync(taskStateKey);
 
             // Act
-            await TableScanService.StartProcessingBucketRangeAsync(
+            await TableScanService.StartCopyBucketRangeAsync(
                 taskStateKey,
                 bucketMin,
                 bucketMax,
                 indexScan.DriverType,
                 indexScan.ScanId,
-                enqueue: false,
                 takeCount: 1);
             await UpdateAsync(taskStateKey);
 
@@ -148,77 +145,8 @@ namespace NuGet.Insights.Worker.ProcessBucketRange
             var leafScanTable = await CatalogScanStorageService.GetLeafScanTableAsync(indexScan.StorageSuffix);
             await AssertEntityOutputAsync<CatalogLeafScan>(
                 leafScanTable,
-                Path.Combine(ProcessBucketRange_WithMultiplePartitionKeyWritesDir, Step1),
+                Path.Combine(CopyBucketRange_WithMultiplePartitionKeyWritesDir, Step1),
                 cleanEntity: x => x.Created = DateTimeOffset.Parse("2023-01-03T00:00:00Z", CultureInfo.InvariantCulture));
-        }
-
-        [Fact]
-        public async Task ProcessBucketRange_WithEnqueue()
-        {
-            var min0 = DateTimeOffset.Parse("2020-11-27T20:58:24.1558179Z", CultureInfo.InvariantCulture);
-            var max1 = DateTimeOffset.Parse("2020-11-27T23:41:30.2461308Z", CultureInfo.InvariantCulture);
-
-            var bucketMin = 34;
-            var bucketMax = 771;
-
-            await CatalogScanService.InitializeAsync();
-            await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);
-            await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, onlyLatestLeaves: null, max1);
-
-            var scanId = new StorageId("aaa", "bbb");
-            var indexScan = new CatalogIndexScan(CatalogScanDriverType.LoadSymbolPackageArchive, scanId.ToString(), scanId.Unique)
-            {
-                Min = min0,
-                Max = max1,
-                BucketRanges = new BucketRange(bucketMin, bucketMax).ToString(),
-            };
-            await CatalogScanStorageService.InsertAsync(indexScan);
-            await CatalogScanStorageService.InitializeLeafScanTableAsync(indexScan.StorageSuffix);
-
-            var taskStateStorageSuffix = "buckets";
-            await TaskStateStorageService.InitializeAsync(taskStateStorageSuffix);
-            var taskStateKey = new TaskStateKey(taskStateStorageSuffix, "buckets", "buckets");
-            await TaskStateStorageService.AddAsync(taskStateKey);
-
-            await Host.Services.GetRequiredService<LoadSymbolPackageArchiveDriver>().InitializeAsync(indexScan);
-
-            var leafScanTable = await CatalogScanStorageService.GetLeafScanTableAsync(indexScan.StorageSuffix);
-
-            // Act
-            await TableScanService.StartProcessingBucketRangeAsync(
-                taskStateKey,
-                bucketMin,
-                bucketMax,
-                indexScan.DriverType,
-                indexScan.ScanId,
-                enqueue: true);
-            await UpdateAsync(taskStateKey);
-            await ProcessQueueAsync(async () => (await leafScanTable.GetEntityCountLowerBoundAsync(TelemetryClient.StartQueryLoopMetrics())) == 0);
-
-            // Assert
-            var leafScans = await leafScanTable.QueryAsync<CatalogLeafScan>().ToListAsync();
-            Assert.Empty(leafScans);
-
-            var bucketedPackagesTable = await BucketedPackageService.GetTableAsync();
-            var allBucketedPackages = await bucketedPackagesTable.QueryAsync<BucketedPackage>().ToListAsync();
-            var bucketedPackages = allBucketedPackages.Where(x => x.GetBucket() >= bucketMin && x.GetBucket() <= bucketMax).ToList();
-
-            var symbolEntities = await WideEntityService.RetrieveAsync(Options.Value.SymbolPackageArchiveTableName);
-
-            Assert.Equal(symbolEntities.Count, bucketedPackages.Count);
-            Assert.True(symbolEntities.Count < allBucketedPackages.Count);
-
-            var pairs = bucketedPackages.OrderBy(x => (x.PackageId.ToLowerInvariant(), x.ParsePackageVersion().ToNormalizedString().ToLowerInvariant()))
-                .Zip(symbolEntities.OrderBy(x => (x.PartitionKey, x.RowKey)));
-
-            Assert.All(pairs, pair =>
-            {
-                var (bp, se) = pair;
-                Assert.Equal(bp.PackageId.ToLowerInvariant(), se.PartitionKey);
-                Assert.Equal(bp.ParsePackageVersion().ToNormalizedString().ToLowerInvariant(), se.RowKey);
-            });
-
-            await AssertSymbolPackageArchiveTableAsync(ProcessBucketRange_WithEnqueueDir, Step1);
         }
 
         public BucketedPackageService BucketedPackageService => Host.Services.GetService<BucketedPackageService>();
@@ -226,7 +154,7 @@ namespace NuGet.Insights.Worker.ProcessBucketRange
         public LoadSymbolPackageArchiveDriver LoadSymbolPackageArchiveDriver => Host.Services.GetRequiredService<LoadSymbolPackageArchiveDriver>();
         public WideEntityService WideEntityService => Host.Services.GetRequiredService<WideEntityService>();
 
-        public ProcessBucketRangeDriverIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+        public CopyBucketRangeDriverIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
         }
     }

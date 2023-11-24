@@ -210,7 +210,7 @@ namespace NuGet.Insights.Worker
         private async Task ExpandLatestLeavesAsync(CatalogIndexScanMessage message, CatalogIndexScan scan, ICatalogScanDriver driver, bool perId)
         {
             var findLatestLeafScanId = _storageService.GenerateFindLatestScanId(scan);
-            var taskStateKey = new TaskStateKey(scan.StorageSuffix, $"{scan.ScanId}-{TableScanDriverType.EnqueueCatalogLeafScans}", "start");
+            var enqueueTaskStateKey = new TaskStateKey(scan.StorageSuffix, $"{scan.ScanId}-{TableScanDriverType.EnqueueCatalogLeafScans}", "start");
 
             await HandleInitializedStateAsync(scan, nextState: CatalogIndexScanState.FindingLatest);
 
@@ -274,7 +274,7 @@ namespace NuGet.Insights.Worker
                 }
 
                 await _taskStateStorageService.InitializeAsync(scan.StorageSuffix);
-                await _taskStateStorageService.AddAsync(taskStateKey);
+                await _taskStateStorageService.AddAsync(enqueueTaskStateKey);
                 scan.State = CatalogIndexScanState.Enqueuing;
                 await _storageService.ReplaceAsync(scan);
             }
@@ -287,12 +287,16 @@ namespace NuGet.Insights.Worker
             // Also, I implemented this partition key scanning logic and I want to leverage it here ^_^
             var enqueuePerId = perId;
 
-            await HandleEnqueueAggregateAndFinalizeStatesAsync(message, scan, driver, taskStateKey, enqueuePerId);
+            await HandleEnqueueAggregateAndFinalizeStatesAsync(message, scan, driver, enqueueTaskStateKey, enqueuePerId);
         }
 
         private async Task ExpandBucketRangesAsync(CatalogIndexScanMessage message, CatalogIndexScan scan, ICatalogScanDriver driver)
         {
-            var taskStatePk = $"{scan.ScanId}-{TableScanDriverType.ProcessBucketRange}";
+            var copyTaskStatePk = $"{scan.ScanId}-{TableScanDriverType.CopyBucketRange}";
+            var enqueueTaskStateKey = new TaskStateKey(scan.StorageSuffix, $"{scan.ScanId}-{TableScanDriverType.EnqueueCatalogLeafScans}", "start");
+
+            // this can't overlap with the table scan task state prefixes
+            var bucketRangeRowKeyPrefix = "bucket-range-";
 
             // Initialized: add task states for the table scans per bucket range
             if (scan.State == CatalogIndexScanState.Initialized)
@@ -301,82 +305,52 @@ namespace NuGet.Insights.Worker
                 await _taskStateStorageService.InitializeAsync(scan.StorageSuffix);
                 await _taskStateStorageService.AddAsync(
                     scan.StorageSuffix,
-                    taskStatePk,
-                    BucketRange.ParseRanges(scan.BucketRanges).Select(x => x.ToString()).ToList());
+                    copyTaskStatePk,
+                    BucketRange.ParseRanges(scan.BucketRanges).Select(x => $"{bucketRangeRowKeyPrefix}{x}").ToList());
 
                 scan.State = CatalogIndexScanState.Expanding;
                 await _storageService.ReplaceAsync(scan);
             }
 
-            // Expanding: start the table scans which create the leaf scans and enqueue a message for each
+            // Expanding: start the table scans which create the leaf scans
             if (scan.State == CatalogIndexScanState.Expanding)
             {
-                var taskStates = await _taskStateStorageService.GetByRowKeyPrefixAsync(
+                var bucketRangeTaskStates = await _taskStateStorageService.GetByRowKeyPrefixAsync(
                    scan.StorageSuffix,
-                   taskStatePk,
-                   rowKeyPrefix: string.Empty);
+                   copyTaskStatePk,
+                   bucketRangeRowKeyPrefix);
 
-                foreach (var taskState in taskStates)
+                foreach (var taskState in bucketRangeTaskStates)
                 {
-                    var range = BucketRange.Parse(taskState.RowKey);
+                    var range = BucketRange.Parse(taskState.RowKey.Substring(bucketRangeRowKeyPrefix.Length));
                     var started = taskState.Parameters is not null;
                     if (!started)
                     {
-                        await _tableScanService.StartProcessingBucketRangeAsync(
+                        await _tableScanService.StartCopyBucketRangeAsync(
                             taskState.GetKey(),
                             range.Min,
                             range.Max,
                             scan.DriverType,
-                            scan.ScanId,
-                            enqueue: true);
+                            scan.ScanId);
 
                         taskState.Parameters = "started";
                         await _taskStateStorageService.UpdateAsync(taskState);
                     }
                 }
 
+                if (!await AreTableScanStepsCompleteAsync(scan.StorageSuffix, copyTaskStatePk))
+                {
+                    message.AttemptCount++;
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                    return;
+                }
+
+                await _taskStateStorageService.AddAsync(enqueueTaskStateKey);
                 scan.State = CatalogIndexScanState.Enqueuing;
                 await _storageService.ReplaceAsync(scan);
             }
 
-            // Enqueuing: wait for the table scans to complete, signaling that all leaf scans have been created
-            if (scan.State == CatalogIndexScanState.Enqueuing)
-            {
-                var taskStateCount = await _taskStateStorageService.GetCountLowerBoundAsync(
-                   scan.StorageSuffix,
-                   taskStatePk);
-
-                if (taskStateCount > 0)
-                {
-                    _logger.LogInformation("Still enqueuing reprocessed catalog leaf scans.");
-                    message.AttemptCount++;
-                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
-                    return;
-                }
-                else
-                {
-                    scan.State = CatalogIndexScanState.Working;
-                    await _storageService.ReplaceAsync(scan);
-                }
-            }
-
-            // Working: wait for all the leaf scans to be completed
-            if (scan.State == CatalogIndexScanState.Working)
-            {
-                if (!await AreLeafScansCompleteAsync(scan))
-                {
-                    message.AttemptCount++;
-                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
-                    return;
-                }
-                else
-                {
-                    scan.State = CatalogIndexScanState.StartingAggregate;
-                    await _storageService.ReplaceAsync(scan);
-                }
-            }
-
-            await HandleAggregateAndFinalizeStatesAsync(message, scan, driver);
+            await HandleEnqueueAggregateAndFinalizeStatesAsync(message, scan, driver, enqueueTaskStateKey, enqueuePerId: false);
         }
 
         private async Task<bool> ArePageScansCompleteAsync(CatalogIndexScan scan)
@@ -391,14 +365,12 @@ namespace NuGet.Insights.Worker
             return true;
         }
 
-        private async Task<bool> AreTableScanStepsCompleteAsync(TaskStateKey taskStateKey)
+        private async Task<bool> AreTableScanStepsCompleteAsync(string storageSuffix, string partitionKey)
         {
-            var taskStateCountLowerBound = await _taskStateStorageService.GetCountLowerBoundAsync(
-                taskStateKey.StorageSuffix,
-                taskStateKey.PartitionKey);
+            var taskStateCountLowerBound = await _taskStateStorageService.GetCountLowerBoundAsync(storageSuffix, partitionKey);
             if (taskStateCountLowerBound > 0)
             {
-                _logger.LogInformation("There are at least {Count} table scan steps pending.", taskStateCountLowerBound);
+                _logger.LogInformation("There are at least {Count} table scan steps pending for {PartitionKey}.", taskStateCountLowerBound, partitionKey);
                 return false;
             }
 
@@ -454,7 +426,7 @@ namespace NuGet.Insights.Worker
             // Working: wait for the table scan and subsequent leaf scans to complete
             if (scan.State == CatalogIndexScanState.Working)
             {
-                if (!await AreTableScanStepsCompleteAsync(taskStateKey) || !await AreLeafScansCompleteAsync(scan))
+                if (!await AreTableScanStepsCompleteAsync(taskStateKey.StorageSuffix, taskStateKey.PartitionKey) || !await AreLeafScansCompleteAsync(scan))
                 {
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
