@@ -55,6 +55,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
                 .Where(x => x.ScanId != initialLbp.ScanId)
                 .OrderBy(x => x.DriverType)
                 .ToList();
+            Assert.Equal(reprocessScans.Count, allScans.Count);
             Assert.All(reprocessScans.Zip(allScans), tuple =>
             {
                 var (reprocessScan, indexScan) = tuple;
