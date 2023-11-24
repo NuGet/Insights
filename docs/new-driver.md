@@ -7,10 +7,12 @@ Follow these steps to write a new catalog scan **driver**.
 
 ## High level checklist
 
+These can all be done locally without deploying to Azure.
+
 1. Implement your driver
 1. Start a short time range catalog scan for your driver using the website admin panel
-1. Complete the catalog scan by running the Azure Function
-1. Verify the results in Azure Storage
+1. Complete the catalog scan by running the worker
+1. Verify the results in Azure Storage (likely Azurite)
 1. Add integration tests
 1. Update the [drivers list](../README.md#drivers) to mention your driver
 2. If outputting CSVs, update [ImportTo-Kusto.ps1](../scripts/Kusto/ImportTo-Kusto.ps1) and [compare.kql](../scripts/Kusto/compare.kql) with your new tables
@@ -21,12 +23,12 @@ Follow these steps to write a new catalog scan **driver**.
 If you don't want to follow a long guide, consider these steps:
 
 1. Copy-paste an existing driver similar to do what you want to do.
-1. Start the Azure Storage Emulator.
-1. Start the [`Website`](../src/Website) project locally.
-1. Navigate to the admin panel ("Admin" in the navbar).
-1. Start a very short catalog scan for your new driver (e.g. **Use custom max** then specify `2015-02-01T06:22:45.8488496Z`)
-1. Start the [`Worker`](../src/Worker) Azure Function project locally.
-1. Address errors as they come up.
+2. Start Azurite, perhaps by installing the Azurite VS Code extension and starting Table, Queue, and Blob service.
+3. Start the [`Website`](../src/Website) project locally.
+4. Navigate to the admin panel ("Admin" in the navbar).
+5. Start a very short catalog scan for your new driver (e.g. check **Use custom max** then use the default `2015-02-01T06:22:45.8488496Z`)
+6. Start the [`Worker`](../src/Worker) Azure Function project locally.
+7. Address errors as they come up.
 
 ## Guided flow
 
@@ -88,19 +90,17 @@ Ensure the driver can be activated by the catalog scan and admin interface. Upda
 
 1. Add your driver to the [`CatalogScanDriverType`](../src/Worker.Logic/CatalogScan/CatalogScanDriverType.cs) enum.
    - This provides a uniquely identifiable enum value for your driver.
+1. Add your driver to the `AllMetadata` array at the top of [`CatalogScanDriverMetadata`](../src/Worker.Logic/CatalogScan/CatalogScanDriverMetadata.cs).
+   - The establishes attributes for your driver that are needed for defaults and enabling/disabling features.
+   - If you've mimicked another driver, consider look for how it is defined in that class an copy it.
 1. Add your driver to the [`CatalogScanDriverFactory`](../src/Worker.Logic/CatalogScan/CatalogScanDriverFactory.cs) switch.
    - This allows your driver to be activated given a `CatalogScanDriverType` value.
    - You may need to add new classes to [dependency injection](../src/Worker.Logic/ServiceCollectionExtensions.cs) depending on what your driver needs.
-1. Add your driver to the [`CatalogScanService`](../src/Worker.Logic/CatalogScan/CatalogScanService.cs) class.
-   - Update `GetOnlyLatestLeavesSupport`. It's most likely that this method should return `true` or `null` for your driver.
-   - Update `UpdateAsync`. This enqueues a catalog scan with the proper parameters for your driver.
-1. Add your driver to the [`CatalogScanCursorService`](../src/Worker.Logic/CatalogScan/CatalogScanCursorService.cs) class.
-   - Update the `Dependencies` static. This defines what cursors or other drivers your driver should block on before proceeding.
 1. If your driver implements `ICatalogLeafToCsvDriver<T>`:
    - Add a CSV compact message schema name to [`SchemaCollectionBuilder`](../src/Worker.Logic/Serialization/SchemaCollectionBuilder.cs) like `cc.<abbreviation for your driver>`.
 1. Add your driver to the `TypeToInfo` static in [`CatalogScanServiceTest.cs`](../test/Worker.Logic.Test/CatalogScan/CatalogScanServiceTest.cs).
-   This determines the default catalog timestamp min value for your driver and implements a test function that forces
-   your driver's dependency cursors to a specific timestamp.
+   - This determines the default catalog timestamp min value for your driver and implements a test function that forces your driver's dependency cursors to a specific timestamp.
+   - This essentially duplicates the information in `CatalogScanDriverMetadata` that you edited above.
 1. If you had to add a table or blob container for your driver (e.g. a blob container for your CSV output), initialize
    the container name in [`BaseWorkerLogicIntegrationTest`](../test/Worker.Logic.Test/TestSupport/BaseWorkerLogicIntegrationTest.cs)
    in `ConfigureWorkerDefaultsAndSettings` to have a unique value starting with `StoragePrefix` like the other existing container names.
@@ -134,7 +134,6 @@ the actual output is compared against this expected test data.
 You've now locked your test results into static files in the Git repository so future regressions can be caught.
 
 ### Document your driver
-
 
 When you run the [`DriverDocTest`](../test/Worker.Logic.Test/Docs/DriverDocsTest.cs) suite, it will generate a baseline driver document in the [`docs/drivers`](drivers) directory. If this doesn't happen, the actual code of your driver probably isn't done. Make sure all of the above steps are done. You'll need to fill in some placeholder TODOs for the generated driver document. It can help to look at the driver document of a similar driver. The [`PackageArchiveToCsv`](drivers/PackageArchiveToCsv.md) document is good to mimic for a driver that generates CSV records. The [`LoadPackageArchive`](drivers/LoadPackageArchive.md) document is good to mimic if your driver just loads data into Azure Table Storage for other drivers to use. Finally, update the [drivers list](drivers/README.md) to mention your driver.
 

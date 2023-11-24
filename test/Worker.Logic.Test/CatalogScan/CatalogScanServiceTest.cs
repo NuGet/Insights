@@ -17,34 +17,6 @@ namespace NuGet.Insights.Worker
 {
     public class CatalogScanServiceTest : BaseWorkerLogicIntegrationTest
     {
-        public class TheGetOnlyLatestLeavesSupportMethod : CatalogScanServiceTest
-        {
-            [Theory]
-            [MemberData(nameof(StartableTypes))]
-            public void SupportsAllDriverTypes(CatalogScanDriverType type)
-            {
-                CatalogScanService.GetOnlyLatestLeavesSupport(type);
-            }
-
-            public TheGetOnlyLatestLeavesSupportMethod(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
-            {
-            }
-        }
-
-        public class TheSupportsBucketRangeProcessingMethod : CatalogScanServiceTest
-        {
-            [Theory]
-            [MemberData(nameof(StartableTypes))]
-            public void SupportsAllDriverTypes(CatalogScanDriverType type)
-            {
-                CatalogScanService.SupportsBucketRangeProcessing(type);
-            }
-
-            public TheSupportsBucketRangeProcessingMethod(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
-            {
-            }
-        }
-
         public class TheAbortAsyncMethod : CatalogScanServiceTest
         {
             [Fact]
@@ -540,7 +512,7 @@ namespace NuGet.Insights.Worker
                 .Select(x => new object[] { x.Key, x.Value.DefaultMin, x.Value.OnlyLatestLeavesSupport.GetValueOrDefault(true), });
 
             [Theory]
-            [MemberData(nameof(StartableTypes))]
+            [MemberData(nameof(StartabledDriverTypesData))]
             public async Task MaxAlignsWithDependency(CatalogScanDriverType type)
             {
                 // Arrange
@@ -598,7 +570,7 @@ namespace NuGet.Insights.Worker
                         .OrderBy(x => x.ToString(), StringComparer.Ordinal)
                         .ToArray());
                 Assert.Equal(
-                    CatalogScanCursorService.StartableDriverTypes,
+                    CatalogScanDriverMetadata.StartableDriverTypes,
                     results.Keys.Select(x => x).ToList());
             }
 
@@ -628,7 +600,7 @@ namespace NuGet.Insights.Worker
                 while (started > 0);
 
                 Assert.Equal(
-                    CatalogScanCursorService.StartableDriverTypes,
+                    CatalogScanDriverMetadata.StartableDriverTypes,
                     finished.Keys.Order().ToArray());
                 Assert.All(finished.Values, x => Assert.Equal(CursorValue, x.Scan.Max));
             }
@@ -987,10 +959,6 @@ namespace NuGet.Insights.Worker
                 }
             },
         };
-
-        public static IEnumerable<object[]> StartableTypes => CatalogScanCursorService
-            .StartableDriverTypes
-            .Select(x => new object[] { x });
 
         public Mock<IRemoteCursorClient> RemoteCursorClient { get; }
         public DateTimeOffset FlatContainerCursor { get; set; }

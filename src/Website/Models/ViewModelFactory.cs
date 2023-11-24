@@ -106,9 +106,9 @@ namespace NuGet.Insights.Website
                     CursorAge = catalogCommitTimestamp - min,
                     DriverType = driverType,
                     LatestScans = latestScans,
-                    Dependencies = CatalogScanCursorService.GetDependencies(driverType),
-                    OnlyLatestLeavesSupport = CatalogScanService.GetOnlyLatestLeavesSupport(driverType),
-                    SupportsBucketRangeProcessing = CatalogScanService.SupportsBucketRangeProcessing(driverType),
+                    Dependencies = CatalogScanDriverMetadata.GetDependencies(driverType),
+                    OnlyLatestLeavesSupport = CatalogScanDriverMetadata.GetOnlyLatestLeavesSupport(driverType),
+                    SupportsBucketRangeProcessing = CatalogScanDriverMetadata.GetBucketRangeSupport(driverType),
                     IsEnabled = _catalogScanService.IsEnabled(driverType),
                 });
             }

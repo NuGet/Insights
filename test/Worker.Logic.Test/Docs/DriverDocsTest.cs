@@ -23,7 +23,7 @@ using Xunit.Abstractions;
 
 namespace NuGet.Insights.Worker
 {
-    public class DriverDocsTest : IClassFixture<DefaultWebApplicationFactory<StaticFilesStartup>>
+    public class DriverDocsTest : BaseWorkerLogicIntegrationTest
     {
         /// <summary>
         /// Use this to overwrite existing driver docs. Do not enable this if you have uncommitted driver docs changes!
@@ -52,7 +52,7 @@ namespace NuGet.Insights.Worker
             for (var i = 0; i < rows.Count && i < DriverNames.Count; i++)
             {
                 Block rowObj = rows[i];
-                _output.WriteLine("Testing row: " + info.GetMarkdown(rowObj));
+                Output.WriteLine("Testing row: " + info.GetMarkdown(rowObj));
                 var row = Assert.IsType<TableRow>(rowObj);
                 Assert.False(row.IsHeader);
 
@@ -95,19 +95,19 @@ namespace NuGet.Insights.Worker
                 "flowchart LR",
                 $"    FlatContainer[<a href='https://learn.microsoft.com/en-us/nuget/api/package-base-address-resource'>NuGet.org V3 package content</a>]"
             };
-            foreach (var driverType in CatalogScanCursorService.StartableDriverTypes.OrderBy(x => x.ToString(), StringComparer.Ordinal))
+            foreach (var driverType in CatalogScanDriverMetadata.StartableDriverTypes.OrderBy(x => x.ToString(), StringComparer.Ordinal))
             {
                 // Relative links are not supported.
                 // See: https://github.com/orgs/community/discussions/46096
                 // See: https://github.com/mermaid-js/mermaid/issues/2233
                 // expectedLines.Add($"    {driverType}[<a href='./{driverType}.md'>{driverType}</a>]");
 
-                if (CatalogScanCursorService.GetFlatContainerDependents().Contains(driverType))
+                if (CatalogScanDriverMetadata.GetFlatContainerDependents().Contains(driverType))
                 {
                     expectedLines.Add($"    FlatContainer --> {driverType}");
                 }
 
-                foreach (var dependency in CatalogScanCursorService.GetDependencies(driverType).OrderBy(x => x.ToString(), StringComparer.Ordinal))
+                foreach (var dependency in CatalogScanDriverMetadata.GetDependencies(driverType).OrderBy(x => x.ToString(), StringComparer.Ordinal))
                 {
                     expectedLines.Add($"    {dependency} --> {driverType}");
                 }
@@ -139,7 +139,7 @@ namespace NuGet.Insights.Worker
         }
 
         [DocsTheory]
-        [MemberData(nameof(DriverTypeTestData))]
+        [MemberData(nameof(StartabledDriverTypesData))]
         public async Task FirstTableIsGeneralDriverProperties(CatalogScanDriverType driverType)
         {
             var info = await GetDriverInfoAsync(driverType);
@@ -188,6 +188,10 @@ namespace NuGet.Insights.Worker
         private static readonly ConcurrentDictionary<CatalogScanDriverType, DriverDocInfo> CachedDriverDocInfo = new();
         private static Lazy<Task> LazyDriverDocInfoTask;
 
+        public DriverDocsTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+        {
+        }
+
         private async Task<DriverDocInfo> GetDriverInfoAsync(CatalogScanDriverType driverType)
         {
             Interlocked.CompareExchange(
@@ -211,7 +215,7 @@ namespace NuGet.Insights.Worker
 
         private async Task PopulateDriverInfoAsync(CatalogScanDriverType firstDriverType)
         {
-            TestExecution te = new TestExecution(_output, _factory);
+            TestExecution te = new TestExecution(Output, WebApplicationFactory);
             try
             {
                 await PopulateDriverInfoAsync(te, firstDriverType);
@@ -299,7 +303,7 @@ namespace NuGet.Insights.Worker
             List<CatalogScanDriverType> driverTypesInOrder,
             CatalogScanDriverType driverType)
         {
-            foreach (var dependency in CatalogScanCursorService.GetDependencies(driverType))
+            foreach (var dependency in CatalogScanDriverMetadata.GetDependencies(driverType))
             {
                 AddTransitiveDependencies(cursorService, uniqueDriverTypes, driverTypesInOrder, dependency);
             }
@@ -316,7 +320,7 @@ namespace NuGet.Insights.Worker
             var driverTypesInOrder = new List<CatalogScanDriverType>();
 
             AddTransitiveDependencies(cursorService, uniqueDriverTypes, driverTypesInOrder, firstDriverType);
-            foreach (var driverType in CatalogScanCursorService.StartableDriverTypes)
+            foreach (var driverType in CatalogScanDriverMetadata.StartableDriverTypes)
             {
                 AddTransitiveDependencies(cursorService, uniqueDriverTypes, driverTypesInOrder, driverType);
             }
@@ -415,7 +419,7 @@ namespace NuGet.Insights.Worker
 
             var indexScan = new CatalogIndexScan(driverType, scanId.ToString(), scanId.Unique)
             {
-                OnlyLatestLeaves = CatalogScanService.GetOnlyLatestLeavesSupport(driverType).GetValueOrDefault(true),
+                OnlyLatestLeaves = CatalogScanDriverMetadata.GetOnlyLatestLeavesSupport(driverType).GetValueOrDefault(true),
                 Min = DateTimeOffset.Parse("2019-02-04T10:17:53.4035243Z", CultureInfo.InvariantCulture) - TimeSpan.FromTicks(1),
                 Max = DateTimeOffset.Parse("2019-02-04T10:17:53.4035243Z", CultureInfo.InvariantCulture),
             };
@@ -516,13 +520,7 @@ namespace NuGet.Insights.Worker
             return (indexResult, pageResult, intermediateContainers, persistentContainers);
         }
 
-        public static IEnumerable<object[]> DriverTypeTestData => CatalogScanCursorService
-            .StartableDriverTypes
-            .OrderBy(x => x.ToString(), StringComparer.Ordinal)
-            .Select(x => new object[] { x });
-
-        public static IReadOnlyList<string> DriverNames => CatalogScanCursorService
-            .StartableDriverTypes
+        public static IReadOnlyList<string> DriverNames => CatalogScanDriverMetadata.StartableDriverTypes
             .Select(x => x.ToString())
             .OrderBy(x => x, StringComparer.Ordinal)
             .ToList();
@@ -534,15 +532,6 @@ namespace NuGet.Insights.Worker
             public TestExecution(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {
             }
-        }
-
-        private readonly ITestOutputHelper _output;
-        private readonly DefaultWebApplicationFactory<StaticFilesStartup> _factory;
-
-        public DriverDocsTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
-        {
-            _output = output;
-            _factory = factory;
         }
     }
 }

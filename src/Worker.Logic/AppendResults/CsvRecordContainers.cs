@@ -52,7 +52,7 @@ namespace NuGet.Insights.Worker
         {
             var output = new Dictionary<Type, CsvRecordProducer>();
 
-            foreach (var driverType in CatalogScanCursorService.StartableDriverTypes)
+            foreach (var driverType in CatalogScanDriverMetadata.StartableDriverTypes)
             {
                 var driver = catalogScanDriverFactory.Create(driverType);
                 var recordTypes = driver

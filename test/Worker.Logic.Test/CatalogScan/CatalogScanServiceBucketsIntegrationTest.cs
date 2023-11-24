@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -41,7 +42,7 @@ namespace NuGet.Insights.Worker
             // Act
             var result = await CatalogScanService.UpdateAsync(scanId, storageSuffix, driverType, buckets);
             Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
-            await UpdateAsync(result.Scan);
+            await UpdateAsync(result);
 
             // Assert
             Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
@@ -151,7 +152,7 @@ namespace NuGet.Insights.Worker
                         await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, max1);
                     }
 
-                    await SetCursorsAsync(CatalogScanCursorService.StartableDriverTypes, bucketRangeFirst ? max1 : min0);
+                    await SetCursorsAsync(CatalogScanDriverMetadata.StartableDriverTypes, bucketRangeFirst ? max1 : min0);
                 },
                 async driverType =>
                 {
@@ -202,7 +203,7 @@ namespace NuGet.Insights.Worker
                 driversUnderTest,
                 async () =>
                 {
-                    await SetCursorsAsync(CatalogScanCursorService.StartableDriverTypes, bucketRangeSecond ? max1 : min0);
+                    await SetCursorsAsync(CatalogScanDriverMetadata.StartableDriverTypes, bucketRangeSecond ? max1 : min0);
                 },
                 async driverType =>
                 {
@@ -240,9 +241,8 @@ namespace NuGet.Insights.Worker
         [Fact]
         public async Task AllDrivers_UpdateWithCatalogRange_FindLatest()
         {
-            var driversUnderTest = CatalogScanCursorService
-                .StartableDriverTypes
-                .Where(x => CatalogScanService.GetOnlyLatestLeavesSupport(x).GetValueOrDefault(true))
+            var driversUnderTest = CatalogScanDriverMetadata.StartableDriverTypes
+                .Where(x => CatalogScanDriverMetadata.GetOnlyLatestLeavesSupport(x).GetValueOrDefault(true))
                 .ToHashSet();
 
             var scans = await RunAllDriversAsync(
@@ -250,7 +250,7 @@ namespace NuGet.Insights.Worker
                 async () =>
                 {
                     await CatalogScanService.InitializeAsync();
-                    await SetCursorsAsync(CatalogScanCursorService.StartableDriverTypes, Min0);
+                    await SetCursorsAsync(CatalogScanDriverMetadata.StartableDriverTypes, Min0);
                 },
                 async driverType =>
                 {
@@ -264,9 +264,8 @@ namespace NuGet.Insights.Worker
         [Fact]
         public async Task AllDrivers_UpdateWithCatalogRange_AllLeaves()
         {
-            var driversUnderTest = CatalogScanCursorService
-                .StartableDriverTypes
-                .Where(x => !CatalogScanService.GetOnlyLatestLeavesSupport(x).GetValueOrDefault(false))
+            var driversUnderTest = CatalogScanDriverMetadata.StartableDriverTypes
+                .Where(x => !CatalogScanDriverMetadata.GetOnlyLatestLeavesSupport(x).GetValueOrDefault(false))
                 .ToHashSet();
 
             var scans = await RunAllDriversAsync(
@@ -274,7 +273,7 @@ namespace NuGet.Insights.Worker
                 async () =>
                 {
                     await CatalogScanService.InitializeAsync();
-                    await SetCursorsAsync(CatalogScanCursorService.StartableDriverTypes, Min0);
+                    await SetCursorsAsync(CatalogScanDriverMetadata.StartableDriverTypes, Min0);
                 },
                 async driverType =>
                 {
@@ -289,9 +288,8 @@ namespace NuGet.Insights.Worker
         public async Task AllDrivers_UpdateWithBuckets()
         {
             var buckets = Enumerable.Range(0, BucketedPackage.BucketCount).ToList();
-            var driversUnderTest = CatalogScanCursorService
-                .StartableDriverTypes
-                .Where(CatalogScanService.SupportsBucketRangeProcessing)
+            var driversUnderTest = CatalogScanDriverMetadata.StartableDriverTypes
+                .Where(CatalogScanDriverMetadata.GetBucketRangeSupport)
                 .ToHashSet();
 
             var scans = await RunAllDriversAsync(
@@ -301,7 +299,7 @@ namespace NuGet.Insights.Worker
                     await CatalogScanService.InitializeAsync();
                     await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, Min0);
                     await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, Max1);
-                    await SetCursorsAsync(CatalogScanCursorService.StartableDriverTypes, Max1);
+                    await SetCursorsAsync(CatalogScanDriverMetadata.StartableDriverTypes, Max1);
                 },
                 async driverType =>
                 {
@@ -329,11 +327,13 @@ namespace NuGet.Insights.Worker
         {
             // Arrange
             var driversAndDependencies = driversUnderTest
-                .SelectMany(CatalogScanCursorService.GetTransitiveClosure)
+                .SelectMany(CatalogScanDriverMetadata.GetTransitiveClosure)
                 .Distinct()
                 .Order()
-                .ToList();
-            var batches = CatalogScanCursorService.GetParallelBatches(driversAndDependencies.Contains, x => false);
+                .ToHashSet();
+            var batches = CatalogScanDriverMetadata.GetParallelBatches(
+                driversAndDependencies,
+                FrozenSet<CatalogScanDriverType>.Empty);
 
             Output.WriteHorizontalRule();
             Output.WriteLine("Drivers under test: " + string.Join(", ", driversUnderTest.Order()));

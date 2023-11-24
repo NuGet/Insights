@@ -13,59 +13,6 @@ namespace NuGet.Insights.Worker.TimedReprocess
 {
     public class TimedReprocessService
     {
-        private static bool HasUpdatesOutsideOfCatalog(CatalogScanDriverType type)
-        {
-            return type switch
-            {
-                // README is not always embedded in the package and can be updated without a catalog update.
-                CatalogScanDriverType.LoadPackageReadme => true,
-
-                // Symbol package files (.snupkg) can be replaced and removed without a catalog update.
-                CatalogScanDriverType.LoadSymbolPackageArchive => true,
-
-#if ENABLE_NPE
-                // Internally the NPE analysis APIs read symbols from the Microsoft and NuGet.org symbol servers. This
-                // means that the results are unstable for a similar reason as LoadSymbolPackageArchive. Additionally,
-                // some analysis times out (NuGetPackageExplorerResultType.Timeout). However this driver is relatively
-                // costly and slow to run. Therefore we won't consider it for reprocessing.
-                CatalogScanDriverType.NuGetPackageExplorerToCsv => false,
-#endif
-
-                // This driver uses a compatibility map baked into NuGet/NuGetGallery which uses the NuGet.Frameworks
-                // package for framework compatibility. We could choose to periodically reprocess package compatibility
-                // so that changes in TFM mapping and computed frameworks automatically get picked up. For now, we won't
-                // do that and force a manual "Reset" operation from the admin panel to recompute all compatibilities.
-                // The main part of this data that changes is computed compatibility. Newly supported frameworks can
-                // also lead to changes in results, but this would take a package owner guessing or colliding with this
-                // new framework in advance, leading to an "unsupported" framework reparsing as a supported framework.
-                CatalogScanDriverType.PackageCompatibilityToCsv => false,
-
-                // Similar to PackageCompatibilityToCsv, an unsupported framework (or an existing framework) can become
-                // supported or change its interpretion over time. This is pretty unlikely so we don't reprocess
-                // this driver.
-                CatalogScanDriverType.PackageAssetToCsv => false,
-
-#if ENABLE_CRYPTOAPI
-                // Certificate data is not stable because certificates can expire or be revoked. Also, certificate
-                // chain resolution is non-deterministic, so different intermediate certificates can be resolved over
-                // time. Despite this, the changes are not to significant over time so we won't reprocess.
-                CatalogScanDriverType.PackageCertificateToCsv => false,
-#endif
-
-                // If an SPDX support license becomes deprecated, the results of this driver will change when the
-                // NuGet.Package dependency is updated. This is rare, so we won't reprocess.
-                CatalogScanDriverType.PackageLicenseToCsv => false,
-
-                // Changes to the hosted icon for a package occur along with a catalog update, even package with icon
-                // URL (non-embedded icon) because the Catalog2Icon job follows the catalog. The data could be unstable
-                // if NuGet Insights runs before Catalog2Icon does (unlikely) or if the Magick.NET dependency is updated.
-                // In that case, the driver can be manually rerun with the "Reset" button on the admin panel.
-                CatalogScanDriverType.PackageIconToCsv => false,
-
-                _ => false
-            };
-        }
-        
         private readonly BucketedPackageService _bucketedPackageService;
         private readonly TimedReprocessStorageService _storageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
@@ -99,12 +46,11 @@ namespace NuGet.Insights.Worker.TimedReprocess
 
         public IReadOnlyList<IReadOnlyList<CatalogScanDriverType>> GetReprocessBatches()
         {
-            var dependsOnReprocess = CatalogScanCursorService
-                .StartableDriverTypes
-                .Where(x => CatalogScanCursorService.GetTransitiveClosure(x).Any(HasUpdatesOutsideOfCatalog))
+            var dependsOnReprocess = CatalogScanDriverMetadata.StartableDriverTypes
+                .Where(x => CatalogScanDriverMetadata.GetTransitiveClosure(x).Any(CatalogScanDriverMetadata.GetUpdatedOutsideOfCatalog))
                 .ToHashSet();
 
-            return CatalogScanCursorService.GetParallelBatches(dependsOnReprocess.Contains, _options.Value.DisabledDrivers.Contains);
+            return CatalogScanDriverMetadata.GetParallelBatches(dependsOnReprocess, _options.Value.DisabledDrivers.ToHashSet());
         }
 
         public async Task AbortAsync()

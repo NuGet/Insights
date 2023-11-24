@@ -100,7 +100,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
             var initialLbp = await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, max1);
 
             await SetCursorAsync(CatalogScanDriverType.LoadSymbolPackageArchive, min0);
-            var parallelLspa = (await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadSymbolPackageArchive, max1)).Scan;
+            var parallelLspaResult = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadSymbolPackageArchive, max1);
 
             await SetCursorsAsync([CatalogScanDriverType.LoadPackageReadme, CatalogScanDriverType.LoadSymbolPackageArchive], max1);
 
@@ -112,7 +112,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
             // Act
             var run = await TimedReprocessService.StartAsync();
             run = await UpdateAsync(run);
-            parallelLspa = await UpdateAsync(parallelLspa);
+            var parallelLspa = await UpdateAsync(parallelLspaResult);
 
             // Assert
             Assert.Equal(TimedReprocessState.Complete, run.State);

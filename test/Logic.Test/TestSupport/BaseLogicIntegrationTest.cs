@@ -76,6 +76,7 @@ namespace NuGet.Insights
             DefaultWebApplicationFactory<StaticFilesStartup> factory)
         {
             Output = output;
+            WebApplicationFactory = factory;
             StoragePrefix = TestSettings.NewStoragePrefix();
             HttpMessageHandlerFactory = new TestHttpMessageHandlerFactory();
 
@@ -186,6 +187,7 @@ namespace NuGet.Insights
         }
 
         public ITestOutputHelper Output { get; }
+        public DefaultWebApplicationFactory<StaticFilesStartup> WebApplicationFactory { get; }
         public string StoragePrefix { get; }
         public TestHttpMessageHandlerFactory HttpMessageHandlerFactory { get; }
         public HttpClient TestDataHttpClient { get; }

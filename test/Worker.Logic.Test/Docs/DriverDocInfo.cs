@@ -23,9 +23,9 @@ namespace NuGet.Insights.Worker
             DriverType = driverType;
             IndexResult = indexResult;
             PageResult = pageResult;
-            DependsOnFlatContainer = CatalogScanCursorService.GetFlatContainerDependents().Contains(driverType);
-            DriverDependencies = CatalogScanCursorService.GetDependencies(driverType);
-            DriverDependents = CatalogScanCursorService.GetDependents(driverType);
+            DependsOnFlatContainer = CatalogScanDriverMetadata.GetFlatContainerDependents().Contains(driverType);
+            DriverDependencies = CatalogScanDriverMetadata.GetDependencies(driverType);
+            DriverDependents = CatalogScanDriverMetadata.GetDependents(driverType);
             IntermediateContainers = intermediateContainers;
             PersistentContainers = persistentContainers;
             CsvTables = csvTables;

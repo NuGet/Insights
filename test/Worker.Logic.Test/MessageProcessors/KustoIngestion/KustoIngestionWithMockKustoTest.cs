@@ -43,7 +43,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, max1);
             await SetCursorAsync(CatalogScanDriverType.PackageManifestToCsv, min0);
             var packageManifestToCsvResult = await CatalogScanService.UpdateAsync(CatalogScanDriverType.PackageManifestToCsv, max1);
-            await UpdateAsync(packageManifestToCsvResult.Scan);
+            await UpdateAsync(packageManifestToCsvResult);
 
             await KustoIngestionService.InitializeAsync();
 
@@ -107,7 +107,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, max1);
             await SetCursorAsync(CatalogScanDriverType.PackageManifestToCsv, min0);
             var packageManifestToCsvResult = await CatalogScanService.UpdateAsync(CatalogScanDriverType.PackageManifestToCsv, max1);
-            await UpdateAsync(packageManifestToCsvResult.Scan);
+            await UpdateAsync(packageManifestToCsvResult);
 
             MockCslQueryProvider
                 .Setup(
@@ -225,7 +225,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, max1);
             await SetCursorAsync(CatalogScanDriverType.PackageManifestToCsv, min0);
             var packageManifestToCsvResult = await CatalogScanService.UpdateAsync(CatalogScanDriverType.PackageManifestToCsv, max1);
-            await UpdateAsync(packageManifestToCsvResult.Scan);
+            await UpdateAsync(packageManifestToCsvResult);
 
             await KustoIngestionService.InitializeAsync();
 
@@ -305,8 +305,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
             await SetCursorsAsync([CatalogScanDriverType.PackageManifestToCsv, CatalogScanDriverType.CatalogDataToCsv], min0);
             var packageManifestToCsvResult = await CatalogScanService.UpdateAsync(CatalogScanDriverType.PackageManifestToCsv, max1);
             var catalogDataToCsvResult = await CatalogScanService.UpdateAsync(CatalogScanDriverType.CatalogDataToCsv, max1);
-            await UpdateAsync(packageManifestToCsvResult.Scan);
-            await UpdateAsync(catalogDataToCsvResult.Scan);
+            await UpdateAsync(packageManifestToCsvResult);
+            await UpdateAsync(catalogDataToCsvResult);
 
             await KustoIngestionService.InitializeAsync();
 

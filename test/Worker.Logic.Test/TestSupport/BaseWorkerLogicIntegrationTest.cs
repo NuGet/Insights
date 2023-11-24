@@ -126,6 +126,9 @@ namespace NuGet.Insights.Worker
         public Mock<IKustoQueuedIngestClient> MockKustoQueueIngestClient { get; }
         public Mock<ICslQueryProvider> MockCslQueryProvider { get; }
 
+        public static IEnumerable<object[]> StartabledDriverTypesData => CatalogScanDriverMetadata.StartableDriverTypes
+            .Select(x => new object[] { x });
+
         protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
         {
             base.ConfigureHostBuilder(hostBuilder);
@@ -237,7 +240,7 @@ namespace NuGet.Insights.Worker
         protected async Task<CatalogIndexScan> UpdateAsync(CatalogScanDriverType driverType, bool? onlyLatestLeaves, DateTimeOffset max)
         {
             var result = await CatalogScanService.UpdateAsync(driverType, max, onlyLatestLeaves);
-            return await UpdateAsync(result.Scan);
+            return await UpdateAsync(result);
         }
 
         protected async Task<TimedReprocessRun> UpdateAsync(TimedReprocessRun run)
@@ -296,6 +299,12 @@ namespace NuGet.Insights.Worker
             });
 
             return ingestion;
+        }
+
+        protected async Task<CatalogIndexScan> UpdateAsync(CatalogScanServiceResult result, bool parallel = false, TimeSpan? visibilityTimeout = null)
+        {
+            Assert.Contains(result.Type, new[] { CatalogScanServiceResultType.NewStarted, CatalogScanServiceResultType.AlreadyRunning });
+            return await UpdateAsync(result.Scan, parallel, visibilityTimeout);
         }
 
         protected async Task<CatalogIndexScan> UpdateAsync(CatalogIndexScan indexScan, bool parallel = false, TimeSpan? visibilityTimeout = null)

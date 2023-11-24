@@ -39,7 +39,7 @@ namespace NuGet.Insights.Worker
                     break;
                 case CsvRecordProducerType.CatalogScanDriver:
                     Assert.NotNull(producer.CatalogScanDriverType);
-                    Assert.Contains(producer.CatalogScanDriverType.Value, CatalogScanCursorService.StartableDriverTypes);
+                    Assert.Contains(producer.CatalogScanDriverType.Value, CatalogScanDriverMetadata.StartableDriverTypes);
                     break;
                 default:
                     throw new NotImplementedException();

@@ -32,8 +32,7 @@ namespace NuGet.Insights.Worker.Workflow
                 x.KustoConnectionString = "fake connection string";
                 x.KustoDatabaseName = "fake database name";
                 x.KustoValidationMaxAttempts = 1;
-                x.DisabledDrivers = CatalogScanCursorService
-                    .StartableDriverTypes
+                x.DisabledDrivers = CatalogScanDriverMetadata.StartableDriverTypes
                     .Except(new[] { CatalogScanDriverType.LoadPackageManifest, CatalogScanDriverType.PackageManifestToCsv, CatalogScanDriverType.CatalogDataToCsv })
                     .ToList();
             };
@@ -100,8 +99,7 @@ namespace NuGet.Insights.Worker.Workflow
                 x.KustoDatabaseName = "fake database name";
                 x.KustoValidationMaxAttempts = 1;
                 x.WorkflowMaxAttempts = 3;
-                x.DisabledDrivers = CatalogScanCursorService
-                    .StartableDriverTypes
+                x.DisabledDrivers = CatalogScanDriverMetadata.StartableDriverTypes
                     .Except(new[] { CatalogScanDriverType.LoadPackageManifest, CatalogScanDriverType.PackageManifestToCsv, CatalogScanDriverType.CatalogDataToCsv })
                     .ToList();
             };
@@ -158,8 +156,7 @@ namespace NuGet.Insights.Worker.Workflow
                 x.KustoDatabaseName = "fake database name";
                 x.KustoValidationMaxAttempts = 1;
                 x.WorkflowMaxAttempts = 3;
-                x.DisabledDrivers = CatalogScanCursorService
-                    .StartableDriverTypes
+                x.DisabledDrivers = CatalogScanDriverMetadata.StartableDriverTypes
                     .Except(new[] { CatalogScanDriverType.LoadPackageManifest, CatalogScanDriverType.PackageManifestToCsv, CatalogScanDriverType.CatalogDataToCsv })
                     .ToList();
             };
@@ -205,8 +202,7 @@ namespace NuGet.Insights.Worker.Workflow
                 x.KustoDatabaseName = "fake database name";
                 x.KustoValidationMaxAttempts = 1;
                 x.WorkflowMaxAttempts = 3;
-                x.DisabledDrivers = CatalogScanCursorService
-                    .StartableDriverTypes
+                x.DisabledDrivers = CatalogScanDriverMetadata.StartableDriverTypes
                     .Except(new[] { CatalogScanDriverType.LoadPackageManifest, CatalogScanDriverType.PackageManifestToCsv, CatalogScanDriverType.CatalogDataToCsv })
                     .ToList();
             };

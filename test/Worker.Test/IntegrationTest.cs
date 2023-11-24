@@ -137,7 +137,7 @@ namespace NuGet.Insights.Worker
             {
                 // Initialize all drivers and timers
                 var driverFactory = Host.Services.GetRequiredService<ICatalogScanDriverFactory>();
-                foreach (var driverType in CatalogScanCursorService.StartableDriverTypes)
+                foreach (var driverType in CatalogScanDriverMetadata.StartableDriverTypes)
                 {
                     var driver = driverFactory.Create(driverType);
                     var descendingId = StorageUtility.GenerateDescendingId();
@@ -202,7 +202,7 @@ namespace NuGet.Insights.Worker
                 }
 
                 // Destroy output for all drivers and timers
-                foreach (var driverType in CatalogScanCursorService.StartableDriverTypes)
+                foreach (var driverType in CatalogScanDriverMetadata.StartableDriverTypes)
                 {
                     var driver = driverFactory.Create(driverType);
                     await driver.DestroyOutputAsync();
@@ -270,9 +270,8 @@ namespace NuGet.Insights.Worker
                 {
                     x.AppendResultStorageBucketCount = 1;
                     x.RecordCertificateStatus = false;
-                    x.DisabledDrivers = CatalogScanCursorService
-                        .StartableDriverTypes
-                        .Where(x => !CatalogScanService.SupportsBucketRangeProcessing(x))
+                    x.DisabledDrivers = CatalogScanDriverMetadata.StartableDriverTypes
+                        .Where(x => !CatalogScanDriverMetadata.GetBucketRangeSupport(x))
                         .Except(new[] { CatalogScanDriverType.LoadBucketedPackage })
                         .ToList();
                 };
@@ -297,7 +296,7 @@ namespace NuGet.Insights.Worker
                 await CatalogScanService.InitializeAsync();
                 await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);
                 await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, max1);
-                await SetCursorsAsync(CatalogScanCursorService.StartableDriverTypes, max1);
+                await SetCursorsAsync(CatalogScanDriverMetadata.StartableDriverTypes, max1);
                 var buckets = Enumerable.Range(0, BucketedPackage.BucketCount).ToList();
 
                 // Act
@@ -305,9 +304,9 @@ namespace NuGet.Insights.Worker
                 Output.WriteLine("Beginning bucket range processing.");
                 Output.WriteHorizontalRule();
 
-                foreach (var batch in CatalogScanCursorService.GetParallelBatches(
-                    CatalogScanService.SupportsBucketRangeProcessing,
-                    Options.Value.DisabledDrivers.Contains))
+                foreach (var batch in CatalogScanDriverMetadata.GetParallelBatches(
+                    CatalogScanDriverMetadata.StartableDriverTypes.Where(CatalogScanDriverMetadata.GetBucketRangeSupport).ToHashSet(),
+                    Options.Value.DisabledDrivers.ToHashSet()))
                 {
                     var scans = new List<CatalogIndexScan>();
                     foreach (var driverType in batch)
@@ -337,16 +336,16 @@ namespace NuGet.Insights.Worker
                 }
 
                 // Arrange
-                await SetCursorsAsync(CatalogScanCursorService.StartableDriverTypes, min0);
+                await SetCursorsAsync(CatalogScanDriverMetadata.StartableDriverTypes, min0);
 
                 // Act
                 Output.WriteHorizontalRule();
                 Output.WriteLine("Beginning catalog range processing.");
                 Output.WriteHorizontalRule();
 
-                foreach (var batch in CatalogScanCursorService.GetParallelBatches(
-                    CatalogScanService.SupportsBucketRangeProcessing,
-                    Options.Value.DisabledDrivers.Contains))
+                foreach (var batch in CatalogScanDriverMetadata.GetParallelBatches(
+                    CatalogScanDriverMetadata.StartableDriverTypes.Where(CatalogScanDriverMetadata.GetBucketRangeSupport).ToHashSet(),
+                    Options.Value.DisabledDrivers.ToHashSet()))
                 {
                     var scans = new List<CatalogIndexScan>();
                     foreach (var driverType in batch)
@@ -450,7 +449,7 @@ namespace NuGet.Insights.Worker
                 await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);
                 var initialLBP = await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, max1);
 
-                foreach (var type in CatalogScanCursorService.StartableDriverTypes)
+                foreach (var type in CatalogScanDriverMetadata.StartableDriverTypes)
                 {
                     await SetCursorAsync(type, min0);
                 }
@@ -484,7 +483,7 @@ namespace NuGet.Insights.Worker
                 var indexScans = await CatalogScanStorageService.GetIndexScansAsync();
                 Assert.All(indexScans, x => Assert.Equal(CatalogIndexScanState.Complete, x.State));
                 Assert.Equal(
-                    CatalogScanCursorService.StartableDriverTypes.ToArray(),
+                    CatalogScanDriverMetadata.StartableDriverTypes.ToArray(),
                     indexScans.Where(x => x.BucketRanges is null && x.ScanId != initialLBP.ScanId).Select(x => x.DriverType).Distinct().Order().ToArray());
                 Assert.Equal(
                     TimedReprocessService.GetReprocessBatches().SelectMany(b => b).Order().ToArray(),
@@ -530,7 +529,7 @@ namespace NuGet.Insights.Worker
                 var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z", CultureInfo.InvariantCulture);
                 var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z", CultureInfo.InvariantCulture);
 
-                foreach (var type in CatalogScanCursorService.StartableDriverTypes)
+                foreach (var type in CatalogScanDriverMetadata.StartableDriverTypes)
                 {
                     await SetCursorAsync(type, min0);
                 }
@@ -539,40 +538,40 @@ namespace NuGet.Insights.Worker
 
                 // Load the manifests
                 var loadPackageManifest = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageManifest, max1);
-                await UpdateAsync(loadPackageManifest.Scan);
+                await UpdateAsync(loadPackageManifest);
 
                 var startingNuspecRequestCount = GetNuspecRequestCount();
 
                 // Load the readmes
                 var loadPackageReadme = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageReadme, max1);
-                await UpdateAsync(loadPackageReadme.Scan);
+                await UpdateAsync(loadPackageReadme);
 
                 var startingReadmeRequestCount = GetReadmeRequestCount();
 
                 // Load latest package leaves
                 var loadLatestPackageLeaf = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadLatestPackageLeaf, max1);
-                await UpdateAsync(loadLatestPackageLeaf.Scan);
+                await UpdateAsync(loadLatestPackageLeaf);
 
                 Assert.Equal(0, GetNupkgRequestCount());
 
                 // Load the symbol packages
                 var loadSymbolPackageArchive = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadSymbolPackageArchive, max1);
-                await UpdateAsync(loadSymbolPackageArchive.Scan);
+                await UpdateAsync(loadSymbolPackageArchive);
 
                 var startingSnupkgRequestCount = GetSnupkgRequestCount();
 
                 // Load the packages, process package assemblies, and run NuGet Package Explorer.
                 var loadPackageArchive = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageArchive, max1);
-                await UpdateAsync(loadPackageArchive.Scan);
+                await UpdateAsync(loadPackageArchive);
                 var packageAssemblyToCsv = await CatalogScanService.UpdateAsync(CatalogScanDriverType.PackageAssemblyToCsv, max1);
                 var packageContentToCsv = await CatalogScanService.UpdateAsync(CatalogScanDriverType.PackageContentToCsv, max1);
 #if ENABLE_NPE
                 var nuGetPackageExplorerToCsv = await CatalogScanService.UpdateAsync(CatalogScanDriverType.NuGetPackageExplorerToCsv, max1);
 #endif
-                await UpdateAsync(packageAssemblyToCsv.Scan);
-                await UpdateAsync(packageContentToCsv.Scan);
+                await UpdateAsync(packageAssemblyToCsv);
+                await UpdateAsync(packageContentToCsv);
 #if ENABLE_NPE
-                await UpdateAsync(nuGetPackageExplorerToCsv.Scan);
+                await UpdateAsync(nuGetPackageExplorerToCsv);
 #endif
 
                 var startingNupkgRequestCount = GetNupkgRequestCount();
@@ -580,11 +579,11 @@ namespace NuGet.Insights.Worker
 
                 // Load the versions
                 var loadPackageVersion = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageVersion, max1);
-                await UpdateAsync(loadPackageVersion.Scan);
+                await UpdateAsync(loadPackageVersion);
 
                 // Start all of the scans
                 var startedScans = new List<CatalogIndexScan>();
-                foreach (var type in CatalogScanCursorService.StartableDriverTypes)
+                foreach (var type in CatalogScanDriverMetadata.StartableDriverTypes)
                 {
                     var startedScan = await CatalogScanService.UpdateAsync(type, max1);
                     if (startedScan.Type == CatalogScanServiceResultType.FullyCaughtUpWithMax)
