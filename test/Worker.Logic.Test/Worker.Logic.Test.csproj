@@ -17,7 +17,6 @@
     <Compile Remove="CatalogScan\Drivers\PackageCertificateToCsv\*" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="DiffPlex" />
     <PackageReference Include="Humanizer.Core" />
     <PackageReference Include="Markdig.Signed" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />

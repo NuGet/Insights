@@ -30,6 +30,12 @@ namespace NuGet.Insights.Worker
                 var fileSizeToFiles = new Dictionary<long, List<string>>();
                 foreach (var file in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
                 {
+                    if (file.Contains(".received.", StringComparison.Ordinal)
+                        || file.Contains(".verified.", StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
                     foundAny = true;
 
                     var fullPath = Path.GetFullPath(file);

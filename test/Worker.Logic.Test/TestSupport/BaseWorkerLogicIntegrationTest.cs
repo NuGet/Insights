@@ -1,10 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using Azure;
 using Azure.Data.Tables;
 using Azure.Data.Tables.Sas;
+using Azure.Storage.Blobs;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using DiffPlex;
@@ -81,6 +83,7 @@ namespace NuGet.Insights.Worker
         public WorkflowService WorkflowService => Host.Services.GetRequiredService<WorkflowService>();
         public WorkflowStorageService WorkflowStorageService => Host.Services.GetRequiredService<WorkflowStorageService>();
         public CsvRecordContainers CsvRecordContainers => Host.Services.GetRequiredService<CsvRecordContainers>();
+        public ICsvReader CsvReader => Host.Services.GetRequiredService<ICsvReader>();
         public IMessageEnqueuer MessageEnqueuer => Host.Services.GetRequiredService<IMessageEnqueuer>();
         public IWorkerQueueFactory WorkerQueueFactory => Host.Services.GetRequiredService<IWorkerQueueFactory>();
 
@@ -469,6 +472,71 @@ namespace NuGet.Insights.Worker
             await messageProcessor.ProcessSingleAsync(queue, message.Body.ToMemory(), message.DequeueCount);
         }
 
+        protected async Task VerifyCsvAsync(
+            Type recordType,
+            int? bucket = null,
+            int? step = null,
+            bool deleteAfter = false,
+            string methodName = null,
+            string tableDisplayName = null,
+            [CallerFilePath] string sourceFile = "")
+        {
+            await (Task)GetType()
+                .GetMethods(BindingFlags.Instance | BindingFlags.NonPublic)
+                .Single(x => x.Name == nameof(VerifyCsvAsync) && x.IsGenericMethodDefinition)
+                .MakeGenericMethod(recordType)
+                .Invoke(this, new object[] { bucket, step, deleteAfter, methodName, tableDisplayName, sourceFile });
+        }
+
+        protected async Task AssertEmptyCsvAsync<T>(
+            int? bucket = null) where T : ICsvRecord
+        {
+            var (_, _, records) = await GetCsvRecordsAsync<T>(bucket);
+            Assert.Empty(records);
+        }
+
+        protected async Task<List<T>> VerifyCsvAsync<T>(
+            int? bucket = null,
+            int? step = null,
+            bool deleteAfter = false,
+            string methodName = null,
+            string tableDisplayName = null,
+            [CallerFilePath] string sourceFile = "") where T : ICsvRecord
+        {
+            var (blob, content, records) = await GetCsvRecordsAsync<T>(bucket);
+
+            var textForParameters = (tableDisplayName ?? CsvRecordContainers.GetDefaultKustoTableName(typeof(T)))
+                + (bucket.HasValue ? $"_B{bucket}" : string.Empty)
+                + (step.HasValue ? $"_S{step}" : string.Empty);
+            var verifyTask = Verify(Encoding.UTF8.GetBytes(content), extension: "csv", sourceFile: sourceFile)
+                .UseTextForParameters(textForParameters)
+                .DisableRequireUniquePrefix();
+
+            if (methodName is not null)
+            {
+                verifyTask = verifyTask.UseMethodName(methodName);
+            }
+
+            await verifyTask;
+
+            if (deleteAfter)
+            {
+                await blob.DeleteIfExistsAsync();
+            }
+
+            return records;
+        }
+
+        protected async Task<(BlobClient Blob, string Content, List<T> Records)> GetCsvRecordsAsync<T>(int? bucket = null) where T : ICsvRecord
+        {
+            var containerName = CsvRecordContainers.GetContainerName(typeof(T));
+            var blobName = $"compact_{bucket ?? 0}.csv.gz";
+            var (blob, content) = await GetBlobContentAsync(containerName, blobName, gzip: true);
+            var result = CsvReader.GetRecords<T>(new StringReader(content), CsvReaderAdapter.MaxBufferSize);
+            Assert.Equal(CsvReaderResultType.Success, result.Type);
+            return (blob, content, result.Records);
+        }
+
         protected async Task<string> AssertCsvAsync<T>(string containerName, string testName, string stepName, int bucket, string fileName = null) where T : ICsvRecord
         {
             return await AssertCsvAsync(typeof(T), containerName, testName, stepName, bucket, fileName);
@@ -592,6 +660,34 @@ namespace NuGet.Insights.Worker
                     }
                 })
                 .ToDictionary(x => x.Key, x => x.ToList()), StringComparer.Ordinal);
+        }
+
+        protected async Task VerifyEntityOutputAsync<T>(
+            string tableName,
+            string tableDisplayName,
+            int? step = null,
+            Action<T> cleanEntity = null,
+            [CallerFilePath] string sourceFile = "") where T : class, ITableEntity
+        {
+            var serviceClient = await ServiceClientFactory.GetTableServiceClientAsync();
+            var table = serviceClient.GetTableClient(tableName);
+            var entities = await table.QueryAsync<T>().ToListAsync();
+
+            foreach (var entity in entities)
+            {
+                entity.ETag = default;
+                if (entity is ITableEntityWithClientRequestId withClientRequestId)
+                {
+                    withClientRequestId.ClientRequestId = default;
+                }
+                entity.Timestamp = DateTimeOffset.MinValue;
+                cleanEntity?.Invoke(entity);
+            }
+
+            var textForParameters = tableDisplayName + (step.HasValue ? $"_S{step}" : null);
+            await Verify(Encoding.UTF8.GetBytes(SerializeTestJson(entities)), extension: "json", sourceFile: sourceFile)
+                .UseTextForParameters(textForParameters)
+                .DisableRequireUniquePrefix();
         }
 
         protected async Task AssertEntityOutputAsync<T>(
@@ -825,6 +921,52 @@ namespace NuGet.Insights.Worker
             }
         }
 
+        protected async Task VerifyWideEntityOutputAsync<T>(
+            string tableName,
+            string tableDisplayName,
+            Func<Stream, T> deserializeEntity = null,
+            int? step = null,
+            [CallerFilePath] string sourceFile = "")
+        {
+            var entities = await GetWideEntitiesAsync(tableName, deserializeEntity);
+            var textForParameters = tableDisplayName + (step.HasValue ? $"_S{step}" : string.Empty);
+            await Verify(Encoding.UTF8.GetBytes(SerializeTestJson(entities)), extension: "json", sourceFile: sourceFile)
+                .UseTextForParameters(textForParameters)
+                .DisableRequireUniquePrefix();
+        }
+
+        protected async Task VerifyOwnerToSubjectAsync<T>(
+            string tableName,
+            Func<byte[], T> deserializeEntity,
+            int? step = null,
+            [CallerFilePath] string sourceFile = "")
+        {
+            await VerifyWideEntityOutputAsync(
+                tableName,
+                tableDisplayName: "OwnerToSubject",
+                stream =>
+                {
+                    var edges = MessagePackSerializer.Deserialize<OwnerToSubjectEdges>(stream, NuGetInsightsMessagePack.Options);
+
+                    return new
+                    {
+                        Committed = edges.Committed.Select(x =>
+                        {
+                            return new
+                            {
+                                x.PartitionKey,
+                                x.RowKey,
+                                Data = deserializeEntity(x.Data),
+                            };
+                        }),
+                        edges.ToAdd,
+                        edges.ToDelete,
+                    };
+                },
+                step,
+                sourceFile);
+        }
+
         protected async Task AssertWideEntityOutputAsync<T>(
             string tableName,
             string dir,
@@ -871,6 +1013,27 @@ namespace NuGet.Insights.Worker
                     };
                 },
                 fileName: fileName ?? "owner-to-subject.json");
+        }
+
+        protected async Task AssertEmptyTableAsync(string tableName)
+        {
+            var serviceClient = await ServiceClientFactory.GetTableServiceClientAsync();
+            var table = serviceClient.GetTableClient(tableName);
+            var entities = await table.QueryAsync<TableEntity>().ToListAsync();
+            Assert.Empty(entities);
+        }
+
+        protected async Task VerifySubjectToOwnerAsync(
+            string tableName,
+            int? step = null,
+            [CallerFilePath] string sourceFile = "")
+        {
+            await VerifyEntityOutputAsync<TableEntity>(
+                tableName,
+                tableDisplayName: "SubjectToOwner",
+                step,
+                cleanEntity: null,
+                sourceFile);
         }
 
         protected async Task AssertSubjectToOwnerAsync(
