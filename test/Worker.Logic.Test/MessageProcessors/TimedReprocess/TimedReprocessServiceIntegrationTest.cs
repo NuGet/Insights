@@ -1,16 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
 using NuGet.Insights.Worker.LoadBucketedPackage;
 using NuGet.Insights.Worker.PackageReadmeToCsv;
 using NuGet.Insights.Worker.SymbolPackageArchiveToCsv;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.Insights.Worker.TimedReprocess
 {

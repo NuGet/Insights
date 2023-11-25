@@ -1,15 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Net.Http;
-using System.Net;
-using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Xunit;
-using Xunit.Abstractions;
-using System.Net.Http.Headers;
-
 namespace NuGet.Insights.Worker.PackageReadmeToCsv
 {
     public class PackageReadmeToCsvDriverTest : BaseWorkerLogicIntegrationTest

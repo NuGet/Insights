@@ -1,18 +1,18 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Threading.Tasks;
 using NuGet.Common;
+using IStandardLogger = Microsoft.Extensions.Logging.ILogger;
+using NuGetLogLevel = NuGet.Common.LogLevel;
 using StandardLogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace NuGet.Insights
 {
     public class StandardToNuGetLogger : LoggerBase
     {
-        private readonly Microsoft.Extensions.Logging.ILogger _logger;
+        private readonly IStandardLogger _logger;
 
-        public StandardToNuGetLogger(Microsoft.Extensions.Logging.ILogger logger) : base(LogLevel.Debug)
+        public StandardToNuGetLogger(IStandardLogger logger) : base(NuGetLogLevel.Debug)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -36,21 +36,21 @@ namespace NuGet.Insights
             return Task.CompletedTask;
         }
 
-        private static StandardLogLevel GetLogLevel(LogLevel logLevel)
+        private static StandardLogLevel GetLogLevel(NuGetLogLevel logLevel)
         {
             switch (logLevel)
             {
-                case LogLevel.Debug:
+                case NuGetLogLevel.Debug:
                     return StandardLogLevel.Trace;
-                case LogLevel.Verbose:
+                case NuGetLogLevel.Verbose:
                     return StandardLogLevel.Debug;
-                case LogLevel.Information:
+                case NuGetLogLevel.Information:
                     return StandardLogLevel.Information;
-                case LogLevel.Minimal:
+                case NuGetLogLevel.Minimal:
                     return StandardLogLevel.Information;
-                case LogLevel.Warning:
+                case NuGetLogLevel.Warning:
                     return StandardLogLevel.Warning;
-                case LogLevel.Error:
+                case NuGetLogLevel.Error:
                     return StandardLogLevel.Error;
                 default:
                     return StandardLogLevel.Trace;

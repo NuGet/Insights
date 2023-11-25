@@ -1,16 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using NuGet.Commands;
-using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.Protocol.Core.Types;
+using INuGetLogger = NuGet.Common.ILogger;
+using NuGetNullLogger = NuGet.Common.NullLogger;
 
 namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 {
@@ -27,7 +24,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         private static readonly MethodInfo GetPackageFrameworksMethod = CompatibilityCheckerType
             .GetMethod("GetPackageFrameworks", BindingFlags.Static | BindingFlags.NonPublic);
 
-        public static IEnumerable<NuGetFramework> GetPackageFrameworks(IEnumerable<string> files, ILogger logger)
+        public static IEnumerable<NuGetFramework> GetPackageFrameworks(IEnumerable<string> files, INuGetLogger logger)
         {
             var compatibilityData = CompatibilityDataConstructor.Invoke(new object[] { files, null, null });
 
@@ -36,7 +33,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 new RemoteWalkContext(
                     new SourceCacheContext(),
                     PackageSourceMapping.GetPackageSourceMapping(NullSettings.Instance),
-                    NullLogger.Instance),
+                    NuGetNullLogger.Instance),
                 logger,
                 NuGetFramework.AnyFramework);
 

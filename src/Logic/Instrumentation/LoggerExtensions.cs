@@ -1,8 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Extensions.Logging;
-using System;
+using INuGetLogger = NuGet.Common.ILogger;
 
 #nullable enable
 
@@ -12,7 +11,7 @@ namespace NuGet.Insights
     {
         internal const string TransientPrefix = "[transient] ";
 
-        public static Common.ILogger ToNuGetLogger(this ILogger logger)
+        public static INuGetLogger ToNuGetLogger(this ILogger logger)
         {
             return new StandardToNuGetLogger(logger);
         }

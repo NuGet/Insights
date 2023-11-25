@@ -6,6 +6,13 @@
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
   </PropertyGroup>
   <ItemGroup>
+    <Using Remove="Microsoft.Extensions.DependencyInjection" />
+    <Using Remove="Microsoft.Extensions.Logging" />
+    <Using Remove="Microsoft.Extensions.Logging.Abstractions" />
+    <Using Remove="Microsoft.Extensions.Options" />
+    <Using Remove="NuGet.Versioning" />
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="KustoDDL.cs" />
     <EmbeddedResource Include="CsvUtility.cs" />
   </ItemGroup>

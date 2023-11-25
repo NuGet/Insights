@@ -3,8 +3,6 @@
 
 #nullable enable
 
-using System.Text.Json.Serialization;
-
 namespace NuGet.Insights.Worker.PackageCertificateToCsv
 {
     /// <summary>

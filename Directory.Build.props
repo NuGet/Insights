@@ -1,11 +1,7 @@
 <Project>
-  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))"
-          Condition="exists($([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../')))" />
   <PropertyGroup>
-    <ArtifactsSubdirectory Condition="'$(ArtifactsDirectory)' != ''">NuGet.Insights\</ArtifactsSubdirectory>
-    <ArtifactsSubdirectory Condition="'$(ArtifactsDirectory)' == ''"></ArtifactsSubdirectory>
-    <ArtifactsDirectory Condition="'$(ArtifactsDirectory)' == ''">$(MSBuildThisFileDirectory)artifacts</ArtifactsDirectory>
-    <_ProjectArtifactsDirectory>$(ArtifactsDirectory)\$(ArtifactsSubdirectory)$(MSBuildProjectName)\</_ProjectArtifactsDirectory>
+    <ArtifactsDirectory>$(MSBuildThisFileDirectory)artifacts</ArtifactsDirectory>
+    <_ProjectArtifactsDirectory>$(ArtifactsDirectory)\$(MSBuildProjectName)\</_ProjectArtifactsDirectory>
     <BaseIntermediateOutputPath>$(_ProjectArtifactsDirectory)obj\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\</IntermediateOutputPath>
     <BaseOutputPath>$(_ProjectArtifactsDirectory)bin\</BaseOutputPath>
@@ -21,6 +17,29 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
   </PropertyGroup>
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Using Include="System.Collections.Concurrent" />
+    <Using Include="System.Data" />
+    <Using Include="System.Diagnostics.CodeAnalysis" />
+    <Using Include="System.Diagnostics" />
+    <Using Include="System.Globalization" />
+    <Using Include="System.Linq.Expressions" />
+    <Using Include="System.Net.Http.Headers" />
+    <Using Include="System.Net" />
+    <Using Include="System.Reflection" />
+    <Using Include="System.Text.Json.Serialization.Metadata" />
+    <Using Include="System.Text.Json.Serialization" />
+    <Using Include="System.Text.Json" />
+    <Using Include="System.Text" />
+    <Using Include="Microsoft.Extensions.DependencyInjection" />
+    <Using Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Using Include="Microsoft.Extensions.Logging" />
+    <Using Include="Microsoft.Extensions.Options" />
+    <Using Include="NuGet.Versioning" />
+  </ItemGroup>
   <PropertyGroup>
     <EnableNPE Condition="'$(EnableNPE)' == '' and $([MSBuild]::IsOSPlatform('Windows'))">true</EnableNPE>
     <EnableNPE Condition="'$(EnableNPE)' == ''">false</EnableNPE>

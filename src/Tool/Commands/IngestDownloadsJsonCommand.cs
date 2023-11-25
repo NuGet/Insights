@@ -1,12 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.IO.Compression;
-using System.Threading;
-using System.Threading.Tasks;
 using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
@@ -15,11 +10,8 @@ using Kusto.Data;
 using McMaster.Extensions.CommandLineUtils;
 using NuGet.Insights.Worker.DownloadsToCsv;
 using Kusto.Data.Common;
-using Microsoft.Extensions.Logging;
 using NuGet.Insights.Worker.BuildVersionSet;
 using MessagePack;
-using System.Diagnostics;
-using System.Globalization;
 
 namespace NuGet.Insights.Tool
 {

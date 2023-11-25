@@ -1,25 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using Markdig.Extensions.Tables;
 using Markdig.Helpers;
 #if DEBUG
 using Markdig.Renderers.Roundtrip;
 #endif
 using Markdig.Syntax;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.Insights.Worker
 {

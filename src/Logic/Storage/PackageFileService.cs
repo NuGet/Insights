@@ -1,16 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Security.Cryptography.Pkcs;
-using System.Threading.Tasks;
 using CommunityToolkit.HighPerformance;
 using Knapcode.MiniZip;
 using MessagePack;
-using Microsoft.Extensions.Options;
 using NuGet.Packaging.Signing;
 
 #nullable enable

@@ -1,16 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using Castle.Core.Internal;
 using Markdig.Extensions.Tables;
 using Markdig.Syntax;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.Insights.Worker
 {

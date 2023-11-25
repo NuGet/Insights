@@ -1,28 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
 using MessagePack;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
-using Moq;
 using Nito.AsyncEx;
 using NuGet.Insights.StorageNoOpRetry;
 using NuGet.Insights.WideEntities;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.Insights.ReferenceTracking
 {

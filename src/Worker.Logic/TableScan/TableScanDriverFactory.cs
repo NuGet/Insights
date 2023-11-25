@@ -1,9 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Azure.Data.Tables;
-using Microsoft.Extensions.DependencyInjection;
 using NuGet.Insights.Worker.EnqueueCatalogLeafScan;
 using NuGet.Insights.Worker.CopyBucketRange;
 using NuGet.Insights.Worker.LoadBucketedPackage;

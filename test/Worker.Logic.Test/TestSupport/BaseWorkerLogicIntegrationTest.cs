@@ -1,17 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Data;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Security.Cryptography;
-using System.Threading;
-using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
 using Azure.Data.Tables.Sas;
@@ -25,11 +15,7 @@ using Kusto.Data.Net.Client;
 using Kusto.Ingest;
 using MessagePack;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Insights.ReferenceTracking;
 using NuGet.Insights.StorageNoOpRetry;
@@ -37,9 +23,6 @@ using NuGet.Insights.Worker.BuildVersionSet;
 using NuGet.Insights.Worker.KustoIngestion;
 using NuGet.Insights.Worker.TimedReprocess;
 using NuGet.Insights.Worker.Workflow;
-using NuGet.Versioning;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace NuGet.Insights.Worker
 {

@@ -7,6 +7,13 @@
     <NoWarn>$(NoWarn);IDE0005</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <Using Remove="Microsoft.Extensions.DependencyInjection" />
+    <Using Remove="Microsoft.Extensions.Logging" />
+    <Using Remove="Microsoft.Extensions.Logging.Abstractions" />
+    <Using Remove="Microsoft.Extensions.Options" />
+    <Using Remove="NuGet.Versioning" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="NuGet.Commands" />
   </ItemGroup>
   <ItemGroup>

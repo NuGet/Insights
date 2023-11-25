@@ -1,18 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using CommunityToolkit.HighPerformance;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
+using INuGetLogger = NuGet.Common.ILogger;
 
 namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 {
@@ -32,7 +27,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             throw new NotImplementedException();
         }
 
-        public override IEnumerable<string> CopyFiles(string destination, IEnumerable<string> packageFiles, ExtractPackageFileDelegate extractFile, ILogger logger, CancellationToken token)
+        public override IEnumerable<string> CopyFiles(string destination, IEnumerable<string> packageFiles, ExtractPackageFileDelegate extractFile, INuGetLogger logger, CancellationToken token)
         {
             throw new NotImplementedException();
         }

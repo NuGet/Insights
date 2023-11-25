@@ -1,11 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Net.Http;
 using Azure.Core.Pipeline;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace NuGet.Insights
 {

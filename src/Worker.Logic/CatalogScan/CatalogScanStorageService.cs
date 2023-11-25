@@ -1,16 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
 using Azure.Data.Tables.Models;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights.Worker
