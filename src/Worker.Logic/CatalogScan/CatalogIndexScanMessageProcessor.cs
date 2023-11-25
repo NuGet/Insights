@@ -502,7 +502,7 @@ namespace NuGet.Insights.Worker
                     else
                     {
                         _logger.LogTransientWarning(
-                            "The cursor {CursorName} already has a value of {ExistingValue:O}. Skipping update an update of {ScanValue}.",
+                            "The cursor {CursorName} already has a value of {ExistingValue:O}. Skipping an update of {ScanValue:O}.",
                             cursor.Name,
                             cursor.Value,
                             scan.Max);
