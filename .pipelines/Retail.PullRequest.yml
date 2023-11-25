@@ -173,7 +173,7 @@ stages:
           displayName: "Install Azurite for npx"
           condition: eq('${{ storageType }}', 'Azurite')
 
-        - bash: npx --yes azurite --silent --location ./azurite &
+        - bash: npx --yes azurite --silent --inMemoryPersistence &
           displayName: "Start Azurite"
           condition: eq('${{ storageType }}', 'Azurite')
 
