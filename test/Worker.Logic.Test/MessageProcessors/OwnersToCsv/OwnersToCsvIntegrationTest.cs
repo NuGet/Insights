@@ -204,7 +204,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
 
         private void Configure()
         {
-            ConfigureSettings = x => x.OwnersV2Urls = new List<string> { $"http://localhost/{TestData}/{OwnersToCsvDir}/owners.v2.json" };
+            ConfigureSettings = x => x.OwnersV2Urls = new List<string> { $"http://localhost/{TestInput}/{OwnersToCsvDir}/owners.v2.json" };
             SetData(Step1);
         }
 
@@ -215,7 +215,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
                 if (req.RequestUri.AbsolutePath.EndsWith("/owners.v2.json", StringComparison.Ordinal))
                 {
                     var newReq = Clone(req);
-                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/{OwnersToCsvDir}/{stepName}/owners.v2.json");
+                    newReq.RequestUri = new Uri($"http://localhost/{TestInput}/{OwnersToCsvDir}/{stepName}/owners.v2.json");
                     return await TestDataHttpClient.SendAsync(newReq);
                 }
 

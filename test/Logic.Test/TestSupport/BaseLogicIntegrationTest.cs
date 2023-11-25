@@ -31,6 +31,11 @@ namespace NuGet.Insights
 {
     public abstract class BaseLogicIntegrationTest : IClassFixture<DefaultWebApplicationFactory<StaticFilesStartup>>, IAsyncLifetime
     {
+        /// <summary>
+        /// This should only be on when generating new test data locally. It should never be checked in as true.
+        /// </summary>
+        protected static readonly bool OverwriteTestData = false;
+
         static BaseLogicIntegrationTest()
         {
             // move temp directory to isolate test file leaks
@@ -40,34 +45,44 @@ namespace NuGet.Insights
             Environment.SetEnvironmentVariable("TEMP", newTemp);
             Environment.SetEnvironmentVariable("TMP", newTemp);
 
-            // update the last modified for test data
+            // update the last modified for test input
+            SetLastModified("DownloadsToCsv", Step1, "downloads.v1.json", "2021-01-14T18:00:00Z");
+            SetLastModified("DownloadsToCsv", Step2, "downloads.v1.json", "2021-01-15T19:00:00Z");
+
+            SetLastModified("DownloadsToCsv_UnicodeDuplicates", Step1, "downloads.v1.json", "2021-01-14T18:00:00Z");
+
             SetLastModified("OwnersToCsv", Step1, "owners.v2.json", "2021-01-14T18:00:00Z");
+            SetLastModified("OwnersToCsv", Step2, "owners.v2.json", "2021-01-15T19:00:00Z");
+
             SetLastModified("VerifiedPackagesToCsv", Step1, "verifiedPackages.json", "2021-01-14T18:00:00Z");
+            SetLastModified("VerifiedPackagesToCsv", Step2, "verifiedPackages.json", "2021-01-15T19:00:00Z");
+
+            SetLastModified("behaviorsample.1.0.0.nupkg.testdata", "2021-01-14T18:00:00Z");
+            SetLastModified("behaviorsample.1.0.0.nuspec", "2021-01-14T19:00:00Z");
+            SetLastModified("behaviorsample.1.0.0.md", "2021-01-14T20:00:00Z");
+            SetLastModified("behaviorsample.1.0.0.snupkg.testdata", "2021-01-14T21:00:00Z");
+
             SetLastModified("deltax.1.0.0.nupkg.testdata", "2021-01-14T18:00:00Z");
         }
 
-        protected static void SetLastModified(string testName, string stepName, string fileName, string lastModified)
+        private static void SetLastModified(string testName, string stepName, string fileName, string lastModified)
         {
             SetLastModified(Path.Combine(testName, stepName, fileName), lastModified);
         }
 
         protected static void SetLastModified(string path, string lastModified)
         {
-            var fileInfo = new FileInfo(Path.Combine(TestData, path));
+            var fileInfo = new FileInfo(Path.Combine(TestInput, path));
             var parsedLastModified = DateTimeOffset.Parse(lastModified, CultureInfo.InvariantCulture);
             fileInfo.LastWriteTimeUtc = parsedLastModified.UtcDateTime;
         }
 
         public const string ProgramName = "NuGet.Insights.Logic.Test";
+        public const string TestInput = "TestInput";
         public const string TestData = "TestData";
         public const string Step1 = "Step1";
         public const string Step2 = "Step2";
         public const string Step3 = "Step3";
-
-        /// <summary>
-        /// This should only be on when generating new test data locally. It should never be checked in as true.
-        /// </summary>
-        protected static readonly bool OverwriteTestData = false;
 
         private readonly Lazy<IHost> _lazyHost;
 

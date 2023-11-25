@@ -23,7 +23,7 @@ namespace NuGet.Insights
         public async Task FetchesPackageOwners()
         {
             // Arrange
-            var url = $"http://localhost/{TestData}/{OwnersToCsvDir}/{Step1}/owners.v2.json";
+            var url = $"http://localhost/{TestInput}/{OwnersToCsvDir}/{Step1}/owners.v2.json";
             ConfigureSettings = x => x.OwnersV2Urls = new List<string> { url };
             HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
             {

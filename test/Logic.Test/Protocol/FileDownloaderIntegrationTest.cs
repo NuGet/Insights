@@ -21,7 +21,7 @@ namespace NuGet.Insights
             public async Task ReturnsPropertiesForFullDownload()
             {
                 // Arrange
-                var url = $"http://localhost/{TestData}/deltax.1.0.0.nupkg";
+                var url = $"http://localhost/{TestInput}/deltax.1.0.0.nupkg";
                 HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
                 {
                     if (r.RequestUri.GetLeftPart(UriPartial.Path) == url)

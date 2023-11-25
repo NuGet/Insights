@@ -82,9 +82,9 @@ namespace NuGet.Insights.Worker
                 // Arrange
                 ConfigureSettings = x =>
                 {
-                    x.DownloadsV1Urls = new List<string> { $"http://localhost/{TestData}/DownloadsToCsv/{Step1}/downloads.v1.json" };
-                    x.OwnersV2Urls = new List<string> { $"http://localhost/{TestData}/OwnersToCsv/{Step1}/owners.v2.json" };
-                    x.VerifiedPackagesV1Urls = new List<string> { $"http://localhost/{TestData}/VerifiedPackagesToCsv/{Step1}/verifiedPackages.json" };
+                    x.DownloadsV1Urls = new List<string> { $"http://localhost/{TestInput}/DownloadsToCsv/{Step1}/downloads.v1.json" };
+                    x.OwnersV2Urls = new List<string> { $"http://localhost/{TestInput}/OwnersToCsv/{Step1}/owners.v2.json" };
+                    x.VerifiedPackagesV1Urls = new List<string> { $"http://localhost/{TestInput}/VerifiedPackagesToCsv/{Step1}/verifiedPackages.json" };
                 };
                 ConfigureWorkerSettings = x =>
                 {
@@ -395,9 +395,9 @@ namespace NuGet.Insights.Worker
                 {
                     x.MaxTempMemoryStreamSize = 0;
                     x.TempDirectories[0].MaxConcurrentWriters = 1;
-                    x.DownloadsV1Urls = new List<string> { $"http://localhost/{TestData}/DownloadsToCsv/downloads.v1.json" };
-                    x.OwnersV2Urls = new List<string> { $"http://localhost/{TestData}/OwnersToCsv/owners.v2.json" };
-                    x.VerifiedPackagesV1Urls = new List<string> { $"http://localhost/{TestData}/VerifiedPackagesToCsv/verifiedPackages.json" };
+                    x.DownloadsV1Urls = new List<string> { $"http://localhost/{TestInput}/DownloadsToCsv/downloads.v1.json" };
+                    x.OwnersV2Urls = new List<string> { $"http://localhost/{TestInput}/OwnersToCsv/owners.v2.json" };
+                    x.VerifiedPackagesV1Urls = new List<string> { $"http://localhost/{TestInput}/VerifiedPackagesToCsv/verifiedPackages.json" };
                 };
                 ConfigureWorkerSettings = x =>
                 {
@@ -422,21 +422,21 @@ namespace NuGet.Insights.Worker
                     if (req.RequestUri.AbsolutePath.EndsWith("/downloads.v1.json", StringComparison.Ordinal))
                     {
                         var newReq = Clone(req);
-                        newReq.RequestUri = new Uri($"http://localhost/{TestData}/DownloadsToCsv/{Step1}/downloads.v1.json");
+                        newReq.RequestUri = new Uri($"http://localhost/{TestInput}/DownloadsToCsv/{Step1}/downloads.v1.json");
                         return await TestDataHttpClient.SendAsync(newReq);
                     }
 
                     if (req.RequestUri.AbsolutePath.EndsWith("/owners.v2.json", StringComparison.Ordinal))
                     {
                         var newReq = Clone(req);
-                        newReq.RequestUri = new Uri($"http://localhost/{TestData}/OwnersToCsv/{Step1}/owners.v2.json");
+                        newReq.RequestUri = new Uri($"http://localhost/{TestInput}/OwnersToCsv/{Step1}/owners.v2.json");
                         return await TestDataHttpClient.SendAsync(newReq);
                     }
 
                     if (req.RequestUri.AbsolutePath.EndsWith("/verifiedPackages.json", StringComparison.Ordinal))
                     {
                         var newReq = Clone(req);
-                        newReq.RequestUri = new Uri($"http://localhost/{TestData}/VerifiedPackagesToCsv/{Step1}/verifiedPackages.json");
+                        newReq.RequestUri = new Uri($"http://localhost/{TestInput}/VerifiedPackagesToCsv/{Step1}/verifiedPackages.json");
                         return await TestDataHttpClient.SendAsync(newReq);
                     }
 

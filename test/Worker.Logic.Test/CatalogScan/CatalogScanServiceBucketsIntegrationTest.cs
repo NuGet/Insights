@@ -183,7 +183,7 @@ namespace NuGet.Insights.Worker
                 {
                     var newReq = Clone(req);
                     newReq.Headers.TryAddWithoutValidation("Original", req.RequestUri.AbsoluteUri);
-                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/behaviorsample.1.0.0.md");
+                    newReq.RequestUri = new Uri($"http://localhost/{TestInput}/behaviorsample.1.0.0.md");
                     return await TestDataHttpClient.SendAsync(newReq);
                 }
 
@@ -191,7 +191,7 @@ namespace NuGet.Insights.Worker
                 {
                     var newReq = Clone(req);
                     newReq.Headers.TryAddWithoutValidation("Original", req.RequestUri.AbsoluteUri);
-                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/behaviorsample.1.0.0.snupkg.testdata");
+                    newReq.RequestUri = new Uri($"http://localhost/{TestInput}/behaviorsample.1.0.0.snupkg.testdata");
                     return await TestDataHttpClient.SendAsync(newReq);
                 }
 

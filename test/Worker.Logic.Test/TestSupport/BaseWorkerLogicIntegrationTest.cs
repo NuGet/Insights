@@ -45,25 +45,6 @@ namespace NuGet.Insights.Worker
 {
     public abstract class BaseWorkerLogicIntegrationTest : BaseLogicIntegrationTest
     {
-        static BaseWorkerLogicIntegrationTest()
-        {
-            SetLastModified("DownloadsToCsv", Step1, "downloads.v1.json", "2021-01-14T18:00:00Z");
-            SetLastModified("DownloadsToCsv", Step2, "downloads.v1.json", "2021-01-15T19:00:00Z");
-
-            SetLastModified("DownloadsToCsv_UnicodeDuplicates", Step1, "downloads.v1.json", "2021-01-14T18:00:00Z");
-
-            SetLastModified("OwnersToCsv", Step1, "owners.v2.json", "2021-01-14T18:00:00Z");
-            SetLastModified("OwnersToCsv", Step2, "owners.v2.json", "2021-01-15T19:00:00Z");
-
-            SetLastModified("VerifiedPackagesToCsv", Step1, "verifiedPackages.json", "2021-01-14T18:00:00Z");
-            SetLastModified("VerifiedPackagesToCsv", Step2, "verifiedPackages.json", "2021-01-15T19:00:00Z");
-
-            SetLastModified("behaviorsample.1.0.0.nupkg.testdata", "2021-01-14T18:00:00Z");
-            SetLastModified("behaviorsample.1.0.0.nuspec", "2021-01-14T19:00:00Z");
-            SetLastModified("behaviorsample.1.0.0.md", "2021-01-14T20:00:00Z");
-            SetLastModified("behaviorsample.1.0.0.snupkg.testdata", "2021-01-14T21:00:00Z");
-        }
-
         public delegate void TryGetId(string id, out string outId);
         public delegate void TryGetVersion(string id, string version, out string outVersion);
 
@@ -777,7 +758,7 @@ namespace NuGet.Insights.Worker
                 if (req.RequestUri.AbsolutePath.EndsWith($"/{lowerId}.{lowerVersion}.nupkg", StringComparison.Ordinal))
                 {
                     var newReq = Clone(req);
-                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/{lowerId}.{lowerVersion}.nupkg.testdata");
+                    newReq.RequestUri = new Uri($"http://localhost/{TestInput}/{lowerId}.{lowerVersion}.nupkg.testdata");
                     var response = await TestDataHttpClient.SendAsync(newReq);
                     response.EnsureSuccessStatusCode();
                     return response;
@@ -786,7 +767,7 @@ namespace NuGet.Insights.Worker
                 if (req.RequestUri.AbsolutePath.EndsWith($"/{lowerId}.nuspec", StringComparison.Ordinal))
                 {
                     var newReq = Clone(req);
-                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/{lowerId}.{lowerVersion}.nuspec");
+                    newReq.RequestUri = new Uri($"http://localhost/{TestInput}/{lowerId}.{lowerVersion}.nuspec");
                     var response = await TestDataHttpClient.SendAsync(newReq);
                     response.EnsureSuccessStatusCode();
                     return response;
@@ -795,7 +776,7 @@ namespace NuGet.Insights.Worker
                 if (req.RequestUri.AbsolutePath.EndsWith($"{lowerId}/{lowerVersion}/readme", StringComparison.Ordinal))
                 {
                     var newReq = Clone(req);
-                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/{lowerId}.{lowerVersion}.md");
+                    newReq.RequestUri = new Uri($"http://localhost/{TestInput}/{lowerId}.{lowerVersion}.md");
                     var response = await TestDataHttpClient.SendAsync(newReq);
                     response.EnsureSuccessStatusCode();
                     return response;
@@ -804,10 +785,10 @@ namespace NuGet.Insights.Worker
                 if (req.RequestUri.AbsolutePath.EndsWith($"/{lowerId}.{lowerVersion}.snupkg", StringComparison.Ordinal))
                 {
                     var newReq = Clone(req);
-                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/{lowerId}.{lowerVersion}.snupkg.testdata");
+                    newReq.RequestUri = new Uri($"http://localhost/{TestInput}/{lowerId}.{lowerVersion}.snupkg.testdata");
                     var response = await TestDataHttpClient.SendAsync(newReq);
                     response.EnsureSuccessStatusCode();
-                    SetBlobResponseHeaders(response, Path.GetFullPath(Path.Combine(TestData, $"{lowerId}.{lowerVersion}.snupkg.testdata")));
+                    SetBlobResponseHeaders(response, Path.GetFullPath(Path.Combine(TestInput, $"{lowerId}.{lowerVersion}.snupkg.testdata")));
                     return response;
                 }
 

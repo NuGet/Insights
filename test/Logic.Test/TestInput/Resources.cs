@@ -76,7 +76,7 @@ namespace NuGet.Insights
 
         private static FileStream GetFileStream(string resourceName)
         {
-            return File.OpenRead(Path.Combine("TestData", resourceName));
+            return File.OpenRead(Path.Combine("TestInput", resourceName));
         }
     }
 }

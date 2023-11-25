@@ -19,7 +19,7 @@
     <ProjectReference Include="..\..\src\Logic\Logic.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Update="TestData\**\*">
+    <None Update="TestInput\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

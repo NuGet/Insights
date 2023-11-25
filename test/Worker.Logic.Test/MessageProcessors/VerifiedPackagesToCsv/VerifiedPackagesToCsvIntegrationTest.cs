@@ -206,7 +206,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
 
         private void Configure()
         {
-            ConfigureSettings = x => x.VerifiedPackagesV1Urls = new List<string> { $"http://localhost/{TestData}/{VerifiedPackagesToCsvDir}/verifiedPackages.json" };
+            ConfigureSettings = x => x.VerifiedPackagesV1Urls = new List<string> { $"http://localhost/{TestInput}/{VerifiedPackagesToCsvDir}/verifiedPackages.json" };
             SetData(Step1);
         }
 
@@ -217,7 +217,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
                 if (req.RequestUri.AbsolutePath.EndsWith("/verifiedPackages.json", StringComparison.Ordinal))
                 {
                     var newReq = Clone(req);
-                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/{VerifiedPackagesToCsvDir}/{stepName}/verifiedPackages.json");
+                    newReq.RequestUri = new Uri($"http://localhost/{TestInput}/{VerifiedPackagesToCsvDir}/{stepName}/verifiedPackages.json");
                     return await TestDataHttpClient.SendAsync(newReq);
                 }
 

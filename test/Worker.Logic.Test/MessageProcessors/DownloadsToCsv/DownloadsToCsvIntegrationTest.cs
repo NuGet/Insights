@@ -293,7 +293,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
 
         private void ConfigureAndSetLastModified(string dirName = DownloadsToCsvDir)
         {
-            ConfigureSettings = x => x.DownloadsV1Urls = new List<string> { $"http://localhost/{TestData}/{dirName}/downloads.v1.json" };
+            ConfigureSettings = x => x.DownloadsV1Urls = new List<string> { $"http://localhost/{TestInput}/{dirName}/downloads.v1.json" };
             SetData(Step1, dirName);
         }
 
@@ -305,7 +305,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 {
                     var newReq = Clone(req);
                     newReq.Headers.TryAddWithoutValidation("Original", req.RequestUri.AbsoluteUri);
-                    newReq.RequestUri = new Uri($"http://localhost/{TestData}/{dirName}/{stepName}/downloads.v1.json");
+                    newReq.RequestUri = new Uri($"http://localhost/{TestInput}/{dirName}/{stepName}/downloads.v1.json");
                     return await TestDataHttpClient.SendAsync(newReq);
                 }
 

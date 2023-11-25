@@ -23,7 +23,7 @@ namespace NuGet.Insights
         public async Task FetchesVerifiedPackages()
         {
             // Arrange
-            var url = $"http://localhost/{TestData}/{VerifiedPackagesToCsvDir}/{Step1}/verifiedPackages.json";
+            var url = $"http://localhost/{TestInput}/{VerifiedPackagesToCsvDir}/{Step1}/verifiedPackages.json";
             ConfigureSettings = x => x.VerifiedPackagesV1Urls = new List<string> { url };
             HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
             {
