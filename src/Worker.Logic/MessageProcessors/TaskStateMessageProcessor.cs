@@ -29,10 +29,9 @@ namespace NuGet.Insights.Worker
         public async Task ProcessAsync(T message, long dequeueCount)
         {
             var taskState = await _taskStateStorageService.GetAsync(message.TaskStateKey);
-            if (taskState == null)
+            if (taskState is null)
             {
-                message.AttemptCount++;
-                if (message.AttemptCount <= 10)
+                if (message.AttemptCount < 10)
                 {
                     _logger.LogTransientWarning(
                         "Attempt {AttemptCount}: no task state for storage suffix '{StorageSuffix}', {PartitionKey}, {RowKey} was found. Trying again.",
@@ -40,6 +39,7 @@ namespace NuGet.Insights.Worker
                         message.TaskStateKey.StorageSuffix,
                         message.TaskStateKey.PartitionKey,
                         message.TaskStateKey.RowKey);
+                    message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
                 }
                 else

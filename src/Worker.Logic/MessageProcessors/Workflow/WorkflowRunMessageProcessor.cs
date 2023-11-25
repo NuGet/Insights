@@ -134,11 +134,25 @@ namespace NuGet.Insights.Worker.Workflow
 
         public async Task ProcessAsync(WorkflowRunMessage message, long dequeueCount)
         {
-            var run = await _storageService.GetRunAsync(message.WorkflowRunId);
+            var run = await _storageService.GetRunAsync(message.RunId);
             if (run == null)
             {
-                await Task.Delay(TimeSpan.FromSeconds(dequeueCount * 15));
-                throw new InvalidOperationException($"An incomplete workflow run for {message.WorkflowRunId} should have already been created.");
+                if (message.AttemptCount < 10)
+                {
+                    _logger.LogTransientWarning("After {AttemptCount} attempts, the workflow run {RunId} should have already been created. Trying again.",
+                        message.AttemptCount,
+                        message.RunId);
+                    message.AttemptCount++;
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                }
+                else
+                {
+                    _logger.LogTransientWarning("After {AttemptCount} attempts, the workflow run {RunId} should have already been created. Giving up.",
+                        message.AttemptCount,
+                        message.RunId);
+                }
+
+                return;
             }
 
             await using var lease = await LeaseOrNullAsync(message);
@@ -154,7 +168,7 @@ namespace NuGet.Insights.Worker.Workflow
                 var transition = CurrentStateToTransition[run.State];
                 if (await transition.IsIncompleteAsync(this))
                 {
-                    _logger.LogInformation("The {State} is not yet complete.", run.State);
+                    _logger.LogInformation("The {State} state is not yet complete.", run.State);
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, TimeSpan.FromSeconds(5));
                     return;

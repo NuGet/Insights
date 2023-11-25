@@ -51,7 +51,7 @@ namespace NuGet.Insights.Worker
         public async Task ProcessAsync(CatalogIndexScanMessage message, long dequeueCount)
         {
             var scan = await _storageService.GetIndexScanAsync(message.DriverType, message.ScanId);
-            if (scan == null)
+            if (scan is null)
             {
                 if (message.AttemptCount < 10)
                 {
@@ -61,7 +61,6 @@ namespace NuGet.Insights.Worker
                         message.ScanId);
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
-                    return;
                 }
                 else
                 {
@@ -69,8 +68,9 @@ namespace NuGet.Insights.Worker
                         message.AttemptCount,
                         message.DriverType,
                         message.ScanId);
-                    return;
                 }
+
+                return;
             }
 
             if (scan.State.IsTerminal())

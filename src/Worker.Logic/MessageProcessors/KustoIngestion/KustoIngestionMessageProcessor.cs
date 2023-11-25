@@ -45,10 +45,24 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public async Task ProcessAsync(KustoIngestionMessage message, long dequeueCount)
         {
             var ingestion = await _storageService.GetIngestionAsync(message.IngestionId);
-            if (ingestion == null)
+            if (ingestion is null)
             {
-                await Task.Delay(TimeSpan.FromSeconds(dequeueCount * 15));
-                throw new InvalidOperationException($"An incomplete Kusto ingestion should have already been created.");
+                if (message.AttemptCount < 10)
+                {
+                    _logger.LogTransientWarning("After {AttemptCount} attempts, the Kusto ingestion {IngestionId} should have already been created. Trying again.",
+                        message.AttemptCount,
+                        message.IngestionId);
+                    message.AttemptCount++;
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                }
+                else
+                {
+                    _logger.LogTransientWarning("After {AttemptCount} attempts, the Kusto ingestion {IngestionId} should have already been created. Giving up.",
+                        message.AttemptCount,
+                        message.IngestionId);
+                }
+
+                return;
             }
 
             if (ingestion.State == KustoIngestionState.Created)

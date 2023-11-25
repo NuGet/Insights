@@ -34,10 +34,24 @@ namespace NuGet.Insights.Worker.TimedReprocess
         public async Task ProcessAsync(TimedReprocessMessage message, long dequeueCount)
         {
             var run = await _storageService.GetRunAsync(message.RunId);
-            if (run == null)
+            if (run is null)
             {
-                await Task.Delay(TimeSpan.FromSeconds(dequeueCount * 15));
-                throw new InvalidOperationException($"An incomplete timed reprocess run for {message.RunId} should have already been created.");
+                if (message.AttemptCount < 10)
+                {
+                    _logger.LogTransientWarning("After {AttemptCount} attempts, the timed reprocess run {RunId} should have already been created. Trying again.",
+                        message.AttemptCount,
+                        message.RunId);
+                    message.AttemptCount++;
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
+                }
+                else
+                {
+                    _logger.LogTransientWarning("After {AttemptCount} attempts, the timed reprocess run {RunId} should have already been created. Giving up.",
+                        message.AttemptCount,
+                        message.RunId);
+                }
+
+                return;
             }
 
             if (run.State == TimedReprocessState.Created)

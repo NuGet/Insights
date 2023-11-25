@@ -110,7 +110,7 @@ namespace NuGet.Insights.Worker.Workflow
             {
                 new WorkflowRunMessage
                 {
-                    WorkflowRunId = run.RunId,
+                    RunId = run.RunId,
                 }
             });
             await _workflowStorageService.AddRunAsync(run);
