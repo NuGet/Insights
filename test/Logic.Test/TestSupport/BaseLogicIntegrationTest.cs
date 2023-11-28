@@ -205,8 +205,10 @@ namespace NuGet.Insights
             return await table.QueryAsync<T>().ToListAsync();
         }
 
-        protected async Task<List<(string PartitionKey, string RowKey, T Entity)>> GetWideEntitiesAsync<T>(
-        string tableName,
+        public record DeserializedWideEntity<T>(string PartitionKey, string RowKey, T Entity);
+
+        protected async Task<List<DeserializedWideEntity<T>>> GetWideEntitiesAsync<T>(
+            string tableName,
             Func<Stream, T> deserializeEntity = null)
         {
             deserializeEntity ??= stream => MessagePackSerializer.Deserialize<T>(stream, NuGetInsightsMessagePack.Options);
@@ -214,11 +216,11 @@ namespace NuGet.Insights
             var service = Host.Services.GetRequiredService<WideEntityService>();
 
             var wideEntities = await service.RetrieveAsync(tableName);
-            var entities = new List<(string PartitionKey, string RowKey, T Entity)>();
+            var entities = new List<DeserializedWideEntity<T>>();
             foreach (var wideEntity in wideEntities)
             {
                 var entity = deserializeEntity(wideEntity.GetStream());
-                entities.Add((wideEntity.PartitionKey, wideEntity.RowKey, entity));
+                entities.Add(new DeserializedWideEntity<T>(wideEntity.PartitionKey, wideEntity.RowKey, entity));
             }
 
             return entities;
@@ -232,22 +234,6 @@ namespace NuGet.Insights
             Assert.Equal(expected, blobs.Count);
         }
 
-        protected async Task<string> AssertCsvBlobAsync(Type recordType, string containerName, string testName, string stepName, string fileName, string blobName)
-        {
-            Assert.EndsWith(".csv.gz", blobName, StringComparison.Ordinal);
-            var actual = await AssertBlobAsync(containerName, testName, stepName, fileName, blobName, gzip: true);
-            var headerFactory = (ICsvRecord)Activator.CreateInstance(recordType);
-            var stringWriter = new StringWriter { NewLine = "\n" };
-            headerFactory.WriteHeader(stringWriter);
-            Assert.StartsWith(stringWriter.ToString(), actual, StringComparison.Ordinal);
-            return actual;
-        }
-
-        protected async Task<string> AssertCsvBlobAsync<T>(string containerName, string testName, string stepName, string fileName, string blobName) where T : ICsvRecord
-        {
-            return await AssertCsvBlobAsync(typeof(T), containerName, testName, stepName, fileName, blobName);
-        }
-
         protected async Task<BlobClient> GetBlobAsync(string containerName, string blobName)
         {
             var client = await ServiceClientFactory.GetBlobServiceClientAsync();
@@ -255,18 +241,13 @@ namespace NuGet.Insights
             return container.GetBlobClient(blobName);
         }
 
-        protected async Task<string> AssertBlobAsync(string containerName, string testName, string stepName, string fileName, string blobName, bool gzip = false)
+        protected async Task<(BlobClient Blob, string Content)> GetBlobContentAsync(string containerName, string blobName, bool gzip = false)
         {
             var blob = await GetBlobAsync(containerName, blobName);
 
             string actual;
             if (gzip)
             {
-                if (fileName == null)
-                {
-                    fileName = blobName.Substring(0, blobName.Length - ".gz".Length);
-                }
-
                 Assert.EndsWith(".gz", blobName, StringComparison.Ordinal);
 
                 using var destStream = new MemoryStream();
@@ -289,25 +270,12 @@ namespace NuGet.Insights
             }
             else
             {
-                if (fileName == null)
-                {
-                    fileName = blobName;
-                }
-
                 using BlobDownloadInfo downloadInfo = await blob.DownloadAsync();
                 using var reader = new StreamReader(downloadInfo.Content);
                 actual = await reader.ReadToEndAsync();
             }
 
-            var testDataFile = Path.Combine(TestData, testName, stepName, fileName);
-            if (OverwriteTestData)
-            {
-                OverwriteTestDataAndCopyToSource(testDataFile, actual);
-            }
-            var expected = File.ReadAllText(testDataFile);
-            Assert.Equal(expected, actual);
-
-            return actual;
+            return (blob, actual);
         }
 
         private static readonly ConcurrentDictionary<string, object> StringLock = new ConcurrentDictionary<string, object>();

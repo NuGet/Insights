@@ -25,7 +25,7 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
 
             // Assert
             await AssertOutputAsync(SymbolPackageArchiveToCsvDir, Step1, 0);
-            await AssertBlobCountAsync(1);
+            await AssertCsvCountAsync(1);
 
             // Act
             await UpdateAsync(max2);
@@ -33,7 +33,7 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             // Assert
             await AssertOutputAsync(SymbolPackageArchiveToCsvDir, Step2, 0);
             await AssertOutputAsync(SymbolPackageArchiveToCsvDir, Step2, 2);
-            await AssertBlobCountAsync(2);
+            await AssertCsvCountAsync(2);
         }
 
         [Fact]

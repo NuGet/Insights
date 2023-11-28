@@ -19,10 +19,10 @@ namespace NuGet.Insights.Worker
 
         protected async Task AssertOutputAsync(string testName, string stepName, int bucket)
         {
-            await AssertCompactAsync<T>(DestinationContainerName, testName, stepName, bucket);
+            await AssertCsvAsync<T>(DestinationContainerName, testName, stepName, bucket);
         }
 
-        protected async Task AssertBlobCountAsync(int expected)
+        protected async Task AssertCsvCountAsync(int expected)
         {
             await AssertBlobCountAsync(DestinationContainerName, expected);
         }
@@ -46,9 +46,19 @@ namespace NuGet.Insights.Worker
             yield return DestinationContainerName2;
         }
 
-        protected async Task AssertBlobCountAsync(int expected)
+        protected async Task AssertCsvCountAsync(int expected)
+        {
+            await AssertCsvCountT1Async(expected);
+            await AssertCsvCountT2Async(expected);
+        }
+
+        protected async Task AssertCsvCountT1Async(int expected)
         {
             await AssertBlobCountAsync(DestinationContainerName1, expected);
+        }
+
+        protected async Task AssertCsvCountT2Async(int expected)
+        {
             await AssertBlobCountAsync(DestinationContainerName2, expected);
         }
 
@@ -60,12 +70,12 @@ namespace NuGet.Insights.Worker
 
         protected async Task AssertOutputT1Async(string testName, string stepName, int bucket, string fileName = null)
         {
-            await AssertCompactAsync<T1>(DestinationContainerName1, testName, Path.Combine(stepName, "T1"), bucket, fileName);
+            await AssertCsvAsync<T1>(DestinationContainerName1, testName, Path.Combine(stepName, "T1"), bucket, fileName);
         }
 
         protected async Task AssertOutputT2Async(string testName, string stepName, int bucket, string fileName = null)
         {
-            await AssertCompactAsync<T2>(DestinationContainerName2, testName, Path.Combine(stepName, "T2"), bucket, fileName);
+            await AssertCsvAsync<T2>(DestinationContainerName2, testName, Path.Combine(stepName, "T2"), bucket, fileName);
         }
     }
 
@@ -98,26 +108,41 @@ namespace NuGet.Insights.Worker
             await AssertOutputT3Async(testName, stepName, bucket);
         }
 
-        protected async Task AssertBlobCountAsync(int expected)
+        protected async Task AssertCsvCountAsync(int expected)
+        {
+            await AssertCsvCountT1Async(expected);
+            await AssertCsvCountT2Async(expected);
+            await AssertCsvCountT3Async(expected);
+        }
+
+        protected async Task AssertCsvCountT1Async(int expected)
         {
             await AssertBlobCountAsync(DestinationContainerName1, expected);
+        }
+
+        protected async Task AssertCsvCountT2Async(int expected)
+        {
             await AssertBlobCountAsync(DestinationContainerName2, expected);
+        }
+
+        protected async Task AssertCsvCountT3Async(int expected)
+        {
             await AssertBlobCountAsync(DestinationContainerName3, expected);
         }
 
         protected async Task AssertOutputT1Async(string testName, string stepName, int bucket, string fileName = null)
         {
-            await AssertCompactAsync<T1>(DestinationContainerName1, testName, Path.Combine(stepName, "T1"), bucket, fileName);
+            await AssertCsvAsync<T1>(DestinationContainerName1, testName, Path.Combine(stepName, "T1"), bucket, fileName);
         }
 
         protected async Task AssertOutputT2Async(string testName, string stepName, int bucket, string fileName = null)
         {
-            await AssertCompactAsync<T2>(DestinationContainerName2, testName, Path.Combine(stepName, "T2"), bucket, fileName);
+            await AssertCsvAsync<T2>(DestinationContainerName2, testName, Path.Combine(stepName, "T2"), bucket, fileName);
         }
 
         protected async Task AssertOutputT3Async(string testName, string stepName, int bucket, string fileName = null)
         {
-            await AssertCompactAsync<T3>(DestinationContainerName3, testName, Path.Combine(stepName, "T3"), bucket, fileName);
+            await AssertCsvAsync<T3>(DestinationContainerName3, testName, Path.Combine(stepName, "T3"), bucket, fileName);
         }
     }
 }

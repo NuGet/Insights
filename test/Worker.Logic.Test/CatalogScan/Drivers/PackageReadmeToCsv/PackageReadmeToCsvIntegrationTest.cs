@@ -34,7 +34,7 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
             // Assert
             await AssertOutputAsync(PackageReadmeToCsvDir, Step1, 0); // This file is unchanged
             await AssertOutputAsync(PackageReadmeToCsvDir, Step2, 2);
-            await AssertBlobCountAsync(DestinationContainerName, 2);
+            await AssertCsvCountAsync(2);
         }
 
         [Fact]

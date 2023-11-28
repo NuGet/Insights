@@ -305,7 +305,7 @@ __pycache__/
 # OpenCover UI analysis results
 OpenCover/
 
-# NuGet.Insights stuff
+# NuGet Insights stuff
 profile.arm.json
 .tools
 **/wwwroot/css/*.min.css

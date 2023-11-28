@@ -14,8 +14,6 @@ namespace NuGet.Insights.Worker
 {
     public class AppendResultStorageService
     {
-        private static readonly ConcurrentDictionary<Type, string> TypeToHeader = new ConcurrentDictionary<Type, string>();
-
         private const string ContentType = "text/plain";
         public const string CompactPrefix = "compact_";
 
@@ -382,18 +380,8 @@ namespace NuGet.Insights.Worker
                 }
 
                 using var reader = new StreamReader(readStream);
-
-                var actualHeader = reader.ReadLine();
-                var expectedHeader = GetHeader<T>();
-                if (actualHeader != expectedHeader)
-                {
-                    throw new InvalidOperationException(
-                        "The header in the blob doesn't match the header for the readers being added." + Environment.NewLine +
-                        "Expected: " + expectedHeader + Environment.NewLine +
-                        "Actual: " + actualHeader);
-                }
-
-                return (_csvReader.GetRecords<T>(reader, bufferSize), info.Details);
+                var result = _csvReader.GetRecords<T>(reader, bufferSize);
+                return (result, info.Details);
             }
             finally
             {
@@ -449,7 +437,7 @@ namespace NuGet.Insights.Worker
             return MessagePackSerializer.Deserialize<List<T>>(stream, NuGetInsightsMessagePack.Options);
         }
 
-        private static MemoryStream SerializeRecords<T>(IReadOnlyList<T> records, bool writeHeader, bool gzip, out long uncompressedLength) where T : ICsvRecord
+        private MemoryStream SerializeRecords<T>(IReadOnlyList<T> records, bool writeHeader, bool gzip, out long uncompressedLength) where T : ICsvRecord
         {
             var memoryStream = new MemoryStream();
             if (gzip)
@@ -470,7 +458,7 @@ namespace NuGet.Insights.Worker
             return memoryStream;
         }
 
-        private static void SerializeRecords<T>(IReadOnlyList<T> records, Stream destination, bool writeHeader) where T : ICsvRecord
+        private void SerializeRecords<T>(IReadOnlyList<T> records, Stream destination, bool writeHeader) where T : ICsvRecord
         {
             using var streamWriter = new StreamWriter(destination, new UTF8Encoding(false), bufferSize: 1024, leaveOpen: true)
             {
@@ -479,7 +467,7 @@ namespace NuGet.Insights.Worker
 
             if (writeHeader)
             {
-                streamWriter.WriteLine(GetHeader<T>());
+                streamWriter.WriteLine(_csvReader.GetHeader<T>());
             }
 
             SerializeRecords(records, streamWriter);
@@ -497,18 +485,6 @@ namespace NuGet.Insights.Worker
         {
             var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
             return serviceClient.GetBlobContainerClient(name);
-        }
-
-        private static string GetHeader<T>() where T : ICsvRecord
-        {
-            var type = typeof(T);
-            return TypeToHeader.GetOrAdd(type, _ =>
-            {
-                var headerWriter = Activator.CreateInstance<T>();
-                using var stringWriter = new StringWriter();
-                headerWriter.WriteHeader(stringWriter);
-                return stringWriter.ToString().TrimEnd();
-            });
         }
     }
 }

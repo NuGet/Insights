@@ -177,10 +177,10 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             // Assert
             await AssertTableOutputAsync(PackageCertificateToCsv_WithSingleDeleteDir, Step1);
             await AssertOutputT1Async(PackageCertificateToCsv_WithSingleDeleteDir, Step1, 1);
-            await AssertBlobCountAsync(DestinationContainerName1, 1);
+            await AssertCsvCountT1Async(1);
             await AssertOutputT2Async(PackageCertificateToCsv_WithSingleDeleteDir, Step1, 1);
             await AssertOutputT2Async(PackageCertificateToCsv_WithSingleDeleteDir, Step1, 2);
-            await AssertBlobCountAsync(DestinationContainerName2, 2);
+            await AssertCsvCountT2Async(2);
 
             // Act
             await SetCursorAsync(DriverType, min2);
@@ -190,10 +190,10 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             await AssertOwnerToSubjectAsync(PackageCertificateToCsv_WithSingleDeleteDir, Step2, "empty-array.json");
             await AssertSubjectToOwnerAsync(PackageCertificateToCsv_WithSingleDeleteDir, Step2);
             await AssertOutputT1Async(PackageCertificateToCsv_WithSingleDeleteDir, Step2, 1);
-            await AssertBlobCountAsync(DestinationContainerName1, 1);
+            await AssertCsvCountT1Async(1);
             await AssertOutputT2Async(PackageCertificateToCsv_WithSingleDeleteDir, Step1, 1); // This file is unchanged.
             await AssertOutputT2Async(PackageCertificateToCsv_WithSingleDeleteDir, Step1, 2); // This file is unchanged.
-            await AssertBlobCountAsync(DestinationContainerName2, 2);
+            await AssertCsvCountT2Async(2);
 
             // Act
             await CleanupOrphansAsync();
@@ -202,10 +202,10 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             await AssertOwnerToSubjectAsync(PackageCertificateToCsv_WithSingleDeleteDir, Step2, "empty-array.json"); // This file is unchanged.
             await AssertSubjectToOwnerAsync(PackageCertificateToCsv_WithSingleDeleteDir, Step2, "empty-array.json");
             await AssertOutputT1Async(PackageCertificateToCsv_WithSingleDeleteDir, Step2, 1); // This file is unchanged.
-            await AssertBlobCountAsync(DestinationContainerName1, 1);
+            await AssertCsvCountT1Async(1);
             await AssertOutputT2Async(PackageCertificateToCsv_WithSingleDeleteDir, Step3, 1, "empty.csv");
             await AssertOutputT2Async(PackageCertificateToCsv_WithSingleDeleteDir, Step3, 2, "empty.csv");
-            await AssertBlobCountAsync(DestinationContainerName2, 2);
+            await AssertCsvCountT2Async(2);
         }
 
         [Fact]
@@ -225,8 +225,8 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             // Assert
             await AssertTableOutputAsync(PackageCertificateToCsv_WithDollarSignIdDir, Step1, "empty-array.json");
             await AssertOutputT1Async(PackageCertificateToCsv_WithDollarSignIdDir, Step1, 2);
-            await AssertBlobCountAsync(DestinationContainerName1, 1);
-            await AssertBlobCountAsync(DestinationContainerName2, 0);
+            await AssertCsvCountT1Async(1);
+            await AssertCsvCountT2Async(0);
         }
 
 

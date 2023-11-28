@@ -46,9 +46,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             await UpdateAsync(max1);
 
             // Assert
-            await AssertBlobCountAsync(DestinationContainerName1, 3);
-            await AssertBlobCountAsync(DestinationContainerName2, 3);
-            await AssertBlobCountAsync(DestinationContainerName3, 3);
+            await AssertCsvCountAsync(3);
             await AssertOutputAsync(CatalogDataToCsv_DeprecationDir, Step1, 0);
             await AssertOutputAsync(CatalogDataToCsv_DeprecationDir, Step1, 1);
             await AssertOutputAsync(CatalogDataToCsv_DeprecationDir, Step1, 2);
@@ -68,9 +66,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             await UpdateAsync(max1);
 
             // Assert
-            await AssertBlobCountAsync(DestinationContainerName1, 3);
-            await AssertBlobCountAsync(DestinationContainerName2, 3);
-            await AssertBlobCountAsync(DestinationContainerName3, 3);
+            await AssertCsvCountAsync(3);
             await AssertOutputAsync(CatalogDataToCsv_VulnerabilitiesDir, Step1, 0);
             await AssertOutputAsync(CatalogDataToCsv_VulnerabilitiesDir, Step1, 1);
             await AssertOutputAsync(CatalogDataToCsv_VulnerabilitiesDir, Step1, 2);

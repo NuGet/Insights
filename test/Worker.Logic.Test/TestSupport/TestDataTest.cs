@@ -22,6 +22,7 @@ namespace NuGet.Insights.Worker
         public void HasNoDuplicateFiles()
         {
             var hasDuplicates = false;
+            var foundAny = false;
 
             foreach (var directory in Directory.EnumerateDirectories(TestData))
             {
@@ -29,6 +30,8 @@ namespace NuGet.Insights.Worker
                 var fileSizeToFiles = new Dictionary<long, List<string>>();
                 foreach (var file in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
                 {
+                    foundAny = true;
+
                     var fullPath = Path.GetFullPath(file);
                     var fileSize = new FileInfo(fullPath).Length;
                     if (!fileSizeToFiles.TryGetValue(fileSize, out var files))
@@ -72,7 +75,8 @@ namespace NuGet.Insights.Worker
                 }
             }
 
-            Assert.False(hasDuplicates);
+            Assert.False(hasDuplicates, "Some duplicate files were found.");
+            Assert.True(foundAny);
         }
 
         [Fact]

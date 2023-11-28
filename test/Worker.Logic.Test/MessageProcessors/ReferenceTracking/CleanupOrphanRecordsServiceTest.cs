@@ -23,25 +23,25 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 
             // Act
             await SetReferencesAsync(subjectRecords, new Dictionary<string, List<int>>
-                {
-                    { "Owner0", new List<int> { 0, 1, 2 } },
-                    { "Owner1", new List<int> { 3, 4, 5 } },
-                    { "Owner2", new List<int> { 6, 7, 8, 9 } },
-                });
+            {
+                { "Owner0", new List<int> { 0, 1, 2 } },
+                { "Owner1", new List<int> { 3, 4, 5 } },
+                { "Owner2", new List<int> { 6, 7, 8, 9 } },
+            });
             await InitializeCsvBlobs(subjectRecords);
             await SetReferencesAsync(subjectRecords, new Dictionary<string, List<int>>
-                {
-                    { "Owner0", new List<int> { 0, 1, 2, 3 } },
-                    { "Owner1", new List<int> { 3, 4, 5, 6 } },
-                    { "Owner2", new List<int> { 6, 7, 8, 9 } },
-                });
+            {
+                { "Owner0", new List<int> { 0, 1, 2, 3 } },
+                { "Owner1", new List<int> { 3, 4, 5, 6 } },
+                { "Owner2", new List<int> { 6, 7, 8, 9 } },
+            });
 
             // Assert
             await AssertOwnerToSubjectAsync(CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1, x => x.ToBase64());
             await AssertSubjectToOwnerAsync(CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1);
-            await AssertCompactAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1, 0);
-            await AssertCompactAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1, 1);
-            await AssertCompactAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1, 2);
+            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1, 0);
+            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1, 1);
+            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1, 2);
 
             // Act
             await CleanupOrphanRecordsAsync();
@@ -49,9 +49,9 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             // Assert
             await AssertOwnerToSubjectAsync(CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1, x => x.ToBase64()); // This file is unchanged.
             await AssertSubjectToOwnerAsync(CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1); // This file is unchanged.
-            await AssertCompactAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1, 0); // This file is unchanged.
-            await AssertCompactAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1, 1); // This file is unchanged.
-            await AssertCompactAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1, 2); // This file is unchanged.
+            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1, 0); // This file is unchanged.
+            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1, 1); // This file is unchanged.
+            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1, 2); // This file is unchanged.
         }
 
         [Fact]
@@ -65,25 +65,25 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 
             // Act
             await SetReferencesAsync(subjectRecords, new Dictionary<string, List<int>>
-                {
-                    { "Owner0", new List<int> { 0, 1, 2, 3 } },
-                    { "Owner1", new List<int> { 3, 4, 5, 6 } },
-                    { "Owner2", new List<int> { 6, 7, 8, 9 } },
-                });
+            {
+                { "Owner0", new List<int> { 0, 1, 2, 3 } },
+                { "Owner1", new List<int> { 3, 4, 5, 6 } },
+                { "Owner2", new List<int> { 6, 7, 8, 9 } },
+            });
             await InitializeCsvBlobs(subjectRecords);
             await SetReferencesAsync(subjectRecords, new Dictionary<string, List<int>>
-                {
-                    { "Owner0", new List<int> { 0, 1, 2 } },
-                    { "Owner1", new List<int> { 3, 4, 5 } },
-                    { "Owner2", new List<int> { 6, 7, 8, 9 } },
-                });
+            {
+                { "Owner0", new List<int> { 0, 1, 2 } },
+                { "Owner1", new List<int> { 3, 4, 5 } },
+                { "Owner2", new List<int> { 6, 7, 8, 9 } },
+            });
 
             // Assert
             await AssertOwnerToSubjectAsync(CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1, x => x.ToBase64());
             await AssertSubjectToOwnerAsync(CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1);
-            await AssertCompactAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1, 0);
-            await AssertCompactAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1, 1);
-            await AssertCompactAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1, 2);
+            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1, 0);
+            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1, 1);
+            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1, 2);
 
             // Act
             await CleanupOrphanRecordsAsync();
@@ -91,9 +91,9 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             // Assert
             await AssertOwnerToSubjectAsync(CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1, x => x.ToBase64()); // This file is unchanged.
             await AssertSubjectToOwnerAsync(CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step2);
-            await AssertCompactAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1, 0); // This file is unchanged.
-            await AssertCompactAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1, 1); // This file is unchanged.
-            await AssertCompactAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1, 2); // This file is unchanged.
+            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1, 0); // This file is unchanged.
+            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1, 1); // This file is unchanged.
+            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1, 2); // This file is unchanged.
         }
 
         [Fact]
@@ -107,32 +107,32 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 
             // Act
             await SetReferencesAsync(subjectRecords, new Dictionary<string, List<int>>
-                {
-                    { "Owner0", new List<int> { 0, 1, 2, 3 } },
-                    { "Owner1", new List<int> { 3, 4, 5, 6 } },
-                    { "Owner2", new List<int> { 6, 7, 8, 9 } },
-                });
+            {
+                { "Owner0", new List<int> { 0, 1, 2, 3 } },
+                { "Owner1", new List<int> { 3, 4, 5, 6 } },
+                { "Owner2", new List<int> { 6, 7, 8, 9 } },
+            });
             await InitializeCsvBlobs(subjectRecords);
             await SetReferencesAsync(subjectRecords, new Dictionary<string, List<int>>
-                {
-                    // No changes are made to Owner1's references.
-                    { "Owner0", new List<int> { 0, 1, 2, 3 } },
+            {
+                // No changes are made to Owner1's references.
+                { "Owner0", new List<int> { 0, 1, 2, 3 } },
 
-                    // Owner1 has its references updated, causing Subject 5 to be marked as a candidate orphan.
-                    // It is an actual orphan because Owner1 was the only one referencing it.
-                    { "Owner1", new List<int> { 3, 4, 6 } },
+                // Owner1 has its references updated, causing Subject 5 to be marked as a candidate orphan.
+                // It is an actual orphan because Owner1 was the only one referencing it.
+                { "Owner1", new List<int> { 3, 4, 6 } },
 
-                    // Owner2 has its references cleared, causing Subject 6, 7, 8, and 9 to be marked as candidate orphans.
-                    // Subject 6 is still referenced by Owner 1 so it's not an actual orphan but 7, 8, and 9 are.
-                    { "Owner2", new List<int>() },
-                });
+                // Owner2 has its references cleared, causing Subject 6, 7, 8, and 9 to be marked as candidate orphans.
+                // Subject 6 is still referenced by Owner 1 so it's not an actual orphan but 7, 8, and 9 are.
+                { "Owner2", new List<int>() },
+            });
 
             // Assert
             await AssertOwnerToSubjectAsync(CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step1, x => x.ToBase64());
             await AssertSubjectToOwnerAsync(CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step1);
-            await AssertCompactAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step1, 0);
-            await AssertCompactAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step1, 1);
-            await AssertCompactAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step1, 2);
+            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step1, 0);
+            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step1, 1);
+            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step1, 2);
 
             // Act
             await CleanupOrphanRecordsAsync();
@@ -140,9 +140,9 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             // Assert
             await AssertOwnerToSubjectAsync(CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step1, x => x.ToBase64()); // This file is unchanged.
             await AssertSubjectToOwnerAsync(CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step2);
-            await AssertCompactAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step2, 0);
-            await AssertCompactAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step1, 1); // This file is unchanged.
-            await AssertCompactAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step2, 2);
+            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step2, 0);
+            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step1, 1); // This file is unchanged.
+            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step2, 2);
         }
 
         private async Task CleanupOrphanRecordsAsync()
@@ -198,6 +198,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             await AppendResultStorageService.DeleteAsync(Options.Value.CsvRecordTableName);
         }
 
+        public string ResultContainerName { get; }
         public string OwnerToSubjectTableName { get; }
         public string SubjectToOwnerTableName { get; }
         public ReferenceTracker ReferenceTracker => Host.Services.GetRequiredService<ReferenceTracker>();
@@ -222,6 +223,14 @@ namespace NuGet.Insights.Worker.ReferenceTracking
                 serviceCollection.AddCleanupOrphanRecordsService<TestCleanupOrphanRecordsAdapter, TestSubjectRecord>();
                 serviceCollection.AddTransient<ICsvResultStorage<TestSubjectRecord>, TestSubjectRecordStorage>();
                 serviceCollection.AddTransient<IMessageProcessor<CsvCompactMessage<TestSubjectRecord>>, CsvCompactorProcessor<TestSubjectRecord>>();
+                serviceCollection.AddTransient<ICsvRecordStorage>(x =>
+                {
+                    var resultStorage = x.GetRequiredService<ICsvResultStorage<TestSubjectRecord>>();
+                    return new CsvRecordStorage(
+                        resultStorage.ResultContainerName,
+                        typeof(TestSubjectRecord),
+                        AppendResultStorageService.CompactPrefix);
+                });
             });
         }
 
@@ -237,6 +246,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 
         public CleanupOrphanRecordsServiceTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
+            ResultContainerName = StoragePrefix + "1tsr1";
             OwnerToSubjectTableName = StoragePrefix + "1o2s1";
             SubjectToOwnerTableName = StoragePrefix + "1s2o1";
         }

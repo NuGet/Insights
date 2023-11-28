@@ -8,6 +8,8 @@ namespace NuGet.Insights.Worker
 {
     public class CsvReaderAdapter : ICsvReader
     {
+        private static readonly ConcurrentDictionary<Type, string> TypeToHeader = new ConcurrentDictionary<Type, string>();
+
         /// <summary>
         /// Needed due to these big guys:
         /// - GR.PageRender.Razor 1.6.0 - massive number of content files, ~2,078,825 bytes
@@ -22,8 +24,30 @@ namespace NuGet.Insights.Worker
             _logger = logger;
         }
 
+        public string GetHeader<T>() where T : ICsvRecord
+        {
+            var type = typeof(T);
+            return TypeToHeader.GetOrAdd(type, _ =>
+            {
+                var headerWriter = Activator.CreateInstance<T>();
+                using var stringWriter = new StringWriter();
+                headerWriter.WriteHeader(stringWriter);
+                return stringWriter.ToString().TrimEnd();
+            });
+        }
+
         public CsvReaderResult<T> GetRecords<T>(TextReader reader, int bufferSize) where T : ICsvRecord
         {
+            var actualHeader = reader.ReadLine();
+            var expectedHeader = GetHeader<T>();
+            if (actualHeader != expectedHeader)
+            {
+                throw new InvalidOperationException(
+                    "The header in the blob doesn't match the header for the readers being added." + Environment.NewLine +
+                    "Expected: " + expectedHeader + Environment.NewLine +
+                    "Actual: " + actualHeader);
+            }
+
             var allRecords = new List<T>();
             var pool = ArrayPool<char>.Shared;
             var buffer = pool.Rent(bufferSize);

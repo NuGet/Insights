@@ -75,9 +75,9 @@ namespace NuGet.Insights.Worker.TimedReprocess
             await AssertPackageReadmeTableAsync(TimedReprocess_AllReprocessDriversDir, Step1, "PackageReadmes.json");
             await AssertSymbolPackageArchiveTableAsync(TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageArchives.json");
 
-            await AssertCompactAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_AllReprocessDriversDir, Step1, "PackageReadmes.csv");
-            await AssertCompactAsync<SymbolPackageArchiveRecord>(Options.Value.SymbolPackageArchiveContainerName, TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageArchives.csv");
-            await AssertCompactAsync<SymbolPackageArchiveEntry>(Options.Value.SymbolPackageArchiveEntryContainerName, TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageArchiveEntries.csv");
+            await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_AllReprocessDriversDir, Step1, "PackageReadmes.csv");
+            await AssertCsvAsync<SymbolPackageArchiveRecord>(Options.Value.SymbolPackageArchiveContainerName, TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageArchives.csv");
+            await AssertCsvAsync<SymbolPackageArchiveEntry>(Options.Value.SymbolPackageArchiveEntryContainerName, TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageArchiveEntries.csv");
         }
 
         [Fact]
@@ -157,7 +157,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
 
             // Assert
             await AssertPackageReadmeTableAsync(TimedReprocess_SameBucketRangesDir, Step1, "PackageReadmes.json");
-            await AssertCompactAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_SameBucketRangesDir, Step1, "PackageReadmes.csv");
+            await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_SameBucketRangesDir, Step1, "PackageReadmes.csv");
             Assert.Equal("375,401,826-829", runA.BucketRanges);
 
             var metric = TelemetryClient.Metrics[new("AppendResultStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
@@ -171,7 +171,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
 
             // Assert
             await AssertPackageReadmeTableAsync(TimedReprocess_SameBucketRangesDir, Step1, "PackageReadmes.json"); // data is unchanged
-            await AssertCompactAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_SameBucketRangesDir, Step1, "PackageReadmes.csv"); // data is unchanged
+            await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_SameBucketRangesDir, Step1, "PackageReadmes.csv"); // data is unchanged
             Assert.Equal("375,401,826-829", runA.BucketRanges);
 
             value = Assert.Single(metric.MetricValues);
@@ -206,7 +206,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
 
             // Assert
             await AssertPackageReadmeTableAsync(TimedReprocess_SubsequentBucketRangesDir, Step1, "PackageReadmes.json");
-            await AssertCompactAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_SubsequentBucketRangesDir, Step1, "PackageReadmes.csv");
+            await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_SubsequentBucketRangesDir, Step1, "PackageReadmes.csv");
             Assert.Equal("375,401,826", runA.BucketRanges);
 
             // Act
@@ -215,7 +215,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
 
             // Assert
             await AssertPackageReadmeTableAsync(TimedReprocess_SubsequentBucketRangesDir, Step2, "PackageReadmes.json");
-            await AssertCompactAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_SubsequentBucketRangesDir, Step2, "PackageReadmes.csv");
+            await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_SubsequentBucketRangesDir, Step2, "PackageReadmes.csv");
             Assert.Equal("827-829", runB.BucketRanges);
         }
 
@@ -259,9 +259,9 @@ namespace NuGet.Insights.Worker.TimedReprocess
             await TimedReprocessStorageService.MarkBucketsAsProcessedAsync(otherBuckets, 2 * Options.Value.TimedReprocessWindow);
         }
 
-        private async Task<string> AssertCompactAsync<T>(string containerName, string testName, string stepName, string fileName) where T : ICsvRecord
+        private async Task<string> AssertCsvAsync<T>(string containerName, string testName, string stepName, string fileName) where T : ICsvRecord
         {
-            return await AssertCompactAsync<T>(containerName, testName, stepName, 0, fileName);
+            return await AssertCsvAsync<T>(containerName, testName, stepName, 0, fileName);
         }
 
         public TimedReprocessServiceIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

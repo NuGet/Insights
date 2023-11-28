@@ -5,6 +5,7 @@ namespace NuGet.Insights.Worker
 {
     public interface ICsvReader
     {
+        string GetHeader<T>() where T : ICsvRecord;
         CsvReaderResult<T> GetRecords<T>(TextReader reader, int bufferSize) where T : ICsvRecord;
     }
 }

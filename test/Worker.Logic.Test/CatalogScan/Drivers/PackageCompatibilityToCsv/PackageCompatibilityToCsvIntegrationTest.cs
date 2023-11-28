@@ -56,7 +56,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 
             // Assert
             await AssertOutputAsync(PackageCompatibilityToCsv_WithManyAssetsDir, Step1, 0);
-            await AssertBlobCountAsync(DestinationContainerName, 1);
+            await AssertCsvCountAsync(1);
         }
 
         [Fact]
@@ -76,7 +76,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 
             // Assert
             await AssertOutputAsync(PackageCompatibilityToCsv_WithUnsupportedDir, Step1, 0);
-            await AssertBlobCountAsync(DestinationContainerName, 1);
+            await AssertCsvCountAsync(1);
         }
 
         [Fact]

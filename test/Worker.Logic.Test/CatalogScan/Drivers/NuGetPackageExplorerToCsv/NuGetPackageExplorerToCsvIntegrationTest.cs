@@ -24,8 +24,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             await UpdateAsync(max1);
 
             // Assert
-            await AssertBlobCountAsync(DestinationContainerName1, 2); // bucket 0 does not exist
-            await AssertBlobCountAsync(DestinationContainerName2, 2); // bucket 0 does not exist
+            await AssertCsvCountAsync(2); // bucket 0 does not exist
             await AssertOutputAsync(NuGetPackageExplorerToCsvDir, Step1, 1);
             await AssertOutputAsync(NuGetPackageExplorerToCsvDir, Step1, 2);
 

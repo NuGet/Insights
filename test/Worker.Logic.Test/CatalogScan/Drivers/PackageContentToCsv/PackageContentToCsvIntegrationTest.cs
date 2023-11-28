@@ -33,7 +33,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             // Assert
             await AssertOutputAsync(PackageContentToCsvDir, Step1, 0); // This file is unchanged
             await AssertOutputAsync(PackageContentToCsvDir, Step2, 2);
-            await AssertBlobCountAsync(DestinationContainerName, 2);
+            await AssertCsvCountAsync(2);
         }
 
         [Fact]

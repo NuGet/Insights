@@ -5,14 +5,18 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 {
     public class TestSubjectRecordStorage : ICsvResultStorage<TestSubjectRecord>
     {
+        private readonly CleanupOrphanRecordsServiceTest _test;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
-        public TestSubjectRecordStorage(IOptions<NuGetInsightsWorkerSettings> options)
+        public TestSubjectRecordStorage(
+            CleanupOrphanRecordsServiceTest test,
+            IOptions<NuGetInsightsWorkerSettings> options)
         {
+            _test = test;
             _options = options;
         }
 
-        public string ResultContainerName => _options.Value.CatalogLeafItemContainerName;
+        public string ResultContainerName => _test.ResultContainerName;
 
         public List<TestSubjectRecord> Prune(List<TestSubjectRecord> records, bool isFinalPrune)
         {

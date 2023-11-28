@@ -469,14 +469,41 @@ namespace NuGet.Insights.Worker
             await messageProcessor.ProcessSingleAsync(queue, message.Body.ToMemory(), message.DequeueCount);
         }
 
-        protected async Task<string> AssertCompactAsync(Type recordType, string containerName, string testName, string stepName, int bucket, string fileName = null)
+        protected async Task<string> AssertCsvAsync<T>(string containerName, string testName, string stepName, int bucket, string fileName = null) where T : ICsvRecord
         {
-            return await AssertCsvBlobAsync(recordType, containerName, testName, stepName, fileName, $"compact_{bucket}.csv.gz");
+            return await AssertCsvAsync(typeof(T), containerName, testName, stepName, bucket, fileName);
         }
 
-        protected async Task<string> AssertCompactAsync<T>(string containerName, string testName, string stepName, int bucket, string fileName = null) where T : ICsvRecord
+        protected async Task<string> AssertCsvAsync(Type recordType, string containerName, string testName, string stepName, int bucket, string fileName = null)
         {
-            return await AssertCompactAsync(typeof(T), containerName, testName, stepName, bucket, fileName);
+            return await AssertCsvAsync(recordType, containerName, testName, stepName, fileName, $"compact_{bucket}.csv.gz");
+        }
+
+        protected async Task<string> AssertCsvAsync<T>(string containerName, string testName, string stepName, string fileName, string blobName) where T : ICsvRecord
+        {
+            return await AssertCsvAsync(typeof(T), containerName, testName, stepName, fileName, blobName);
+        }
+
+        protected async Task<string> AssertCsvAsync(Type recordType, string containerName, string testName, string stepName, string fileName, string blobName)
+        {
+            Assert.EndsWith(".csv.gz", blobName, StringComparison.Ordinal);
+            var (_, actual) = await GetBlobContentAsync(containerName, blobName, gzip: true);
+
+            fileName ??= blobName.Substring(0, blobName.Length - ".gz".Length);
+            var testDataFile = Path.Combine(TestData, testName, stepName, fileName);
+            if (OverwriteTestData)
+            {
+                OverwriteTestDataAndCopyToSource(testDataFile, actual);
+            }
+            var expected = File.ReadAllText(testDataFile);
+            Assert.Equal(expected, actual);
+
+            var headerFactory = (ICsvRecord)Activator.CreateInstance(recordType);
+            var stringWriter = new StringWriter { NewLine = "\n" };
+            headerFactory.WriteHeader(stringWriter);
+            Assert.StartsWith(stringWriter.ToString(), actual, StringComparison.Ordinal);
+
+            return actual;
         }
 
         public async Task<IKustoIngestionResult> MakeTableReportIngestionResultAsync(StorageSourceOptions options, Status status)
