@@ -9,12 +9,8 @@ namespace NuGet.Insights.Worker.TimedReprocess
 {
     public class TimedReprocessServiceIntegrationTest : BaseWorkerLogicIntegrationTest
     {
-        public const string TimedReprocess_AllReprocessDriversDir = nameof(TimedReprocess_AllReprocessDrivers);
-        public const string TimedReprocess_SameBucketRangesDir = nameof(TimedReprocess_SameBucketRangesDir);
-        public const string TimedReprocess_SubsequentBucketRangesDir = nameof(TimedReprocess_SubsequentBucketRanges);
-
         [Fact]
-        public async Task TimedReprocess_AllReprocessDrivers()
+        public async Task AllReprocessDrivers()
         {
             // Arrange
             ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
@@ -72,16 +68,16 @@ namespace NuGet.Insights.Worker.TimedReprocess
             }
 
             // verify output data
-            await AssertPackageReadmeTableAsync(TimedReprocess_AllReprocessDriversDir, Step1, "PackageReadmes.json");
-            await AssertSymbolPackageArchiveTableAsync(TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageArchives.json");
-
-            await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_AllReprocessDriversDir, Step1, "PackageReadmes.csv");
-            await AssertCsvAsync<SymbolPackageArchiveRecord>(Options.Value.SymbolPackageArchiveContainerName, TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageArchives.csv");
-            await AssertCsvAsync<SymbolPackageArchiveEntry>(Options.Value.SymbolPackageArchiveEntryContainerName, TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageArchiveEntries.csv");
+            await Task.WhenAll(
+                VerifyPackageReadmeTableAsync(),
+                VerifySymbolPackageArchiveTableAsync(),
+                VerifyCsvAsync<PackageReadme>(),
+                VerifyCsvAsync<SymbolPackageArchiveRecord>(),
+                VerifyCsvAsync<SymbolPackageArchiveEntry>());
         }
 
         [Fact]
-        public async Task TimedReprocess_WaitForCursorBasedScan()
+        public async Task WaitForCursorBasedScan()
         {
             // Arrange
             ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
@@ -131,7 +127,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
         }
 
         [Fact]
-        public async Task TimedReprocess_SameBucketRanges()
+        public async Task SameBucketRanges()
         {
             // Arrange
             ConfigureWorkerSettings = x =>
@@ -156,8 +152,9 @@ namespace NuGet.Insights.Worker.TimedReprocess
             runA = await UpdateAsync(runA);
 
             // Assert
-            await AssertPackageReadmeTableAsync(TimedReprocess_SameBucketRangesDir, Step1, "PackageReadmes.json");
-            await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_SameBucketRangesDir, Step1, "PackageReadmes.csv");
+            await Task.WhenAll(
+                VerifyPackageReadmeTableAsync(step: 1),
+                VerifyCsvAsync<PackageReadme>(step: 1));
             Assert.Equal("375,401,826-829", runA.BucketRanges);
 
             var metric = TelemetryClient.Metrics[new("AppendResultStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
@@ -170,8 +167,9 @@ namespace NuGet.Insights.Worker.TimedReprocess
             runB = await UpdateAsync(runB);
 
             // Assert
-            await AssertPackageReadmeTableAsync(TimedReprocess_SameBucketRangesDir, Step1, "PackageReadmes.json"); // data is unchanged
-            await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_SameBucketRangesDir, Step1, "PackageReadmes.csv"); // data is unchanged
+            await Task.WhenAll(
+                VerifyPackageReadmeTableAsync(step: 1), // data is unchanged
+                VerifyCsvAsync<PackageReadme>(step: 1)); // data is unchanged
             Assert.Equal("375,401,826-829", runA.BucketRanges);
 
             value = Assert.Single(metric.MetricValues);
@@ -179,7 +177,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
         }
 
         [Fact]
-        public async Task TimedReprocess_SubsequentBucketRanges()
+        public async Task SubsequentBucketRanges()
         {
             // Arrange
             ConfigureWorkerSettings = x =>
@@ -205,8 +203,8 @@ namespace NuGet.Insights.Worker.TimedReprocess
             runA = await UpdateAsync(runA);
 
             // Assert
-            await AssertPackageReadmeTableAsync(TimedReprocess_SubsequentBucketRangesDir, Step1, "PackageReadmes.json");
-            await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_SubsequentBucketRangesDir, Step1, "PackageReadmes.csv");
+            await VerifyPackageReadmeTableAsync(step: 1);
+            await VerifyCsvAsync<PackageReadme>(step: 1);
             Assert.Equal("375,401,826", runA.BucketRanges);
 
             // Act
@@ -214,13 +212,14 @@ namespace NuGet.Insights.Worker.TimedReprocess
             runB = await UpdateAsync(runB);
 
             // Assert
-            await AssertPackageReadmeTableAsync(TimedReprocess_SubsequentBucketRangesDir, Step2, "PackageReadmes.json");
-            await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_SubsequentBucketRangesDir, Step2, "PackageReadmes.csv");
+            await Task.WhenAll(
+                VerifyPackageReadmeTableAsync(step: 2),
+                VerifyCsvAsync<PackageReadme>(step: 2));
             Assert.Equal("827-829", runB.BucketRanges);
         }
 
         [Fact]
-        public async Task TimedReprocess_ReturnsCompletedRunWhenCaughtUp()
+        public async Task ReturnsCompletedRunWhenCaughtUp()
         {
             // Arrange
             ConfigureWorkerSettings = x =>
@@ -257,11 +256,6 @@ namespace NuGet.Insights.Worker.TimedReprocess
             var otherBuckets = Enumerable.Range(0, BucketedPackage.BucketCount).Except(buckets);
             await TimedReprocessStorageService.MarkBucketsAsProcessedAsync(buckets, -2 * Options.Value.TimedReprocessWindow);
             await TimedReprocessStorageService.MarkBucketsAsProcessedAsync(otherBuckets, 2 * Options.Value.TimedReprocessWindow);
-        }
-
-        private async Task<string> AssertCsvAsync<T>(string containerName, string testName, string stepName, string fileName) where T : ICsvRecord
-        {
-            return await AssertCsvAsync<T>(containerName, testName, stepName, 0, fileName);
         }
 
         public TimedReprocessServiceIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

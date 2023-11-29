@@ -759,11 +759,11 @@ namespace NuGet.Insights.Worker
             Assert.Equal(expected, actual);
         }
 
-        protected async Task AssertPackageArchiveTableAsync(string testName, string stepName, string fileName = null)
+        protected async Task VerifyPackageArchiveTableAsync(int? step = null, [CallerFilePath] string sourceFile = "")
         {
-            await AssertWideEntityOutputAsync(
+            await VerifyWideEntityOutputAsync(
                 Options.Value.PackageArchiveTableName,
-                Path.Combine(testName, stepName),
+                tableDisplayName: "PackageArchives",
                 stream =>
                 {
                     var entity = MessagePackSerializer.Deserialize<PackageFileService.PackageFileInfoVersions>(stream, NuGetInsightsMessagePack.Options);
@@ -789,17 +789,52 @@ namespace NuGet.Insights.Worker
                         SignatureHash = signatureHash,
                     };
                 },
-                fileName);
+                step: step,
+                sourceFile: sourceFile);
         }
 
-        protected async Task AssertPackageReadmeTableAsync(string testName, string stepName, string fileName = null)
+        protected async Task AssertPackageManifestTableAsync(int? step = null, [CallerFilePath] string sourceFile = "")
+        {
+            Assert.Empty(HttpMessageHandlerFactory.Responses.Where(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".nupkg", StringComparison.Ordinal)));
+            Assert.NotEmpty(HttpMessageHandlerFactory.Responses.Where(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".nuspec", StringComparison.Ordinal)));
+
+            await VerifyWideEntityOutputAsync(
+                Options.Value.PackageManifestTableName,
+                tableDisplayName: "PackageManifests",
+                stream =>
+                {
+                    var entity = MessagePackSerializer.Deserialize<PackageManifestService.PackageManifestInfoVersions>(stream, NuGetInsightsMessagePack.Options);
+
+                    string manifestHash = null;
+                    SortedDictionary<string, List<string>> httpHeaders = null;
+
+                    if (entity.V1.Available)
+                    {
+                        using var algorithm = SHA256.Create();
+                        manifestHash = algorithm.ComputeHash(entity.V1.ManifestBytes.ToArray()).ToLowerHex();
+                        httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders, ignore: new[] { "Content-MD5" });
+                    }
+
+                    return new
+                    {
+                        entity.V1.Available,
+                        entity.V1.CommitTimestamp,
+                        HttpHeaders = httpHeaders,
+                        ManifestHash = manifestHash,
+                    };
+                },
+                step: step,
+                sourceFile: sourceFile);
+        }
+
+        protected async Task VerifyPackageReadmeTableAsync(int? step = null, [CallerFilePath] string sourceFile = "")
         {
             Assert.Empty(HttpMessageHandlerFactory.Responses.Where(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".nupkg", StringComparison.Ordinal)));
             Assert.NotEmpty(HttpMessageHandlerFactory.Responses.Where(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith("/readme", StringComparison.Ordinal)));
 
-            await AssertWideEntityOutputAsync(
+            await VerifyWideEntityOutputAsync(
                 Options.Value.PackageReadmeTableName,
-                Path.Combine(testName, stepName),
+                tableDisplayName: "PackageReadmes",
                 stream =>
                 {
                     var entity = MessagePackSerializer.Deserialize<PackageReadmeService.PackageReadmeInfoVersions>(stream, NuGetInsightsMessagePack.Options);
@@ -822,14 +857,15 @@ namespace NuGet.Insights.Worker
                         ReadmeHash = readmeHash,
                     };
                 },
-                fileName);
+                step: step,
+                sourceFile: sourceFile);
         }
 
-        protected async Task AssertSymbolPackageArchiveTableAsync(string testName, string stepName, string fileName = null)
+        protected async Task VerifySymbolPackageArchiveTableAsync(int? step = null, [CallerFilePath] string sourceFile = "")
         {
-            await AssertWideEntityOutputAsync(
+            await VerifyWideEntityOutputAsync(
                 Options.Value.SymbolPackageArchiveTableName,
-                Path.Combine(testName, stepName),
+                tableDisplayName: "SymbolPackageArchives",
                 stream =>
                 {
                     var entity = MessagePackSerializer.Deserialize<SymbolPackageFileService.SymbolPackageFileInfoVersions>(stream, NuGetInsightsMessagePack.Options);
@@ -851,7 +887,40 @@ namespace NuGet.Insights.Worker
                         MZipHash = mzipHash,
                     };
                 },
-                fileName);
+                step: step,
+                sourceFile: sourceFile);
+        }
+
+        protected async Task VerifyOwnerToSubjectAsync<T>(
+            string tableName,
+            Func<byte[], T> deserializeEntity,
+            int? step = null,
+            [CallerFilePath] string sourceFile = "")
+        {
+            await VerifyWideEntityOutputAsync(
+                tableName,
+                tableDisplayName: "OwnerToSubject",
+                stream =>
+                {
+                    var edges = MessagePackSerializer.Deserialize<OwnerToSubjectEdges>(stream, NuGetInsightsMessagePack.Options);
+
+                    return new
+                    {
+                        Committed = edges.Committed.Select(x =>
+                        {
+                            return new
+                            {
+                                x.PartitionKey,
+                                x.RowKey,
+                                Data = deserializeEntity(x.Data),
+                            };
+                        }),
+                        edges.ToAdd,
+                        edges.ToDelete,
+                    };
+                },
+                step,
+                sourceFile);
         }
 
         protected void MakeDeletedPackageAvailable(string id = "BehaviorSample", string version = "1.0.0")
@@ -935,86 +1004,6 @@ namespace NuGet.Insights.Worker
                 .DisableRequireUniquePrefix();
         }
 
-        protected async Task VerifyOwnerToSubjectAsync<T>(
-            string tableName,
-            Func<byte[], T> deserializeEntity,
-            int? step = null,
-            [CallerFilePath] string sourceFile = "")
-        {
-            await VerifyWideEntityOutputAsync(
-                tableName,
-                tableDisplayName: "OwnerToSubject",
-                stream =>
-                {
-                    var edges = MessagePackSerializer.Deserialize<OwnerToSubjectEdges>(stream, NuGetInsightsMessagePack.Options);
-
-                    return new
-                    {
-                        Committed = edges.Committed.Select(x =>
-                        {
-                            return new
-                            {
-                                x.PartitionKey,
-                                x.RowKey,
-                                Data = deserializeEntity(x.Data),
-                            };
-                        }),
-                        edges.ToAdd,
-                        edges.ToDelete,
-                    };
-                },
-                step,
-                sourceFile);
-        }
-
-        protected async Task AssertWideEntityOutputAsync<T>(
-            string tableName,
-            string dir,
-            Func<Stream, T> deserializeEntity = null,
-            string fileName = null)
-        {
-            fileName ??= "entities.json";
-
-            var entities = await GetWideEntitiesAsync(tableName, deserializeEntity);
-            var actual = SerializeTestJson(entities.Select(x => new { x.PartitionKey, x.RowKey, x.Entity }));
-            var testDataFile = Path.Combine(TestData, dir, fileName);
-            AssertEqualWithDiff(testDataFile, actual);
-        }
-
-        protected async Task AssertOwnerToSubjectAsync<T>(
-            string tableName,
-            string testName,
-            string stepName,
-            Func<byte[], T> deserializeEntity,
-            string fileName = null)
-        {
-            var dir = Path.Combine(testName, stepName);
-
-            await AssertWideEntityOutputAsync(
-                tableName,
-                dir,
-                stream =>
-                {
-                    var edges = MessagePackSerializer.Deserialize<OwnerToSubjectEdges>(stream, NuGetInsightsMessagePack.Options);
-
-                    return new
-                    {
-                        Committed = edges.Committed.Select(x =>
-                        {
-                            return new
-                            {
-                                x.PartitionKey,
-                                x.RowKey,
-                                Data = deserializeEntity(x.Data),
-                            };
-                        }),
-                        edges.ToAdd,
-                        edges.ToDelete,
-                    };
-                },
-                fileName: fileName ?? "owner-to-subject.json");
-        }
-
         protected async Task AssertEmptyTableAsync(string tableName)
         {
             var serviceClient = await ServiceClientFactory.GetTableServiceClientAsync();
@@ -1034,21 +1023,6 @@ namespace NuGet.Insights.Worker
                 step,
                 cleanEntity: null,
                 sourceFile);
-        }
-
-        protected async Task AssertSubjectToOwnerAsync(
-            string tableName,
-            string testName,
-            string stepName,
-            string fileName = null)
-        {
-            var dir = Path.Combine(testName, stepName);
-
-            var table = (await ServiceClientFactory.GetTableServiceClientAsync()).GetTableClient(tableName);
-            await AssertEntityOutputAsync<TableEntity>(
-                table,
-                dir,
-                fileName: fileName ?? "subject-to-owner.json");
         }
 
         private static ICslAdminProvider GetKustoAdminClient()
