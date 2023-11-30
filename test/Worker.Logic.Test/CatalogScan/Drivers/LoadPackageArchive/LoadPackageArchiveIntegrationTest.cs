@@ -20,13 +20,13 @@ namespace NuGet.Insights.Worker.LoadPackageArchive
             await UpdateAsync(max1);
 
             // Assert
-            await VerifyPackageArchiveTableAsync(step: 1);
+            await Verify(await GetPackageArchiveTableAsync(step: 1));
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await VerifyPackageArchiveTableAsync(step: 2);
+            await Verify(await GetPackageArchiveTableAsync(step: 2)).DisableRequireUniquePrefix();
         }
 
         [Fact]
@@ -45,13 +45,13 @@ namespace NuGet.Insights.Worker.LoadPackageArchive
             await UpdateAsync(max1);
 
             // Assert
-            await VerifyPackageArchiveTableAsync(step: 1);
+            await Verify(await GetPackageArchiveTableAsync(step: 1));
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await VerifyPackageArchiveTableAsync(step: 2);
+            await Verify(await GetPackageArchiveTableAsync(step: 2)).DisableRequireUniquePrefix();
         }
 
         public LoadPackageArchiveIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

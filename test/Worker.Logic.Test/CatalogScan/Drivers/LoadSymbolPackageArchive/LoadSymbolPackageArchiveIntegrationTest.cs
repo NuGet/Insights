@@ -20,13 +20,13 @@ namespace NuGet.Insights.Worker.LoadSymbolPackageArchive
             await UpdateAsync(max1);
 
             // Assert
-            await VerifySymbolPackageArchiveTableAsync(step: 1);
+            await Verify(await GetSymbolPackageArchiveTableAsync(step: 1));
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await VerifySymbolPackageArchiveTableAsync(step: 2);
+            await Verify(await GetSymbolPackageArchiveTableAsync(step: 2)).DisableRequireUniquePrefix();
         }
 
         [Fact]
@@ -45,13 +45,13 @@ namespace NuGet.Insights.Worker.LoadSymbolPackageArchive
             await UpdateAsync(max1);
 
             // Assert
-            await VerifySymbolPackageArchiveTableAsync(step: 1);
+            await Verify(await GetSymbolPackageArchiveTableAsync(step: 1));
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await VerifySymbolPackageArchiveTableAsync(step: 2);
+            await Verify(await GetSymbolPackageArchiveTableAsync(step: 2)).DisableRequireUniquePrefix();
         }
 
         public LoadSymbolPackageArchiveIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

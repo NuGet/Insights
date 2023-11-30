@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Insights.Worker.LoadBucketedPackage;
@@ -78,7 +78,7 @@ namespace NuGet.Insights.Worker
             }
 
             // Assert
-            await Task.WhenAll(expectedContainers.Select(x => VerifyCsvAsync(x.RecordType, deleteAfter: true)));
+            await Verify(await Task.WhenAll(expectedContainers.Select(x => GetCsvAsync(x.RecordType, deleteAfter: true))));
 
             // Arrange
             await SetCursorsAsync(CatalogScanDriverMetadata.StartableDriverTypes, min0);
@@ -107,7 +107,7 @@ namespace NuGet.Insights.Worker
             }
 
             // Assert
-            await Task.WhenAll(expectedContainers.Select(x => VerifyCsvAsync(x.RecordType)));
+            await Verify(await Task.WhenAll(expectedContainers.Select(x => GetCsvAsync(x.RecordType))));
         }
     }
 }
