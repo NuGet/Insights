@@ -1,0 +1,164 @@
+[
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo$$P$mathnet.numerics.mkl.win-x86",
+    "RowKey": "2.6.0-beta2",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo$$P$microsoft.applicationinsights",
+    "RowKey": "2.16.0-beta1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo$$P$microsoft.applicationinsights",
+    "RowKey": "2.17.0-beta1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo$$P$microsoft.applicationinsights",
+    "RowKey": "2.18.0-beta1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0$$P$microsoft.applicationinsights",
+    "RowKey": "2.16.0-beta1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0$$P$microsoft.applicationinsights",
+    "RowKey": "2.17.0-beta1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw$$P$mathnet.numerics.mkl.win-x86",
+    "RowKey": "2.6.0-beta2",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw$$P$microsoft.applicationinsights",
+    "RowKey": "2.16.0-beta1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw$$P$microsoft.applicationinsights",
+    "RowKey": "2.17.0-beta1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw$$P$microsoft.applicationinsights",
+    "RowKey": "2.18.0-beta1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4$$P$microsoft.applicationinsights",
+    "RowKey": "2.16.0-beta1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw$$P$mathnet.numerics.mkl.win-x86",
+    "RowKey": "2.6.0-beta2",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw$$P$microsoft.applicationinsights",
+    "RowKey": "2.16.0-beta1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw$$P$microsoft.applicationinsights",
+    "RowKey": "2.17.0-beta1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw$$P$microsoft.applicationinsights",
+    "RowKey": "2.18.0-beta1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI$$P$mathnet.numerics.mkl.win-x86",
+    "RowKey": "2.6.0-beta2",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI$$P$microsoft.applicationinsights",
+    "RowKey": "2.16.0-beta1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI$$P$microsoft.applicationinsights",
+    "RowKey": "2.17.0-beta1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI$$P$microsoft.applicationinsights",
+    "RowKey": "2.18.0-beta1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$WikB1q2j0YJgucbf4hM8lddLnu9q4OXcM0yEVNFHffQ$$P$mathnet.numerics.mkl.win-x86",
+    "RowKey": "2.6.0-beta2",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$WikB1q2j0YJgucbf4hM8lddLnu9q4OXcM0yEVNFHffQ$$P$microsoft.applicationinsights",
+    "RowKey": "2.18.0-beta1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$qhLaIqSbzn1cGuZMwfPYkvFQ2nYUDyEKvSy__KLBiic$$P$microsoft.applicationinsights",
+    "RowKey": "2.17.0-beta1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$qhLaIqSbzn1cGuZMwfPYkvFQ2nYUDyEKvSy__KLBiic$$P$microsoft.applicationinsights",
+    "RowKey": "2.18.0-beta1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg$$P$mathnet.numerics.mkl.win-x86",
+    "RowKey": "2.6.0-beta2",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg$$P$microsoft.applicationinsights",
+    "RowKey": "2.16.0-beta1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg$$P$microsoft.applicationinsights",
+    "RowKey": "2.17.0-beta1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  },
+  {
+    "odata.etag": "",
+    "PartitionKey": "C$xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg$$P$microsoft.applicationinsights",
+    "RowKey": "2.18.0-beta1",
+    "Timestamp": "0001-01-01T00:00:00+00:00"
+  }
+]

@@ -1,0 +1,2 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Size,LastModified,SHA256,Content
+,,nlog.extensions.logging,nlog.extensions.logging/1.6.3,NLog.Extensions.Logging,1.6.3,2020-05-11T20:12:56.9143404Z,2020-05-11T20:10:44.683Z,Embedded,12,,L6l7fL/m2S9QPFvFYgJDIVQ2TWbfvQ9I5/MQPd9FEyE=,# My package

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Runtime.CompilerServices;
+
 namespace NuGet.Insights.Worker
 {
     public abstract class BaseCatalogScanToCsvIntegrationTest<T> : BaseCatalogScanIntegrationTest where T : ICsvRecord
@@ -62,19 +64,18 @@ namespace NuGet.Insights.Worker
             await AssertBlobCountAsync(DestinationContainerName2, expected);
         }
 
-        protected async Task<Target[]> GetCsvOutputAsync(int step)
+        protected async Task VerifyCsvOutputAsync(int step, [CallerFilePath] string sourceFile = "")
         {
-            var targetGroups = await Task.WhenAll(Enumerable
+            await Task.WhenAll(Enumerable
                 .Range(0, Options.Value.AppendResultStorageBucketCount)
-                .Select(bucket => GetCsvOutputAsync(bucket, step)));
-            return targetGroups.SelectMany(x => x).ToArray();
+                .Select(bucket => VerifyCsvOutputAsync(bucket, step, sourceFile)));
         }
 
-        protected async Task<Target[]> GetCsvOutputAsync(int bucket, int step)
+        protected async Task VerifyCsvOutputAsync(int bucket, int step, [CallerFilePath] string sourceFile = "")
         {
-            return await Task.WhenAll(
-                GetCsvT1Async(bucket, step),
-                GetCsvT2Async(bucket, step));
+            await Task.WhenAll(
+                VerifyCsvT1Async(bucket, step, sourceFile),
+                VerifyCsvT2Async(bucket, step, sourceFile));
         }
 
         protected async Task AssertOutputAsync(string testName, string stepName, int bucket)
@@ -93,9 +94,9 @@ namespace NuGet.Insights.Worker
             await AssertEmptyCsvAsync<T2>(bucket);
         }
 
-        protected async Task<Target> GetCsvT1Async(int bucket, int step)
+        protected async Task VerifyCsvT1Async(int bucket, int step, [CallerFilePath] string sourceFile = "")
         {
-            return await GetCsvAsync<T1>(bucket, step);
+            await VerifyCsvAsync<T1>(bucket, step, sourceFile: sourceFile);
         }
 
         protected async Task AssertOutputT1Async(string testName, string stepName, int bucket, string fileName = null)
@@ -103,9 +104,9 @@ namespace NuGet.Insights.Worker
             await AssertCsvAsync<T1>(DestinationContainerName1, testName, Path.Combine(stepName, "T1"), bucket, fileName);
         }
 
-        protected async Task<Target> GetCsvT2Async(int bucket, int step)
+        protected async Task VerifyCsvT2Async(int bucket, int step, [CallerFilePath] string sourceFile = "")
         {
-            return await GetCsvAsync<T2>(bucket, step);
+            await VerifyCsvAsync<T2>(bucket, step, sourceFile: sourceFile);
         }
 
         protected async Task AssertOutputT2Async(string testName, string stepName, int bucket, string fileName = null)

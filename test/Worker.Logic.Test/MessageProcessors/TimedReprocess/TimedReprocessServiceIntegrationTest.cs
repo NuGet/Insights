@@ -68,12 +68,12 @@ namespace NuGet.Insights.Worker.TimedReprocess
             }
 
             // verify output data
-            await Verify(await Task.WhenAll(
-                GetPackageReadmeTableAsync(),
-                GetSymbolPackageArchiveTableAsync(),
-                GetCsvAsync<PackageReadme>(),
-                GetCsvAsync<SymbolPackageArchiveRecord>(),
-                GetCsvAsync<SymbolPackageArchiveEntry>()));
+            await Task.WhenAll(
+                VerifyPackageReadmeTableAsync(),
+                VerifySymbolPackageArchiveTableAsync(),
+                VerifyCsvAsync<PackageReadme>(),
+                VerifyCsvAsync<SymbolPackageArchiveRecord>(),
+                VerifyCsvAsync<SymbolPackageArchiveEntry>());
         }
 
         [Fact]
@@ -152,9 +152,9 @@ namespace NuGet.Insights.Worker.TimedReprocess
             runA = await UpdateAsync(runA);
 
             // Assert
-            await Verify(await Task.WhenAll(
-                GetPackageReadmeTableAsync(step: 1),
-                GetCsvAsync<PackageReadme>(step: 1)));
+            await Task.WhenAll(
+                VerifyPackageReadmeTableAsync(step: 1),
+                VerifyCsvAsync<PackageReadme>(step: 1));
             Assert.Equal("375,401,826-829", runA.BucketRanges);
 
             var metric = TelemetryClient.Metrics[new("AppendResultStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
@@ -167,9 +167,9 @@ namespace NuGet.Insights.Worker.TimedReprocess
             runB = await UpdateAsync(runB);
 
             // Assert
-            await Verify(await Task.WhenAll(
-                GetPackageReadmeTableAsync(step: 1), // data is unchanged
-                GetCsvAsync<PackageReadme>(step: 1))); // data is unchanged
+            await Task.WhenAll(
+                VerifyPackageReadmeTableAsync(step: 1), // data is unchanged
+                VerifyCsvAsync<PackageReadme>(step: 1)); // data is unchanged
             Assert.Equal("375,401,826-829", runA.BucketRanges);
 
             value = Assert.Single(metric.MetricValues);
@@ -203,9 +203,8 @@ namespace NuGet.Insights.Worker.TimedReprocess
             runA = await UpdateAsync(runA);
 
             // Assert
-            await Verify(await Task.WhenAll(
-                GetPackageReadmeTableAsync(step: 1),
-                GetCsvAsync<PackageReadme>(step: 1)));
+            await VerifyPackageReadmeTableAsync(step: 1);
+            await VerifyCsvAsync<PackageReadme>(step: 1);
             Assert.Equal("375,401,826", runA.BucketRanges);
 
             // Act
@@ -213,9 +212,9 @@ namespace NuGet.Insights.Worker.TimedReprocess
             runB = await UpdateAsync(runB);
 
             // Assert
-            await Verify(await Task.WhenAll(
-                GetPackageReadmeTableAsync(step: 2),
-                GetCsvAsync<PackageReadme>(step: 2)));
+            await Task.WhenAll(
+                VerifyPackageReadmeTableAsync(step: 2),
+                VerifyCsvAsync<PackageReadme>(step: 2));
             Assert.Equal("827-829", runB.BucketRanges);
         }
 

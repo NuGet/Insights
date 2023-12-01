@@ -1,0 +1,321 @@
+[
+  {
+    "PartitionKey": "archimedes.library",
+    "RowKey": "1.0.245",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:35:06.0046046+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "754"
+        ],
+        "Content-Type": [
+          "text/xml"
+        ],
+        "ETag": [
+          "\u00220x8D8930B98D10E3E\u0022"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:35:29 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ]
+      },
+      "ManifestHash": "ffc004999ccac71d113d1531c82dff53ad2f7958c2031207d0b70d057c4d80ff"
+    }
+  },
+  {
+    "PartitionKey": "danilovsoft.microorm",
+    "RowKey": "3.3.4",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "500"
+        ],
+        "Content-Type": [
+          "text/xml"
+        ],
+        "ETag": [
+          "\u00220x8D8930B99043725\u0022"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:35:29 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ]
+      },
+      "ManifestHash": "0bfa20a1aa56f77a3c42866d4f20d8dd8ea5361cc648dd1e7159aded0734e1f5"
+    }
+  },
+  {
+    "PartitionKey": "eto.forms.templates",
+    "RowKey": "2.5.8",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "827"
+        ],
+        "Content-Type": [
+          "text/xml"
+        ],
+        "ETag": [
+          "\u00220x8D8930B990E999F\u0022"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:35:29 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ]
+      },
+      "ManifestHash": "54aed575b84c8e81eae112e855f788e13f6d1546fcebc520c943f08d93400a9f"
+    }
+  },
+  {
+    "PartitionKey": "eto.platform.direct2d",
+    "RowKey": "2.5.8",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "2518"
+        ],
+        "Content-Type": [
+          "text/xml"
+        ],
+        "ETag": [
+          "\u00220x8D8930B994EBD9F\u0022"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:35:29 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ]
+      },
+      "ManifestHash": "0f4d4f08076a6186517d506a3e9647c47a32400efbaf41b8ae28b7702ac7c509"
+    }
+  },
+  {
+    "PartitionKey": "eto.platform.gtk",
+    "RowKey": "2.5.8",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "1594"
+        ],
+        "Content-Type": [
+          "text/xml"
+        ],
+        "ETag": [
+          "\u00220x8D8930B99200276\u0022"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:35:29 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ]
+      },
+      "ManifestHash": "629570dc8f207b2bc19f03d2804961cdc0e9d6c58930ff30b22cead7b691d7fe"
+    }
+  },
+  {
+    "PartitionKey": "eto.platform.gtk2",
+    "RowKey": "2.5.8",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "1736"
+        ],
+        "Content-Type": [
+          "text/xml"
+        ],
+        "ETag": [
+          "\u00220x8D8930B995B1C56\u0022"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:35:29 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ]
+      },
+      "ManifestHash": "4966b530dacd522f614e9ed2f0217aad1d0bc803648b63afc530a7ecaae2c6d8"
+    }
+  },
+  {
+    "PartitionKey": "eto.platform.gtk3",
+    "RowKey": "2.5.8",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "1779"
+        ],
+        "Content-Type": [
+          "text/xml"
+        ],
+        "ETag": [
+          "\u00220x8D8930B98C46156\u0022"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:35:28 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ]
+      },
+      "ManifestHash": "eaae014cd3738c877fef390ea4fcc92e9f4847ea6816bfcbc68e245490d161b1"
+    }
+  },
+  {
+    "PartitionKey": "eto.platform.mac64",
+    "RowKey": "2.5.8",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "2002"
+        ],
+        "Content-Type": [
+          "text/xml"
+        ],
+        "ETag": [
+          "\u00220x8D8930B99235EA0\u0022"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:35:29 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ]
+      },
+      "ManifestHash": "ae2695abfc46c63a567c970a9d69fdf2b36aabeaf4efd9772001a86cd74b3d73"
+    }
+  },
+  {
+    "PartitionKey": "eto.platform.windows",
+    "RowKey": "2.5.8",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "2174"
+        ],
+        "Content-Type": [
+          "text/xml"
+        ],
+        "ETag": [
+          "\u00220x8D8930B992E0F42\u0022"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:35:29 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ]
+      },
+      "ManifestHash": "c8b0553eb860ba7eb48a8d79e5b114925819cd0bea421e4f5cb76a7bf0a066a6"
+    }
+  },
+  {
+    "PartitionKey": "eto.platform.wpf",
+    "RowKey": "2.5.8",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "2459"
+        ],
+        "Content-Type": [
+          "text/xml"
+        ],
+        "ETag": [
+          "\u00220x8D8930B994A9E0D\u0022"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:35:29 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ]
+      },
+      "ManifestHash": "ef2cdcfb80f6c5b9843ba79f1700c2647ea7365dc44560a432f3d4f1e2e88bae"
+    }
+  },
+  {
+    "PartitionKey": "eto.serialization.xaml",
+    "RowKey": "2.5.8",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-11-27T19:34:44.6917011+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "1720"
+        ],
+        "Content-Type": [
+          "text/xml"
+        ],
+        "ETag": [
+          "\u00220x8D8930B98FF05E8\u0022"
+        ],
+        "Last-Modified": [
+          "Fri, 27 Nov 2020 19:35:29 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ]
+      },
+      "ManifestHash": "e14e33e35c3dbf94ce77e6cffcddc5e299febd527e0b658a5935e6387ec9049c"
+    }
+  }
+]

@@ -1,0 +1,5 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Size,LastModified,SHA256,Content
+,,nlog.extensions.logging,nlog.extensions.logging/1.6.3,NLog.Extensions.Logging,1.6.3,2020-05-11T20:12:56.9143404Z,2020-05-11T20:10:44.683Z,Embedded,48,2021-01-14T20:00:00Z,7xige+pW0rIfUinunqBuVXzLZ8TUs9uaeknBIjVsDHU=,"# Example README
+
+This is an example readme.
+"

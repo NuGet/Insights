@@ -199,42 +199,6 @@ namespace NuGet.Insights
         public ILogger Logger => Host.Services.GetRequiredService<ILogger<BaseLogicIntegrationTest>>();
         public ConcurrentQueue<string> LogMessages { get; } = new ConcurrentQueue<string>();
 
-        private List<Target> VerifyTargets { get; } = new List<Target>();
-
-        protected async Task VerifyAndClearAsync()
-        {
-            Assert.NotEmpty(VerifyTargets);
-            var targets = VerifyTargets.ToList();
-            VerifyTargets.Clear();
-            await Verify(targets);
-        }
-
-        protected async Task AddTargetsAsync(params Task<Target[]>[] tasks)
-        {
-            foreach (var task in tasks)
-            {
-                VerifyTargets.AddRange(await task);
-            }
-        }
-
-        protected async Task AddTargetsAsync(Task<Target[]> tasksA, params Task<Target>[] tasksB)
-        {
-            VerifyTargets.AddRange(await tasksA);
-
-            foreach (var task in tasksB)
-            {
-                VerifyTargets.Add(await task);
-            }
-        }
-
-        protected async Task AddTargetsAsync(params Task<Target>[] tasks)
-        {
-            foreach (var task in tasks)
-            {
-                VerifyTargets.Add(await task);
-            }
-        }
-
         protected async Task<List<T>> GetEntitiesAsync<T>(string tableName) where T : class, ITableEntity
         {
             var client = await ServiceClientFactory.GetTableServiceClientAsync();
@@ -356,7 +320,6 @@ namespace NuGet.Insights
             {
                 await DisposeInternalAsync();
 
-                Assert.True(VerifyTargets.Count == 0, "The should be not Verify targets left.");
                 AssertLogLevelOrLess();
             }
             finally

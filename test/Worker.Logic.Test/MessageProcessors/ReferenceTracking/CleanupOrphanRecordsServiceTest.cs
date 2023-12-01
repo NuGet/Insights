@@ -33,26 +33,23 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             });
 
             // Assert
-            await Verify(
-                await Task.WhenAll(
-                    GetOwnerToSubjectAsync(step: 1),
-                    GetSubjectToOwnerAsync(step: 1),
-                    GetCsvAsync(bucket: 0, step: 1),
-                    GetCsvAsync(bucket: 1, step: 1),
-                    GetCsvAsync(bucket: 2, step: 1)));
+            await Task.WhenAll(
+                VerifyOwnerToSubjectAsync(step: 1),
+                VerifySubjectToOwnerAsync(step: 1),
+                VerifyCsvAsync(bucket: 0, step: 1),
+                VerifyCsvAsync(bucket: 1, step: 1),
+                VerifyCsvAsync(bucket: 2, step: 1));
 
             // Act
             await CleanupOrphanRecordsAsync();
 
             // Assert
-            await Verify(
-                await Task.WhenAll(
-                    GetOwnerToSubjectAsync(step: 1), // This file is unchanged.
-                    GetSubjectToOwnerAsync(step: 1), // This file is unchanged.
-                    GetCsvAsync(bucket: 0, step: 1), // This file is unchanged.
-                    GetCsvAsync(bucket: 1, step: 1), // This file is unchanged.
-                    GetCsvAsync(bucket: 2, step: 1))) // This file is unchanged.
-                .DisableRequireUniquePrefix();
+            await Task.WhenAll(
+                VerifyOwnerToSubjectAsync(step: 1), // This file is unchanged.
+                VerifySubjectToOwnerAsync(step: 1), // This file is unchanged.
+                VerifyCsvAsync(bucket: 0, step: 1), // This file is unchanged.
+                VerifyCsvAsync(bucket: 1, step: 1), // This file is unchanged.
+                VerifyCsvAsync(bucket: 2, step: 1)); // This file is unchanged.
         }
 
         [Fact]
@@ -80,26 +77,23 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             });
 
             // Assert
-            await Verify(
-                await Task.WhenAll(
-                    GetOwnerToSubjectAsync(step: 1),
-                    GetSubjectToOwnerAsync(step: 1),
-                    GetCsvAsync(bucket: 0, step: 1),
-                    GetCsvAsync(bucket: 1, step: 1),
-                    GetCsvAsync(bucket: 2, step: 1)));
+            await Task.WhenAll(
+                VerifyOwnerToSubjectAsync(step: 1),
+                VerifySubjectToOwnerAsync(step: 1),
+                VerifyCsvAsync(bucket: 0, step: 1),
+                VerifyCsvAsync(bucket: 1, step: 1),
+                VerifyCsvAsync(bucket: 2, step: 1));
 
             // Act
             await CleanupOrphanRecordsAsync();
 
             // Assert
-            await Verify(
-                await Task.WhenAll(
-                    GetOwnerToSubjectAsync(step: 1), // This file is unchanged.
-                    GetSubjectToOwnerAsync(step: 2),
-                    GetCsvAsync(bucket: 0, step: 1), // This file is unchanged.
-                    GetCsvAsync(bucket: 1, step: 1), // This file is unchanged.
-                    GetCsvAsync(bucket: 2, step: 1))) // This file is unchanged.
-                .DisableRequireUniquePrefix(); 
+            await Task.WhenAll(
+                VerifyOwnerToSubjectAsync(step: 1), // This file is unchanged.
+                VerifySubjectToOwnerAsync(step: 2),
+                VerifyCsvAsync(bucket: 0, step: 1), // This file is unchanged.
+                VerifyCsvAsync(bucket: 1, step: 1), // This file is unchanged.
+                VerifyCsvAsync(bucket: 2, step: 1)); // This file is unchanged.
         }
 
         [Fact]
@@ -134,26 +128,23 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             });
 
             // Assert
-            await Verify(
-                await Task.WhenAll(
-                    GetOwnerToSubjectAsync(step: 1),
-                    GetSubjectToOwnerAsync(step: 1),
-                    GetCsvAsync(bucket: 0, step: 1),
-                    GetCsvAsync(bucket: 1, step: 1),
-                    GetCsvAsync(bucket: 2, step: 1)));
+            await Task.WhenAll(
+                VerifyOwnerToSubjectAsync(step: 1),
+                VerifySubjectToOwnerAsync(step: 1),
+                VerifyCsvAsync(bucket: 0, step: 1),
+                VerifyCsvAsync(bucket: 1, step: 1),
+                VerifyCsvAsync(bucket: 2, step: 1));
 
             // Act
             await CleanupOrphanRecordsAsync();
 
             // Assert
-            await Verify(
-                await Task.WhenAll(
-                    GetOwnerToSubjectAsync(step: 1), // This file is unchanged.
-                    GetSubjectToOwnerAsync(step: 2),
-                    GetCsvAsync(bucket: 0, step: 2),
-                    GetCsvAsync(bucket: 1, step: 1), // This file is unchanged.
-                    GetCsvAsync(bucket: 2, step: 2)))
-                .DisableRequireUniquePrefix();
+            await Task.WhenAll(
+                VerifyOwnerToSubjectAsync(step: 1), // This file is unchanged.
+                VerifySubjectToOwnerAsync(step: 2),
+                VerifyCsvAsync(bucket: 0, step: 2),
+                VerifyCsvAsync(bucket: 1, step: 1), // This file is unchanged.
+                VerifyCsvAsync(bucket: 2, step: 2));
         }
         private async Task CleanupOrphanRecordsAsync()
         {
@@ -244,19 +235,19 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             });
         }
 
-        private async Task<Target> GetOwnerToSubjectAsync(int step)
+        private async Task VerifyOwnerToSubjectAsync(int step)
         {
-            return await GetOwnerToSubjectAsync(OwnerToSubjectTableName, x => x.ToBase64(), step);
+            await VerifyOwnerToSubjectAsync(OwnerToSubjectTableName, x => x.ToBase64(), step);
         }
 
-        private async Task<Target> GetSubjectToOwnerAsync(int step)
+        private async Task VerifySubjectToOwnerAsync(int step)
         {
-            return await GetSubjectToOwnerAsync(SubjectToOwnerTableName, step);
+            await VerifySubjectToOwnerAsync(SubjectToOwnerTableName, step);
         }
 
-        private async Task<Target> GetCsvAsync(int bucket, int step)
+        private async Task VerifyCsvAsync(int bucket, int step)
         {
-            return await GetCsvAsync<TestSubjectRecord>(bucket, step, tableDisplayName: "TestSubjects");
+            await VerifyCsvAsync<TestSubjectRecord>(bucket, step, tableDisplayName: "TestSubjects");
         }
 
         public CleanupOrphanRecordsServiceTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

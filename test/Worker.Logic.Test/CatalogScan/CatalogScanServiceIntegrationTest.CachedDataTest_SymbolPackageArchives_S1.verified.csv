@@ -1,0 +1,2 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Size,OffsetAfterEndOfCentralDirectory,CentralDirectorySize,OffsetOfCentralDirectory,EntryCount,Comment,HeaderMD5,HeaderSHA512
+,,nlog.extensions.logging,nlog.extensions.logging/1.6.3,NLog.Extensions.Logging,1.6.3,2020-05-11T20:12:56.9143404Z,2020-05-11T20:10:44.683Z,Available,46807,46789,860,45925,10,,0X2sqNbjfDYeMkDd0QsyGQ==,e6SDtEvGITWhUTkic6c6fqtVD+UVliW9rvEyfYm6SaOa/xp1lEywytkQmQfWtgN0mpaOJxviXFIZG9BmUsxMyA==

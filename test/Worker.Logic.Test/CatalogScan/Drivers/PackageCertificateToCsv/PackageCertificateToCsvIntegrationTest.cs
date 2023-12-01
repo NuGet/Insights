@@ -25,18 +25,17 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             await UpdateAsync(max1);
 
             // Assert
-            await AddTargetsAsync(
-                GetTableOutputAsync(step: 1),
-                GetCsvOutputAsync(step: 1));
+            await Task.WhenAll(
+                VerifyTableOutputAsync(step: 1),
+                VerifyCsvOutputAsync(step: 1));
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AddTargetsAsync(
-                GetTableOutputAsync(step: 2),
-                GetCsvOutputAsync(step: 2));
-            await VerifyAndClearAsync();
+            await Task.WhenAll(
+                VerifyTableOutputAsync(step: 2),
+                VerifyCsvOutputAsync(step: 2));
         }
 
         [Fact]
@@ -54,10 +53,9 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             await UpdateAsync(max1);
 
             // Assert
-            await AddTargetsAsync(
-                GetTableOutputAsync(step: 1),
-                GetCsvOutputAsync(step: 1));
-            await VerifyAndClearAsync();
+            await Task.WhenAll(
+                VerifyTableOutputAsync(step: 1),
+                VerifyCsvOutputAsync(step: 1));
         }
 
         [Fact]
@@ -75,10 +73,9 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             await UpdateAsync(max1);
 
             // Assert
-            await AddTargetsAsync(
-                GetTableOutputAsync(step: 1),
-                GetCsvOutputAsync(step: 1));
-            await VerifyAndClearAsync();
+            await Task.WhenAll(
+                VerifyTableOutputAsync(step: 1),
+                VerifyCsvOutputAsync(step: 1));
         }
 
         [Fact]
@@ -100,38 +97,36 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             await UpdateAsync(max1);
 
             // Assert
-            await AddTargetsAsync(
-                GetTableOutputAsync(step: 1),
-                GetCsvOutputAsync(step: 1));
+            await Task.WhenAll(
+                VerifyTableOutputAsync(step: 1),
+                VerifyCsvOutputAsync(step: 1));
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AddTargetsAsync(
-                GetOwnerToSubjectAsync(step: 1),
-                GetSubjectToOwnerAsync(step: 1),
-                GetCsvT1Async(bucket: 0, step: 1), // This file is unchanged.
-                GetCsvT1Async(bucket: 1, step: 1), // This file is unchanged.
-                GetCsvT1Async(bucket: 2, step: 2),
-                GetCsvT2Async(bucket: 0, step: 1), // This file is unchanged.
-                GetCsvT2Async(bucket: 1, step: 1), // This file is unchanged.
-                GetCsvT2Async(bucket: 2, step: 1)); // This file is unchanged.
+            await Task.WhenAll(
+                VerifyTableOutputAsync(step: 2),
+                VerifyCsvT1Async(bucket: 0, step: 1), // This file is unchanged.
+                VerifyCsvT1Async(bucket: 1, step: 1), // This file is unchanged.
+                VerifyCsvT1Async(bucket: 2, step: 2),
+                VerifyCsvT2Async(bucket: 0, step: 1), // This file is unchanged.
+                VerifyCsvT2Async(bucket: 1, step: 1), // This file is unchanged.
+                VerifyCsvT2Async(bucket: 2, step: 1)); // This file is unchanged.
 
             // Act
             await CleanupOrphansAsync();
 
             // Assert
-            await AddTargetsAsync(
-                GetOwnerToSubjectAsync(step: 2), // This file is unchanged.
-                GetSubjectToOwnerAsync(step: 3),
-                GetCsvT1Async(bucket: 0, step: 1), // This file is unchanged.
-                GetCsvT1Async(bucket: 1, step: 1), // This file is unchanged.
-                GetCsvT1Async(bucket: 2, step: 2), // This file is unchanged.
-                GetCsvT2Async(bucket: 0, step: 1), // This file is unchanged.
-                GetCsvT2Async(bucket: 1, step: 3),
-                GetCsvT2Async(bucket: 2, step: 1)); // This file is unchanged.
-            await VerifyAndClearAsync();
+            await Task.WhenAll(
+                VerifyOwnerToSubjectAsync(step: 2), // This file is unchanged.
+                VerifySubjectToOwnerAsync(step: 3),
+                VerifyCsvT1Async(bucket: 0, step: 1), // This file is unchanged.
+                VerifyCsvT1Async(bucket: 1, step: 1), // This file is unchanged.
+                VerifyCsvT1Async(bucket: 2, step: 2), // This file is unchanged.
+                VerifyCsvT2Async(bucket: 0, step: 1), // This file is unchanged.
+                VerifyCsvT2Async(bucket: 1, step: 3),
+                VerifyCsvT2Async(bucket: 2, step: 1)); // This file is unchanged.
         }
 
         [Fact]
@@ -154,41 +149,40 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             await UpdateAsync(max1);
 
             // Assert
-            await AssertCsvCountT1Async(1);
-            await AssertCsvCountT2Async(2);
-            await AddTargetsAsync(
-                GetOwnerToSubjectAsync(step: 1),
-                GetSubjectToOwnerAsync(step: 1),
-                GetCsvT1Async(bucket: 1, step: 1),
-                GetCsvT2Async(bucket: 1, step: 1),
-                GetCsvT2Async(bucket: 2, step: 1));
+            await Task.WhenAll(
+                VerifyTableOutputAsync(step: 1),
+                VerifyCsvT1Async(bucket: 1, step: 1),
+                AssertCsvCountT1Async(1),
+                VerifyCsvT2Async(bucket: 1, step: 1),
+                VerifyCsvT2Async(bucket: 2, step: 1),
+                AssertCsvCountT2Async(2));
 
             // Act
             await SetCursorAsync(DriverType, min2);
             await UpdateAsync(max3);
 
             // Assert
-            await AssertEmptyOwnerToSubjectAsync();
-            await AssertCsvCountT1Async(1);
-            await AssertCsvCountT2Async(2);
-            await AddTargetsAsync(
-                GetSubjectToOwnerAsync(step: 2),
-                GetCsvT1Async(bucket: 1, step: 2),
-                GetCsvT2Async(bucket: 1, step: 1), // This file is unchanged.
-                GetCsvT2Async(bucket: 2, step: 1))) // This file is unchanged.
-                .DisableRequireUniquePrefix();
+            await Task.WhenAll(
+                AssertEmptyOwnerToSubjectAsync(),
+                VerifySubjectToOwnerAsync(step: 2),
+                VerifyCsvT1Async(bucket: 1, step: 2),
+                AssertCsvCountT1Async(1),
+                VerifyCsvT2Async(bucket: 1, step: 1), // This file is unchanged.
+                VerifyCsvT2Async(bucket: 2, step: 1), // This file is unchanged.
+                AssertCsvCountT2Async(2));
 
             // Act
             await CleanupOrphansAsync();
 
             // Assert
-            await AssertEmptyOwnerToSubjectAsync();
-            await AssertEmptySubjectToOwnerAsync();
-            await AssertCsvCountT1Async(1);
-            await AssertEmptyCsvT2Async(bucket: 1);
-            await AssertEmptyCsvT2Async(bucket: 2);
-            await AssertCsvCountT2Async(2);
-            await Verify(await GetCsvT1Async(bucket: 1, step: 2)).DisableRequireUniquePrefix(); // This file is unchanged.
+            await Task.WhenAll(
+                AssertEmptyOwnerToSubjectAsync(),
+                AssertEmptySubjectToOwnerAsync(),
+                VerifyCsvT1Async(bucket: 1, step: 2), // This file is unchanged.
+                AssertCsvCountT1Async(1),
+                AssertEmptyCsvT2Async(bucket: 1),
+                AssertEmptyCsvT2Async(bucket: 2),
+                AssertCsvCountT2Async(2));
         }
 
         [Fact]
@@ -206,11 +200,12 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             await UpdateAsync(max1);
 
             // Assert
-            await AssertEmptyOwnerToSubjectAsync();
-            await AssertEmptySubjectToOwnerAsync();
-            await AssertCsvCountT1Async(1);
-            await AssertCsvCountT2Async(0);
-            await Verify(await GetCsvT1Async(bucket: 2, step: 1));
+            await Task.WhenAll(
+                AssertEmptyOwnerToSubjectAsync(),
+                AssertEmptySubjectToOwnerAsync(),
+                VerifyCsvT1Async(bucket: 2, step: 1),
+                AssertCsvCountT1Async(1),
+                AssertCsvCountT2Async(0));
         }
 
         public PackageCertificateToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
@@ -266,16 +261,16 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             await ProcessQueueAsync(async () => !await cleanup.IsRunningAsync());
         }
 
-        private async Task<Target[]> GetTableOutputAsync(int step)
+        private async Task VerifyTableOutputAsync(int step)
         {
-            return await Task.WhenAll(
-                GetOwnerToSubjectAsync(step),
-                GetSubjectToOwnerAsync(step));
+            await Task.WhenAll(
+                VerifyOwnerToSubjectAsync(step),
+                VerifySubjectToOwnerAsync(step));
         }
 
-        private async Task<Target> GetOwnerToSubjectAsync(int step)
+        private async Task VerifyOwnerToSubjectAsync(int step)
         {
-            return await GetOwnerToSubjectAsync(
+            await VerifyOwnerToSubjectAsync(
                 Options.Value.PackageToCertificateTableName,
                 bytes =>
                 {
@@ -297,9 +292,9 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             await AssertEmptyTableAsync(Options.Value.PackageToCertificateTableName);
         }
 
-        private async Task<Target> GetSubjectToOwnerAsync(int step)
+        private async Task VerifySubjectToOwnerAsync(int step)
         {
-            return await GetSubjectToOwnerAsync(Options.Value.CertificateToPackageTableName, step);
+            await VerifySubjectToOwnerAsync(Options.Value.CertificateToPackageTableName, step);
         }
 
         private async Task AssertEmptySubjectToOwnerAsync()

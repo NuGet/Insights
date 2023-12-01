@@ -20,13 +20,13 @@ namespace NuGet.Insights.Worker.LoadPackageReadme
             await UpdateAsync(max1);
 
             // Assert
-            await Verify(await GetPackageReadmeTableAsync(step: 1));
+            await VerifyPackageReadmeTableAsync(step: 1);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await Verify(await GetPackageReadmeTableAsync(step: 2)).DisableRequireUniquePrefix();
+            await VerifyPackageReadmeTableAsync(step: 2);
         }
 
         [Fact]
@@ -45,13 +45,13 @@ namespace NuGet.Insights.Worker.LoadPackageReadme
             await UpdateAsync(max1);
 
             // Assert
-            await Verify(await GetPackageReadmeTableAsync(step: 1));
+            await VerifyPackageReadmeTableAsync(step: 1);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await Verify(await GetPackageReadmeTableAsync(step: 2)).DisableRequireUniquePrefix();
+            await VerifyPackageReadmeTableAsync(step: 2);
         }
 
         protected override IEnumerable<string> GetExpectedTableNames()
