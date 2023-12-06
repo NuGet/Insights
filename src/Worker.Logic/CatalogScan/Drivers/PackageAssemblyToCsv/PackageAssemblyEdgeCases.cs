@@ -18,5 +18,6 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         CustomAttributes_BrokenMethodDefinitionName = 1 << 8,
         CustomAttributes_ArrayOutOfMemory = 1 << 9,
         CustomAttributes_BrokenValueBlob = 1 << 10,
+        CustomAttributes_TypeSpecificationConstructor = 1 << 11,
     }
 }

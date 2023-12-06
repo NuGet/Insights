@@ -52,6 +52,12 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                         var typeDefinition = metadata.GetTypeDefinition((TypeDefinitionHandle)memberReference.Parent);
                         attributeName = metadata.GetString(typeDefinition.Name);
                     }
+                    else if (memberReference.Parent.Kind == HandleKind.TypeSpecification)
+                    {
+                        edgeCases |= PackageAssemblyEdgeCases.CustomAttributes_TypeSpecificationConstructor;
+                        var typeSpecification = metadata.GetTypeSpecification((TypeSpecificationHandle)memberReference.Parent);
+                        attributeName = "(unprocessed type specification)";
+                    }
                     else
                     {
                         throw new NotImplementedException("Encountered unexpected attribute constructor parent handle: " + memberReference.Parent.Kind);

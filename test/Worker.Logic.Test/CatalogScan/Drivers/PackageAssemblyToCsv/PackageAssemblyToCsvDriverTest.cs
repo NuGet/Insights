@@ -507,5 +507,28 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 Assert.Equal(DriverResultType.TryAgainLater, output.Type);
             }
         }
+
+        [Fact]
+        public async Task HandlesTypeSpecificationConstructor()
+        {
+            var leaf = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2023.12.05.18.32.22/democrite.framework.node.0.2.0.160-prerelease.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "Democrite.Framework.Node",
+                PackageVersion = "0.2.0.160-prerelease",
+            }.SetDefaults();
+            await Target.InitializeAsync();
+
+            var output = await Target.ProcessLeafAsync(leaf);
+
+            Assert.Equal(DriverResultType.Success, output.Type);
+            var record = Assert.Single(output.Value.Records);
+            Assert.Equal("lib/net7.0/Democrite.Framework.Node.dll", record.Path);
+            var customAttributes = JsonSerializer.Deserialize<JsonElement>(record.CustomAttributes);
+            Assert.True(customAttributes.TryGetProperty("(unprocessed type specification)", out var values));
+            Assert.Equal("[{},{},{}]", values.ToString());
+            Assert.True(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.CustomAttributes_TypeSpecificationConstructor));
+        }
     }
 }
