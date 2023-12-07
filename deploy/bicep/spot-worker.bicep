@@ -275,6 +275,9 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2021-11-01' = {
     }
     upgradePolicy: {
       mode: 'Automatic'
+      automaticOSUpgradePolicy: {
+        enableAutomaticOSUpgrade: true
+      }
     }
   }
 }
