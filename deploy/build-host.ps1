@@ -11,10 +11,10 @@ param (
 Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1") -Force
 $RuntimeIdentifier = Get-DefaultRuntimeIdentifier $RuntimeIdentifier
 
-$hostVersion = "4.27.1"
+$hostRepo = "https://github.com/Azure/azure-functions-host.git"
+$hostVersion = "v4.28.2"
 
 $artifactsDir = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../artifacts/azure-functions"))
-$hostRepo = "https://github.com/Azure/azure-functions-host.git"
 $hostSrcDir = Join-Path $artifactsDir "azure-functions-host-$hostVersion"
 $hostBinDir = Join-Path $artifactsDir "host"
 $hostBinZip = if ($OutputPath) { $OutputPath } else { Join-Path $artifactsDir "AzureFunctionsHost.zip" }
@@ -37,7 +37,7 @@ Remove-DirSafe $artifactsDir
 New-Item $artifactsDir -ItemType Directory | Out-Null
 
 Write-Host "Cloning Azure Functions host source code"
-git clone --depth 1 --branch "v$hostVersion" $hostRepo $hostSrcDir
+git clone --depth 1 --branch $hostVersion $hostRepo $hostSrcDir
 
 # Build and publish the host
 $hostProjectPath = Join-Path $hostSrcDir "src/WebJobs.Script.WebHost/WebJobs.Script.WebHost.csproj"
