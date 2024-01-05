@@ -167,9 +167,9 @@ namespace NuGet.Insights.Worker.TimedReprocess
                     batch.DeleteEntity(scan.PartitionKey, scan.RowKey, scan.ETag);
                     await batch.SubmitBatchIfFullAsync();
                 }
-            }
 
-            await batch.SubmitBatchIfNotEmptyAsync();
+                await batch.SubmitBatchIfNotEmptyAsync();
+            }
 
             // delete runs
             foreach (var run in oldRunsToDelete)
