@@ -8,12 +8,8 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 {
     public class CleanupOrphanRecordsServiceTest : BaseWorkerLogicIntegrationTest
     {
-        public const string CleanupOrphanRecordsServiceTest_WithNoDeletionsDir = nameof(CleanupOrphanRecordsServiceTest_WithNoDeletions);
-        public const string CleanupOrphanRecordsServiceTest_WithNoOrphansDir = nameof(CleanupOrphanRecordsServiceTest_WithNoOrphans);
-        public const string CleanupOrphanRecordsServiceTest_WithClearedCsvDir = nameof(CleanupOrphanRecordsServiceTest_WithClearedCsv);
-
         [Fact]
-        public async Task CleanupOrphanRecordsServiceTest_WithNoDeletions()
+        public async Task NoDeletions()
         {
             // Arrange
             var subjectRecords = Enumerable
@@ -37,25 +33,27 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             });
 
             // Assert
-            await AssertOwnerToSubjectAsync(CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1, x => x.ToBase64());
-            await AssertSubjectToOwnerAsync(CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1);
-            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1, 0);
-            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1, 1);
-            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1, 2);
+            await Task.WhenAll(
+                VerifyOwnerToSubjectAsync(step: 1),
+                VerifySubjectToOwnerAsync(step: 1),
+                VerifyCsvAsync(bucket: 0, step: 1),
+                VerifyCsvAsync(bucket: 1, step: 1),
+                VerifyCsvAsync(bucket: 2, step: 1));
 
             // Act
             await CleanupOrphanRecordsAsync();
 
             // Assert
-            await AssertOwnerToSubjectAsync(CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1, x => x.ToBase64()); // This file is unchanged.
-            await AssertSubjectToOwnerAsync(CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1); // This file is unchanged.
-            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1, 0); // This file is unchanged.
-            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1, 1); // This file is unchanged.
-            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoDeletionsDir, Step1, 2); // This file is unchanged.
+            await Task.WhenAll(
+                VerifyOwnerToSubjectAsync(step: 1), // This file is unchanged.
+                VerifySubjectToOwnerAsync(step: 1), // This file is unchanged.
+                VerifyCsvAsync(bucket: 0, step: 1), // This file is unchanged.
+                VerifyCsvAsync(bucket: 1, step: 1), // This file is unchanged.
+                VerifyCsvAsync(bucket: 2, step: 1)); // This file is unchanged.
         }
 
         [Fact]
-        public async Task CleanupOrphanRecordsServiceTest_WithNoOrphans()
+        public async Task NoOrphans()
         {
             // Arrange
             var subjectRecords = Enumerable
@@ -79,25 +77,27 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             });
 
             // Assert
-            await AssertOwnerToSubjectAsync(CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1, x => x.ToBase64());
-            await AssertSubjectToOwnerAsync(CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1);
-            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1, 0);
-            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1, 1);
-            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1, 2);
+            await Task.WhenAll(
+                VerifyOwnerToSubjectAsync(step: 1),
+                VerifySubjectToOwnerAsync(step: 1),
+                VerifyCsvAsync(bucket: 0, step: 1),
+                VerifyCsvAsync(bucket: 1, step: 1),
+                VerifyCsvAsync(bucket: 2, step: 1));
 
             // Act
             await CleanupOrphanRecordsAsync();
 
             // Assert
-            await AssertOwnerToSubjectAsync(CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1, x => x.ToBase64()); // This file is unchanged.
-            await AssertSubjectToOwnerAsync(CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step2);
-            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1, 0); // This file is unchanged.
-            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1, 1); // This file is unchanged.
-            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithNoOrphansDir, Step1, 2); // This file is unchanged.
+            await Task.WhenAll(
+                VerifyOwnerToSubjectAsync(step: 1), // This file is unchanged.
+                VerifySubjectToOwnerAsync(step: 2),
+                VerifyCsvAsync(bucket: 0, step: 1), // This file is unchanged.
+                VerifyCsvAsync(bucket: 1, step: 1), // This file is unchanged.
+                VerifyCsvAsync(bucket: 2, step: 1)); // This file is unchanged.
         }
 
         [Fact]
-        public async Task CleanupOrphanRecordsServiceTest_WithClearedCsv()
+        public async Task ClearedCsv()
         {
             // Arrange
             var subjectRecords = Enumerable
@@ -128,23 +128,24 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             });
 
             // Assert
-            await AssertOwnerToSubjectAsync(CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step1, x => x.ToBase64());
-            await AssertSubjectToOwnerAsync(CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step1);
-            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step1, 0);
-            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step1, 1);
-            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step1, 2);
+            await Task.WhenAll(
+                VerifyOwnerToSubjectAsync(step: 1),
+                VerifySubjectToOwnerAsync(step: 1),
+                VerifyCsvAsync(bucket: 0, step: 1),
+                VerifyCsvAsync(bucket: 1, step: 1),
+                VerifyCsvAsync(bucket: 2, step: 1));
 
             // Act
             await CleanupOrphanRecordsAsync();
 
             // Assert
-            await AssertOwnerToSubjectAsync(CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step1, x => x.ToBase64()); // This file is unchanged.
-            await AssertSubjectToOwnerAsync(CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step2);
-            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step2, 0);
-            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step1, 1); // This file is unchanged.
-            await AssertCsvAsync<TestSubjectRecord>(CsvResultStorage.ResultContainerName, CleanupOrphanRecordsServiceTest_WithClearedCsvDir, Step2, 2);
+            await Task.WhenAll(
+                VerifyOwnerToSubjectAsync(step: 1), // This file is unchanged.
+                VerifySubjectToOwnerAsync(step: 2),
+                VerifyCsvAsync(bucket: 0, step: 2),
+                VerifyCsvAsync(bucket: 1, step: 1), // This file is unchanged.
+                VerifyCsvAsync(bucket: 2, step: 2));
         }
-
         private async Task CleanupOrphanRecordsAsync()
         {
             await Target.InitializeAsync();
@@ -234,14 +235,19 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             });
         }
 
-        private async Task AssertOwnerToSubjectAsync(string testName, string stepName, Func<byte[], string> deserializeEntity)
+        private async Task VerifyOwnerToSubjectAsync(int step)
         {
-            await AssertOwnerToSubjectAsync(OwnerToSubjectTableName, testName, stepName, deserializeEntity);
+            await VerifyOwnerToSubjectAsync(OwnerToSubjectTableName, x => x.ToBase64(), step);
         }
 
-        private async Task AssertSubjectToOwnerAsync(string testName, string stepName)
+        private async Task VerifySubjectToOwnerAsync(int step)
         {
-            await AssertSubjectToOwnerAsync(SubjectToOwnerTableName, testName, stepName);
+            await VerifySubjectToOwnerAsync(SubjectToOwnerTableName, step);
+        }
+
+        private async Task VerifyCsvAsync(int bucket, int step)
+        {
+            await VerifyCsvAsync<TestSubjectRecord>(bucket, step, tableDisplayName: "TestSubjects");
         }
 
         public CleanupOrphanRecordsServiceTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

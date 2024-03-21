@@ -5,11 +5,8 @@ namespace NuGet.Insights.Worker.LoadPackageReadme
 {
     public class LoadPackageReadmeIntegrationTest : BaseCatalogScanIntegrationTest
     {
-        public const string LoadPackageReadmeDir = nameof(LoadPackageReadme);
-        public const string LoadPackageReadme_WithDeleteDir = nameof(LoadPackageReadme_WithDelete);
-
         [Fact]
-        public async Task LoadPackageReadme()
+        public async Task Simple()
         {
             // Arrange
             var min0 = DateTimeOffset.Parse("2022-03-14T23:05:39.6122305Z", CultureInfo.InvariantCulture);
@@ -23,17 +20,17 @@ namespace NuGet.Insights.Worker.LoadPackageReadme
             await UpdateAsync(max1);
 
             // Assert
-            await AssertPackageReadmeTableAsync(LoadPackageReadmeDir, Step1);
+            await VerifyPackageReadmeTableAsync(step: 1);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertPackageReadmeTableAsync(LoadPackageReadmeDir, Step2);
+            await VerifyPackageReadmeTableAsync(step: 2);
         }
 
         [Fact]
-        public async Task LoadPackageReadme_WithDelete()
+        public async Task Delete()
         {
             // Arrange
             MakeDeletedPackageAvailable();
@@ -48,13 +45,13 @@ namespace NuGet.Insights.Worker.LoadPackageReadme
             await UpdateAsync(max1);
 
             // Assert
-            await AssertPackageReadmeTableAsync(LoadPackageReadme_WithDeleteDir, Step1);
+            await VerifyPackageReadmeTableAsync(step: 1);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertPackageReadmeTableAsync(LoadPackageReadme_WithDeleteDir, Step2);
+            await VerifyPackageReadmeTableAsync(step: 2);
         }
 
         protected override IEnumerable<string> GetExpectedTableNames()

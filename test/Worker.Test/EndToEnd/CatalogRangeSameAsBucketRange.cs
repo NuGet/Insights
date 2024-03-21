@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Insights.Worker.LoadBucketedPackage;
@@ -78,11 +78,7 @@ namespace NuGet.Insights.Worker
             }
 
             // Assert
-            foreach (var (containerName, recordType, defaultTableName) in expectedContainers)
-            {
-                await AssertCsvAsync(recordType, containerName, nameof(CatalogRangeSameAsBucketRange), Step1, 0, $"{defaultTableName}.csv");
-                await (await GetBlobAsync(containerName, $"compact_0.csv.gz")).DeleteAsync();
-            }
+            await Task.WhenAll(expectedContainers.Select(x => VerifyCsvAsync(x.RecordType, deleteAfter: true)));
 
             // Arrange
             await SetCursorsAsync(CatalogScanDriverMetadata.StartableDriverTypes, min0);
@@ -111,10 +107,7 @@ namespace NuGet.Insights.Worker
             }
 
             // Assert
-            foreach (var (containerName, recordType, defaultTableName) in expectedContainers)
-            {
-                await AssertCsvAsync(recordType, containerName, nameof(CatalogRangeSameAsBucketRange), Step1, 0, $"{defaultTableName}.csv");
-            }
+            await Task.WhenAll(expectedContainers.Select(x => VerifyCsvAsync(x.RecordType)));
         }
     }
 }

@@ -5,11 +5,8 @@ namespace NuGet.Insights.Worker.LoadSymbolPackageArchive
 {
     public class LoadSymbolPackageArchiveIntegrationTest : BaseCatalogScanIntegrationTest
     {
-        public const string LoadSymbolPackageArchiveDir = nameof(LoadSymbolPackageArchive);
-        public const string LoadSymbolPackageArchive_WithDeleteDir = nameof(LoadSymbolPackageArchive_WithDelete);
-
         [Fact]
-        public async Task LoadSymbolPackageArchive()
+        public async Task Simple()
         {
             // Arrange
             var min0 = DateTimeOffset.Parse("2021-03-22T20:13:00.3409860Z", CultureInfo.InvariantCulture);
@@ -23,17 +20,17 @@ namespace NuGet.Insights.Worker.LoadSymbolPackageArchive
             await UpdateAsync(max1);
 
             // Assert
-            await AssertSymbolPackageArchiveTableAsync(LoadSymbolPackageArchiveDir, Step1);
+            await VerifySymbolPackageArchiveTableAsync(step: 1);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertSymbolPackageArchiveTableAsync(LoadSymbolPackageArchiveDir, Step2);
+            await VerifySymbolPackageArchiveTableAsync(step: 2);
         }
 
         [Fact]
-        public async Task LoadSymbolPackageArchive_WithDelete()
+        public async Task Delete()
         {
             // Arrange
             MakeDeletedPackageAvailable();
@@ -48,13 +45,13 @@ namespace NuGet.Insights.Worker.LoadSymbolPackageArchive
             await UpdateAsync(max1);
 
             // Assert
-            await AssertSymbolPackageArchiveTableAsync(LoadSymbolPackageArchive_WithDeleteDir, Step1);
+            await VerifySymbolPackageArchiveTableAsync(step: 1);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertSymbolPackageArchiveTableAsync(LoadSymbolPackageArchive_WithDeleteDir, Step2);
+            await VerifySymbolPackageArchiveTableAsync(step: 2);
         }
 
         public LoadSymbolPackageArchiveIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

@@ -13,6 +13,7 @@ using NuGet.Insights.WideEntities;
 
 namespace NuGet.Insights
 {
+    [UsesVerify]
     public abstract class BaseLogicIntegrationTest : IClassFixture<DefaultWebApplicationFactory<StaticFilesStartup>>, IAsyncLifetime
     {
         /// <summary>

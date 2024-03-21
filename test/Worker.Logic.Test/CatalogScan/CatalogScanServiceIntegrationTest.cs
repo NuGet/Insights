@@ -9,10 +9,8 @@ namespace NuGet.Insights.Worker
 {
     public class CatalogScanServiceIntegrationTest : BaseWorkerLogicIntegrationTest
     {
-        private const string CatalogScanService_UpdateWithBucketRangesDir = nameof(CatalogScanService_UpdateWithBucketRanges);
-
         [Fact]
-        public async Task CatalogScanService_UpdateWithBucketRanges()
+        public async Task UpdateWithBucketRanges()
         {
             // Arrange
             ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
@@ -45,7 +43,7 @@ namespace NuGet.Insights.Worker
             Assert.Equal(max1, cursorAfter.Value);
             Assert.Equal(cursorBefore.ETag, cursorAfter.ETag);
 
-            var csvContent = await AssertCsvAsync<PackageSignature>(Options.Value.PackageSignatureContainerName, CatalogScanService_UpdateWithBucketRangesDir, Step1, 0);
+            var csvRecords = await VerifyCsvAsync<PackageSignature>();
 
             var bucketedPackages = (await GetEntitiesAsync<BucketedPackage>(Options.Value.BucketedPackageTableName))
                 .Where(x => buckets.Contains(x.GetBucket()))
@@ -56,45 +54,45 @@ namespace NuGet.Insights.Worker
                 .OrderBy(x => x.PartitionKey, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(x => x.RowKey, StringComparer.OrdinalIgnoreCase)
                 .ToList();
-            var csvLines = csvContent.Split('\n').Select(x => x.Trim()).Where(x => x.Length > 0).Skip(1).ToList();
 
             Assert.Equal(7, bucketedPackages.Count);
             Assert.Equal(7, packageArchiveEntities.Count);
-            Assert.Equal(7, csvLines.Count);
-            Assert.All(bucketedPackages.Zip(packageArchiveEntities, csvLines), tuple =>
+            Assert.Equal(7, csvRecords.Count);
+            Assert.All(bucketedPackages.Zip(packageArchiveEntities, csvRecords), tuple =>
             {
-                var (bp, pa, csvLine) = tuple;
+                var (bp, pa, csvRecord) = tuple;
                 Assert.Equal(bp.PackageId.ToLowerInvariant(), pa.PartitionKey);
                 Assert.Equal(bp.ParsePackageVersion().ToNormalizedString().ToLowerInvariant(), pa.RowKey);
-                Assert.StartsWith($",,{pa.PartitionKey},{pa.PartitionKey}/{pa.RowKey},", csvLine, StringComparison.Ordinal);
+                Assert.Equal(csvRecord.LowerId, pa.PartitionKey);
+                Assert.Equal(csvRecord.Identity, $"{pa.PartitionKey}/{pa.RowKey}");
             });
         }
 
         [Fact]
-        public async Task CatalogScanService_BucketRangeUpdatesDataCachedByBucketRange()
+        public async Task BucketRangeUpdatesDataCachedByBucketRange()
         {
-            await CatalogScanService_TestCachedData(bucketRangeFirst: true, bucketRangeSecond: true, expectCached: false);
+            await CachedDataTest(bucketRangeFirst: true, bucketRangeSecond: true, expectCached: false);
         }
 
         [Fact]
-        public async Task CatalogScanService_BucketRangeUpdatesDataCachedByCatalogRange()
+        public async Task BucketRangeUpdatesDataCachedByCatalogRange()
         {
-            await CatalogScanService_TestCachedData(bucketRangeFirst: false, bucketRangeSecond: true, expectCached: false);
+            await CachedDataTest(bucketRangeFirst: false, bucketRangeSecond: true, expectCached: false);
         }
 
         [Fact]
-        public async Task CatalogScanService_CatalogRangeUpdatesDataCachedByBucketRange()
+        public async Task CatalogRangeUpdatesDataCachedByBucketRange()
         {
-            await CatalogScanService_TestCachedData(bucketRangeFirst: true, bucketRangeSecond: false, expectCached: false);
+            await CachedDataTest(bucketRangeFirst: true, bucketRangeSecond: false, expectCached: false);
         }
 
         [Fact]
-        public async Task CatalogScanService_CatalogRangeUsesDataCachedByCatalogRange()
+        public async Task CatalogRangeUsesDataCachedByCatalogRange()
         {
-            await CatalogScanService_TestCachedData(bucketRangeFirst: false, bucketRangeSecond: false, expectCached: true);
+            await CachedDataTest(bucketRangeFirst: false, bucketRangeSecond: false, expectCached: true);
         }
 
-        private async Task CatalogScanService_TestCachedData(bool bucketRangeFirst, bool bucketRangeSecond, bool expectCached)
+        private async Task CachedDataTest(bool bucketRangeFirst, bool bucketRangeSecond, bool expectCached)
         {
             // Arrange
             ConfigureWorkerSettings = x =>
@@ -103,10 +101,9 @@ namespace NuGet.Insights.Worker
                 x.OldCatalogIndexScansToKeep = 0;
             };
 
-            var dir = nameof(CatalogScanService_TestCachedData);
+            var methodName = nameof(CachedDataTest);
             var min0 = DateTimeOffset.Parse("2020-05-11T20:11:38.5525171Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2020-05-11T20:12:56.9143404Z", CultureInfo.InvariantCulture);
-            var bucket = 0;
             var buckets = Enumerable.Range(0, BucketedPackage.BucketCount).ToList();
             var driversUnderTest = TimedReprocessService
                 .GetReprocessBatches()
@@ -158,12 +155,7 @@ namespace NuGet.Insights.Worker
                 });
 
             // Assert
-            foreach (var recordType in recordTypes)
-            {
-                var containerName = CsvRecordContainers.GetContainerName(recordType);
-                var tableName = CsvRecordContainers.GetDefaultKustoTableName(recordType);
-                await AssertCsvAsync(recordType, containerName, dir, Step1, bucket, $"{tableName}.csv");
-            }
+            await Task.WhenAll(recordTypes.Select(x => VerifyCsvAsync(x, step: 1, methodName: methodName)));
             Assert.Equal(1, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
             Assert.Equal(1, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.RequestUri.AbsolutePath.EndsWith("/readme", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
 
@@ -209,12 +201,7 @@ namespace NuGet.Insights.Worker
                 });
 
             // Assert
-            foreach (var recordType in recordTypes)
-            {
-                var containerName = CsvRecordContainers.GetContainerName(recordType);
-                var tableName = CsvRecordContainers.GetDefaultKustoTableName(recordType);
-                await AssertCsvAsync(recordType, containerName, dir, expectCached ? Step1 : Step2, bucket, $"{tableName}.csv");
-            }
+            await Task.WhenAll(recordTypes.Select(x => VerifyCsvAsync(x, step: expectCached ? 1 : 2, methodName: methodName)));
             Assert.Equal(expectCached ? 1 : 2, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
             Assert.Equal(expectCached ? 1 : 2, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.RequestUri.AbsolutePath.EndsWith("/readme", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
         }

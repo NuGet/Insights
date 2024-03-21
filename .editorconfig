@@ -150,3 +150,13 @@ dotnet_naming_symbols.private_field_symbols.applicable_accessibilities = private
 dotnet_naming_rule.private_field_rule.severity = warning
 dotnet_naming_rule.private_field_rule.symbols  = private_field_symbols
 dotnet_naming_rule.private_field_rule.style = private_member_style
+
+# Verify settings
+[*.{received,verified}.{txt,xml,json,csv}]
+charset = utf-8
+end_of_line = lf
+indent_size = unset
+indent_style = unset
+insert_final_newline = true
+tab_width = unset
+trim_trailing_whitespace = false

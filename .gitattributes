@@ -1,0 +1,4 @@
+*.verified.txt -text
+*.verified.xml -text
+*.verified.json -text
+*.verified.csv -text

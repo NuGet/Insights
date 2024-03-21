@@ -5,11 +5,8 @@ namespace NuGet.Insights.Worker.LoadPackageArchive
 {
     public class LoadPackageArchiveIntegrationTest : BaseCatalogScanIntegrationTest
     {
-        public const string LoadPackageArchiveDir = nameof(LoadPackageArchive);
-        public const string LoadPackageArchive_WithDeleteDir = nameof(LoadPackageArchive_WithDelete);
-
         [Fact]
-        public async Task LoadPackageArchive()
+        public async Task Simple()
         {
             // Arrange
             var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z", CultureInfo.InvariantCulture);
@@ -23,17 +20,17 @@ namespace NuGet.Insights.Worker.LoadPackageArchive
             await UpdateAsync(max1);
 
             // Assert
-            await AssertPackageArchiveTableAsync(LoadPackageArchiveDir, Step1);
+            await VerifyPackageArchiveTableAsync(step: 1);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertPackageArchiveTableAsync(LoadPackageArchiveDir, Step2);
+            await VerifyPackageArchiveTableAsync(step: 2);
         }
 
         [Fact]
-        public async Task LoadPackageArchive_WithDelete()
+        public async Task Delete()
         {
             // Arrange
             MakeDeletedPackageAvailable();
@@ -48,13 +45,13 @@ namespace NuGet.Insights.Worker.LoadPackageArchive
             await UpdateAsync(max1);
 
             // Assert
-            await AssertPackageArchiveTableAsync(LoadPackageArchive_WithDeleteDir, Step1);
+            await VerifyPackageArchiveTableAsync(step: 1);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertPackageArchiveTableAsync(LoadPackageArchive_WithDeleteDir, Step2);
+            await VerifyPackageArchiveTableAsync(step: 2);
         }
 
         public LoadPackageArchiveIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
