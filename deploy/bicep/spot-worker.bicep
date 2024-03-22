@@ -180,7 +180,7 @@ resource appInsights 'Microsoft.Insights/components@2015-05-01' existing = {
   name: appInsightsName
 }
 
-resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2023-09-01' = {
+resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2023-03-01' = {
   name: vmssName
   location: location
   sku: {

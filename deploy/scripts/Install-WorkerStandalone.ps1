@@ -31,7 +31,6 @@ param (
 $ErrorActionPreference = "Stop"
 
 $dotnetInstallPattern = "dotnet-install.ps1"
-$dotnetChannel = "8.0"
 $dotnetRuntime = "aspnetcore"
 $binDir = "C:\bin"
 $dotnetDir = "C:\Program Files\dotnet"
@@ -87,7 +86,8 @@ if ($existingTasks) {
 # Download and install the .NET runtime
 if (!(Test-Path $installDir)) { New-Item $installDir -ItemType Directory | Out-Null }
 $dotnetInstallPath = Get-Pattern $dotnetInstallPattern
-& $dotnetInstallPath -Channel $dotnetChannel -Runtime $dotnetRuntime -InstallDir $dotnetDir
+& $dotnetInstallPath -Channel "6.0" -Runtime $dotnetRuntime -InstallDir $dotnetDir
+& $dotnetInstallPath -Channel "8.0" -Runtime $dotnetRuntime -InstallDir $dotnetDir
 Write-Host ""
 
 if ($ExpandOSPartition) {
