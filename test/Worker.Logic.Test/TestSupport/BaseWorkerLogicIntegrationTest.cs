@@ -548,6 +548,7 @@ namespace NuGet.Insights.Worker
                 "X-Azure-Ref",
                 "X-Azure-Ref-OriginShield",
                 "X-Cache",
+                "X-Cache-Info",
                 "X-CDN-Rewrite",
                 "X-Content-Type-Options",
                 "x-fd-int-roxy-purgeid",
