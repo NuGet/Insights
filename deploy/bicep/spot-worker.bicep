@@ -22,79 +22,97 @@ param adminUsername string
 param adminPassword string
 param addLoadBalancer bool
 
-resource ipConfig 'Microsoft.Network/publicIPAddresses@2022-05-01' = if (addLoadBalancer) {
-  name: ipConfigName
-  location: location
-  sku: {
-    name: 'Standard'
+resource ipConfig 'Microsoft.Network/publicIPAddresses@2022-05-01' =
+  if (addLoadBalancer) {
+    name: ipConfigName
+    location: location
+    sku: {
+      name: 'Standard'
+    }
+    properties: {
+      publicIPAllocationMethod: 'Static'
+      publicIPAddressVersion: 'IPv4'
+    }
   }
-  properties: {
-    publicIPAllocationMethod: 'Static'
-    publicIPAddressVersion: 'IPv4'
-  }
-}
 
 var frontendIPConfigurationName = '${loadBalancerName}-fipc'
 var backendAddressPoolName = '${loadBalancerName}-bap'
 
-resource loadBalancer 'Microsoft.Network/loadBalancers@2023-05-01' = if (addLoadBalancer) {
-  name: loadBalancerName
-  location: location
-  sku: {
-    name: 'Standard'
-  }
-  properties: {
-    frontendIPConfigurations: [
-      {
-        name: frontendIPConfigurationName
-        properties: {
-          publicIPAddress: {
-            id: ipConfig.id
-          }
-        }
-      }
-    ]
-    backendAddressPools: [
-      {
-        name: backendAddressPoolName
-        properties: {}
-      }
-    ]
-    inboundNatRules: [
-      {
-        name: '${loadBalancerName}-rdp-inr'
-        properties: {
-          frontendIPConfiguration: {
-            id: resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', loadBalancerName, frontendIPConfigurationName)
-          }
-          backendAddressPool: {
-            id: resourceId('Microsoft.Network/loadBalancers/backendAddressPools', loadBalancerName, backendAddressPoolName)
-          }
-          protocol: 'Tcp'
-          backendPort: 3389
-          frontendPortRangeStart: 50000
-          frontendPortRangeEnd: 60000
-        }
-      }
-    ]
-    outboundRules: [
-      {
-        name: '${loadBalancerName}-or'
-        properties: {
-          frontendIPConfigurations: [
-            {
-              id: resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', loadBalancerName, frontendIPConfigurationName)
+resource loadBalancer 'Microsoft.Network/loadBalancers@2023-05-01' =
+  if (addLoadBalancer) {
+    name: loadBalancerName
+    location: location
+    sku: {
+      name: 'Standard'
+    }
+    properties: {
+      frontendIPConfigurations: [
+        {
+          name: frontendIPConfigurationName
+          properties: {
+            publicIPAddress: {
+              id: ipConfig.id
             }
-          ]
-          backendAddressPool: {
-            id: resourceId('Microsoft.Network/loadBalancers/backendAddressPools', loadBalancerName, backendAddressPoolName)
           }
-          protocol: 'All'
         }
-      }
-    ]
+      ]
+      backendAddressPools: [
+        {
+          name: backendAddressPoolName
+          properties: {}
+        }
+      ]
+      inboundNatRules: [
+        {
+          name: '${loadBalancerName}-rdp-inr'
+          properties: {
+            frontendIPConfiguration: {
+              id: resourceId(
+                'Microsoft.Network/loadBalancers/frontendIPConfigurations',
+                loadBalancerName,
+                frontendIPConfigurationName
+              )
+            }
+            backendAddressPool: {
+              id: resourceId(
+                'Microsoft.Network/loadBalancers/backendAddressPools',
+                loadBalancerName,
+                backendAddressPoolName
+              )
+            }
+            protocol: 'Tcp'
+            backendPort: 3389
+            frontendPortRangeStart: 50000
+            frontendPortRangeEnd: 60000
+          }
+        }
+      ]
+      outboundRules: [
+        {
+          name: '${loadBalancerName}-or'
+          properties: {
+            frontendIPConfigurations: [
+              {
+                id: resourceId(
+                  'Microsoft.Network/loadBalancers/frontendIPConfigurations',
+                  loadBalancerName,
+                  frontendIPConfigurationName
+                )
+              }
+            ]
+            backendAddressPool: {
+              id: resourceId(
+                'Microsoft.Network/loadBalancers/backendAddressPools',
+                loadBalancerName,
+                backendAddressPoolName
+              )
+            }
+            protocol: 'All'
+          }
+        }
+      ]
+    }
   }
-}
 
 resource nsg 'Microsoft.Network/networkSecurityGroups@2021-03-01' = {
   name: nsgName
@@ -162,7 +180,7 @@ resource appInsights 'Microsoft.Insights/components@2015-05-01' existing = {
   name: appInsightsName
 }
 
-resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2021-11-01' = {
+resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2023-09-01' = {
   name: vmssName
   location: location
   sku: {
@@ -180,7 +198,8 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2021-11-01' = {
       storageProfile: {
         osDisk: {
           createOption: 'FromImage'
-          diskSizeGB: skuInfo[vmssSku].diskSizeGB
+          caching: 'ReadOnly'
+          diskSizeGB: skuInfo[vmssSku].diskSizeGB - 1 // 1 GB for trusted launch
           diffDiskSettings: {
             option: 'Local'
             placement: skuInfo[vmssSku].diffDiskPlacement
@@ -189,7 +208,7 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2021-11-01' = {
         imageReference: {
           publisher: 'MicrosoftWindowsServer'
           offer: 'WindowsServer'
-          sku: '2022-datacenter-core-smalldisk'
+          sku: '2022-datacenter-core-smalldisk-g2'
           version: 'latest'
         }
       }
@@ -206,11 +225,13 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2021-11-01' = {
                     subnet: {
                       id: vnet.properties.subnets[0].id
                     }
-                    loadBalancerBackendAddressPools: addLoadBalancer ? [
-                      {
-                        id: loadBalancer.properties.backendAddressPools[0].id
-                      }
-                    ] : []
+                    loadBalancerBackendAddressPools: addLoadBalancer
+                      ? [
+                          {
+                            id: loadBalancer.properties.backendAddressPools[0].id
+                          }
+                        ]
+                      : []
                   }
                 }
               ]
@@ -220,7 +241,11 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2021-11-01' = {
       }
       priority: 'Spot'
       securityProfile: {
-        encryptionAtHost: true
+        uefiSettings: {
+          secureBootEnabled: true
+          vTpmEnabled: true
+        }
+        securityType: 'TrustedLaunch'
       }
       osProfile: {
         computerNamePrefix: 'insights'
@@ -276,7 +301,7 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2021-11-01' = {
     upgradePolicy: {
       mode: 'Automatic'
       automaticOSUpgradePolicy: {
-        enableAutomaticOSUpgrade: true
+        enableAutomaticOSUpgrade: false
       }
     }
   }
@@ -287,25 +312,27 @@ var eventCounters = [
   'Timer.Execute'
   'CatalogScan.Update'
 ]
-var eventCounterRules = [for event in eventCounters: {
-  metricTrigger: {
-    metricName: event
-    metricNamespace: 'azure.applicationinsights'
-    metricResourceUri: appInsights.id
-    timeGrain: 'PT1M'
-    statistic: 'Sum'
-    timeWindow: 'PT20M'
-    timeAggregation: 'Maximum'
-    operator: 'GreaterThanOrEqual'
-    threshold: 1
+var eventCounterRules = [
+  for event in eventCounters: {
+    metricTrigger: {
+      metricName: event
+      metricNamespace: 'azure.applicationinsights'
+      metricResourceUri: appInsights.id
+      timeGrain: 'PT1M'
+      statistic: 'Sum'
+      timeWindow: 'PT20M'
+      timeAggregation: 'Maximum'
+      operator: 'GreaterThanOrEqual'
+      threshold: 1
+    }
+    scaleAction: {
+      direction: 'Increase'
+      type: 'ExactCount'
+      cooldown: 'PT1M'
+      value: string(min(maxInstances, 5))
+    }
   }
-  scaleAction: {
-    direction: 'Increase'
-    type: 'ExactCount'
-    cooldown: 'PT1M'
-    value: string(min(maxInstances, 5))
-  }
-}]
+]
 
 resource autoscale 'Microsoft.Insights/autoscalesettings@2015-04-01' = {
   name: autoscaleName
@@ -322,7 +349,9 @@ resource autoscale 'Microsoft.Insights/autoscalesettings@2015-04-01' = {
           minimum: string(minInstances)
           maximum: string(maxInstances)
         }
-        rules: concat(eventCounterRules, [
+        rules: concat(
+          eventCounterRules,
+          [
             {
               metricTrigger: {
                 metricName: 'Percentage CPU'
@@ -361,7 +390,8 @@ resource autoscale 'Microsoft.Insights/autoscalesettings@2015-04-01' = {
                 value: string(min(maxInstances - minInstances, 10))
               }
             }
-          ])
+          ]
+        )
       }
     ]
   }
