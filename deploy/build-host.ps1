@@ -12,7 +12,7 @@ Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1") -Force
 $RuntimeIdentifier = Get-DefaultRuntimeIdentifier $RuntimeIdentifier
 
 $hostRepo = "https://github.com/Azure/azure-functions-host.git"
-$hostVersion = "v4.28.5"
+$hostVersion = "v4.31.1"
 
 $artifactsDir = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../artifacts/azure-functions"))
 $hostSrcDir = Join-Path $artifactsDir "azure-functions-host-$hostVersion"
@@ -63,7 +63,7 @@ Write-Host "Resetting repository level settings"
 
 "<Project></Project>" | Out-File (Join-Path $artifactsDir ".\Directory.Build.props") -Encoding UTF8
 "<Project></Project>" | Out-File (Join-Path $artifactsDir ".\Directory.Build.targets") -Encoding UTF8
-"<Project></Project>" | Out-File (Join-Path $artifactsDir ".\Directory.Packages.props") -Encoding UTF8
+"<Project><PropertyGroup><ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally></PropertyGroup></Project>" | Out-File (Join-Path $artifactsDir ".\Directory.Packages.props") -Encoding UTF8
 "root = true" | Out-File (Join-Path $artifactsDir ".editorconfig") -Encoding UTF8
 
 Write-Host "Publishing host"
