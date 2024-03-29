@@ -126,6 +126,7 @@ namespace NuGet.Insights.Worker
             x.CertificateToPackageTableName = $"{StoragePrefix}1c2p1";
             x.CsvRecordTableName = $"{StoragePrefix}1cr1";
             x.CursorTableName = $"{StoragePrefix}1c1";
+            x.ExcludedPackageContainerName = $"{StoragePrefix}1ep1";
             x.ExpandQueueName = $"{StoragePrefix}1xq1";
             x.KustoIngestionTableName = $"{StoragePrefix}1ki1";
             x.LatestPackageLeafTableName = $"{StoragePrefix}1lpl1";

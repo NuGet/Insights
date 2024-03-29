@@ -41,6 +41,9 @@ namespace NuGet.Insights
             SetLastModified("VerifiedPackagesToCsv", Step1, "verifiedPackages.json", "2021-01-14T18:00:00Z");
             SetLastModified("VerifiedPackagesToCsv", Step2, "verifiedPackages.json", "2021-01-15T19:00:00Z");
 
+            SetLastModified("ExcludedPackagesToCsv", Step1, "excludedPackages.json", "2021-01-14T18:00:00Z");
+            SetLastModified("ExcludedPackagesToCsv", Step2, "excludedPackages.json", "2021-01-15T19:00:00Z");
+
             SetLastModified("behaviorsample.1.0.0.nupkg.testdata", "2021-01-14T18:00:00Z");
             SetLastModified("behaviorsample.1.0.0.nuspec", "2021-01-14T19:00:00Z");
             SetLastModified("behaviorsample.1.0.0.md", "2021-01-14T20:00:00Z");
@@ -149,6 +152,7 @@ namespace NuGet.Insights
             x.DownloadsV1AgeLimit = TimeSpan.MaxValue;
             x.OwnersV2AgeLimit = TimeSpan.MaxValue;
             x.VerifiedPackagesV1AgeLimit = TimeSpan.MaxValue;
+            x.ExcludedPackagesV1AgeLimit = TimeSpan.MaxValue;
 
             x.LeaseContainerName = $"{StoragePrefix}1l1";
             x.PackageArchiveTableName = $"{StoragePrefix}1pa1";

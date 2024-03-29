@@ -1,0 +1,3 @@
+AsOfTimestamp,LowerId,Id,IsExcluded
+2021-01-14T18:00:00Z,microsoft.extensions.logging,Microsoft.Extensions.Logging,true
+2021-01-14T18:00:00Z,castle.core,Castle.Core,true

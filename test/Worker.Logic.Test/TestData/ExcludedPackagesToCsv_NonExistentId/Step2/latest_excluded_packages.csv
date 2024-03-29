@@ -1,0 +1,4 @@
+AsOfTimestamp,LowerId,Id,IsExcluded
+2021-01-15T19:00:00Z,microsoft.extensions.logging,Microsoft.Extensions.Logging,true
+2021-01-15T19:00:00Z,knapcode.torsharp,knapcode.TORSHARP,true
+2021-01-15T19:00:00Z,knapcode.kitchensink,Knapcode.KitchenSink,true
