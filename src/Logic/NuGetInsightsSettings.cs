@@ -24,6 +24,8 @@ namespace NuGet.Insights
         public TimeSpan VerifiedPackagesV1AgeLimit { get; set; } = TimeSpan.FromDays(7);
         public List<string> ExcludedPackagesV1Urls { get; set; } = new List<string>();
         public TimeSpan ExcludedPackagesV1AgeLimit { get; set; } = TimeSpan.FromDays(365 * 10);
+        public List<string> PopularityTransfersV1Urls { get; set; } = new List<string>();
+        public TimeSpan PopularityTransfersV1AgeLimit { get; set; } = TimeSpan.FromDays(365 * 10);
         public string LegacyReadmeUrlPattern { get; set; } = null;
 
         public string StorageAccountName { get; set; } = null;
