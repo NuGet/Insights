@@ -246,7 +246,7 @@ namespace NuGet.Insights.Tool
                 using var outputWriter = new StreamWriter(gzipStream);
 
                 using var inputStream = await blobClient.OpenReadAsync();
-                var data = PackageDownloadsClient.DeserializeAsync(inputStream);
+                var data = PackageDownloadsClient.DeserializeV1Async(inputStream);
                 var record = new PackageDownloadHistoryRecord { AsOfTimestamp = asOf };
                 await DownloadsToCsvUpdater.WriteAsync(versionSet, record, data, outputWriter);
             }

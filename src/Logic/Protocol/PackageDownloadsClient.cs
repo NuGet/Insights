@@ -3,6 +3,9 @@
 
 #nullable enable
 
+using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
+
 namespace NuGet.Insights
 {
     public class PackageDownloadsClient
@@ -23,14 +26,23 @@ namespace NuGet.Insights
 
         public async Task<AsOfData<PackageDownloads>> GetAsync()
         {
+            if (_options.Value.DownloadsV2Urls != null && _options.Value.DownloadsV2Urls.Count > 0)
+            {
+                return await _storageClient.DownloadNewestAsync(
+                    _options.Value.DownloadsV2Urls,
+                    _options.Value.DownloadsV2AgeLimit,
+                    "downloads.v2.json",
+                    DeserializeV2Async);
+            }
+
             return await _storageClient.DownloadNewestAsync(
                 _options.Value.DownloadsV1Urls,
                 _options.Value.DownloadsV1AgeLimit,
                 "downloads.v1.json",
-                DeserializeAsync);
+                DeserializeV1Async);
         }
 
-        public static async IAsyncEnumerable<PackageDownloads> DeserializeAsync(Stream stream)
+        public static async IAsyncEnumerable<PackageDownloads> DeserializeV1Async(Stream stream)
         {
             var items = JsonSerializer.DeserializeAsyncEnumerable<PackageIdDownloads>(stream, JsonSerializerOptions);
             await foreach (var item in items)
@@ -47,7 +59,67 @@ namespace NuGet.Insights
             }
         }
 
-        private class PackageIdDownloadsConverter : JsonConverter<PackageIdDownloads>
+        public static async IAsyncEnumerable<PackageDownloads> DeserializeV2Async(Stream stream)
+        {
+            using var textReader = new StreamReader(stream);
+            using var jsonReader = new JsonTextReader(textReader);
+
+            if (!await jsonReader.ReadAsync() || jsonReader.TokenType != JsonToken.StartObject)
+            {
+                throw new InvalidDataException("Expected a JSON document starting with an object.");
+            }
+
+            while (jsonReader.TokenType == JsonToken.PropertyName)
+            {
+                var id = (string?)jsonReader.Value;
+
+                jsonReader.Read();
+
+                if (jsonReader.TokenType != JsonToken.StartObject)
+                {
+                    throw new InvalidOperationException("The token after the package ID should be the start of an object.");
+                }
+
+                jsonReader.Read();
+
+                while (jsonReader.TokenType == JsonToken.PropertyName)
+                {
+                    var version = (string)jsonReader.Value!;
+
+                    jsonReader.Read();
+                    if (jsonReader.TokenType != JsonToken.Integer)
+                    {
+                        throw new InvalidOperationException("The token after the package version should be an integer.");
+                    }
+
+                    var downloads = (long)jsonReader.Value!;
+
+                    jsonReader.Read();
+
+                    yield return new PackageDownloads(id, version, downloads);
+                }
+
+                if (jsonReader.TokenType == JsonToken.EndObject)
+                {
+                    throw new InvalidOperationException("The token after the package versions should be the end of an object.");
+                }
+
+                jsonReader.Read();
+            }
+
+            if (jsonReader.TokenType == JsonToken.EndObject)
+            {
+                throw new InvalidDataException("The last token should be the end of an object.");
+            }
+
+            if (await jsonReader.ReadAsync())
+            {
+                throw new InvalidDataException("Expected the JSON document to end with the end of an object.");
+            }
+        }
+
+
+        private class PackageIdDownloadsConverter : System.Text.Json.Serialization.JsonConverter<PackageIdDownloads>
         {
             public override PackageIdDownloads Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
             {

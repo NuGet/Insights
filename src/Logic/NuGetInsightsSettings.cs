@@ -16,6 +16,8 @@ namespace NuGet.Insights
         public string FlatContainerBaseUrlOverride { get; set; } = null;
         public List<string> DownloadsV1Urls { get; set; } = new List<string>();
         public TimeSpan DownloadsV1AgeLimit { get; set; } = TimeSpan.FromDays(7);
+        public List<string> DownloadsV2Urls { get; set; } = new List<string>();
+        public TimeSpan DownloadsV2AgeLimit { get; set; } = TimeSpan.FromDays(7);
         public List<string> OwnersV2Urls { get; set; } = new List<string>();
         public TimeSpan OwnersV2AgeLimit { get; set; } = TimeSpan.FromDays(1);
         public List<string> VerifiedPackagesV1Urls { get; set; } = new List<string>();
