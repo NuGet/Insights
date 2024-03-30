@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Insights.Worker.DownloadsToCsv;
+using NuGet.Insights.Worker.ExcludedPackagesToCsv;
 using NuGet.Insights.Worker.OwnersToCsv;
 using NuGet.Insights.Worker.VerifiedPackagesToCsv;
 
@@ -14,6 +15,7 @@ namespace NuGet.Insights.Worker
             typeof(PackageDownloadRecord),
             typeof(PackageOwnerRecord),
             typeof(VerifiedPackageRecord),
+            typeof(ExcludedPackageRecord),
         };
 
         [Theory]

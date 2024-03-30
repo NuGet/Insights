@@ -26,20 +26,27 @@ namespace NuGet.Insights
 
         public async Task<AsOfData<PackageDownloads>> GetAsync()
         {
-            if (_options.Value.DownloadsV2Urls != null && _options.Value.DownloadsV2Urls.Count > 0)
+            var endpoints = new List<BlobStorageJsonEndpoint<PackageDownloads>>();
+
+            if (_options.Value.DownloadsV1Urls != null)
             {
-                return await _storageClient.DownloadNewestAsync(
-                    _options.Value.DownloadsV2Urls,
-                    _options.Value.DownloadsV2AgeLimit,
-                    "downloads.v2.json",
-                    DeserializeV2Async);
+                endpoints.AddRange(_options.Value.DownloadsV1Urls.Select(url => new BlobStorageJsonEndpoint<PackageDownloads>(
+                    url,
+                    _options.Value.DownloadsV1AgeLimit,
+                    "downloads.v1.json",
+                    DeserializeV1Async)));
             }
 
-            return await _storageClient.DownloadNewestAsync(
-                _options.Value.DownloadsV1Urls,
-                _options.Value.DownloadsV1AgeLimit,
-                "downloads.v1.json",
-                DeserializeV1Async);
+            if (_options.Value.DownloadsV2Urls != null)
+            {
+                endpoints.AddRange(_options.Value.DownloadsV2Urls.Select(url => new BlobStorageJsonEndpoint<PackageDownloads>(
+                    url,
+                    _options.Value.DownloadsV2AgeLimit,
+                    "downloads.v2.json",
+                    DeserializeV2Async)));
+            }
+
+            return await _storageClient.DownloadNewestAsync(endpoints, "downloads.v1.json or downloads.v2.json");
         }
 
         public static async IAsyncEnumerable<PackageDownloads> DeserializeV1Async(Stream stream)
@@ -112,7 +119,7 @@ namespace NuGet.Insights
                 throw new InvalidDataException("The last token should be the end of an object.");
             }
 
-            if (await jsonReader.ReadAsync())
+            if (!await jsonReader.ReadAsync())
             {
                 throw new InvalidDataException("Expected the JSON document to end with the end of an object.");
             }

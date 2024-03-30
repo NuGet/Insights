@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Kusto.Ingest;
@@ -36,6 +36,7 @@ namespace NuGet.Insights.Worker
                 x.DownloadsV1Urls = new List<string> { $"http://localhost/{TestInput}/DownloadsToCsv/downloads.v1.json" };
                 x.OwnersV2Urls = new List<string> { $"http://localhost/{TestInput}/OwnersToCsv/owners.v2.json" };
                 x.VerifiedPackagesV1Urls = new List<string> { $"http://localhost/{TestInput}/VerifiedPackagesToCsv/verifiedPackages.json" };
+                x.ExcludedPackagesV1Urls = new List<string> { $"http://localhost/{TestInput}/ExcludedPackagesToCsv/excludedPackages.json" };
             };
             ConfigureWorkerSettings = x =>
             {
@@ -75,6 +76,13 @@ namespace NuGet.Insights.Worker
                 {
                     var newReq = Clone(req);
                     newReq.RequestUri = new Uri($"http://localhost/{TestInput}/VerifiedPackagesToCsv/{Step1}/verifiedPackages.json");
+                    return await TestDataHttpClient.SendAsync(newReq);
+                }
+
+                if (req.RequestUri.AbsolutePath.EndsWith("/excludedPackages.json", StringComparison.Ordinal))
+                {
+                    var newReq = Clone(req);
+                    newReq.RequestUri = new Uri($"http://localhost/{TestInput}/ExcludedPackagesToCsv/{Step1}/excludedPackages.json");
                     return await TestDataHttpClient.SendAsync(newReq);
                 }
 

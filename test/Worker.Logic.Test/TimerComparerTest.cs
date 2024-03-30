@@ -43,6 +43,7 @@ namespace NuGet.Insights.Worker
 
                 new List<Type>
                 {
+                    typeof(AuxiliaryFileUpdaterTimer<AsOfData<ExcludedPackage>>),
                     typeof(AuxiliaryFileUpdaterTimer<AsOfData<PackageDownloads>>),
                     typeof(AuxiliaryFileUpdaterTimer<AsOfData<PackageOwner>>),
                     typeof(AuxiliaryFileUpdaterTimer<AsOfData<VerifiedPackage>>),

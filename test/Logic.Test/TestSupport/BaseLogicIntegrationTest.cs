@@ -32,6 +32,8 @@ namespace NuGet.Insights
             // update the last modified for test input
             SetLastModified("DownloadsToCsv", Step1, "downloads.v1.json", "2021-01-14T18:00:00Z");
             SetLastModified("DownloadsToCsv", Step2, "downloads.v1.json", "2021-01-15T19:00:00Z");
+            SetLastModified("DownloadsToCsv", Step1, "downloads.v2.json", "2021-01-14T18:30:00Z");
+            SetLastModified("DownloadsToCsv", Step2, "downloads.v2.json", "2021-01-15T19:30:00Z");
 
             SetLastModified("DownloadsToCsv_UnicodeDuplicates", Step1, "downloads.v1.json", "2021-01-14T18:00:00Z");
 
@@ -150,6 +152,7 @@ namespace NuGet.Insights
             x.StorageBlobReadSharedAccessSignature = TestSettings.StorageBlobReadSharedAccessSignature;
 
             x.DownloadsV1AgeLimit = TimeSpan.MaxValue;
+            x.DownloadsV2AgeLimit = TimeSpan.MaxValue;
             x.OwnersV2AgeLimit = TimeSpan.MaxValue;
             x.VerifiedPackagesV1AgeLimit = TimeSpan.MaxValue;
             x.ExcludedPackagesV1AgeLimit = TimeSpan.MaxValue;

@@ -5,6 +5,12 @@
 
 namespace NuGet.Insights
 {
+    public record BlobStorageJsonEndpoint<T>(
+        string Url,
+        TimeSpan AgeLimit,
+        string Name,
+        Func<Stream, IAsyncEnumerable<T>> Deserialize);
+
     public class BlobStorageJsonClient
     {
         private readonly HttpClient _httpClient;
@@ -18,35 +24,43 @@ namespace NuGet.Insights
             _telemetryClient = telemetryClient;
         }
 
-        public async Task<AsOfData<T>> DownloadNewestAsync<T>(IReadOnlyCollection<string> urls, TimeSpan ageLimit, string name, Func<Stream, IAsyncEnumerable<T>> deserialize)
+        public async Task<AsOfData<T>> DownloadNewestAsync<T>(IReadOnlyCollection<BlobStorageJsonEndpoint<T>> endpoints, string generalName)
         {
-            if (urls is null || urls.Count == 0)
+            if (endpoints is null || endpoints.Count == 0)
             {
-                throw new InvalidOperationException($"The {name} URL is required.");
+                throw new InvalidOperationException($"At least one {generalName} URL is required.");
             }
 
-            var timestampTasks = urls.Select(GetAsOfTimestampAsync).ToList();
+            var timestampTasks = endpoints.Select(GetAsOfTimestampAsync).ToList();
             var timestamps = await Task.WhenAll(timestampTasks);
             var latest = timestamps.MaxBy(x => x.AsOfTimestamp)!;
-            if (DateTimeOffset.UtcNow - latest.AsOfTimestamp > ageLimit)
+            if (DateTimeOffset.UtcNow - latest.AsOfTimestamp > latest.Endpoint.AgeLimit)
             {
                 throw new InvalidOperationException(
-                    $"The last modified {name} URL is {latest.Url} " +
+                    $"The last modified {latest.Endpoint.Name} URL is {latest.Endpoint.Url} " +
                     $"(modified on {latest.AsOfTimestamp:O}) " +
-                    $"but this is older than the age limit of {ageLimit}. " +
+                    $"but this is older than the age limit of {latest.Endpoint.AgeLimit}. " +
                     $"Check for stale data or bad configuration.");
             }
 
-            return await DownloadAsync(latest.Url, deserialize);
+            return await DownloadAsync(latest.Endpoint.Url, latest.Endpoint.Deserialize);
         }
 
-        private async Task<(string Url, DateTimeOffset AsOfTimestamp)> GetAsOfTimestampAsync(string url)
+        public async Task<AsOfData<T>> DownloadNewestAsync<T>(IReadOnlyCollection<string> urls, TimeSpan ageLimit, string name, Func<Stream, IAsyncEnumerable<T>> deserialize)
+        {
+            var endpoints = urls
+                .Select(x => new BlobStorageJsonEndpoint<T>(x, ageLimit, name, deserialize))
+                .ToList();
+            return await DownloadNewestAsync(endpoints, name);
+        }
+
+        private async Task<(BlobStorageJsonEndpoint<T> Endpoint, DateTimeOffset AsOfTimestamp)> GetAsOfTimestampAsync<T>(BlobStorageJsonEndpoint<T> endpoint)
         {
             HttpResponseMessage? response = null;
             try
             {
                 DateTimeOffset asOfTimestamp;
-                (response, asOfTimestamp, _) = await GetResponseAsync(HttpMethod.Head, url, HttpCompletionOption.ResponseContentRead);
+                (response, asOfTimestamp, _) = await GetResponseAsync(HttpMethod.Head, endpoint.Url, HttpCompletionOption.ResponseContentRead);
 
                 var age = DateTimeOffset.UtcNow - asOfTimestamp;
 
@@ -55,10 +69,10 @@ namespace NuGet.Insights
                     age.TotalMinutes,
                     new Dictionary<string, string>
                     {
-                        { "Url", url },
+                        { "Url", endpoint.Url },
                     });
 
-                return (url, asOfTimestamp);
+                return (endpoint, asOfTimestamp);
             }
             finally
             {

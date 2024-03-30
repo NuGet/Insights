@@ -212,7 +212,6 @@ namespace NuGet.Insights
             serviceCollection.AddTransient<SearchClient>();
             serviceCollection.AddTransient<BlobStorageJsonClient>();
             serviceCollection.AddTransient<PackageDownloadsClient>();
-            serviceCollection.AddTransient<PackageDownloadsV2Client>();
             serviceCollection.AddTransient<PackageOwnersClient>();
             serviceCollection.AddTransient<VerifiedPackagesClient>();
             serviceCollection.AddTransient<ExcludedPackagesClient>();
