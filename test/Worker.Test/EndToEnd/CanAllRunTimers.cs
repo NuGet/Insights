@@ -31,19 +31,25 @@ namespace NuGet.Insights.Worker
                 x.DownloadsV1Urls = new List<string> { $"http://localhost/{TestInput}/DownloadsToCsv/{Step1}/downloads.v1.json" };
                 x.OwnersV2Urls = new List<string> { $"http://localhost/{TestInput}/OwnersToCsv/{Step1}/owners.v2.json" };
                 x.VerifiedPackagesV1Urls = new List<string> { $"http://localhost/{TestInput}/VerifiedPackagesToCsv/{Step1}/verifiedPackages.json" };
+                x.ExcludedPackagesV1Urls = new List<string> { $"http://localhost/{TestInput}/ExcludedPackagesToCsv/{Step1}/excludedPackages.json" };
+                x.PopularityTransfersV1Urls = new List<string> { $"http://localhost/{TestInput}/PopularityTransfersToCsv/{Step1}/popularity-transfers.v1.json" };
             };
             ConfigureWorkerSettings = x =>
             {
                 x.AutoStartDownloadToCsv = true;
                 x.AutoStartOwnersToCsv = true;
                 x.AutoStartVerifiedPackagesToCsv = true;
+                x.AutoStartExcludedPackagesToCsv = true;
+                x.AutoStartPopularityTransfersToCsv = true;
             };
 
             HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
             {
                 if (Options.Value.DownloadsV1Urls.Contains(req.RequestUri.AbsoluteUri)
                     || Options.Value.OwnersV2Urls.Contains(req.RequestUri.AbsoluteUri)
-                    || Options.Value.VerifiedPackagesV1Urls.Contains(req.RequestUri.AbsoluteUri))
+                    || Options.Value.VerifiedPackagesV1Urls.Contains(req.RequestUri.AbsoluteUri)
+                    || Options.Value.ExcludedPackagesV1Urls.Contains(req.RequestUri.AbsoluteUri)
+                    || Options.Value.PopularityTransfersV1Urls.Contains(req.RequestUri.AbsoluteUri))
                 {
                     return await TestDataHttpClient.SendAsync(Clone(req));
                 }
@@ -69,6 +75,8 @@ namespace NuGet.Insights.Worker
             await AssertBlobCountAsync(Options.Value.PackageDownloadContainerName, 1);
             await AssertBlobCountAsync(Options.Value.PackageOwnerContainerName, 1);
             await AssertBlobCountAsync(Options.Value.VerifiedPackageContainerName, 1);
+            await AssertBlobCountAsync(Options.Value.ExcludedPackageContainerName, 1);
+            await AssertBlobCountAsync(Options.Value.PopularityTransferContainerName, 1);
         }
     }
 }

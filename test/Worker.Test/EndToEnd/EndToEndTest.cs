@@ -21,8 +21,8 @@ namespace NuGet.Insights.Worker
                     serviceCollection.AddTransient(s => Output.GetTelemetryClient());
                     serviceCollection.AddTransient<Functions>();
 
-                    serviceCollection.Configure((Action<NuGetInsightsSettings>)ConfigureDefaultsAndSettings);
-                    serviceCollection.Configure((Action<NuGetInsightsWorkerSettings>)ConfigureWorkerDefaultsAndSettings);
+                    serviceCollection.Configure((Action<NuGetInsightsSettings>)AssertDefaultsAndSettings);
+                    serviceCollection.Configure((Action<NuGetInsightsWorkerSettings>)AssertWorkerDefaultsAndSettings);
                 });
         }
 

@@ -105,11 +105,11 @@ namespace NuGet.Insights.Worker
                     TestOutputHelperExtensions.ShouldIgnoreMetricLog,
                     s.GetRequiredService<ILogger<LoggerTelemetryClient>>()));
 
-                serviceCollection.Configure((Action<NuGetInsightsWorkerSettings>)ConfigureWorkerDefaultsAndSettings);
+                serviceCollection.Configure((Action<NuGetInsightsWorkerSettings>)AssertWorkerDefaultsAndSettings);
             });
         }
 
-        protected void ConfigureWorkerDefaultsAndSettings(NuGetInsightsWorkerSettings x)
+        protected void AssertWorkerDefaultsAndSettings(NuGetInsightsWorkerSettings x)
         {
             x.TimedReprocessIsEnabled = true;
             x.DisableMessageDelay = true;
@@ -151,6 +151,7 @@ namespace NuGet.Insights.Worker
             x.PackageVersionContainerName = $"{StoragePrefix}1pvc1";
             x.PackageVersionTableName = $"{StoragePrefix}1pv1";
             x.PackageVulnerabilityContainerName = $"{StoragePrefix}1pu1";
+            x.PopularityTransferContainerName = $"{StoragePrefix}1pt1";
             x.SymbolPackageArchiveContainerName = $"{StoragePrefix}1sa2c1";
             x.SymbolPackageArchiveEntryContainerName = $"{StoragePrefix}1sae2c1";
             x.TaskStateTableName = $"{StoragePrefix}1ts1";

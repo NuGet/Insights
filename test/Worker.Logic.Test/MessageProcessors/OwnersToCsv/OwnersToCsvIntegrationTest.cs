@@ -9,8 +9,8 @@ namespace NuGet.Insights.Worker.OwnersToCsv
     public class OwnersToCsvIntegrationTest : BaseWorkerLogicIntegrationTest
     {
         public const string OwnersToCsvDir = nameof(OwnersToCsv);
-        private const string OwnersToCsv_NonExistentIdDir = nameof(OwnersToCsvDir_NonExistentId);
-        private const string OwnersToCsv_UncheckedIdDir = nameof(OwnersToCsvDir_UncheckedId);
+        private const string OwnersToCsv_NonExistentIdDir = nameof(OwnersToCsv_NonExistentId);
+        private const string OwnersToCsv_UncheckedIdDir = nameof(OwnersToCsv_UncheckedId);
 
         [Fact]
         public async Task OwnersToCsv()
@@ -107,7 +107,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
         }
 
         [Fact]
-        public async Task OwnersToCsvDir_NonExistentId()
+        public async Task OwnersToCsv_NonExistentId()
         {
             // Arrange
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
@@ -145,7 +145,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
         }
 
         [Fact]
-        public async Task OwnersToCsvDir_UncheckedId()
+        public async Task OwnersToCsv_UncheckedId()
         {
             // Arrange
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;

@@ -5,14 +5,14 @@ namespace NuGet.Insights
 {
     public class PopularityTransfer
     {
-        public PopularityTransfer(string fromId, string toId)
+        public PopularityTransfer(string id, string transferId)
         {
-            FromId = fromId;
-            ToId = toId;
+            Id = id;
+            TransferId = transferId;
         }
 
-        public string FromId { get; }
-        public string ToId { get; }
+        public string Id { get; }
+        public string TransferId { get; }
 
         public override bool Equals(object obj)
         {
@@ -22,15 +22,15 @@ namespace NuGet.Insights
         public bool Equals(PopularityTransfer other)
         {
             return other != null &&
-                StringComparer.OrdinalIgnoreCase.Equals(FromId, other.FromId) &&
-                StringComparer.OrdinalIgnoreCase.Equals(ToId, other.ToId);
+                StringComparer.OrdinalIgnoreCase.Equals(Id, other.Id) &&
+                StringComparer.OrdinalIgnoreCase.Equals(TransferId, other.TransferId);
         }
 
         public override int GetHashCode()
         {
             var hashCode = new HashCode();
-            hashCode.Add(FromId, StringComparer.OrdinalIgnoreCase);
-            hashCode.Add(ToId, StringComparer.OrdinalIgnoreCase);
+            hashCode.Add(Id, StringComparer.OrdinalIgnoreCase);
+            hashCode.Add(TransferId, StringComparer.OrdinalIgnoreCase);
             return hashCode.ToHashCode();
         }
     }

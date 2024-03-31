@@ -39,17 +39,17 @@ namespace NuGet.Insights
                 throw new InvalidDataException("Expected a JSON document starting with an object.");
             }
 
-            string? fromId = null;
+            string? id = null;
             while (await jsonReader.ReadAsync() && jsonReader.TokenType != JsonToken.EndObject)
             {
                 switch (jsonReader.TokenType)
                 {
                     case JsonToken.PropertyName:
-                        fromId = (string)jsonReader.Value!;
+                        id = (string)jsonReader.Value!;
                         break;
                     case JsonToken.String:
-                        var toId = (string)jsonReader.Value!;
-                        yield return new PopularityTransfer(fromId, toId);
+                        var transferId = (string)jsonReader.Value!;
+                        yield return new PopularityTransfer(id, transferId);
                         break;
                 }
             }

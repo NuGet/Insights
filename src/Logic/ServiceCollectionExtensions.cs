@@ -215,6 +215,7 @@ namespace NuGet.Insights
             serviceCollection.AddTransient<PackageOwnersClient>();
             serviceCollection.AddTransient<VerifiedPackagesClient>();
             serviceCollection.AddTransient<ExcludedPackagesClient>();
+            serviceCollection.AddTransient<PopularityTransfersClient>();
             serviceCollection.AddTransient<CatalogClient>();
             serviceCollection.AddSingleton<CatalogCommitTimestampProvider>();
             serviceCollection.AddTransient<IRemoteCursorClient, RemoteCursorClient>();

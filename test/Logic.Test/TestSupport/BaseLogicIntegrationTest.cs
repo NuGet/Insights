@@ -46,6 +46,9 @@ namespace NuGet.Insights
             SetLastModified("ExcludedPackagesToCsv", Step1, "excludedPackages.json", "2021-01-14T18:00:00Z");
             SetLastModified("ExcludedPackagesToCsv", Step2, "excludedPackages.json", "2021-01-15T19:00:00Z");
 
+            SetLastModified("PopularityTransfersToCsv", Step1, "popularity-transfers.v1.json", "2021-01-16T18:00:00Z");
+            SetLastModified("PopularityTransfersToCsv", Step2, "popularity-transfers.v1.json", "2021-01-17T19:00:00Z");
+
             SetLastModified("behaviorsample.1.0.0.nupkg.testdata", "2021-01-14T18:00:00Z");
             SetLastModified("behaviorsample.1.0.0.nuspec", "2021-01-14T19:00:00Z");
             SetLastModified("behaviorsample.1.0.0.md", "2021-01-14T20:00:00Z");
@@ -122,55 +125,12 @@ namespace NuGet.Insights
                             FailFastLogLevel, LogMessages));
                     });
 
-                    serviceCollection.Configure((Action<NuGetInsightsSettings>)ConfigureDefaultsAndSettings);
+                    serviceCollection.Configure((Action<NuGetInsightsSettings>)AssertDefaultsAndSettings);
                 });
 
             ConfigureHostBuilder(hostBuilder);
 
             return hostBuilder.Build();
-        }
-
-        protected LogLevel FailFastLogLevel { get; set; } = LogLevel.Error;
-        protected LogLevel AssertLogLevel { get; set; } = LogLevel.Warning;
-        public Func<LogLevel, string, LogLevel> TransformLogLevel { get; set; } = (LogLevel logLevel, string message) =>
-        {
-            if (message.StartsWith(LoggerExtensions.TransientPrefix, StringComparison.Ordinal) && logLevel == LogLevel.Warning)
-            {
-                return LogLevel.Information;
-            }
-
-            return logLevel;
-        };
-
-        protected virtual void ConfigureHostBuilder(IHostBuilder hostBuilder)
-        {
-        }
-
-        protected void ConfigureDefaultsAndSettings(NuGetInsightsSettings x)
-        {
-            x.StorageConnectionString = TestSettings.StorageConnectionString;
-            x.StorageBlobReadSharedAccessSignature = TestSettings.StorageBlobReadSharedAccessSignature;
-
-            x.DownloadsV1AgeLimit = TimeSpan.MaxValue;
-            x.DownloadsV2AgeLimit = TimeSpan.MaxValue;
-            x.OwnersV2AgeLimit = TimeSpan.MaxValue;
-            x.VerifiedPackagesV1AgeLimit = TimeSpan.MaxValue;
-            x.ExcludedPackagesV1AgeLimit = TimeSpan.MaxValue;
-
-            x.LeaseContainerName = $"{StoragePrefix}1l1";
-            x.PackageArchiveTableName = $"{StoragePrefix}1pa1";
-            x.PackageHashesTableName = $"{StoragePrefix}1ph1";
-            x.PackageManifestTableName = $"{StoragePrefix}1pm1";
-            x.PackageReadmeTableName = $"{StoragePrefix}1prm1";
-            x.SymbolPackageArchiveTableName = $"{StoragePrefix}1sa1";
-            x.TimerTableName = $"{StoragePrefix}1t1";
-
-            if (ConfigureSettings != null)
-            {
-                ConfigureSettings(x);
-            }
-
-            AssertStoragePrefix(x);
         }
 
         protected void AssertStoragePrefix(object x)
@@ -189,6 +149,54 @@ namespace NuGet.Insights
                 Assert.StartsWith(StoragePrefix, value, StringComparison.Ordinal);
                 Assert.DoesNotContain(value, storageNames); // Make sure there are no duplicates
                 storageNames.Add(value);
+            }
+        }
+
+        protected LogLevel FailFastLogLevel { get; set; } = LogLevel.Error;
+        protected LogLevel AssertLogLevel { get; set; } = LogLevel.Warning;
+        public Func<LogLevel, string, LogLevel> TransformLogLevel { get; set; } = (LogLevel logLevel, string message) =>
+        {
+            if (message.StartsWith(LoggerExtensions.TransientPrefix, StringComparison.Ordinal) && logLevel == LogLevel.Warning)
+            {
+                return LogLevel.Information;
+            }
+
+            return logLevel;
+        };
+
+        protected virtual void ConfigureHostBuilder(IHostBuilder hostBuilder)
+        {
+        }
+
+        protected void AssertDefaultsAndSettings(NuGetInsightsSettings x)
+        {
+            ConfigureDefaultsAndSettings(x);
+            AssertStoragePrefix(x);
+        }
+
+        protected void ConfigureDefaultsAndSettings(NuGetInsightsSettings x)
+        {
+            x.StorageConnectionString = TestSettings.StorageConnectionString;
+            x.StorageBlobReadSharedAccessSignature = TestSettings.StorageBlobReadSharedAccessSignature;
+
+            x.DownloadsV1AgeLimit = TimeSpan.MaxValue;
+            x.DownloadsV2AgeLimit = TimeSpan.MaxValue;
+            x.OwnersV2AgeLimit = TimeSpan.MaxValue;
+            x.VerifiedPackagesV1AgeLimit = TimeSpan.MaxValue;
+            x.ExcludedPackagesV1AgeLimit = TimeSpan.MaxValue;
+            x.PopularityTransfersV1AgeLimit = TimeSpan.MaxValue;
+
+            x.LeaseContainerName = $"{StoragePrefix}1l1";
+            x.PackageArchiveTableName = $"{StoragePrefix}1pa1";
+            x.PackageHashesTableName = $"{StoragePrefix}1ph1";
+            x.PackageManifestTableName = $"{StoragePrefix}1pm1";
+            x.PackageReadmeTableName = $"{StoragePrefix}1prm1";
+            x.SymbolPackageArchiveTableName = $"{StoragePrefix}1sa1";
+            x.TimerTableName = $"{StoragePrefix}1t1";
+
+            if (ConfigureSettings != null)
+            {
+                ConfigureSettings(x);
             }
         }
 

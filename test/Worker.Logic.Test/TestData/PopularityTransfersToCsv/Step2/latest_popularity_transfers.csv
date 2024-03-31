@@ -1,0 +1,3 @@
+AsOfTimestamp,LowerId,Id,TransferIds,TransferLowerIds
+2021-01-17T19:00:00Z,windowsazure.servicebus,WindowsAzure.ServiceBus,"[""Azure.Messaging.EventHubs"",""Azure.Messaging.ServiceBus""]","[""azure.messaging.eventhubs"",""azure.messaging.servicebus""]"
+2021-01-17T19:00:00Z,windowsazure.storage,WindowsAzure.Storage,"[""Azure.Storage.Blobs"",""Azure.Storage.Queues""]","[""azure.storage.blobs"",""azure.storage.queues""]"

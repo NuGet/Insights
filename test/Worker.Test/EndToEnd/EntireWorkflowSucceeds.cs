@@ -37,6 +37,7 @@ namespace NuGet.Insights.Worker
                 x.OwnersV2Urls = new List<string> { $"http://localhost/{TestInput}/OwnersToCsv/owners.v2.json" };
                 x.VerifiedPackagesV1Urls = new List<string> { $"http://localhost/{TestInput}/VerifiedPackagesToCsv/verifiedPackages.json" };
                 x.ExcludedPackagesV1Urls = new List<string> { $"http://localhost/{TestInput}/ExcludedPackagesToCsv/excludedPackages.json" };
+                x.PopularityTransfersV1Urls = new List<string> { $"http://localhost/{TestInput}/PopularityTransfersToCsv/popularity-transfers.v1.json" };
             };
             ConfigureWorkerSettings = x =>
             {
@@ -83,6 +84,13 @@ namespace NuGet.Insights.Worker
                 {
                     var newReq = Clone(req);
                     newReq.RequestUri = new Uri($"http://localhost/{TestInput}/ExcludedPackagesToCsv/{Step1}/excludedPackages.json");
+                    return await TestDataHttpClient.SendAsync(newReq);
+                }
+
+                if (req.RequestUri.AbsolutePath.EndsWith("/popularity-transfers.v1.json", StringComparison.Ordinal))
+                {
+                    var newReq = Clone(req);
+                    newReq.RequestUri = new Uri($"http://localhost/{TestInput}/PopularityTransfersToCsv/{Step1}/popularity-transfers.v1.json");
                     return await TestDataHttpClient.SendAsync(newReq);
                 }
 

@@ -48,6 +48,7 @@ namespace NuGet.Insights.Worker
         public bool AutoStartOwnersToCsv { get; set; } = false;
         public bool AutoStartVerifiedPackagesToCsv { get; set; } = false;
         public bool AutoStartExcludedPackagesToCsv { get; set; } = false;
+        public bool AutoStartPopularityTransfersToCsv { get; set; } = false;
         public bool AutoStartTimedReprocess { get; set; } = false;
 
         public TimeSpan CatalogScanUpdateFrequency { get; set; } = TimeSpan.FromHours(6);
@@ -55,6 +56,7 @@ namespace NuGet.Insights.Worker
         public TimeSpan OwnersToCsvFrequency { get; set; } = TimeSpan.FromHours(3);
         public TimeSpan VerifiedPackagesToCsvFrequency { get; set; } = TimeSpan.FromHours(3);
         public TimeSpan ExcludedPackagesToCsvFrequency { get; set; } = TimeSpan.FromHours(3);
+        public TimeSpan PopularityTransfersToCsvFrequency { get; set; } = TimeSpan.FromHours(3);
         public TimeSpan WorkflowFrequency { get; set; } = TimeSpan.FromDays(1);
         public TimeSpan KustoBlobIngestionTimeout { get; set; } = TimeSpan.FromHours(6);
 
@@ -104,6 +106,7 @@ namespace NuGet.Insights.Worker
         public string PackageOwnerContainerName { get; set; } = "packageowners";
         public string VerifiedPackageContainerName { get; set; } = "verifiedpackages";
         public string ExcludedPackageContainerName { get; set; } = "excludedpackages";
+        public string PopularityTransferContainerName { get; set; } = "popularitytransfers";
         public string PackageArchiveContainerName { get; set; } = "packagearchives";
         public string PackageArchiveEntryContainerName { get; set; } = "packagearchiveentries";
         public string SymbolPackageArchiveContainerName { get; set; } = "symbolpackagearchives";

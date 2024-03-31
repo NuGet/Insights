@@ -76,24 +76,27 @@ namespace NuGet.Insights
                 throw new InvalidDataException("Expected a JSON document starting with an object.");
             }
 
+            await jsonReader.ReadAsync();
+
             while (jsonReader.TokenType == JsonToken.PropertyName)
             {
                 var id = (string?)jsonReader.Value;
 
-                jsonReader.Read();
+                await jsonReader.ReadAsync();
 
                 if (jsonReader.TokenType != JsonToken.StartObject)
                 {
                     throw new InvalidOperationException("The token after the package ID should be the start of an object.");
                 }
 
-                jsonReader.Read();
+                await jsonReader.ReadAsync();
 
                 while (jsonReader.TokenType == JsonToken.PropertyName)
                 {
                     var version = (string)jsonReader.Value!;
 
-                    jsonReader.Read();
+                    await jsonReader.ReadAsync();
+
                     if (jsonReader.TokenType != JsonToken.Integer)
                     {
                         throw new InvalidOperationException("The token after the package version should be an integer.");
@@ -101,25 +104,25 @@ namespace NuGet.Insights
 
                     var downloads = (long)jsonReader.Value!;
 
-                    jsonReader.Read();
+                    await jsonReader.ReadAsync();
 
                     yield return new PackageDownloads(id, version, downloads);
                 }
 
-                if (jsonReader.TokenType == JsonToken.EndObject)
+                if (jsonReader.TokenType != JsonToken.EndObject)
                 {
                     throw new InvalidOperationException("The token after the package versions should be the end of an object.");
                 }
 
-                jsonReader.Read();
+                await jsonReader.ReadAsync();
             }
 
-            if (jsonReader.TokenType == JsonToken.EndObject)
+            if (jsonReader.TokenType != JsonToken.EndObject)
             {
                 throw new InvalidDataException("The last token should be the end of an object.");
             }
 
-            if (!await jsonReader.ReadAsync())
+            if (await jsonReader.ReadAsync())
             {
                 throw new InvalidDataException("Expected the JSON document to end with the end of an object.");
             }

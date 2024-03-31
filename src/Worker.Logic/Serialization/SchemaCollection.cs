@@ -18,7 +18,7 @@ namespace NuGet.Insights.Worker
         {
             if (!_typeToSchema.TryGetValue(typeof(T), out var schema))
             {
-                throw new FormatException($"No schema for message type '{typeof(T).FullName}' exists.");
+                throw new FormatException($"You probably need to update the {nameof(SchemaCollectionBuilder)} class. No schema for message type '{typeof(T).FullName}' exists.");
             }
 
             var typedSchema = schema as ISchemaSerializer<T>;

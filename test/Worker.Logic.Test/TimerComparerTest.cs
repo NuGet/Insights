@@ -46,6 +46,7 @@ namespace NuGet.Insights.Worker
                     typeof(AuxiliaryFileUpdaterTimer<AsOfData<ExcludedPackage>>),
                     typeof(AuxiliaryFileUpdaterTimer<AsOfData<PackageDownloads>>),
                     typeof(AuxiliaryFileUpdaterTimer<AsOfData<PackageOwner>>),
+                    typeof(AuxiliaryFileUpdaterTimer<AsOfData<PopularityTransfer>>),
                     typeof(AuxiliaryFileUpdaterTimer<AsOfData<VerifiedPackage>>),
                 },
 

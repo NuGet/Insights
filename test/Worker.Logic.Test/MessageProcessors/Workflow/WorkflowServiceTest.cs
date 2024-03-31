@@ -80,6 +80,48 @@ namespace NuGet.Insights.Worker.Workflow
         }
 
         [Fact]
+        public async Task DoesNotStartWhenVerifiedPackagesToCsvIsRunning()
+        {
+            await WorkflowService.InitializeAsync();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
+            await service.InitializeAsync();
+            Assert.True(await service.StartAsync());
+
+            var run = await WorkflowService.StartAsync();
+
+            Assert.Null(run);
+            Assert.Empty(await WorkflowStorageService.GetRunsAsync());
+        }
+
+        [Fact]
+        public async Task DoesNotStartWhenExcludedPackagesToCsvIsRunning()
+        {
+            await WorkflowService.InitializeAsync();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<ExcludedPackage>>>();
+            await service.InitializeAsync();
+            Assert.True(await service.StartAsync());
+
+            var run = await WorkflowService.StartAsync();
+
+            Assert.Null(run);
+            Assert.Empty(await WorkflowStorageService.GetRunsAsync());
+        }
+
+        [Fact]
+        public async Task DoesNotStartWhenPopularityTransfersToCsvIsRunning()
+        {
+            await WorkflowService.InitializeAsync();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PopularityTransfer>>>();
+            await service.InitializeAsync();
+            Assert.True(await service.StartAsync());
+
+            var run = await WorkflowService.StartAsync();
+
+            Assert.Null(run);
+            Assert.Empty(await WorkflowStorageService.GetRunsAsync());
+        }
+
+        [Fact]
         public async Task DoesNotStartWhenKustoIngestionIsRunning()
         {
             await WorkflowService.InitializeAsync();

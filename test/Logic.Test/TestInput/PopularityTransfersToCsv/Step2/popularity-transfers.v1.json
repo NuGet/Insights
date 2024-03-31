@@ -1,0 +1,10 @@
+{
+  "WindowsAzure.ServiceBus": [
+    "Azure.Messaging.EventHubs",
+    "Azure.Messaging.ServiceBus"
+  ],
+  "WindowsAzure.Storage": [
+    "Azure.Storage.Blobs",
+    "Azure.Storage.Queues"
+  ]
+}

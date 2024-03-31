@@ -1,0 +1,4 @@
+AsOfTimestamp,LowerId,Id,TransferIds,TransferLowerIds
+2021-01-16T18:00:00Z,windowsazure.storage,WindowsAzure.Storage,"[""Azure.Storage.Blobs""]","[""azure.storage.blobs""]"
+2021-01-16T18:00:00Z,uncheckedb,UncheckedB,[],[]
+2021-01-16T18:00:00Z,uncheckeda,UncheckedA,[],[]

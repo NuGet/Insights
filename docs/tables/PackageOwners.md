@@ -1,6 +1,6 @@
 # PackageOwners
 
-This table contains set of current owners for the package ID. This table contains no historical data.
+This table contains the set of current owners for the package ID. This table contains no historical data.
 
 The owners are represented by their username. A package owner can either be an individual user or an organization.
 
@@ -25,4 +25,5 @@ The owners are represented by their username. A package owner can either be an i
 
 ## Owners schema
 
-The Owners column is an array of strings where each string is either the username of a user or an organization on NuGet.org. This array can be empty, meaning the package has no owners.
+The Owners column is an array of strings where each string is either the username of a user or an organization on
+NuGet.org. This array can be empty, meaning the package has no owners.

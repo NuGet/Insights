@@ -93,6 +93,7 @@ namespace NuGet.Insights.Worker
             new SchemaV1<AuxiliaryFileUpdaterMessage<AsOfData<PackageOwner>>>("o2c"),
             new SchemaV1<AuxiliaryFileUpdaterMessage<AsOfData<VerifiedPackage>>>("vp2c"),
             new SchemaV1<AuxiliaryFileUpdaterMessage<AsOfData<ExcludedPackage>>>("ep2c"),
+            new SchemaV1<AuxiliaryFileUpdaterMessage<AsOfData<PopularityTransfer>>>("pt2c"),
         };
 
         public static IReadOnlyList<ISchemaDeserializer> DefaultParameterSchemas { get; } = new ISchemaDeserializer[]
