@@ -7,6 +7,7 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
     {
         private const string PackageVersionToCsvDir = nameof(PackageVersionToCsv);
         private const string PackageVersionToCsv_WithDeleteDir = nameof(PackageVersionToCsv_WithDelete);
+        private const string PackageVersionToCsv_WithFirstCommitTimestampDir = nameof(PackageVersionToCsv_WithFirstCommitTimestamp);
         private const string PackageVersionToCsv_WithDuplicatesDir = nameof(PackageVersionToCsv_WithDuplicates);
         private const string PackageVersionToCsv_WithAllLatestDir = nameof(PackageVersionToCsv_WithAllLatest);
 
@@ -70,6 +71,27 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
             await AssertOutputAsync(PackageVersionToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
             await AssertOutputAsync(PackageVersionToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
             await AssertOutputAsync(PackageVersionToCsv_WithDeleteDir, Step2, 2);
+        }
+
+        [Fact]
+        public async Task PackageVersionToCsv_WithFirstCommitTimestamp()
+        {
+            // Arrange
+            var min0 = CatalogClient.NuGetOrgMin;
+            var max1 = CatalogClient.NuGetOrgFirstCommit;
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageVersion, min0);
+            await SetCursorAsync(min0);
+
+            // Act
+            await UpdateAsync(CatalogScanDriverType.LoadPackageVersion, onlyLatestLeaves: null, max1);
+            await UpdateAsync(max1);
+
+            // Assert
+            await AssertOutputAsync(PackageVersionToCsv_WithFirstCommitTimestampDir, Step1, 0);
+            await AssertOutputAsync(PackageVersionToCsv_WithFirstCommitTimestampDir, Step1, 1);
+            await AssertOutputAsync(PackageVersionToCsv_WithFirstCommitTimestampDir, Step1, 2);
         }
 
         [Fact]

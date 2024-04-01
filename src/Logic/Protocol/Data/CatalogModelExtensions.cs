@@ -185,7 +185,7 @@ namespace NuGet.Insights
             // A published year of 1900 indicates that this package is unlisted, when the listed property itself is
             // not present (legacy behavior).
             // Example: https://api.nuget.org/v3/catalog0/data/2015.02.01.06.22.45/antixss.4.0.1.json
-            return leaf.Published.Year != 1900;
+            return leaf.Published.HasValue && leaf.Published.Value.Year != 1900;
         }
 
         private const SemVerType SemVer2 = SemVerType.VersionHasPrereleaseDots

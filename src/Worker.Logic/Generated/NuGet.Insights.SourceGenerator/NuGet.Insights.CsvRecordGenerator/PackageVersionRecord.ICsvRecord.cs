@@ -40,7 +40,9 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
         IsLatest: bool,
         IsLatestStable: bool,
         IsLatestSemVer2: bool,
-        IsLatestStableSemVer2: bool
+        IsLatestStableSemVer2: bool,
+        Published: datetime,
+        LastEdited: datetime
     ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/PackageVersions.md", folder = "");
 
     .alter-merge table PackageVersions policy retention softdelete = 30d;
@@ -84,17 +86,19 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
         '{"Column":"IsLatest","DataType":"bool","Properties":{"Ordinal":23}},'
         '{"Column":"IsLatestStable","DataType":"bool","Properties":{"Ordinal":24}},'
         '{"Column":"IsLatestSemVer2","DataType":"bool","Properties":{"Ordinal":25}},'
-        '{"Column":"IsLatestStableSemVer2","DataType":"bool","Properties":{"Ordinal":26}}'
+        '{"Column":"IsLatestStableSemVer2","DataType":"bool","Properties":{"Ordinal":26}},'
+        '{"Column":"Published","DataType":"datetime","Properties":{"Ordinal":27}},'
+        '{"Column":"LastEdited","DataType":"datetime","Properties":{"Ordinal":28}}'
     ']'
 
     */
     partial record PackageVersionRecord
     {
-        public int FieldCount => 27;
+        public int FieldCount => 29;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,OriginalVersion,FullVersion,Major,Minor,Patch,Revision,Release,ReleaseLabels,Metadata,IsPrerelease,IsListed,IsSemVer2,SemVerType,SemVerOrder,IsLatest,IsLatestStable,IsLatestSemVer2,IsLatestStableSemVer2");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,OriginalVersion,FullVersion,Major,Minor,Patch,Revision,Release,ReleaseLabels,Metadata,IsPrerelease,IsListed,IsSemVer2,SemVerType,SemVerOrder,IsLatest,IsLatestStable,IsLatestSemVer2,IsLatestStableSemVer2,Published,LastEdited");
         }
 
         public void Write(List<string> fields)
@@ -126,6 +130,8 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
             fields.Add(CsvUtility.FormatBool(IsLatestStable));
             fields.Add(CsvUtility.FormatBool(IsLatestSemVer2));
             fields.Add(CsvUtility.FormatBool(IsLatestStableSemVer2));
+            fields.Add(CsvUtility.FormatDateTimeOffset(Published));
+            fields.Add(CsvUtility.FormatDateTimeOffset(LastEdited));
         }
 
         public void Write(TextWriter writer)
@@ -183,6 +189,10 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
             writer.Write(CsvUtility.FormatBool(IsLatestSemVer2));
             writer.Write(',');
             writer.Write(CsvUtility.FormatBool(IsLatestStableSemVer2));
+            writer.Write(',');
+            writer.Write(CsvUtility.FormatDateTimeOffset(Published));
+            writer.Write(',');
+            writer.Write(CsvUtility.FormatDateTimeOffset(LastEdited));
             writer.WriteLine();
         }
 
@@ -241,6 +251,10 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
             await writer.WriteAsync(CsvUtility.FormatBool(IsLatestSemVer2));
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatBool(IsLatestStableSemVer2));
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(Published));
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatDateTimeOffset(LastEdited));
             await writer.WriteLineAsync();
         }
 
@@ -275,6 +289,8 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
                 IsLatestStable = bool.Parse(getNextField()),
                 IsLatestSemVer2 = bool.Parse(getNextField()),
                 IsLatestStableSemVer2 = bool.Parse(getNextField()),
+                Published = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
+                LastEdited = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
             };
         }
 

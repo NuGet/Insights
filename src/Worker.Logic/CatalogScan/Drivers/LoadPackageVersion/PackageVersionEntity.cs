@@ -12,12 +12,7 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
         {
         }
 
-        public PackageVersionEntity(
-            ICatalogLeafItem item,
-            DateTimeOffset? created,
-            bool? listed,
-            string originalVersion,
-            SemVerType? semVerType)
+        public PackageVersionEntity(ICatalogLeafItem item)
         {
             PartitionKey = GetPartitionKey(item.PackageId);
             RowKey = GetRowKey(item.PackageVersion);
@@ -27,12 +22,33 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
             CommitTimestamp = item.CommitTimestamp;
             PackageId = item.PackageId;
             PackageVersion = item.PackageVersion;
-            Created = created;
-            IsListed = listed;
-            OriginalVersion = originalVersion;
-            SemVerType = semVerType;
         }
 
+        public PackageVersionEntity(
+            ICatalogLeafItem item,
+            PackageDetailsCatalogLeaf details) : this(item)
+        {
+            Created = details.Created;
+            IsListed = details.IsListed();
+            OriginalVersion = details.VerbatimVersion;
+            SemVerType = details.GetSemVerType();
+            Published = details.Published;
+            LastEdited = HandleOutOfRange(details.LastEdited);
+        }
+
+        /// <summary>
+        /// Some old leaves have default timestamp values which cannot be stored as timestamps in Table Storage.
+        /// Example: lastEdited in https://api.nuget.org/v3/catalog0/data/2015.02.01.06.22.45/adam.jsgenerator.1.1.0.json
+        /// </summary>
+        private DateTimeOffset? HandleOutOfRange(DateTimeOffset? timestamp)
+        {
+            if (timestamp.HasValue && timestamp.Value < StorageUtility.MinTimestamp)
+            {
+                return null;
+            }
+
+            return timestamp;
+        }
 
         [IgnoreDataMember]
         public string LowerId => PartitionKey;
@@ -51,6 +67,8 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
         public bool? IsListed { get; set; }
         public string OriginalVersion { get; set; }
         public SemVerType? SemVerType { get; set; }
+        public DateTimeOffset? Published { get; set; }
+        public DateTimeOffset? LastEdited { get; set; }
 
         public string PartitionKey { get; set; }
         public string RowKey { get; set; }

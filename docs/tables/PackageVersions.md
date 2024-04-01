@@ -2,6 +2,8 @@
 
 This table has parsed information about each package version, as well as it's "latest" status within each respective package ID. This table allows you to reason about SemVer order of package versions without having native SemVer ordering or parsing support in your data or query system.
 
+This table also acts as a helpful snapshot of data that is only available in the last package details catalog leaf, such as listed status and last edited date. This information is not available in the NuGet package file (.nupkg) itself.
+
 |                              |                                                                                                                  |
 | ---------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | Cardinality                  | Exactly one per package on NuGet.org                                                                             |
@@ -43,6 +45,8 @@ This table has parsed information about each package version, as well as it's "l
 | IsLatestStable         | bool             | Yes                   | Whether this package is the latest listed, stable, SemVer 1.0.0 package                                                                                            |
 | IsLatestSemVer2        | bool             | Yes                   | Whether this package is the latest listed, stable or prerelease, SemVer 1.0.0 or SemVer 2.0.0 package                                                              |
 | IsLatestStableSemVer2  | bool             | Yes                   | Whether this package is the latest listed, stable, SemVer 1.0.0 or SemVer 2.0.0 package                                                                            |
+| Published              | timestamp        | Yes, for Available    | When the package version was published, which is approximately when it was last moved to the listed state or initially created                                     |
+| LastEdited             | timestamp        | Yes, for Available    | When the package version was last edited, which can when it was reflowed, listed, unlisted, or otherwise changed on NuGet.org                                      |
 
 ## ResultType schema
 

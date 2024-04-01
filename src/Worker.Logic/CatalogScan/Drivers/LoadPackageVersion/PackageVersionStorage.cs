@@ -34,22 +34,12 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
         {
             if (item.LeafType == CatalogLeafType.PackageDelete)
             {
-                return new PackageVersionEntity(
-                    item,
-                    created: null,
-                    listed: null,
-                    originalVersion: null,
-                    semVerType: null);
+                return new PackageVersionEntity(item);
             }
 
             var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item);
 
-            return new PackageVersionEntity(
-                item,
-                leaf.Created,
-                leaf.IsListed(),
-                leaf.VerbatimVersion,
-                leaf.GetSemVerType());
+            return new PackageVersionEntity(item, leaf);
         }
     }
 }

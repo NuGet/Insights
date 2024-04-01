@@ -40,7 +40,9 @@ namespace NuGet.Insights
     IsLatest: bool,
     IsLatestStable: bool,
     IsLatestSemVer2: bool,
-    IsLatestStableSemVer2: bool
+    IsLatestStableSemVer2: bool,
+    Published: datetime,
+    LastEdited: datetime
 ) with (docstring = __DOCSTRING__, folder = __FOLDER__)",
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
@@ -71,7 +73,9 @@ namespace NuGet.Insights
     '{""Column"":""IsLatest"",""DataType"":""bool"",""Properties"":{""Ordinal"":23}},'
     '{""Column"":""IsLatestStable"",""DataType"":""bool"",""Properties"":{""Ordinal"":24}},'
     '{""Column"":""IsLatestSemVer2"",""DataType"":""bool"",""Properties"":{""Ordinal"":25}},'
-    '{""Column"":""IsLatestStableSemVer2"",""DataType"":""bool"",""Properties"":{""Ordinal"":26}}'
+    '{""Column"":""IsLatestStableSemVer2"",""DataType"":""bool"",""Properties"":{""Ordinal"":26}},'
+    '{""Column"":""Published"",""DataType"":""datetime"",""Properties"":{""Ordinal"":27}},'
+    '{""Column"":""LastEdited"",""DataType"":""datetime"",""Properties"":{""Ordinal"":28}}'
 ']'",
         };
 

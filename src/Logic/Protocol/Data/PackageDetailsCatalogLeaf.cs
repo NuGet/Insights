@@ -12,7 +12,7 @@ namespace NuGet.Insights
         public DateTimeOffset Created { get; set; }
 
         [JsonPropertyName("lastEdited")]
-        public DateTimeOffset LastEdited { get; set; }
+        public DateTimeOffset? LastEdited { get; set; }
 
         [JsonPropertyName("dependencyGroups")]
         public List<CatalogPackageDependencyGroup> DependencyGroups { get; set; }

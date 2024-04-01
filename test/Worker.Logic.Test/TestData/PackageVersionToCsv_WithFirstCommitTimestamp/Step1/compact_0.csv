@@ -1,0 +1,7 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,OriginalVersion,FullVersion,Major,Minor,Patch,Revision,Release,ReleaseLabels,Metadata,IsPrerelease,IsListed,IsSemVer2,SemVerType,SemVerOrder,IsLatest,IsLatestStable,IsLatestSemVer2,IsLatestStableSemVer2,Published,LastEdited
+,,agatha-rrsl,agatha-rrsl/1.2.0,Agatha-rrsl,1.2.0,2015-02-01T06:22:45.8488496Z,2011-01-07T07:49:37.73Z,Available,,,1,2,0,0,,[],,false,true,false,SemVer1,0,true,true,true,true,2011-01-07T07:49:38.247Z,
+,,antixss,antixss/4.0.1,AntiXSS,4.0.1,2015-02-01T06:22:45.8488496Z,2011-01-07T07:49:50.307Z,Available,,,4,0,1,0,,[],,false,false,false,SemVer1,0,false,false,false,false,1900-01-01T00:00:00Z,
+,,argotic.core,argotic.core/2008.0.2,Argotic.Core,2008.0.2,2015-02-01T06:22:45.8488496Z,2011-01-07T07:49:58.247Z,Available,,,2008,0,2,0,,[],,false,true,false,SemVer1,0,true,true,true,true,2011-01-07T07:49:58.807Z,
+,,argotic.web,argotic.web/2008.0.2,Argotic.Web,2008.0.2,2015-02-01T06:22:45.8488496Z,2011-01-07T07:50:01.887Z,Available,,,2008,0,2,0,,[],,false,true,false,SemVer1,0,true,true,true,true,2011-01-07T07:50:02.387Z,
+,,artem.xmlproviders,artem.xmlproviders/2.5.0,Artem.XmlProviders,2.5.0,2015-02-01T06:22:45.8488496Z,2011-01-07T07:50:03.247Z,Available,,,2,5,0,0,,[],,false,true,false,SemVer1,0,true,true,true,true,2011-01-07T07:50:03.747Z,
+,,ashmind.extensions,ashmind.extensions/1.0.3,AshMind.Extensions,1.0.3,2015-02-01T06:22:45.8488496Z,2011-01-07T07:50:04.62Z,Available,,,1,0,3,0,,[],,false,true,false,SemVer1,0,true,true,true,true,2011-01-12T20:03:30.103Z,

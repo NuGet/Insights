@@ -44,6 +44,9 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
             ReleaseLabels = KustoDynamicSerializer.Serialize(parsedVersion.ReleaseLabels.ToList());
             Metadata = parsedVersion.Metadata;
             IsPrerelease = parsedVersion.IsPrerelease;
+
+            Published = entity.Published;
+            LastEdited = entity.LastEdited;
         }
 
         public PackageVersionResultType ResultType { get; set; }
@@ -62,7 +65,6 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
 
         public string Metadata { get; set; }
         public bool IsPrerelease { get; set; }
-
         public bool? IsListed { get; set; }
         public bool? IsSemVer2 { get; set; }
         public SemVerType? SemVerType { get; set; }
@@ -72,5 +74,8 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
         public bool IsLatestStable { get; set; }
         public bool IsLatestSemVer2 { get; set; }
         public bool IsLatestStableSemVer2 { get; set; }
+
+        public DateTimeOffset? Published { get; set; }
+        public DateTimeOffset? LastEdited { get; set; }
     }
 }

@@ -22,7 +22,7 @@ namespace NuGet.Insights
         public string PackageId { get; set; }
 
         [JsonPropertyName("published")]
-        public DateTimeOffset Published { get; set; }
+        public DateTimeOffset? Published { get; set; }
 
         [JsonPropertyName("version")]
         public string PackageVersion { get; set; }
