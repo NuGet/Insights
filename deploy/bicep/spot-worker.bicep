@@ -354,6 +354,25 @@ resource autoscale 'Microsoft.Insights/autoscalesettings@2015-04-01' = {
           [
             {
               metricTrigger: {
+                metricName: 'StorageQueueSize.Main'
+                metricNamespace: 'azure.applicationinsights'
+                metricResourceUri: appInsights.id
+                timeGrain: 'PT1M'
+                statistic: 'Sum'
+                timeWindow: 'PT20M'
+                timeAggregation: 'Maximum'
+                operator: 'GreaterThanOrEqual'
+                threshold: 10000
+              }
+              scaleAction: {
+                direction: 'Increase'
+                type: 'ExactCount'
+                cooldown: 'PT1M'
+                value: string(min(maxInstances, 1))
+              }
+            }
+            {
+              metricTrigger: {
                 metricName: 'Percentage CPU'
                 metricNamespace: 'microsoft.compute/virtualmachinescalesets'
                 metricResourceUri: vmss.id
