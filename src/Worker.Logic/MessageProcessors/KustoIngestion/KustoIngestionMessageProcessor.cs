@@ -281,8 +281,11 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 var final = _csvRecordContainers.GetKustoTableName(containerName);
                 var temp = _csvRecordContainers.GetTempKustoTableName(containerName);
 
+                // "final" may not exist if this is the very first ingestion
                 swaps.Add($"{old} = {final} ifexists");
-                swaps.Add($"{final} = {temp}");
+
+                // "temp" may not exist if this swap step succeed in Kusto but failed with a transient error, causing a retry
+                swaps.Add($"{final} = {temp} ifexists");
             }
 
             var swapCommand = $".rename tables {string.Join(", ", swaps)}";

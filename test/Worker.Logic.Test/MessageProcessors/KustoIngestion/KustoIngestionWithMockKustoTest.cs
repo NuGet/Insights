@@ -45,7 +45,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             VerifyCommand(".alter-merge table APackageManifestsZ_Temp policy retention softdelete = 30d", Times.Once());
             VerifyCommandStartsWith(".create table APackageManifestsZ_Temp ingestion csv mapping 'BlobStorageMapping'", Times.Once());
             VerifyCommand(".drop tables (APackageManifestsZ_Old) ifexists", Times.Exactly(2));
-            VerifyCommand(".rename tables APackageManifestsZ_Old = APackageManifestsZ ifexists, APackageManifestsZ = APackageManifestsZ_Temp", Times.Once());
+            VerifyCommand(".rename tables APackageManifestsZ_Old = APackageManifestsZ ifexists, APackageManifestsZ = APackageManifestsZ_Temp ifexists", Times.Once());
             if (applyPartitioningPolicy)
             {
                 VerifyCommandStartsWith(".alter table APackageManifestsZ_Temp policy partitioning '{'", Times.Once());
@@ -226,7 +226,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             VerifyCommandStartsWith(".create table APackageManifestsZ_Temp (", Times.Exactly(3));
             VerifyCommand(".alter-merge table APackageManifestsZ_Temp policy retention softdelete = 30d", Times.Exactly(3));
             VerifyCommandStartsWith(".create table APackageManifestsZ_Temp ingestion csv mapping 'BlobStorageMapping'", Times.Exactly(3));
-            VerifyCommand(".rename tables APackageManifestsZ_Old = APackageManifestsZ ifexists, APackageManifestsZ = APackageManifestsZ_Temp", Times.Once());
+            VerifyCommand(".rename tables APackageManifestsZ_Old = APackageManifestsZ ifexists, APackageManifestsZ = APackageManifestsZ_Temp ifexists", Times.Once());
             VerifyCommandStartsWith(".alter table APackageManifestsZ_Temp policy partitioning '{'", Times.Exactly(3));
             Assert.Equal(
                 18,
