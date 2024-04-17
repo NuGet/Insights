@@ -61,7 +61,7 @@ Write-Host "Resetting repository level settings"
 </configuration>
 "@ | Out-File (Join-Path $artifactsDir "NuGet.config") -Encoding UTF8
 
-"<Project></Project>" | Out-File (Join-Path $artifactsDir ".\Directory.Build.props") -Encoding UTF8
+"<Project><PropertyGroup><WarningsNotAsErrors>NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors></PropertyGroup></Project>" | Out-File (Join-Path $artifactsDir ".\Directory.Build.props") -Encoding UTF8
 "<Project></Project>" | Out-File (Join-Path $artifactsDir ".\Directory.Build.targets") -Encoding UTF8
 "<Project><PropertyGroup><ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally></PropertyGroup></Project>" | Out-File (Join-Path $artifactsDir ".\Directory.Packages.props") -Encoding UTF8
 "root = true" | Out-File (Join-Path $artifactsDir ".editorconfig") -Encoding UTF8
