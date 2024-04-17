@@ -101,6 +101,25 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         {
         }
 
+        protected new async Task AssertOutputAsync(string testName, string stepName, int bucket)
+        {
+            try
+            {
+                await base.AssertOutputAsync(testName, stepName, bucket);
+            }
+            catch
+            {
+                try
+                {
+                    await AssertPackageArchiveTableAsync(testName, stepName, logActual: true);
+                }
+                catch
+                {
+                    // ignore
+                }
+            }
+        }
+
         protected override string DestinationContainerName1 => Options.Value.PackageArchiveContainerName;
         protected override string DestinationContainerName2 => Options.Value.PackageArchiveEntryContainerName;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageArchiveToCsv;

@@ -667,7 +667,7 @@ namespace NuGet.Insights.Worker
             Assert.Equal(expected, actual);
         }
 
-        protected async Task AssertPackageArchiveTableAsync(string testName, string stepName, string fileName = null)
+        protected async Task AssertPackageArchiveTableAsync(string testName, string stepName, string fileName = null, bool logActual = false)
         {
             await AssertWideEntityOutputAsync(
                 Options.Value.PackageArchiveTableName,
@@ -697,7 +697,8 @@ namespace NuGet.Insights.Worker
                         SignatureHash = signatureHash,
                     };
                 },
-                fileName);
+                fileName,
+                logActual);
         }
 
         protected async Task AssertPackageReadmeTableAsync(string testName, string stepName, string fileName = null)
@@ -833,12 +834,17 @@ namespace NuGet.Insights.Worker
             string tableName,
             string dir,
             Func<Stream, T> deserializeEntity = null,
-            string fileName = null)
+            string fileName = null,
+            bool logActual = false)
         {
             fileName ??= "entities.json";
 
             var entities = await GetWideEntitiesAsync(tableName, deserializeEntity);
             var actual = SerializeTestJson(entities.Select(x => new { x.PartitionKey, x.RowKey, x.Entity }));
+            if (logActual)
+            {
+                Output.WriteLine($"Entities in table '{tableName}':" + Environment.NewLine + actual);
+            }
             var testDataFile = Path.Combine(TestData, dir, fileName);
             AssertEqualWithDiff(testDataFile, actual);
         }
