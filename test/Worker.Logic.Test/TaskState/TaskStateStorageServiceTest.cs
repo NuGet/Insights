@@ -241,9 +241,8 @@ namespace NuGet.Insights.Worker
                 Options = new Mock<IOptions<NuGetInsightsWorkerSettings>>();
                 Settings = new NuGetInsightsWorkerSettings
                 {
-                    StorageConnectionString = TestSettings.StorageConnectionString,
-                    TaskStateTableName = TestSettings.NewStoragePrefix() + "1ts1",
-                };
+                    TaskStateTableName = LogicTestSettings.NewStoragePrefix() + "1ts1",
+                }.WithTestStorageSettings();
                 Options.Setup(x => x.Value).Returns(() => Settings);
                 StorageSuffix = "suffix";
             }

@@ -363,10 +363,9 @@ namespace NuGet.Insights
                 Options = new Mock<IOptions<NuGetInsightsSettings>>();
                 Settings = new NuGetInsightsSettings
                 {
-                    StorageConnectionString = TestSettings.StorageConnectionString,
-                    TimerTableName = TestSettings.NewStoragePrefix() + "1t1",
-                    LeaseContainerName = TestSettings.NewStoragePrefix() + "1l1",
-                };
+                    TimerTableName = LogicTestSettings.NewStoragePrefix() + "1t1",
+                    LeaseContainerName = LogicTestSettings.NewStoragePrefix() + "1l1",
+                }.WithTestStorageSettings();
                 Options.Setup(x => x.Value).Returns(() => Settings);
             }
 

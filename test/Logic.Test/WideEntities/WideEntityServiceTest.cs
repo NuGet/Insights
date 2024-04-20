@@ -600,7 +600,7 @@ namespace NuGet.Insights.WideEntities
                 Assert.Equal(rowKey, wideEntity.RowKey);
                 var error = TimeSpan.FromMinutes(5);
                 Assert.NotEqual(default, wideEntity.ETag);
-                Assert.Equal(TestSettings.IsStorageEmulator ? 8 : 3, wideEntity.SegmentCount);
+                Assert.Equal(LogicTestSettings.IsStorageEmulator ? 8 : 3, wideEntity.SegmentCount);
             }
 
             public static IEnumerable<object[]> RoundTripsBytesTestData => ByteArrayLengths
@@ -673,12 +673,9 @@ namespace NuGet.Insights.WideEntities
             public Fixture()
             {
                 Options = new Mock<IOptions<NuGetInsightsSettings>>();
-                Settings = new NuGetInsightsSettings
-                {
-                    StorageConnectionString = TestSettings.StorageConnectionString,
-                };
+                Settings = new NuGetInsightsSettings().WithTestStorageSettings();
                 Options.Setup(x => x.Value).Returns(() => Settings);
-                TableName = TestSettings.NewStoragePrefix() + "1we1";
+                TableName = LogicTestSettings.NewStoragePrefix() + "1we1";
 
                 Bytes = new byte[4 * 1024 * 1024];
                 var random = new Random(0);

@@ -161,11 +161,20 @@ stages:
           displayName: "Build"
 
         - pwsh: |
+            $rawCertBase64 = "$(nugetinsightstests-StorageClientCertificate)"
+            $rawCert = [Convert]::FromBase64String($rawCertBase64)
+            $certFile = Join-Path $(Agent.TempDirectory) "nugetinsightstests-storage.pfx"
+            Set-Content $certFile -Value $rawCert -AsByteStream
+            echo "##vso[task.setvariable variable=NUGETINSIGHTS_STORAGECLIENTCERTIFICATEPATH;]$certFile"
+          displayName: "Save Storage client certificate"
+          condition: eq('${{ storageType }}', 'Azure')
+
+        - pwsh: |
             $rawCertBase64 = "$(nugetinsightstests-KustoClientCertificate)"
             $rawCert = [Convert]::FromBase64String($rawCertBase64)
-            $certFile = Join-Path $(Agent.TempDirectory) "nugetinsightstests.pfx"
+            $certFile = Join-Path $(Agent.TempDirectory) "nugetinsightstests-kusto.pfx"
             Set-Content $certFile -Value $rawCert -AsByteStream
-            echo "##vso[task.setvariable variable=NUGETINSIGHTS_KUSTOCLIENTCERTIFICATE;]$certFile"
+            echo "##vso[task.setvariable variable=NUGETINSIGHTS_KUSTOCLIENTCERTIFICATEPATH;]$certFile"
           displayName: "Save Kusto client certificate"
           condition: eq('${{ storageType }}', 'Azure')
 
@@ -190,8 +199,8 @@ stages:
           env:
             ${{ if eq(storageType, 'Azure') }}:
               NUGETINSIGHTS_STORAGEACCOUNTNAME: $(nugetinsightstests-StorageAccountName)
-              NUGETINSIGHTS_STORAGESAS: $(nugetinsightstests-BlobQueueTableFullAccessSas)
-              NUGETINSIGHTS_STORAGEBLOBREADSAS: $(nugetinsightstests-BlobReadSas)
+              NUGETINSIGHTS_STORAGECLIENTAPPLICATIONID: $(nugetinsightstests-StorageClientApplicationId)
+              NUGETINSIGHTS_STORAGECLIENTTENANTID: $(nugetinsightstests-StorageClientTenantId)
               NUGETINSIGHTS_KUSTOCONNECTIONSTRING: $(nugetinsightstests-KustoConnectionString)
               NUGETINSIGHTS_KUSTODATABASENAME: $(nugetinsightstests-KustoDatabaseName)
           retryCountOnTaskFailure: 1

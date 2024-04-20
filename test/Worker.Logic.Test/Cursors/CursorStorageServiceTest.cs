@@ -188,9 +188,8 @@ namespace NuGet.Insights.Worker
                 Options = new Mock<IOptions<NuGetInsightsWorkerSettings>>();
                 Settings = new NuGetInsightsWorkerSettings
                 {
-                    StorageConnectionString = TestSettings.StorageConnectionString,
-                    CursorTableName = TestSettings.NewStoragePrefix() + "1c1",
-                };
+                    CursorTableName = LogicTestSettings.NewStoragePrefix() + "1c1",
+                }.WithTestStorageSettings();
                 Options.Setup(x => x.Value).Returns(() => Settings);
             }
 

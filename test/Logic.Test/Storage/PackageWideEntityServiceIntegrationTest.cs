@@ -318,7 +318,7 @@ namespace NuGet.Insights
 
         public PackageWideEntityServiceIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
-            TableName = TestSettings.NewStoragePrefix() + "1pwes1";
+            TableName = LogicTestSettings.NewStoragePrefix() + "1pwes1";
             CommitTimestamp = new DateTimeOffset(2022, 6, 25, 10, 45, 0, TimeSpan.Zero);
             Item = new PackageIdentityCommit
             {

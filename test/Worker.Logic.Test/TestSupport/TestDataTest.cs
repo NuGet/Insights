@@ -88,12 +88,14 @@ namespace NuGet.Insights.Worker
         [KustoFact(Timeout = 5 * 60 * 1000)]
         public async Task DeleteOldKustoTables()
         {
+            ConfigureWorkerSettings = x => x.WithTestKustoSettings();
+
             await CleanUpKustoTablesAsync(IsOldStoragePrefix);
         }
 
         private bool IsOldStoragePrefix(string name)
         {
-            var match = TestSettings.StoragePrefixPattern.Match(name);
+            var match = LogicTestSettings.StoragePrefixPattern.Match(name);
             if (!match.Success)
             {
                 return false;

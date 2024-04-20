@@ -84,7 +84,7 @@ namespace NuGet.Insights
         {
             Output = output;
             WebApplicationFactory = factory;
-            StoragePrefix = TestSettings.NewStoragePrefix();
+            StoragePrefix = LogicTestSettings.NewStoragePrefix();
             HttpMessageHandlerFactory = new TestHttpMessageHandlerFactory();
 
             var currentDirectory = Directory.GetCurrentDirectory();
@@ -176,8 +176,7 @@ namespace NuGet.Insights
 
         protected void ConfigureDefaultsAndSettings(NuGetInsightsSettings x)
         {
-            x.StorageConnectionString = TestSettings.StorageConnectionString;
-            x.StorageBlobReadSharedAccessSignature = TestSettings.StorageBlobReadSharedAccessSignature;
+            x.WithTestStorageSettings();
 
             x.DownloadsV1AgeLimit = TimeSpan.MaxValue;
             x.DownloadsV2AgeLimit = TimeSpan.MaxValue;
@@ -303,7 +302,7 @@ namespace NuGet.Insights
                 .Split(Path.DirectorySeparatorChar)
                 .Reverse()
                 .First(ProjectDirs.Contains);
-            var repoDir = TestSettings.GetRepositoryRoot();
+            var repoDir = LogicTestSettings.GetRepositoryRoot();
             var destPath = Path.Combine(repoDir, "test", projectDir, testDataFile);
 
             lock (StringLock.GetOrAdd(sourcePath, _ => new object()))

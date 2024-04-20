@@ -7,14 +7,16 @@ using System.Text.RegularExpressions;
 
 namespace NuGet.Insights
 {
-    public static class TestSettings
+    public static class LogicTestSettings
     {
-        public const string StorageAccountNameEnv = "NUGETINSIGHTS_STORAGEACCOUNTNAME";
-        public const string StorageSasEnv = "NUGETINSIGHTS_STORAGESAS";
-        public const string StorageBlobReadSasEnv = "NUGETINSIGHTS_STORAGEBLOBREADSAS";
-        public const string KustoConnectionStringEnv = "NUGETINSIGHTS_KUSTOCONNECTIONSTRING";
-        public const string KustoDatabaseNameEnv = "NUGETINSIGHTS_KUSTODATABASENAME";
-        public const string KustoClientCertificateEnv = "NUGETINSIGHTS_KUSTOCLIENTCERTIFICATE";
+        private const string StorageAccountNameEnv = "NUGETINSIGHTS_STORAGEACCOUNTNAME";
+        private const string StorageClientApplicationIdEnv = "NUGETINSIGHTS_STORAGECLIENTAPPLICATIONID";
+        private const string StorageClientTenantIdEnv = "NUGETINSIGHTS_STORAGECLIENTTENANTID";
+        private const string StorageClientCertificatePathEnv = "NUGETINSIGHTS_STORAGECLIENTCERTIFICATEPATH";
+        private const string StorageClientCertificateKeyVaultEnv = "NUGETINSIGHTS_STORAGECLIENTCERTIFICATEKEYVAULT";
+        private const string StorageClientCertificateKeyVaultCertificateNameEnv = "NUGETINSIGHTS_STORAGECLIENTCERTIFICATEKEYVAULTCERTIFICATENAME";
+        private const string StorageSasEnv = "NUGETINSIGHTS_STORAGESAS";
+        private const string StorageBlobReadSasEnv = "NUGETINSIGHTS_STORAGEBLOBREADSAS";
 
         private static readonly Lazy<StorageType> LazyStorageType = new Lazy<StorageType>(() =>
         {
@@ -57,19 +59,33 @@ namespace NuGet.Insights
         public static bool IsStorageEmulator => StorageConnectionString == StorageEmulatorConnectionString;
         public static StorageType StorageType => LazyStorageType.Value;
 
-        public static string KustoConnectionString => GetEnvOrNull(KustoConnectionStringEnv);
-        public static string KustoDatabaseName => GetEnvOrNull(KustoDatabaseNameEnv);
-        public static string KustoClientCertificateContent => GetEnvOrNull(KustoClientCertificateEnv);
-
-        public static string StorageAccountName => GetEnvOrNull(StorageAccountNameEnv);
+        private static string StorageAccountName => GetEnvOrNull(StorageAccountNameEnv);
+        public static string StorageClientApplicationId => GetEnvOrNull(StorageClientApplicationIdEnv);
+        private static string StorageClientTenantId => GetEnvOrNull(StorageClientTenantIdEnv);
+        private static string StorageClientCertificatePath => GetEnvOrNull(StorageClientCertificatePathEnv);
+        private static string StorageClientCertificateKeyVault => GetEnvOrNull(StorageClientCertificateKeyVaultEnv);
+        private static string StorageClientCertificateKeyVaultCertificateName => GetEnvOrNull(StorageClientCertificateKeyVaultCertificateNameEnv);
         public static string StorageSharedAccessSignature => GetEnvOrNull(StorageSasEnv);
-        public static string StorageBlobReadSharedAccessSignature => GetEnvOrNull(StorageBlobReadSasEnv);
+        private static string StorageBlobReadSharedAccessSignature => GetEnvOrNull(StorageBlobReadSasEnv);
 
-        public static string StorageConnectionString
+        public static T WithTestStorageSettings<T>(this T settings) where T : NuGetInsightsSettings
+        {
+            settings.StorageAccountName = StorageAccountName;
+            settings.StorageBlobReadSharedAccessSignature = StorageBlobReadSharedAccessSignature;
+            settings.StorageClientApplicationId = StorageClientApplicationId;
+            settings.StorageClientCertificateKeyVault = StorageClientCertificateKeyVault;
+            settings.StorageClientCertificateKeyVaultCertificateName = StorageClientCertificateKeyVaultCertificateName;
+            settings.StorageClientCertificatePath = StorageClientCertificatePath;
+            settings.StorageClientTenantId = StorageClientTenantId;
+            settings.StorageConnectionString = StorageConnectionString;
+            return settings;
+        }
+
+        private static string StorageConnectionString
         {
             get
             {
-                if (StorageAccountName is null || StorageSharedAccessSignature is null)
+                if (StorageAccountName is null)
                 {
                     return StorageEmulatorConnectionString;
                 }
@@ -78,7 +94,7 @@ namespace NuGet.Insights
             }
         }
 
-        private static string GetEnvOrNull(string variable)
+        public static string GetEnvOrNull(string variable)
         {
             var value = Environment.GetEnvironmentVariable(variable);
             if (string.IsNullOrWhiteSpace(value))

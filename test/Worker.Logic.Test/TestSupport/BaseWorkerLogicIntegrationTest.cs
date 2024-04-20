@@ -4,7 +4,6 @@
 using System.Security.Cryptography;
 using Azure;
 using Azure.Data.Tables;
-using Azure.Data.Tables.Sas;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using DiffPlex;
@@ -519,17 +518,12 @@ namespace NuGet.Insights.Worker
                 UpdatedOn = DateTime.UtcNow,
             });
 
-            Uri tableSasUri;
-            if (TestSettings.StorageSharedAccessSignature is not null)
-            {
-                tableSasUri = new UriBuilder(writeTable.Uri) { Query = TestSettings.StorageSharedAccessSignature }.Uri;
-            }
-            else
-            {
-                tableSasUri = writeTable.GenerateSasUri(TableSasPermissions.Read, DateTimeOffset.UtcNow.AddHours(6));
-            }
-
-            return new TableReportIngestionResult(new AzureCloudTable(tableSasUri.AbsoluteUri));
+            // It's not possible to generate a table SAS when using AAD auth so don't specify a SAS token with any
+            // test configuration. The blob ingestion processor which uses this URL will special case.
+            //
+            // Table Storage doesn't appear to implement user delegation keys which would allow SAS URL generation
+            // for closer mocking of real behavior.
+            return new TableReportIngestionResult(new AzureCloudTable(writeTable.Uri.AbsoluteUri));
         }
 
         protected static SortedDictionary<string, List<string>> NormalizeHeaders(ILookup<string, string> headers, IEnumerable<string> ignore)
@@ -900,11 +894,8 @@ namespace NuGet.Insights.Worker
 
         private static ICslAdminProvider GetKustoAdminClient()
         {
-            var connectionStringBuilder = ServiceCollectionExtensions.GetKustoConnectionStringBuilder(new NuGetInsightsWorkerSettings
-            {
-                KustoConnectionString = TestSettings.KustoConnectionString,
-                KustoClientCertificateContent = TestSettings.KustoClientCertificateContent,
-            });
+            var connectionStringBuilder = ServiceCollectionExtensions.GetKustoConnectionStringBuilder(
+                new NuGetInsightsWorkerSettings().WithTestKustoSettings());
 
             return KustoClientFactory.CreateCslAdminProvider(connectionStringBuilder);
         }
@@ -923,7 +914,7 @@ namespace NuGet.Insights.Worker
                     foreach (var table in tables)
                     {
                         Logger.LogInformation("Deleting Kusto table: {Name}", table);
-                        using var reader = await adminClient.ExecuteControlCommandAsync(TestSettings.KustoDatabaseName, ".drop table " + table);
+                        using var reader = await adminClient.ExecuteControlCommandAsync(Options.Value.KustoDatabaseName, ".drop table " + table);
                     }
 
                     break;
@@ -945,7 +936,7 @@ namespace NuGet.Insights.Worker
             using var adminClient = GetKustoAdminClient();
 
             var tables = new List<string>();
-            using (var reader = await adminClient.ExecuteControlCommandAsync(TestSettings.KustoDatabaseName, ".show tables"))
+            using (var reader = await adminClient.ExecuteControlCommandAsync(Options.Value.KustoDatabaseName, ".show tables"))
             {
                 while (reader.Read())
                 {

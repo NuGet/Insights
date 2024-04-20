@@ -340,15 +340,14 @@ namespace NuGet.Insights
             public BaseTest(ITestOutputHelper output)
             {
                 Output = output;
-                ContainerName = TestSettings.NewStoragePrefix() + "1l1";
+                ContainerName = LogicTestSettings.NewStoragePrefix() + "1l1";
                 LeaseName = "some-lease";
                 MinDuration = TimeSpan.FromSeconds(15);
                 MaxDuration = TimeSpan.FromSeconds(60);
                 Settings = new NuGetInsightsSettings
                 {
-                    StorageConnectionString = TestSettings.StorageConnectionString,
                     LeaseContainerName = ContainerName,
-                };
+                }.WithTestStorageSettings();
                 Options = new Mock<IOptions<NuGetInsightsSettings>>();
                 Options.Setup(x => x.Value).Returns(() => Settings);
                 HttpClientHandler = new HttpClientHandler();

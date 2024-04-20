@@ -23,9 +23,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             {
                 x.AppendResultStorageBucketCount = 1;
                 x.KustoTableNameFormat = StoragePrefix + "_{0}";
-                x.KustoConnectionString = TestSettings.KustoConnectionString;
-                x.KustoDatabaseName = TestSettings.KustoDatabaseName;
-                x.KustoClientCertificateContent = TestSettings.KustoClientCertificateContent;
+                x.WithTestKustoSettings();
             };
 
             // Arrange
@@ -70,7 +68,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
             var queryProvider = Host.Services.GetRequiredService<ICslQueryProvider>();
             using var reader = await queryProvider.ExecuteQueryAsync(
-                TestSettings.KustoDatabaseName,
+                Options.Value.KustoDatabaseName,
                 table,
                 new ClientRequestProperties());
 

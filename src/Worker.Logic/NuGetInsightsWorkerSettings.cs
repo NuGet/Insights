@@ -127,13 +127,15 @@ namespace NuGet.Insights.Worker
 
         public string KustoConnectionString { get; set; } = null;
         public string KustoDatabaseName { get; set; } = null;
+        public string KustoClientCertificateKeyVault { get; set; } = null;
+        public string KustoClientCertificateKeyVaultCertificateName { get; set; } = null;
         public bool KustoUseUserManagedIdentity { get; set; } = true;
 
         /// <summary>
         /// A path to a certificate that will be loaded as a <see cref="System.Security.Cryptography.X509Certificates.X509Certificate2"/>
         /// for Kusto AAD client app authentication.
         /// </summary>
-        public string KustoClientCertificateContent { get; set; } = null;
+        public string KustoClientCertificatePath { get; set; } = null;
 
         public bool KustoApplyPartitioningPolicy { get; set; } = true;
         public string KustoTableNameFormat { get; set; } = "{0}";

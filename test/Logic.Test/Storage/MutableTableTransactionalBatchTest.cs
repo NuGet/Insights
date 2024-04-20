@@ -453,12 +453,9 @@ namespace NuGet.Insights
             public Fixture()
             {
                 Options = new Mock<IOptions<NuGetInsightsSettings>>();
-                Settings = new NuGetInsightsSettings
-                {
-                    StorageConnectionString = TestSettings.StorageConnectionString,
-                };
+                Settings = new NuGetInsightsSettings().WithTestStorageSettings();
                 Options.Setup(x => x.Value).Returns(() => Settings);
-                TableName = TestSettings.NewStoragePrefix() + "1mttb1";
+                TableName = LogicTestSettings.NewStoragePrefix() + "1mttb1";
             }
 
             public Mock<IOptions<NuGetInsightsSettings>> Options { get; }

@@ -4,6 +4,7 @@
 using Azure.Data.Tables;
 using Kusto.Data.Common;
 using Kusto.Ingest;
+using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights.Worker.KustoIngestion
 {
@@ -204,7 +205,23 @@ namespace NuGet.Insights.Worker.KustoIngestion
             using var metrics = _telemetryClient.StartQueryLoopMetrics();
 
             var tableUrl = new Uri(blob.StatusUrl);
-            var statusTable = new TableClient(tableUrl);
+            TableClientWithRetryContext statusTable;
+            if (tableUrl.Query is not null && tableUrl.Query.Contains("sig=", StringComparison.Ordinal))
+            {
+                statusTable = new TableClientWithRetryContext(new TableClient(tableUrl));
+            }
+            else
+            {
+                // This should only happen in mock Kusto tests where a real table SAS URL may not be available.
+                var tableName = new string(tableUrl
+                    .AbsolutePath
+                    .Split('/', StringSplitOptions.RemoveEmptyEntries)
+                    .Last()
+                    .TakeWhile(char.IsAsciiLetterOrDigit).ToArray());
+                var tableClient = await _serviceClientFactory.GetTableServiceClientAsync();
+                statusTable = tableClient.GetTableClient(tableName);
+            }
+
             _logger.LogInformation(
                 "Checking ingestion status of blob {ContainerName}/{BlobName} in status table {StatusTable}.",
                 blob.ContainerName,

@@ -7,9 +7,9 @@ namespace NuGet.Insights
     {
         public StorageTypeFactAttribute(StorageType storageType)
         {
-            if (!storageType.HasFlag(TestSettings.StorageType))
+            if (!storageType.HasFlag(LogicTestSettings.StorageType))
             {
-                Skip = $"This Fact is skipped because the current storage type is '{TestSettings.StorageType}', not '{storageType}'.";
+                Skip = $"This Fact is skipped because the current storage type is '{LogicTestSettings.StorageType}', not '{storageType}'.";
             }
         }
     }

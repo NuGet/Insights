@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Azure.Data.Tables;
 using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights.TablePrefixScan
@@ -95,7 +94,7 @@ namespace NuGet.Insights.TablePrefixScan
         {
             // For some reason the Azure Storage Emulator sorts the '𐐷' character before 'A'. Real Azure Table Storage
             // does not do this.
-            var hackPrefix = TestSettings.IsStorageEmulator ? "A" : string.Empty;
+            var hackPrefix = LogicTestSettings.IsStorageEmulator ? "A" : string.Empty;
 
             (var table, var expected) = await _fixture.SortAndInsertAsync(new[]
             {
@@ -413,10 +412,7 @@ namespace NuGet.Insights.TablePrefixScan
 
             public Fixture()
             {
-                Client = new TableServiceClientWithRetryContext(new TableServiceClient(TestSettings.StorageConnectionString));
             }
-
-            public TableServiceClientWithRetryContext Client { get; }
 
             public async Task<(TableClientWithRetryContext table, IReadOnlyList<TestEntity> sortedEntities)> SortAndInsertAsync(IEnumerable<TestEntity> entities)
             {
@@ -435,7 +431,23 @@ namespace NuGet.Insights.TablePrefixScan
 
                 if (table == null)
                 {
-                    table = Client.GetTableClient(TestSettings.NewStoragePrefix() + "1ts1");
+                    var options = new Mock<IOptions<NuGetInsightsSettings>>();
+                    options
+                        .SetupGet(x => x.Value)
+                        .Returns(new NuGetInsightsSettings().WithTestStorageSettings());
+
+                    var loggerFactory = new Mock<ILoggerFactory>();
+                    loggerFactory
+                        .Setup(x => x.CreateLogger(It.IsAny<string>()))
+                        .Returns(() => NullLogger.Instance);
+
+                    var serviceClientFactory = new ServiceClientFactory(
+                        options.Object,
+                        loggerFactory.Object);
+
+                    var client = await serviceClientFactory.GetTableServiceClientAsync();
+
+                    table = client.GetTableClient(LogicTestSettings.NewStoragePrefix() + "1ts1");
                     await table.CreateIfNotExistsAsync();
 
                     foreach (var group in sortedEntities.GroupBy(x => x.PartitionKey))

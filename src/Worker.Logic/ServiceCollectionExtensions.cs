@@ -46,19 +46,33 @@ namespace NuGet.Insights.Worker
 
             var builder = new KustoConnectionStringBuilder(settings.KustoConnectionString);
 
-            if (settings.UserManagedIdentityClientId != null && settings.KustoUseUserManagedIdentity)
+            if (settings.KustoClientCertificatePath != null)
             {
-                builder = builder.WithAadUserManagedIdentity(settings.UserManagedIdentityClientId);
-            }
-
-            if (settings.KustoClientCertificateContent != null)
-            {
-                var certificate = new X509Certificate2(settings.KustoClientCertificateContent);
+                var certificate = new X509Certificate2(settings.KustoClientCertificatePath);
                 builder = builder.WithAadApplicationCertificateAuthentication(
                     builder.ApplicationClientId,
                     certificate,
                     builder.Authority,
                     builder.ApplicationCertificateSendX5c);
+            }
+            else if (settings.KustoClientCertificateKeyVault != null)
+            {
+                var certificate = CredentialCache.GetLazyCertificate(
+                    settings.KustoClientCertificateKeyVault,
+                    settings.KustoClientCertificateKeyVaultCertificateName).Value;
+                builder = builder.WithAadApplicationCertificateAuthentication(
+                    builder.ApplicationClientId,
+                    certificate,
+                    builder.Authority,
+                    builder.ApplicationCertificateSendX5c);
+            }
+            else if (settings.UserManagedIdentityClientId != null && settings.KustoUseUserManagedIdentity)
+            {
+                builder = builder.WithAadUserManagedIdentity(settings.UserManagedIdentityClientId);
+            }
+            else
+            {
+                builder = builder.WithAadAzureTokenCredentialsAuthentication(CredentialCache.DefaultAzureCredential);
             }
 
             return builder;

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Security.Cryptography.X509Certificates;
 using Azure.Core;
 using Azure.Core.Pipeline;
 using Azure.Data.Tables;
@@ -168,30 +169,67 @@ namespace NuGet.Insights
             UserDelegationKey userDelegationKey;
             DateTimeOffset sasExpiry = DateTimeOffset.UtcNow.Add(_options.Value.ServiceClientSasDuration);
 
-            if (_options.Value.StorageAccountName != null)
+            if (_options.Value.StorageAccountName is not null)
             {
+                TokenCredential credential;
+                string credentialType;
+                if (_options.Value.StorageClientCertificatePath is not null)
+                {
+                    credential = await CredentialCache.GetLazyClientCertificateCredentialTask(
+                        _options.Value.StorageClientTenantId,
+                        _options.Value.StorageClientApplicationId,
+                        () =>
+                        {
+                            var certificate = new X509Certificate2(_options.Value.StorageClientCertificatePath);
+                            return Task.FromResult(certificate);
+                        }).Value;
+                    credentialType = "client certificate credential from disk";
+                }
+                else if (_options.Value.StorageClientCertificateKeyVault is not null)
+                {
+                    credential = await CredentialCache.GetLazyClientCertificateCredentialTask(
+                        _options.Value.StorageClientTenantId,
+                        _options.Value.StorageClientApplicationId,
+                        () => CredentialCache.GetLazyCertificateTask(
+                            _options.Value.StorageClientCertificateKeyVault,
+                            _options.Value.StorageClientCertificateKeyVaultCertificateName).Value).Value;
+                    credentialType = "client certificate credential from KeyVault";
+                }
+                else if (_options.Value.UserManagedIdentityClientId is not null)
+                {
+                    credential = new ManagedIdentityCredential(
+                        _options.Value.UserManagedIdentityClientId);
+                    credentialType = "user managed identity credential";
+                }
+                else
+                {
+                    credential = CredentialCache.DefaultAzureCredential;
+                    credentialType = "default Azure credential";
+                }
+
                 blob = new BlobServiceClient(
                     new Uri($"https://{_options.Value.StorageAccountName}.blob.core.windows.net"),
-                    new ManagedIdentityCredential(clientId: _options.Value.UserManagedIdentityClientId),
+                    credential,
                     GetOptions(new BlobClientOptions(), httpPipelineTransport));
 
                 queue = new QueueServiceClient(
                     new Uri($"https://{_options.Value.StorageAccountName}.queue.core.windows.net"),
-                    new ManagedIdentityCredential(clientId: _options.Value.UserManagedIdentityClientId),
+                    credential,
                     GetOptions(new QueueClientOptions(), httpPipelineTransport));
 
                 table = new TableServiceClient(
                     new Uri($"https://{_options.Value.StorageAccountName}.table.core.windows.net"),
-                    new ManagedIdentityCredential(clientId: _options.Value.UserManagedIdentityClientId),
+                    credential,
                     GetOptions(new TableClientOptions(), httpPipelineTransport));
 
-                userDelegationKey = await blob.GetUserDelegationKeyAsync(startsOn: null, expiresOn: sasExpiry);
-
                 _logger.LogInformation(
-                    "Using storage account '{StorageAccountName}' and a user delegation key expiring at {Expiry:O}, which is in {RemainingHours:F2} hours.",
+                    "Using storage account '{StorageAccountName}' with a {CredentialType} and a user delegation key expiring at {Expiry:O}, which is in {RemainingHours:F2} hours.",
                     _options.Value.StorageAccountName,
+                    credentialType,
                     sasExpiry,
                     (sasExpiry - DateTimeOffset.UtcNow).TotalHours);
+
+                userDelegationKey = await blob.GetUserDelegationKeyAsync(startsOn: null, expiresOn: sasExpiry);
             }
             else
             {

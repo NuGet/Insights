@@ -21,23 +21,51 @@ namespace NuGet.Insights
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
         {
-            _requestQueue.Enqueue(request);
+            var shouldLog = ShouldLog(request);
+
+            if (shouldLog)
+            {
+                _requestQueue.Enqueue(request);
+            }
 
             var response = await _onSendAsync(request, base.SendAsync, token);
 
             if (response != null)
             {
                 token.ThrowIfCancellationRequested();
-                _responseQueue.Enqueue((request, response));
+
+                if (shouldLog)
+                {
+                    _responseQueue.Enqueue((request, response));
+                }
+
                 return response;
             }
 
             response = await base.SendAsync(request, token);
 
             token.ThrowIfCancellationRequested();
-            _responseQueue.Enqueue((request, response));
+
+            if (shouldLog)
+            {
+                _responseQueue.Enqueue((request, response));
+            }
 
             return response;
+        }
+
+        private bool ShouldLog(HttpRequestMessage request)
+        {
+            // exclude user delegation key requests to simplify assertions
+            if (request.Method == HttpMethod.Post
+                && request.RequestUri is not null
+                && request.RequestUri.Query.Contains("restype=service", StringComparison.Ordinal)
+                && request.RequestUri.Query.Contains("comp=userdelegationkey", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

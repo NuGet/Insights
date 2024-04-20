@@ -1114,11 +1114,8 @@ namespace NuGet.Insights.ReferenceTracking
             public Fixture()
             {
                 Options = new Mock<IOptions<NuGetInsightsSettings>>();
-                Settings = new NuGetInsightsSettings
-                {
-                    StorageConnectionString = TestSettings.StorageConnectionString,
-                };
-                var prefix = TestSettings.NewStoragePrefix();
+                Settings = new NuGetInsightsSettings().WithTestStorageSettings();
+                var prefix = LogicTestSettings.NewStoragePrefix();
                 OwnerToSubjectTableName = prefix + "1o2s1";
                 SubjectToOwnerTableName = prefix + "1s2o1";
                 Options.Setup(x => x.Value).Returns(() => Settings);

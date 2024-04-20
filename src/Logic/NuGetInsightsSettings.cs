@@ -29,6 +29,11 @@ namespace NuGet.Insights
         public string LegacyReadmeUrlPattern { get; set; } = null;
 
         public string StorageAccountName { get; set; } = null;
+        public string StorageClientApplicationId { get; set; } = null;
+        public string StorageClientTenantId { get; set; } = null;
+        public string StorageClientCertificatePath { get; set; } = null;
+        public string StorageClientCertificateKeyVault { get; set; } = null;
+        public string StorageClientCertificateKeyVaultCertificateName { get; set; } = null;
         public string StorageBlobReadSharedAccessSignature { get; set; } = null;
         public string StorageConnectionString { get; set; } = StorageUtility.EmulatorConnectionString;
         public TimeSpan ServiceClientRefreshPeriod { get; set; } = TimeSpan.FromMinutes(30);

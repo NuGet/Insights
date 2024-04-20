@@ -12,7 +12,7 @@ namespace NuGet.Insights.Worker
     {
         public DocInfo(string docPath)
         {
-            DocPath = Path.Combine(TestSettings.GetRepositoryRoot(), "docs", docPath);
+            DocPath = Path.Combine(LogicTestSettings.GetRepositoryRoot(), "docs", docPath);
         }
 
         public string DocPath { get; }
