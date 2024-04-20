@@ -94,7 +94,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
                 }
 
                 // Necessary because of https://github.com/neuecc/MessagePack-CSharp/issues/1431
-                var headerMD5 = headers.Contains(MD5Header) ? headers[MD5Header].SingleOrDefault() : null;
+                var headerMD5 = !_options.Value.SkipContentMD5HeaderInCsv && headers.Contains(MD5Header) ? headers[MD5Header].SingleOrDefault() : null;
                 var headerSHA512 = headers.Contains(SHA512Header) ? headers[SHA512Header].SingleOrDefault() : null;
 
                 var archive = new PackageArchiveRecord(scanId, scanTimestamp, leaf)

@@ -90,7 +90,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal("5mVQoxKAOBG4EfcMtAlbNA9j/BY=", archive.SHA1);
             Assert.Equal("Un5Uw7RzNNFRXRGb4+6+ZB6zAU1+rSJi1UdjwEm+Dos=", archive.SHA256);
             Assert.Equal("0j3nBhz6LgdRGkWED8U9UYpbK06J0adJdmdatPjsDtVrk6TvALANKEBD77uDUs67eIjpa3Bfs9QO/wuVWMrwLw==", archive.SHA512);
-            Assert.Equal("Iv31+aZ1FrwwrVXrkkw6jw==", archive.HeaderMD5);
+            Assert.Null(archive.HeaderMD5);
             Assert.Null(archive.HeaderSHA512);
 
             Assert.Equal(6, Assert.Single(output.Value.Sets2).Records.Count);
@@ -184,6 +184,8 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         [Fact]
         public async Task GetsPackageArchiveEntriesWithHeaderHashes()
         {
+            ConfigureWorkerSettings = x => x.SkipContentMD5HeaderInCsv = false;
+
             var leaf = new CatalogLeafScan
             {
                 Url = "https://api.nuget.org/v3/catalog0/data/2021.08.06.00.31.41/knapcode.torsharp.2.6.0.json",

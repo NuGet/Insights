@@ -23,6 +23,12 @@ namespace NuGet.Insights.Worker
         public bool TimedReprocessIsEnabled { get; set; } = true;
 
         /// <summary>
+        /// Don't set the Content-MD5 header in output CSVs (e.g. for <see cref="PackageArchiveToCsv"/>). The header
+        /// appears to be returned inconsistently from some CDN endpoints leading to test flakiness.
+        /// </summary>
+        public bool SkipContentMD5HeaderInCsv { get; set; } = false;
+
+        /// <summary>
         /// This is the desired amount of time it will take to reprocess all packages. For content like legacy README or
         /// symbol packages that can be modified without any event in the catalog, this is the maximum staleness of that
         /// information stored in NuGet.Insights.

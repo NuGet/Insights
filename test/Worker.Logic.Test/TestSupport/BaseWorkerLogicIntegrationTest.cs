@@ -115,6 +115,7 @@ namespace NuGet.Insights.Worker
             x.AppendResultStorageBucketCount = 3;
             x.KustoDatabaseName = "TestKustoDb";
             x.PackageContentFileExtensions = new List<string> { ".txt" };
+            x.SkipContentMD5HeaderInCsv = true;
 
             x.BucketedPackageTableName = $"{StoragePrefix}1bp1";
             x.CatalogIndexScanTableName = $"{StoragePrefix}1cis1";
@@ -526,7 +527,7 @@ namespace NuGet.Insights.Worker
             return new TableReportIngestionResult(new AzureCloudTable(writeTable.Uri.AbsoluteUri));
         }
 
-        protected static SortedDictionary<string, List<string>> NormalizeHeaders(ILookup<string, string> headers, IEnumerable<string> ignore)
+        protected static SortedDictionary<string, List<string>> NormalizeHeaders(ILookup<string, string> headers)
         {
             // These headers are unstable
             var ignoredHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -537,6 +538,7 @@ namespace NuGet.Insights.Worker
                 "Age",
                 "Cache-Control",
                 "Connection",
+                "Content-MD5",
                 "Date",
                 "Expires",
                 "Server",
@@ -557,11 +559,6 @@ namespace NuGet.Insights.Worker
                 "x-ms-copy-source",
                 "x-ms-copy-status",
             };
-
-            foreach (var header in ignore)
-            {
-                ignoredHeaders.Add(header);
-            }
 
             return new SortedDictionary<string, List<string>>(headers
                 .Where(x => !ignoredHeaders.Contains(x.Key))
@@ -679,7 +676,7 @@ namespace NuGet.Insights.Worker
                         using var algorithm = SHA256.Create();
                         mzipHash = algorithm.ComputeHash(entity.V1.MZipBytes.ToArray()).ToLowerHex();
                         signatureHash = algorithm.ComputeHash(entity.V1.SignatureBytes.ToArray()).ToLowerHex();
-                        httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders, ignore: Enumerable.Empty<string>());
+                        httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders);
                     }
 
                     return new
@@ -714,7 +711,7 @@ namespace NuGet.Insights.Worker
                     {
                         using var algorithm = SHA256.Create();
                         readmeHash = algorithm.ComputeHash(entity.V1.ReadmeBytes.ToArray()).ToLowerHex();
-                        httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders, ignore: new[] { "Content-MD5" });
+                        httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders);
                     }
 
                     return new
@@ -743,7 +740,7 @@ namespace NuGet.Insights.Worker
                     if (entity.V1.Available)
                     {
                         mzipHash = SHA256.HashData(entity.V1.MZipBytes.Span).ToLowerHex();
-                        httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders, ignore: Enumerable.Empty<string>());
+                        httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders);
                     }
 
                     return new

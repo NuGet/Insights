@@ -80,7 +80,7 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             var archive = Assert.Single(Assert.Single(output.Value.Sets1).Records);
             Assert.Equal(ArchiveResultType.Available, archive.ResultType);
             Assert.Equal(35657, archive.Size);
-            Assert.Equal("OB0k0WV5orupQ25KxGMknQ==", archive.HeaderMD5);
+            Assert.Null(archive.HeaderMD5);
             Assert.Equal("al45MNQtsMepvs8zfPii/9IUuOUc8oVn8PpT7xxmZtl/x6UabhiS4MW5UdywZaUryLQ5m7T94KG3RIRhJXq28g==", archive.HeaderSHA512);
             Assert.Equal(35639, archive.OffsetAfterEndOfCentralDirectory);
             Assert.Equal(482u, archive.CentralDirectorySize);
