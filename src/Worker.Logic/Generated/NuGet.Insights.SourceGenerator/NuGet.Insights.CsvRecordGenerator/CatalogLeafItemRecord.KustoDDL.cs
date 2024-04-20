@@ -33,7 +33,11 @@ namespace NuGet.Insights
     PackageHash: string,
     PackageHashAlgorithm: string,
     Deprecation: dynamic,
-    Vulnerabilities: dynamic
+    Vulnerabilities: dynamic,
+    HasRepositoryProperty: bool,
+    PackageEntryCount: int,
+    NuspecPackageEntry: dynamic,
+    SignaturePackageEntry: dynamic
 ) with (docstring = __DOCSTRING__, folder = __FOLDER__)",
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
@@ -57,7 +61,11 @@ namespace NuGet.Insights
     '{""Column"":""PackageHash"",""DataType"":""string"",""Properties"":{""Ordinal"":14}},'
     '{""Column"":""PackageHashAlgorithm"",""DataType"":""string"",""Properties"":{""Ordinal"":15}},'
     '{""Column"":""Deprecation"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":16}},'
-    '{""Column"":""Vulnerabilities"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":17}}'
+    '{""Column"":""Vulnerabilities"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":17}},'
+    '{""Column"":""HasRepositoryProperty"",""DataType"":""bool"",""Properties"":{""Ordinal"":18}},'
+    '{""Column"":""PackageEntryCount"",""DataType"":""int"",""Properties"":{""Ordinal"":19}},'
+    '{""Column"":""NuspecPackageEntry"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":20}},'
+    '{""Column"":""SignaturePackageEntry"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":21}}'
 ']'",
         };
 

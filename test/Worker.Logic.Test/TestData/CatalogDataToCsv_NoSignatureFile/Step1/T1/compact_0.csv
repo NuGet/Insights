@@ -1,0 +1,13 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Message,Reasons,AlternatePackageId,AlternateVersionRange
+,,03.adsframework,03.adsframework/1.0.1,03.ADSFramework,1.0.1,2018-07-17T18:53:46.1209756Z,2018-07-17T18:48:28.75Z,NotDeprecated,,,,
+,,mvvmpro.core,mvvmpro.core/2.0.62,MVVMPro.Core,2.0.62,2018-07-17T18:53:46.1209756Z,2018-07-17T18:49:15.53Z,NotDeprecated,,,,
+,,syncsoft.app,syncsoft.app/2.6.2,SyncSoft.App,2.6.2,2018-07-17T18:53:46.1209756Z,2018-07-17T18:49:15.467Z,NotDeprecated,,,,
+,,syncsoft.app.elasticsearch,syncsoft.app.elasticsearch/2.6.2,SyncSoft.App.ElasticSearch,2.6.2,2018-07-17T18:53:46.1209756Z,2018-07-17T18:49:07.313Z,NotDeprecated,,,,
+,,syncsoft.app.handlebarsdotnet,syncsoft.app.handlebarsdotnet/2.6.2,SyncSoft.App.HandlebarsDotNet,2.6.2,2018-07-17T18:53:46.1209756Z,2018-07-17T18:49:03.577Z,NotDeprecated,,,,
+,,syncsoft.app.jsonnet,syncsoft.app.jsonnet/2.6.2,SyncSoft.App.JsonNet,2.6.2,2018-07-17T18:53:46.1209756Z,2018-07-17T18:48:59.263Z,NotDeprecated,,,,
+,,syncsoft.app.mongodb,syncsoft.app.mongodb/2.6.2,SyncSoft.App.MongoDB,2.6.2,2018-07-17T18:53:46.1209756Z,2018-07-17T18:49:30.81Z,NotDeprecated,,,,
+,,syncsoft.app.rabbitmq,syncsoft.app.rabbitmq/2.6.2,SyncSoft.App.RabbitMQ,2.6.2,2018-07-17T18:53:46.1209756Z,2018-07-17T18:48:54.703Z,NotDeprecated,,,,
+,,syncsoft.app.redis,syncsoft.app.redis/2.6.2,SyncSoft.App.Redis,2.6.2,2018-07-17T18:53:46.1209756Z,2018-07-17T18:49:27.297Z,NotDeprecated,,,,
+,,syncsoft.app.serilog,syncsoft.app.serilog/2.6.2,SyncSoft.App.Serilog,2.6.2,2018-07-17T18:53:46.1209756Z,2018-07-17T18:49:23.61Z,NotDeprecated,,,,
+,,syncsoft.app.simpleinjector,syncsoft.app.simpleinjector/2.6.2,SyncSoft.App.SimpleInjector,2.6.2,2018-07-17T18:53:46.1209756Z,2018-07-17T18:49:11.06Z,NotDeprecated,,,,
+,,syncsoft.app.sqlserver,syncsoft.app.sqlserver/2.6.2,SyncSoft.App.SqlServer,2.6.2,2018-07-17T18:53:46.1209756Z,2018-07-17T18:49:19.767Z,NotDeprecated,,,,

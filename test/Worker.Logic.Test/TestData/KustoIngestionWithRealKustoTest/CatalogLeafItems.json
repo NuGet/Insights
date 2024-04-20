@@ -17,7 +17,11 @@
     "PackageHash",
     "PackageHashAlgorithm",
     "Deprecation",
-    "Vulnerabilities"
+    "Vulnerabilities",
+    "HasRepositoryProperty",
+    "PackageEntryCount",
+    "NuspecPackageEntry",
+    "SignaturePackageEntry"
   ],
   [
     "9a090f0b-d39f-4b61-b51a-3c4dbc0b0f1d",
@@ -37,7 +41,11 @@
     "uzw\u002BbLPn8wuY7Ygwrm9/7cJHjalh2BNR2Jww57ep9K8/M73wZC5AjrY\u002BbulljPy7A0fOZkP2M65O30BtZWV\u002Big==",
     "SHA512",
     "",
-    ""
+    "",
+    "1",
+    "4",
+    "{\u0022compressedLength\u0022:560,\u0022fullName\u0022:\u0022Furysoft.Serializers.nuspec\u0022,\u0022length\u0022:1273}",
+    "{\u0022compressedLength\u0022:9464,\u0022fullName\u0022:\u0022.signature.p7s\u0022,\u0022length\u0022:9464}"
   ],
   [
     "9a090f0b-d39f-4b61-b51a-3c4dbc0b0f1d",
@@ -57,7 +65,11 @@
     "zTcOSxgp0TSmbBCDc\u002BHgmnYLjGt7H47YPuNfwLYO8w\u002BS6XMaC15Pmn1GUsG9rIvG2IoaVhmo58MWKPZal7sgrQ==",
     "SHA512",
     "",
-    ""
+    "",
+    "0",
+    "3",
+    "{\u0022compressedLength\u0022:481,\u0022fullName\u0022:\u0022GiDRaPiTaRdA.ImageProcessing.nuspec\u0022,\u0022length\u0022:921}",
+    "{\u0022compressedLength\u0022:9468,\u0022fullName\u0022:\u0022.signature.p7s\u0022,\u0022length\u0022:9468}"
   ],
   [
     "9a090f0b-d39f-4b61-b51a-3c4dbc0b0f1d",
@@ -77,7 +89,11 @@
     "QasN2hS5GC/mYKYWzD7jsvwzKbWu\u002BanHOwqeUJUqe3RI9lwEaQYGp0nwO1ebVyyPaUkQLub7O6nTrw32/cdHwg==",
     "SHA512",
     "",
-    ""
+    "",
+    "1",
+    "4",
+    "{\u0022compressedLength\u0022:545,\u0022fullName\u0022:\u0022NetDetector.nuspec\u0022,\u0022length\u0022:1155}",
+    "{\u0022compressedLength\u0022:9464,\u0022fullName\u0022:\u0022.signature.p7s\u0022,\u0022length\u0022:9464}"
   ],
   [
     "9a090f0b-d39f-4b61-b51a-3c4dbc0b0f1d",
@@ -97,7 +113,11 @@
     "44FP6hKM5v\u002BVLu75k0ESZlPrWqNs9R3VwZxZnS0qd08FvHTX/oal\u002BXF59LHWPEVVX7pTjkxTnvjG692L9iTv1A==",
     "SHA512",
     "",
-    ""
+    "",
+    "0",
+    "5",
+    "{\u0022compressedLength\u0022:567,\u0022fullName\u0022:\u0022Retyped.testingbot-api.nuspec\u0022,\u0022length\u0022:1148}",
+    "{\u0022compressedLength\u0022:9464,\u0022fullName\u0022:\u0022.signature.p7s\u0022,\u0022length\u0022:9464}"
   ],
   [
     "9a090f0b-d39f-4b61-b51a-3c4dbc0b0f1d",
@@ -117,7 +137,11 @@
     "LizdOM0y4pM9ZBfnXk8YeZp5fV5r1kSmsfJ3z8Vpa2530\u002BAZTQeOmWTOYT52ou0x2WBX2yjdUB6fSfbA7svZGA==",
     "SHA512",
     "",
-    ""
+    "",
+    "0",
+    "5",
+    "{\u0022compressedLength\u0022:568,\u0022fullName\u0022:\u0022Retyped.throttle-debounce.nuspec\u0022,\u0022length\u0022:1166}",
+    "{\u0022compressedLength\u0022:9464,\u0022fullName\u0022:\u0022.signature.p7s\u0022,\u0022length\u0022:9464}"
   ],
   [
     "9a090f0b-d39f-4b61-b51a-3c4dbc0b0f1d",
@@ -137,7 +161,11 @@
     "HR3yBGizZC5pwUhiMWmNMq1qJaDmFZBOwZEdqjVP/DbyoxSUFHaLCqq3PR2Os98C7fLxvY3LyR5knta2zfdq3w==",
     "SHA512",
     "",
-    ""
+    "",
+    "0",
+    "5",
+    "{\u0022compressedLength\u0022:569,\u0022fullName\u0022:\u0022Retyped.throttle-debounce.nuspec\u0022,\u0022length\u0022:1166}",
+    "{\u0022compressedLength\u0022:9464,\u0022fullName\u0022:\u0022.signature.p7s\u0022,\u0022length\u0022:9464}"
   ],
   [
     "9a090f0b-d39f-4b61-b51a-3c4dbc0b0f1d",
@@ -157,7 +185,11 @@
     "o4ioKNuwutTeg7J1ZB2M/L9AFs/F4MTaQBT7qWn76RTuRM0TNq4Q9GVknEPxf3gifo9dzOonf9RCQ9ownmbBoA==",
     "SHA512",
     "",
-    ""
+    "",
+    "0",
+    "5",
+    "{\u0022compressedLength\u0022:567,\u0022fullName\u0022:\u0022Retyped.timer-machine.nuspec\u0022,\u0022length\u0022:1142}",
+    "{\u0022compressedLength\u0022:9464,\u0022fullName\u0022:\u0022.signature.p7s\u0022,\u0022length\u0022:9464}"
   ],
   [
     "9a090f0b-d39f-4b61-b51a-3c4dbc0b0f1d",
@@ -177,7 +209,11 @@
     "yKulBCQI04YcmpUAwElVSgNTj3izDnwF0mMCPdpBXR6wf36wBFwqGNXvUU6ZD9Qh5hGfGs9D90/OpHYbdN7d\u002Bg==",
     "SHA512",
     "",
-    ""
+    "",
+    "0",
+    "5",
+    "{\u0022compressedLength\u0022:568,\u0022fullName\u0022:\u0022Retyped.timer-machine.nuspec\u0022,\u0022length\u0022:1142}",
+    "{\u0022compressedLength\u0022:9464,\u0022fullName\u0022:\u0022.signature.p7s\u0022,\u0022length\u0022:9464}"
   ],
   [
     "9a090f0b-d39f-4b61-b51a-3c4dbc0b0f1d",
@@ -197,7 +233,11 @@
     "/dxYl8GkmfxkcR7eo2kb8iu6lB\u002Bqd18FDVdG/\u002B7vPFWICyEVzv8CvHTKwHAQF/cTNI6YjfRwrjUzYHO0dp4tDA==",
     "SHA512",
     "",
-    ""
+    "",
+    "0",
+    "5",
+    "{\u0022compressedLength\u0022:557,\u0022fullName\u0022:\u0022Retyped.timezonecomplete.nuspec\u0022,\u0022length\u0022:1123}",
+    "{\u0022compressedLength\u0022:9463,\u0022fullName\u0022:\u0022.signature.p7s\u0022,\u0022length\u0022:9463}"
   ],
   [
     "9a090f0b-d39f-4b61-b51a-3c4dbc0b0f1d",
@@ -217,7 +257,11 @@
     "9R1dmKMjT9juMKj0P0tcwyHVcYW3urK3wkB3By13qT/s0mbcUbR9FzkYJtwAXwr9Mj9AjOXQsOw2cttrjF18MA==",
     "SHA512",
     "",
-    ""
+    "",
+    "0",
+    "5",
+    "{\u0022compressedLength\u0022:550,\u0022fullName\u0022:\u0022Retyped.untildify.nuspec\u0022,\u0022length\u0022:1096}",
+    "{\u0022compressedLength\u0022:9464,\u0022fullName\u0022:\u0022.signature.p7s\u0022,\u0022length\u0022:9464}"
   ],
   [
     "9a090f0b-d39f-4b61-b51a-3c4dbc0b0f1d",
@@ -237,7 +281,11 @@
     "lnk0L2pm8n1XME4lC\u002B/wgg\u002ByEYc4FQQabmSRN2\u002BnSn/n2WSnqnGEV9hKcoDnw6yNw40gCyIiX1Lvyfg8crZYWg==",
     "SHA512",
     "",
-    ""
+    "",
+    "0",
+    "5",
+    "{\u0022compressedLength\u0022:550,\u0022fullName\u0022:\u0022Retyped.untildify.nuspec\u0022,\u0022length\u0022:1096}",
+    "{\u0022compressedLength\u0022:9463,\u0022fullName\u0022:\u0022.signature.p7s\u0022,\u0022length\u0022:9463}"
   ],
   [
     "9a090f0b-d39f-4b61-b51a-3c4dbc0b0f1d",
@@ -257,7 +305,11 @@
     "/J3SgVD7bcJHbDU3GTXzRdLcuRo4AQX5hy5S0O3busU7H8qTQojO9ulVaVpk\u002BkinJItjjL00gTToiURH6UiJsA==",
     "SHA512",
     "",
-    ""
+    "",
+    "0",
+    "5",
+    "{\u0022compressedLength\u0022:583,\u0022fullName\u0022:\u0022Retyped.url-parse.nuspec\u0022,\u0022length\u0022:1190}",
+    "{\u0022compressedLength\u0022:9463,\u0022fullName\u0022:\u0022.signature.p7s\u0022,\u0022length\u0022:9463}"
   ],
   [
     "9a090f0b-d39f-4b61-b51a-3c4dbc0b0f1d",
@@ -277,7 +329,11 @@
     "pBOBBgt5d5odo5scgQBusnoFikI6/CgJITYyldNCHLXyOeTjn5qxqcTZD7ucYg6UdjYx0nig2r3bngx512VyuQ==",
     "SHA512",
     "",
-    ""
+    "",
+    "0",
+    "5",
+    "{\u0022compressedLength\u0022:584,\u0022fullName\u0022:\u0022Retyped.url-parse.nuspec\u0022,\u0022length\u0022:1190}",
+    "{\u0022compressedLength\u0022:9464,\u0022fullName\u0022:\u0022.signature.p7s\u0022,\u0022length\u0022:9464}"
   ],
   [
     "9a090f0b-d39f-4b61-b51a-3c4dbc0b0f1d",
@@ -297,7 +353,11 @@
     "XvX7Zmb4bFLSjmL9Uczz6VPjSUK0762N67JdfRm9KVkG9F9HySvlYzcRq1ReX0s8ujkySyJhSaKTLomTPclD8g==",
     "SHA512",
     "",
-    ""
+    "",
+    "0",
+    "5",
+    "{\u0022compressedLength\u0022:567,\u0022fullName\u0022:\u0022Retyped.uuid-validate.nuspec\u0022,\u0022length\u0022:1142}",
+    "{\u0022compressedLength\u0022:9464,\u0022fullName\u0022:\u0022.signature.p7s\u0022,\u0022length\u0022:9464}"
   ],
   [
     "9a090f0b-d39f-4b61-b51a-3c4dbc0b0f1d",
@@ -317,7 +377,11 @@
     "WwfpX813aoVdxNSlSupXz3DRRSVzDTAeWJ/zfAf3NEOYxSbWN6mOMokHoGw5FfbbySlMozKoxEhkz08kHJpOpQ==",
     "SHA512",
     "",
-    ""
+    "",
+    "0",
+    "5",
+    "{\u0022compressedLength\u0022:567,\u0022fullName\u0022:\u0022Retyped.uuid-validate.nuspec\u0022,\u0022length\u0022:1142}",
+    "{\u0022compressedLength\u0022:9464,\u0022fullName\u0022:\u0022.signature.p7s\u0022,\u0022length\u0022:9464}"
   ],
   [
     "9a090f0b-d39f-4b61-b51a-3c4dbc0b0f1d",
@@ -337,7 +401,11 @@
     "QnLq\u002BBkiNtd\u002Bgtv49IilTbYsvLDIlkxgo48dMHeCeAZYobMr64yS9/bObrr11y6d\u002B8mcGeG/qxADtHsZ4sV4Lg==",
     "SHA512",
     "",
-    ""
+    "",
+    "0",
+    "5",
+    "{\u0022compressedLength\u0022:563,\u0022fullName\u0022:\u0022Retyped.vali-date.nuspec\u0022,\u0022length\u0022:1118}",
+    "{\u0022compressedLength\u0022:9463,\u0022fullName\u0022:\u0022.signature.p7s\u0022,\u0022length\u0022:9463}"
   ],
   [
     "9a090f0b-d39f-4b61-b51a-3c4dbc0b0f1d",
@@ -357,7 +425,11 @@
     "9fSy63ihnyxIBYJWCKtl/w81ykxY67k4KtjP0IELHvVF0rhIResAzEyRG0xUxhKh3Ii16BdjccvP6cgH6F4Fmw==",
     "SHA512",
     "",
-    ""
+    "",
+    "0",
+    "5",
+    "{\u0022compressedLength\u0022:562,\u0022fullName\u0022:\u0022Retyped.vnu-jar.nuspec\u0022,\u0022length\u0022:1108}",
+    "{\u0022compressedLength\u0022:9463,\u0022fullName\u0022:\u0022.signature.p7s\u0022,\u0022length\u0022:9463}"
   ],
   [
     "9a090f0b-d39f-4b61-b51a-3c4dbc0b0f1d",
@@ -377,7 +449,11 @@
     "xuriZk6WbmGAOp5ostcc7VkiUOf\u002BvFlOqCnlamb1ZgC\u002BRcUblg2zZTKa/i4I7TJneu1E/t1pWbukyW9EhKxMCw==",
     "SHA512",
     "",
-    ""
+    "",
+    "0",
+    "5",
+    "{\u0022compressedLength\u0022:568,\u0022fullName\u0022:\u0022Retyped.w3c-permissions.nuspec\u0022,\u0022length\u0022:1153}",
+    "{\u0022compressedLength\u0022:9463,\u0022fullName\u0022:\u0022.signature.p7s\u0022,\u0022length\u0022:9463}"
   ],
   [
     "9a090f0b-d39f-4b61-b51a-3c4dbc0b0f1d",
@@ -397,7 +473,11 @@
     "XhlM1K50hOZPYUDEVWUAzHiBh2EyYFz0MUE6IFYjweoka5ic29xQbAEQjmRL\u002BIiOICYr4oPCOaQNVcSkDIPp/A==",
     "SHA512",
     "",
-    ""
+    "",
+    "0",
+    "5",
+    "{\u0022compressedLength\u0022:576,\u0022fullName\u0022:\u0022Retyped.write-json-file.nuspec\u0022,\u0022length\u0022:1153}",
+    "{\u0022compressedLength\u0022:9464,\u0022fullName\u0022:\u0022.signature.p7s\u0022,\u0022length\u0022:9464}"
   ],
   [
     "9a090f0b-d39f-4b61-b51a-3c4dbc0b0f1d",
@@ -417,6 +497,10 @@
     "mwfbcohDe5uP9f/wPROd1wOX6I63RWb9xoPo4uzoDiVaqHa1VdIhQ3aLAMQw//N4RAd/DPMC80xa7JQzcfGinA==",
     "SHA512",
     "",
-    ""
+    "",
+    "0",
+    "5",
+    "{\u0022compressedLength\u0022:571,\u0022fullName\u0022:\u0022Retyped.zui.nuspec\u0022,\u0022length\u0022:1146}",
+    "{\u0022compressedLength\u0022:9464,\u0022fullName\u0022:\u0022.signature.p7s\u0022,\u0022length\u0022:9464}"
   ]
 ]

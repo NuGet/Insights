@@ -20,26 +20,30 @@ some packages were created before their first commit timestamp.
 
 ## Table schema
 
-| Column name          | Data type        | Required                | Description                                                                             |
-| -------------------- | ---------------- | ----------------------- | --------------------------------------------------------------------------------------- |
-| CommitId             | string           | Yes                     | A unique identifier for the batch of items written to the catalog                       |
-| CommitTimestamp      | timestamp        | Yes                     | When the item was written to the catalog                                                |
-| LowerId              | string           | Yes                     | Lowercase package ID. Good for joins                                                    |
-| Identity             | string           | Yes                     | Lowercase package ID and lowercase, normalized version. Good for joins                  |
-| Id                   | string           | Yes                     | Original case package ID                                                                |
-| Version              | string           | Yes                     | Original case, normalized package version                                               |
-| Type                 | enum             | Yes                     | The type of catalog leaf item                                                           |
-| Url                  | string           | Yes                     | The URL to the full leaf JSON document                                                  |
-| PageUrl              | string           | Yes                     | The URL to the page containing the leaf item                                            |
-| Published            | timestamp        | Yes                     | The published timestamp, this is widely used except for `IsListed` calculation          |
-| IsListed             | bool             | Yes, for PackageDetails | Whether or not the package is marked as listed in this leaf                             |
-| Created              | timestamp        | Yes, for PackageDetails | The created date of the package                                                         |
-| LastEdited           | timestamp        | No                      | The last edited date of the package, changes with unlisted, listed, and many other ways |
-| PackageSize          | long             | Yes, for PackageDetails | The package size in bytes                                                               |
-| PackageHash          | string           | Yes, for PackageDetails | The base64 encoded package hash                                                         |
-| PackageHashAlgorithm | string           | Yes, for PackageDetails | The package hash algorithm name (e.g. `SHA512`)                                         |
-| Deprecation          | object           | No                      | The deprecation JSON                                                                    |
-| Vulnerabilities      | array of objects | No                      | The vulnerabilities list                                                                |
+| Column name           | Data type        | Required                | Description                                                                             |
+| --------------------- | ---------------- | ----------------------- | --------------------------------------------------------------------------------------- |
+| CommitId              | string           | Yes                     | A unique identifier for the batch of items written to the catalog                       |
+| CommitTimestamp       | timestamp        | Yes                     | When the item was written to the catalog                                                |
+| LowerId               | string           | Yes                     | Lowercase package ID. Good for joins                                                    |
+| Identity              | string           | Yes                     | Lowercase package ID and lowercase, normalized version. Good for joins                  |
+| Id                    | string           | Yes                     | Original case package ID                                                                |
+| Version               | string           | Yes                     | Original case, normalized package version                                               |
+| Type                  | enum             | Yes                     | The type of catalog leaf item                                                           |
+| Url                   | string           | Yes                     | The URL to the full leaf JSON document                                                  |
+| PageUrl               | string           | Yes                     | The URL to the page containing the leaf item                                            |
+| Published             | timestamp        | Yes                     | The published timestamp, this is widely used except for `IsListed` calculation          |
+| IsListed              | bool             | Yes, for PackageDetails | Whether or not the package is marked as listed in this leaf                             |
+| Created               | timestamp        | Yes, for PackageDetails | The created date of the package                                                         |
+| LastEdited            | timestamp        | No                      | The last edited date of the package, changes with unlisted, listed, and many other ways |
+| PackageSize           | long             | Yes, for PackageDetails | The package size in bytes                                                               |
+| PackageHash           | string           | Yes, for PackageDetails | The base64 encoded package hash                                                         |
+| PackageHashAlgorithm  | string           | Yes, for PackageDetails | The package hash algorithm name (e.g. `SHA512`)                                         |
+| Deprecation           | object           | No                      | The deprecation JSON                                                                    |
+| Vulnerabilities       | array of objects | No                      | The vulnerabilities list                                                                |
+| HasRepositoryProperty | bool             | Yes, for PackageDetails | Whether or not there is a `repository` property in the JSON                             |
+| PackageEntryCount     | int              | No                      | The number of items in the `packageEntries` JSON array                                  |
+| NuspecPackageEntry    | object           | No                      | The ZIP entry metadata for the package .nuspec                                          |
+| SignaturePackageEntry | object           | No                      | The ZIP entry metadata for the package signature `.signature.p7s`                       |
 
 ## Type schema
 
@@ -54,9 +58,22 @@ See the [catalog API document](https://docs.microsoft.com/en-us/nuget/api/catalo
 
 ## Deprecation schema
 
-The scheme of this object matches the package [deprecation object](https://learn.microsoft.com/en-us/nuget/api/registration-base-url-resource#package-deprecation) in the NuGet V3 protocol.
+The schema of this object matches the package [deprecation object](https://learn.microsoft.com/en-us/nuget/api/registration-base-url-resource#package-deprecation) in the NuGet V3 protocol.
 
 ## Vulnerabilities schema
 
-The scheme of each object in the array matches the package [vulnerability object](https://learn.microsoft.com/en-us/nuget/api/registration-base-url-resource#vulnerabilities) in the NuGet V3 protocol.
+The schema of each object in the array matches the package [vulnerability object](https://learn.microsoft.com/en-us/nuget/api/registration-base-url-resource#vulnerabilities) in the NuGet V3 protocol.
 
+## NuspecPackageEntry schema
+
+The schema of the object is a subject of the properties available in the original JSON.
+
+| Property name    | Data type | Required | Description                                                      |
+| ---------------- | --------- | -------- | ---------------------------------------------------------------- |
+| compressedLength | long      | true     | The compressed length in bytes of the ZIP file entry             |
+| fullName         | string    | true     | The relative file path within the ZIP archive                    |
+| length           | long      | true     | The declared, uncompressed length in bytes of the ZIP file entry |
+
+## SignaturePackageEntry schema
+
+This schema is the same as the NuspecPackageEntry property mentioned above.

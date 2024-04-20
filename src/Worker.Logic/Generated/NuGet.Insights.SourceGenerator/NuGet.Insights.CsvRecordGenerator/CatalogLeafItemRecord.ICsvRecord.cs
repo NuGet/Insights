@@ -33,7 +33,11 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         PackageHash: string,
         PackageHashAlgorithm: string,
         Deprecation: dynamic,
-        Vulnerabilities: dynamic
+        Vulnerabilities: dynamic,
+        HasRepositoryProperty: bool,
+        PackageEntryCount: int,
+        NuspecPackageEntry: dynamic,
+        SignaturePackageEntry: dynamic
     ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/CatalogLeafItems.md", folder = "");
 
     .alter-merge table CatalogLeafItems policy retention softdelete = 30d;
@@ -70,17 +74,21 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         '{"Column":"PackageHash","DataType":"string","Properties":{"Ordinal":14}},'
         '{"Column":"PackageHashAlgorithm","DataType":"string","Properties":{"Ordinal":15}},'
         '{"Column":"Deprecation","DataType":"dynamic","Properties":{"Ordinal":16}},'
-        '{"Column":"Vulnerabilities","DataType":"dynamic","Properties":{"Ordinal":17}}'
+        '{"Column":"Vulnerabilities","DataType":"dynamic","Properties":{"Ordinal":17}},'
+        '{"Column":"HasRepositoryProperty","DataType":"bool","Properties":{"Ordinal":18}},'
+        '{"Column":"PackageEntryCount","DataType":"int","Properties":{"Ordinal":19}},'
+        '{"Column":"NuspecPackageEntry","DataType":"dynamic","Properties":{"Ordinal":20}},'
+        '{"Column":"SignaturePackageEntry","DataType":"dynamic","Properties":{"Ordinal":21}}'
     ']'
 
     */
     partial record CatalogLeafItemRecord
     {
-        public int FieldCount => 18;
+        public int FieldCount => 22;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("CommitId,CommitTimestamp,LowerId,Identity,Id,Version,Type,Url,PageUrl,Published,IsListed,Created,LastEdited,PackageSize,PackageHash,PackageHashAlgorithm,Deprecation,Vulnerabilities");
+            writer.WriteLine("CommitId,CommitTimestamp,LowerId,Identity,Id,Version,Type,Url,PageUrl,Published,IsListed,Created,LastEdited,PackageSize,PackageHash,PackageHashAlgorithm,Deprecation,Vulnerabilities,HasRepositoryProperty,PackageEntryCount,NuspecPackageEntry,SignaturePackageEntry");
         }
 
         public void Write(List<string> fields)
@@ -103,6 +111,10 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             fields.Add(PackageHashAlgorithm);
             fields.Add(Deprecation);
             fields.Add(Vulnerabilities);
+            fields.Add(CsvUtility.FormatBool(HasRepositoryProperty));
+            fields.Add(PackageEntryCount.ToString());
+            fields.Add(NuspecPackageEntry);
+            fields.Add(SignaturePackageEntry);
         }
 
         public void Write(TextWriter writer)
@@ -142,6 +154,14 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             CsvUtility.WriteWithQuotes(writer, Deprecation);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Vulnerabilities);
+            writer.Write(',');
+            writer.Write(CsvUtility.FormatBool(HasRepositoryProperty));
+            writer.Write(',');
+            writer.Write(PackageEntryCount);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, NuspecPackageEntry);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, SignaturePackageEntry);
             writer.WriteLine();
         }
 
@@ -182,6 +202,14 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             await CsvUtility.WriteWithQuotesAsync(writer, Deprecation);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, Vulnerabilities);
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(CsvUtility.FormatBool(HasRepositoryProperty));
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(PackageEntryCount.ToString());
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, NuspecPackageEntry);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, SignaturePackageEntry);
             await writer.WriteLineAsync();
         }
 
@@ -207,6 +235,10 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
                 PackageHashAlgorithm = getNextField(),
                 Deprecation = getNextField(),
                 Vulnerabilities = getNextField(),
+                HasRepositoryProperty = CsvUtility.ParseNullable(getNextField(), bool.Parse),
+                PackageEntryCount = CsvUtility.ParseNullable(getNextField(), int.Parse),
+                NuspecPackageEntry = getNextField(),
+                SignaturePackageEntry = getNextField(),
             };
         }
 
@@ -265,6 +297,16 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             if (Vulnerabilities is null)
             {
                 Vulnerabilities = string.Empty;
+            }
+
+            if (NuspecPackageEntry is null)
+            {
+                NuspecPackageEntry = string.Empty;
+            }
+
+            if (SignaturePackageEntry is null)
+            {
+                SignaturePackageEntry = string.Empty;
             }
         }
     }

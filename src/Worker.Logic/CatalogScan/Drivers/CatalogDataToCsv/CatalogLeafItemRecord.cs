@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using NuGet.Packaging;
+
 namespace NuGet.Insights.Worker.CatalogDataToCsv
 {
     public partial record CatalogLeafItemRecord : ICsvRecord
@@ -20,6 +22,18 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             PackageHashAlgorithm = leaf.PackageHashAlgorithm;
             Deprecation = KustoDynamicSerializer.Serialize(leaf.Deprecation);
             Vulnerabilities = KustoDynamicSerializer.Serialize(leaf.Vulnerabilities);
+            HasRepositoryProperty = leaf.Repository is not null;
+
+            if (leaf.PackageEntries is not null)
+            {
+                PackageEntryCount = leaf.PackageEntries.Count;
+                NuspecPackageEntry = KustoDynamicSerializer.Serialize(leaf
+                    .PackageEntries
+                    .FirstOrDefault(e => PackageHelper.IsNuspec(e.FullName)));
+                SignaturePackageEntry = KustoDynamicSerializer.Serialize(leaf
+                    .PackageEntries
+                    .FirstOrDefault(e => e.FullName == ".signature.p7s"));
+            }
         }
 
         public CatalogLeafItemRecord(PackageDeleteCatalogLeaf leaf, string pageUrl) : this((CatalogLeaf)leaf, pageUrl)
@@ -68,5 +82,14 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
 
         [KustoType("dynamic")]
         public string Vulnerabilities { get; set; }
+
+        public bool? HasRepositoryProperty { get; set; }
+        public int? PackageEntryCount { get; set; }
+
+        [KustoType("dynamic")]
+        public string NuspecPackageEntry { get; set; }
+
+        [KustoType("dynamic")]
+        public string SignaturePackageEntry { get; set; }
     }
 }

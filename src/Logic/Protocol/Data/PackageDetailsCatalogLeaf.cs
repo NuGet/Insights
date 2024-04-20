@@ -79,5 +79,11 @@ namespace NuGet.Insights
 
         [JsonPropertyName("vulnerabilities")]
         public List<PackageVulnerability> Vulnerabilities { get; set; }
+
+        [JsonPropertyName("repository")]
+        public string Repository { get; set; }
+
+        [JsonPropertyName("packageEntries")]
+        public List<PackageEntry> PackageEntries { get; set; }
     }
 }

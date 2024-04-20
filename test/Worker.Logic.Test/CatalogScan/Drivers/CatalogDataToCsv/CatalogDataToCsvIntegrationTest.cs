@@ -8,6 +8,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         private const string CatalogDataToCsvDir = nameof(CatalogDataToCsv);
         private const string CatalogDataToCsv_DeprecationDir = nameof(CatalogDataToCsv_Deprecation);
         private const string CatalogDataToCsv_VulnerabilitiesDir = nameof(CatalogDataToCsv_Vulnerabilities);
+        private const string CatalogDataToCsv_NoSignatureFileDir = nameof(CatalogDataToCsv_NoSignatureFile);
         private const string CatalogDataToCsv_WithDuplicatesDir = nameof(CatalogDataToCsv_WithDuplicates);
         private const string CatalogDataToCsv_WithDeleteDir = nameof(CatalogDataToCsv_WithDelete);
         private const string CatalogDataToCsv_WithSpecialK_NLSDir = nameof(CatalogDataToCsv_WithKelvinK_NLS);
@@ -70,6 +71,26 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             await AssertOutputAsync(CatalogDataToCsv_VulnerabilitiesDir, Step1, 0);
             await AssertOutputAsync(CatalogDataToCsv_VulnerabilitiesDir, Step1, 1);
             await AssertOutputAsync(CatalogDataToCsv_VulnerabilitiesDir, Step1, 2);
+        }
+
+        [Fact]
+        public async Task CatalogDataToCsv_NoSignatureFile()
+        {
+            // Arrange
+            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
+
+            var max1 = DateTimeOffset.Parse("2018-07-17T18:53:46.1209756Z", CultureInfo.InvariantCulture);
+            var min0 = max1.AddTicks(-1);
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
+
+            // Act
+            await UpdateAsync(max1);
+
+            // Assert
+            await AssertCsvCountAsync(1);
+            await AssertOutputAsync(CatalogDataToCsv_NoSignatureFileDir, Step1, 0);
         }
 
         [Fact]
