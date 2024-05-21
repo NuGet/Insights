@@ -51,7 +51,7 @@ resource leaseContainer 'Microsoft.Storage/storageAccounts/blobServices/containe
 }
 
 resource uploadBlobs 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
-  name: '${deploymentNamePrefix}-spot-worker-upload'
+  name: '${deploymentNamePrefix}spot-worker-upload'
   location: location
   kind: 'AzurePowerShell'
   identity: {
@@ -71,7 +71,7 @@ resource uploadBlobs 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
       storageAccountName: storageAccountName
     }
     containerSettings: {
-      containerGroupName: '${deploymentNamePrefix}-spot-worker-upload'
+      containerGroupName: '${deploymentNamePrefix}spot-worker-upload'
       subnetIds: [
         {
           id: deploymentScriptSubnetId
