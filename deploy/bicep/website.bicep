@@ -11,6 +11,7 @@ param name string
 param zipUrl string
 param aadClientId string
 param config array
+param subnetId string
 
 resource userManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
   name: userManagedIdentityName
@@ -45,12 +46,15 @@ resource website 'Microsoft.Web/sites@2022-09-01' = {
     serverFarmId: planId == 'new' ? websitePlan.id : planId
     clientAffinityEnabled: false
     httpsOnly: true
-    siteConfig: union({
+    virtualNetworkSubnetId: subnetId
+    siteConfig: union(
+      {
         minTlsVersion: '1.2'
         alwaysOn: false // I've run into problems with the AAD client certificate not refreshing...
         use32BitWorkerProcess: false
         healthCheckPath: '/healthz'
-        appSettings: concat([
+        appSettings: concat(
+          [
             {
               name: 'AzureAd__Instance'
               value: environment().authentication.loginEndpoint
@@ -76,17 +80,26 @@ resource website 'Microsoft.Web/sites@2022-09-01' = {
               name: 'WEBSITE_RUN_FROM_PACKAGE'
               value: runFromZipUrl ? split(zipUrl, '?')[0] : '1'
             }
-          ], runFromZipUrl ? [
-            {
-              name: 'WEBSITE_RUN_FROM_PACKAGE_BLOB_MI_RESOURCE_ID'
-              value: userManagedIdentity.id
-            }
-          ] : [], config)
-      }, isLinux ? {
-        linuxFxVersion: 'DOTNETCORE|8.0'
-      } : {
-        netFrameworkVersion: 'v8.0'
-      })
+          ],
+          runFromZipUrl
+            ? [
+                {
+                  name: 'WEBSITE_RUN_FROM_PACKAGE_BLOB_MI_RESOURCE_ID'
+                  value: userManagedIdentity.id
+                }
+              ]
+            : [],
+          config
+        )
+      },
+      isLinux
+        ? {
+            linuxFxVersion: 'DOTNETCORE|8.0'
+          }
+        : {
+            netFrameworkVersion: 'v8.0'
+          }
+    )
   }
 
   resource websiteDeploy 'extensions' = if (!runFromZipUrl) {

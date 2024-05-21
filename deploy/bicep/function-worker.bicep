@@ -17,6 +17,7 @@ param zipUrl string
 param hostId string
 param logLevel string
 param config array
+param subnetId string
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' existing = {
   name: storageAccountName
@@ -104,13 +105,18 @@ resource workerPlanAutoScale 'Microsoft.Insights/autoscalesettings@2015-04-01' =
   }
 }
 
-var workerConfigWithStorage = concat(isConsumptionPlan ? [
-    {
-      name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-      // SAS-based connection strings don't work for this property
-      value: sakConnectionString
-    }
-  ] : [], config)
+var workerConfigWithStorage = concat(
+  isConsumptionPlan
+    ? [
+        {
+          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
+          // SAS-based connection strings don't work for this property
+          value: sakConnectionString
+        }
+      ]
+    : [],
+  config
+)
 
 resource worker 'Microsoft.Web/sites@2022-09-01' = {
   name: name
@@ -126,12 +132,15 @@ resource worker 'Microsoft.Web/sites@2022-09-01' = {
     serverFarmId: workerPlan.id
     clientAffinityEnabled: false
     httpsOnly: true
-    siteConfig: union({
+    virtualNetworkSubnetId: subnetId
+    siteConfig: union(
+      {
         minTlsVersion: '1.2'
         alwaysOn: !isConsumptionPlan
         use32BitWorkerProcess: false
         healthCheckPath: '/healthz'
-        appSettings: concat([
+        appSettings: concat(
+          [
             {
               name: 'AzureFunctionsJobHost__logging__LogLevel__Default'
               value: logLevel
@@ -197,17 +206,26 @@ resource worker 'Microsoft.Web/sites@2022-09-01' = {
               name: 'WEBSITE_RUN_FROM_PACKAGE'
               value: runFromZipUrl ? split(zipUrl, '?')[0] : '1'
             }
-          ], runFromZipUrl ? [
-            {
-              name: 'WEBSITE_RUN_FROM_PACKAGE_BLOB_MI_RESOURCE_ID'
-              value: userManagedIdentity.id
-            }
-          ] : [], workerConfigWithStorage)
-      }, isLinux ? {
-        linuxFxVersion: 'DOTNET-ISOLATED|8.0'
-      } : {
-        netFrameworkVersion: 'v8.0'
-      })
+          ],
+          runFromZipUrl
+            ? [
+                {
+                  name: 'WEBSITE_RUN_FROM_PACKAGE_BLOB_MI_RESOURCE_ID'
+                  value: userManagedIdentity.id
+                }
+              ]
+            : [],
+          workerConfigWithStorage
+        )
+      },
+      isLinux
+        ? {
+            linuxFxVersion: 'DOTNET-ISOLATED|8.0'
+          }
+        : {
+            netFrameworkVersion: 'v8.0'
+          }
+    )
   }
 
   resource workerDeploy 'extensions' = if (!runFromZipUrl) {

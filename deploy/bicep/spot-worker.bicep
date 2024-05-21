@@ -10,8 +10,6 @@ param vmssSku string
 param minInstances int
 @minValue(1)
 param maxInstances int
-param nsgName string
-param vnetName string
 param vmssName string
 param nicName string
 param ipConfigName string
@@ -21,151 +19,92 @@ param adminUsername string
 @secure()
 param adminPassword string
 param addLoadBalancer bool
+param subnetId string
 
-resource ipConfig 'Microsoft.Network/publicIPAddresses@2022-05-01' =
-  if (addLoadBalancer) {
-    name: ipConfigName
-    location: location
-    sku: {
-      name: 'Standard'
-    }
-    properties: {
-      publicIPAllocationMethod: 'Static'
-      publicIPAddressVersion: 'IPv4'
-    }
+resource ipConfig 'Microsoft.Network/publicIPAddresses@2022-05-01' = if (addLoadBalancer) {
+  name: ipConfigName
+  location: location
+  sku: {
+    name: 'Standard'
   }
+  properties: {
+    publicIPAllocationMethod: 'Static'
+    publicIPAddressVersion: 'IPv4'
+  }
+}
 
 var frontendIPConfigurationName = '${loadBalancerName}-fipc'
 var backendAddressPoolName = '${loadBalancerName}-bap'
 
-resource loadBalancer 'Microsoft.Network/loadBalancers@2023-05-01' =
-  if (addLoadBalancer) {
-    name: loadBalancerName
-    location: location
-    sku: {
-      name: 'Standard'
-    }
-    properties: {
-      frontendIPConfigurations: [
-        {
-          name: frontendIPConfigurationName
-          properties: {
-            publicIPAddress: {
-              id: ipConfig.id
-            }
+resource loadBalancer 'Microsoft.Network/loadBalancers@2023-05-01' = if (addLoadBalancer) {
+  name: loadBalancerName
+  location: location
+  sku: {
+    name: 'Standard'
+  }
+  properties: {
+    frontendIPConfigurations: [
+      {
+        name: frontendIPConfigurationName
+        properties: {
+          publicIPAddress: {
+            id: ipConfig.id
           }
         }
-      ]
-      backendAddressPools: [
-        {
-          name: backendAddressPoolName
-          properties: {}
+      }
+    ]
+    backendAddressPools: [
+      {
+        name: backendAddressPoolName
+        properties: {}
+      }
+    ]
+    inboundNatRules: [
+      {
+        name: '${loadBalancerName}-rdp-inr'
+        properties: {
+          frontendIPConfiguration: {
+            id: resourceId(
+              'Microsoft.Network/loadBalancers/frontendIPConfigurations',
+              loadBalancerName,
+              frontendIPConfigurationName
+            )
+          }
+          backendAddressPool: {
+            id: resourceId(
+              'Microsoft.Network/loadBalancers/backendAddressPools',
+              loadBalancerName,
+              backendAddressPoolName
+            )
+          }
+          protocol: 'Tcp'
+          backendPort: 3389
+          frontendPortRangeStart: 50000
+          frontendPortRangeEnd: 60000
         }
-      ]
-      inboundNatRules: [
-        {
-          name: '${loadBalancerName}-rdp-inr'
-          properties: {
-            frontendIPConfiguration: {
+      }
+    ]
+    outboundRules: [
+      {
+        name: '${loadBalancerName}-or'
+        properties: {
+          frontendIPConfigurations: [
+            {
               id: resourceId(
                 'Microsoft.Network/loadBalancers/frontendIPConfigurations',
                 loadBalancerName,
                 frontendIPConfigurationName
               )
             }
-            backendAddressPool: {
-              id: resourceId(
-                'Microsoft.Network/loadBalancers/backendAddressPools',
-                loadBalancerName,
-                backendAddressPoolName
-              )
-            }
-            protocol: 'Tcp'
-            backendPort: 3389
-            frontendPortRangeStart: 50000
-            frontendPortRangeEnd: 60000
+          ]
+          backendAddressPool: {
+            id: resourceId(
+              'Microsoft.Network/loadBalancers/backendAddressPools',
+              loadBalancerName,
+              backendAddressPoolName
+            )
           }
-        }
-      ]
-      outboundRules: [
-        {
-          name: '${loadBalancerName}-or'
-          properties: {
-            frontendIPConfigurations: [
-              {
-                id: resourceId(
-                  'Microsoft.Network/loadBalancers/frontendIPConfigurations',
-                  loadBalancerName,
-                  frontendIPConfigurationName
-                )
-              }
-            ]
-            backendAddressPool: {
-              id: resourceId(
-                'Microsoft.Network/loadBalancers/backendAddressPools',
-                loadBalancerName,
-                backendAddressPoolName
-              )
-            }
-            protocol: 'All'
-          }
-        }
-      ]
-    }
-  }
-
-resource nsg 'Microsoft.Network/networkSecurityGroups@2021-03-01' = {
-  name: nsgName
-  location: location
-  properties: {
-    securityRules: [
-      {
-        name: 'AllowCorpNetPublicRdp'
-        properties: {
-          priority: 2000
-          protocol: 'Tcp'
-          access: 'Allow'
-          direction: 'Inbound'
-          sourceAddressPrefix: 'CorpNetPublic'
-          sourcePortRange: '*'
-          destinationAddressPrefix: '*'
-          destinationPortRange: '3389'
-        }
-      }
-      {
-        name: 'AllowCorpNetSawRdp'
-        properties: {
-          priority: 2001
-          protocol: 'Tcp'
-          access: 'Allow'
-          direction: 'Inbound'
-          sourceAddressPrefix: 'CorpNetSaw'
-          sourcePortRange: '*'
-          destinationAddressPrefix: '*'
-          destinationPortRange: '3389'
-        }
-      }
-    ]
-  }
-}
-
-resource vnet 'Microsoft.Network/virtualNetworks@2021-03-01' = {
-  name: vnetName
-  location: location
-  properties: {
-    addressSpace: {
-      addressPrefixes: [
-        '172.27.0.0/16'
-      ]
-    }
-    subnets: [
-      {
-        name: 'default'
-        properties: {
-          addressPrefix: '172.27.0.0/17'
-          networkSecurityGroup: {
-            id: nsg.id
-          }
+          protocol: 'All'
         }
       }
     ]
@@ -223,7 +162,7 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2023-03-01' = {
                   name: ipConfigName
                   properties: {
                     subnet: {
-                      id: vnet.properties.subnets[0].id
+                      id: subnetId
                     }
                     loadBalancerBackendAddressPools: addLoadBalancer
                       ? [
@@ -349,68 +288,65 @@ resource autoscale 'Microsoft.Insights/autoscalesettings@2015-04-01' = {
           minimum: string(minInstances)
           maximum: string(maxInstances)
         }
-        rules: concat(
-          eventCounterRules,
-          [
-            {
-              metricTrigger: {
-                metricName: 'StorageQueueSize.Main'
-                metricNamespace: 'azure.applicationinsights'
-                metricResourceUri: appInsights.id
-                timeGrain: 'PT1M'
-                statistic: 'Sum'
-                timeWindow: 'PT20M'
-                timeAggregation: 'Maximum'
-                operator: 'GreaterThanOrEqual'
-                threshold: 10000
-              }
-              scaleAction: {
-                direction: 'Increase'
-                type: 'ChangeCount'
-                cooldown: 'PT1M'
-                value: string(min(maxInstances, 1))
-              }
+        rules: concat(eventCounterRules, [
+          {
+            metricTrigger: {
+              metricName: 'StorageQueueSize.Main'
+              metricNamespace: 'azure.applicationinsights'
+              metricResourceUri: appInsights.id
+              timeGrain: 'PT1M'
+              statistic: 'Sum'
+              timeWindow: 'PT20M'
+              timeAggregation: 'Maximum'
+              operator: 'GreaterThanOrEqual'
+              threshold: 10000
             }
-            {
-              metricTrigger: {
-                metricName: 'Percentage CPU'
-                metricNamespace: 'microsoft.compute/virtualmachinescalesets'
-                metricResourceUri: vmss.id
-                timeGrain: 'PT1M'
-                statistic: 'Average'
-                timeWindow: 'PT10M'
-                timeAggregation: 'Average'
-                operator: 'GreaterThan'
-                threshold: 25
-              }
-              scaleAction: {
-                direction: 'Increase'
-                type: 'ChangeCount'
-                cooldown: 'PT1M'
-                value: string(min(maxInstances - minInstances, 5))
-              }
+            scaleAction: {
+              direction: 'Increase'
+              type: 'ChangeCount'
+              cooldown: 'PT1M'
+              value: string(min(maxInstances, 1))
             }
-            {
-              metricTrigger: {
-                metricName: 'Percentage CPU'
-                metricNamespace: 'microsoft.compute/virtualmachinescalesets'
-                metricResourceUri: vmss.id
-                timeGrain: 'PT1M'
-                statistic: 'Average'
-                timeWindow: 'PT10M'
-                timeAggregation: 'Average'
-                operator: 'LessThan'
-                threshold: 15
-              }
-              scaleAction: {
-                direction: 'Decrease'
-                type: 'ChangeCount'
-                cooldown: 'PT2M'
-                value: string(min(maxInstances - minInstances, 10))
-              }
+          }
+          {
+            metricTrigger: {
+              metricName: 'Percentage CPU'
+              metricNamespace: 'microsoft.compute/virtualmachinescalesets'
+              metricResourceUri: vmss.id
+              timeGrain: 'PT1M'
+              statistic: 'Average'
+              timeWindow: 'PT10M'
+              timeAggregation: 'Average'
+              operator: 'GreaterThan'
+              threshold: 25
             }
-          ]
-        )
+            scaleAction: {
+              direction: 'Increase'
+              type: 'ChangeCount'
+              cooldown: 'PT1M'
+              value: string(min(maxInstances - minInstances, 5))
+            }
+          }
+          {
+            metricTrigger: {
+              metricName: 'Percentage CPU'
+              metricNamespace: 'microsoft.compute/virtualmachinescalesets'
+              metricResourceUri: vmss.id
+              timeGrain: 'PT1M'
+              statistic: 'Average'
+              timeWindow: 'PT10M'
+              timeAggregation: 'Average'
+              operator: 'LessThan'
+              threshold: 15
+            }
+            scaleAction: {
+              direction: 'Decrease'
+              type: 'ChangeCount'
+              cooldown: 'PT2M'
+              value: string(min(maxInstances - minInstances, 10))
+            }
+          }
+        ])
       }
     ]
   }

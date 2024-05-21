@@ -3,7 +3,14 @@ param keyVaultName string
 param leaseContainerName string
 param location string
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' = {
+/*
+HACK: This should be hard coded to false. Currently it must be while the spot worker deployment
+script runs otherwise the associated container instance never starts.
+Blocking issue: https://msazure.visualstudio.com/One/_workitems/edit/28104339
+*/
+param allowSharedKeyAccess bool = false
+
+resource storageAccount 'Microsoft.Storage/storageAccounts@2023-04-01' = {
   name: storageAccountName
   location: location
   kind: 'StorageV2'
@@ -13,6 +20,9 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' = {
   properties: {
     minimumTlsVersion: 'TLS1_2'
     supportsHttpsTrafficOnly: true
+    allowBlobPublicAccess: false
+    defaultToOAuthAuthentication: true
+    allowSharedKeyAccess: allowSharedKeyAccess
   }
 }
 
@@ -117,3 +127,5 @@ resource leaseContainerPolicy 'Microsoft.Storage/storageAccounts/managementPolic
     }
   }
 }
+
+output storageVirtualNetworkRules array = storageAccount.properties.networkAcls.virtualNetworkRules

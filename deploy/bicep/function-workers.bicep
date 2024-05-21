@@ -20,30 +20,36 @@ param zipUrl string
 param hostId string
 param logLevel string
 param config array
+param subnetIds array
 
 var workerCount = planCount * countPerPlan
 
-var workersDeploymentLongName = '${deployment().name}-function-worker-'
+var workersDeploymentLongName = '${deployment().name}-'
 
 // Subtract 10 from the max length to account for the index appended to the module name
-var workersDeploymentName = length(workersDeploymentLongName) > (64 - 10) ? '${guid(deployment().name)}-function-worker-' : workersDeploymentLongName
+var workersDeploymentName = length(workersDeploymentLongName) > (64 - 10)
+  ? '${guid(deployment().name)}-'
+  : workersDeploymentLongName
 
-module workers './function-worker.bicep' = [for i in range(0, workerCount): {
-  name: '${workersDeploymentName}${i}'
-  params: {
-    storageAccountName: storageAccountName
-    userManagedIdentityName: userManagedIdentityName
-    location: planLocations[(i / countPerPlan) % length(planLocations)]
-    planName: '${planNamePrefix}${i / countPerPlan}'
-    sku: sku
-    isLinux: isLinux
-    autoscaleName: '${autoscaleNamePrefix}${i / countPerPlan}'
-    minInstances: minInstances
-    maxInstances: maxInstances
-    name: '${namePrefix}${i}'
-    zipUrl: zipUrl
-    hostId: hostId
-    logLevel: logLevel
-    config: config
+module workers './function-worker.bicep' = [
+  for index in range(0, workerCount): {
+    name: '${workersDeploymentName}${index}'
+    params: {
+      storageAccountName: storageAccountName
+      userManagedIdentityName: userManagedIdentityName
+      location: planLocations[(index / countPerPlan) % length(planLocations)]
+      planName: '${planNamePrefix}${index / countPerPlan}'
+      sku: sku
+      isLinux: isLinux
+      autoscaleName: '${autoscaleNamePrefix}${index / countPerPlan}'
+      minInstances: minInstances
+      maxInstances: maxInstances
+      name: '${namePrefix}${index}'
+      zipUrl: zipUrl
+      hostId: hostId
+      logLevel: logLevel
+      config: config
+      subnetId: subnetIds[index]
+    }
   }
-}]
+]

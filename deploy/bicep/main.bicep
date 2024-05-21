@@ -40,6 +40,8 @@ param workerHostId string
 param workerLogLevel string = 'Warning'
 param workerConfig array
 
+param deploymentNamePrefix string
+
 param useSpotWorkers bool
 @secure()
 param spotWorkerUploadScriptUrl string = ''
@@ -117,7 +119,10 @@ var sharedConfig = [
 
 // Storage and Key Vault
 var storageAndKvLongName = '${deployment().name}-storage-and-kv'
-var storageAndKvName = length(storageAndKvLongName) > 64 ? '${guid(deployment().name)}-storage-and-kv' : storageAndKvLongName
+var storageAndKvName = length(storageAndKvLongName) > 64
+  ? '${guid(deployment().name)}-storage-and-kv'
+  : storageAndKvLongName
+
 module storageAndKv './storage-and-kv.bicep' = {
   name: storageAndKvName
   params: {
@@ -125,12 +130,15 @@ module storageAndKv './storage-and-kv.bicep' = {
     keyVaultName: keyVaultName
     leaseContainerName: leaseContainerName
     location: location
+    allowSharedKeyAccess: useSpotWorkers
   }
 }
 
 // Permissions
 var permissionsDeploymentLongName = '${deployment().name}-permissions'
-var permissionsDeploymentName = length(permissionsDeploymentLongName) > 64 ? '${guid(deployment().name)}-permissions' : permissionsDeploymentLongName
+var permissionsDeploymentName = length(permissionsDeploymentLongName) > 64
+  ? '${guid(deployment().name)}-permissions'
+  : permissionsDeploymentLongName
 
 module permissions './permissions.bicep' = {
   name: permissionsDeploymentName
@@ -145,9 +153,52 @@ module permissions './permissions.bicep' = {
   ]
 }
 
+// Vnets
+var vnetsDeploymentLongName = '${deployment().name}-vnets'
+var vnetsDeploymentName = length(vnetsDeploymentLongName) > 64
+  ? '${guid(deployment().name)}-vnets'
+  : vnetsDeploymentLongName
+
+module vnets './vnets.bicep' = {
+  name: vnetsDeploymentName
+  params: {
+    location: location
+    deploymentScriptPrefix: deploymentNamePrefix
+    spotWorkerSpecs: spotWorkerSpecs
+    useSpotWorkers: useSpotWorkers
+    websiteName: websiteName
+    workerCountPerPlan: workerCountPerPlan
+    workerNamePrefix: workerNamePrefix
+    workerPlanCount: workerPlanCount
+    workerPlanLocations: workerPlanLocations
+  }
+}
+
+// Update storage network ACLs (e.g. allowed subnets)
+var storageNetworkAclsLongName = '${deployment().name}-storage-network-acls'
+var storageNetworkAclsName = length(storageNetworkAclsLongName) > 64
+  ? '${guid(deployment().name)}-storage-network-acls'
+  : storageNetworkAclsLongName
+
+module storageNetworkAcls './storage-network-acls.bicep' = {
+  name: storageNetworkAclsName
+  params: {
+    storageAccountName: storageAccountName
+    location: location
+    subnetIds: concat(
+      [vnets.outputs.websiteSubnetId],
+      vnets.outputs.workerSubnetIds,
+      [vnets.outputs.deploymentScriptSubnetId],
+      vnets.outputs.spotWorkerSubnetIds
+    )
+  }
+}
+
 // Website
 var websiteDeploymentLongName = '${deployment().name}-website'
-var websiteDeploymentName = length(websiteDeploymentLongName) > 64 ? '${guid(deployment().name)}-website' : websiteDeploymentLongName
+var websiteDeploymentName = length(websiteDeploymentLongName) > 64
+  ? '${guid(deployment().name)}-website'
+  : websiteDeploymentLongName
 
 module website './website.bicep' = {
   name: websiteDeploymentName
@@ -161,15 +212,19 @@ module website './website.bicep' = {
     zipUrl: websiteZipUrl
     aadClientId: websiteAadClientId
     config: concat(sharedConfig, websiteConfig)
+    subnetId: vnets.outputs.websiteSubnetId
   }
   dependsOn: [
     permissions
+    storageNetworkAcls
   ]
 }
 
 // Alerts
 var alertsDeploymentLongName = '${deployment().name}-alerts'
-var alertsDeploymentName = length(alertsDeploymentLongName) > 64 ? '${guid(deployment().name)}-alerts' : alertsDeploymentLongName
+var alertsDeploymentName = length(alertsDeploymentLongName) > 64
+  ? '${guid(deployment().name)}-alerts'
+  : alertsDeploymentLongName
 
 module alerts './alerts.bicep' = {
   name: alertsDeploymentName
@@ -189,18 +244,22 @@ module alerts './alerts.bicep' = {
 
 // Azure Functions workers
 var workersDeploymentLongName = '${deployment().name}-workers'
-var workersDeploymentName = length(workersDeploymentLongName) > 64 ? '${guid(deployment().name)}-workers' : workersDeploymentLongName
+var workersDeploymentName = length(workersDeploymentLongName) > 64
+  ? '${guid(deployment().name)}-workers'
+  : workersDeploymentLongName
 
-var disabledFunctionConfig = useSpotWorkers ? [
-  {
-    name: 'AzureWebJobs.ExpandQueueFunction.Disabled'
-    value: 'true'
-  }
-  {
-    name: 'AzureWebJobs.WorkQueueFunction.Disabled'
-    value: 'true'
-  }
-] : []
+var disabledFunctionConfig = useSpotWorkers
+  ? [
+      {
+        name: 'AzureWebJobs.ExpandQueueFunction.Disabled'
+        value: 'true'
+      }
+      {
+        name: 'AzureWebJobs.WorkQueueFunction.Disabled'
+        value: 'true'
+      }
+    ]
+  : []
 
 module workers './function-workers.bicep' = {
   name: workersDeploymentName
@@ -221,15 +280,19 @@ module workers './function-workers.bicep' = {
     hostId: workerHostId
     logLevel: workerLogLevel
     config: concat(disabledFunctionConfig, sharedConfig, workerConfig)
+    subnetIds: vnets.outputs.workerSubnetIds
   }
   dependsOn: [
     permissions
+    storageNetworkAcls
   ]
 }
 
 // Spot workers
 var spotWorkersDeploymentLongName = '${deployment().name}-spot-workers'
-var spotWorkersDeploymentName = length(spotWorkersDeploymentLongName) > 64 ? '${guid(deployment().name)}-spot-workers' : spotWorkersDeploymentLongName
+var spotWorkersDeploymentName = length(spotWorkersDeploymentLongName) > 64
+  ? '${guid(deployment().name)}-spot-workers'
+  : spotWorkersDeploymentLongName
 
 module spotWorkers './spot-workers.bicep' = if (useSpotWorkers) {
   name: spotWorkersDeploymentName
@@ -253,8 +316,30 @@ module spotWorkers './spot-workers.bicep' = if (useSpotWorkers) {
     adminUsername: spotWorkerAdminUsername
     adminPassword: spotWorkerAdminPassword
     specs: spotWorkerSpecs
+    deploymentScriptSubnetId: vnets.outputs.deploymentScriptSubnetId
+    deploymentNamePrefix: deploymentNamePrefix
+    subnetIds: vnets.outputs.spotWorkerSubnetIds
   }
   dependsOn: [
     permissions
+    storageNetworkAcls
+  ]
+}
+
+// HACK: fix allowSharedKeyAccess
+var disableSakLongName = '${deployment().name}-disable-sak'
+var disableSakName = length(disableSakLongName) > 64 ? '${guid(deployment().name)}-disable-sak' : disableSakLongName
+
+module disableSak './storage-and-kv.bicep' = if (useSpotWorkers) {
+  name: disableSakName
+  params: {
+    storageAccountName: storageAccountName
+    keyVaultName: keyVaultName
+    leaseContainerName: leaseContainerName
+    location: location
+    allowSharedKeyAccess: false
+  }
+  dependsOn: [
+    spotWorkers
   ]
 }

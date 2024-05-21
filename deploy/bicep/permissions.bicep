@@ -19,7 +19,10 @@ resource blobPermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-pre
   name: guid('AppCanAccessBlob-${userManagedIdentity.id}')
   scope: storageAccount
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
+    )
     principalId: userManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
@@ -29,7 +32,10 @@ resource queuePermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-pr
   name: guid('AppCanAccessQueue-${userManagedIdentity.id}')
   scope: storageAccount
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '974c5e8b-45b9-4653-ba55-5f855dd0fb88')
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
+    )
     principalId: userManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
@@ -39,7 +45,23 @@ resource tablePermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-pr
   name: guid('AppCanAccessTable-${userManagedIdentity.id}')
   scope: storageAccount
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3')
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
+    )
+    principalId: userManagedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource deploymentScriptFilePermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+  name: guid('DeploymentScriptCanAccessFiles-${userManagedIdentity.id}')
+  scope: storageAccount
+  properties: {
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      '69566ab7-960f-475b-8e7c-b3118f30c6bd'
+    )
     principalId: userManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
@@ -50,7 +72,10 @@ resource keyVaultReadSecretPermissions 'Microsoft.Authorization/roleAssignments@
   name: guid('AppCanUseKeyVaultSecretsAndCertificates-${userManagedIdentity.id}')
   scope: keyVault
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6')
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      '4633458b-17de-408a-b874-0445c86b69e6'
+    )
     principalId: userManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
@@ -60,7 +85,10 @@ resource keyVaultReadPermissions 'Microsoft.Authorization/roleAssignments@2020-1
   name: guid('AppCanReadKeyVault-${userManagedIdentity.id}')
   scope: keyVault
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '21090545-7ca7-4776-b22c-e363652d74d2')
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      '21090545-7ca7-4776-b22c-e363652d74d2'
+    )
     principalId: userManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }

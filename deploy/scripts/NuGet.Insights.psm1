@@ -108,6 +108,9 @@ class ResourceSettings {
     [bool]$AutoRegenerateStorageKey
     
     [ValidateNotNullOrEmpty()]
+    [string]$DeploymentNamePrefix
+    
+    [ValidateNotNullOrEmpty()]
     [bool]$UseSpotWorkers
 
     [ValidateNotNullOrEmpty()]
@@ -198,6 +201,7 @@ class ResourceSettings {
         Set-OrDefault StorageAccountName "nugin$($StampName.Replace('-', '').ToLowerInvariant())"
         Set-OrDefault StorageEndpointSuffix "core.windows.net"
         Set-OrDefault KeyVaultName "nugin$($StampName.Replace('-', '').ToLowerInvariant())"
+        Set-OrDefault DeploymentNamePrefix "NuGetInsights-$StampName-Deployment-"
         Set-OrDefault UseSpotWorkers $false
 
         # Optional settings
@@ -552,6 +556,7 @@ function New-MainParameters(
         leaseContainerName        = $ResourceSettings.LeaseContainerName;
         location                  = $ResourceSettings.Location;
         storageAccountName        = $ResourceSettings.StorageAccountName;
+        deploymentNamePrefix      = $ResourceSettings.DeploymentNamePrefix;
         useSpotWorkers            = $ResourceSettings.UseSpotWorkers;
         userManagedIdentityName   = $ResourceSettings.UserManagedIdentityName;
         websiteAadClientId        = $ResourceSettings.WebsiteAadAppClientId;
@@ -738,6 +743,89 @@ function Get-DefaultRuntimeIdentifier($RuntimeIdentifier, $WriteDefault = $true)
 
     return $RuntimeIdentifier
 }
+
+function Get-AzCurrentUser() {
+    Write-Status "Determining the current user for Az PowerShell operations..."
+    $graphToken = Get-AzAccessToken -Resource "https://graph.microsoft.com/"
+    $graphHeaders = @{ Authorization = "Bearer $($graphToken.Token)" }
+    $currentUser = Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/me" -Headers $graphHeaders
+    return $currentUser
+}
+
+function Add-AzRoleAssignmentWithRetry($currentUser, [string]$resourceGroupName, [string]$roleDefinitionName, [scriptblock]$testAccess) {
+    Write-Status "Adding $roleDefinitionName role assignment for '$($currentUser.userPrincipalName)' (object ID $($currentUser.id))..."
+
+    $existingRoleAssignment = Get-AzRoleAssignment `
+        -ResourceGroupName $resourceGroupName `
+        -RoleDefinitionName $roleDefinitionName `
+    | Where-Object { $_.ObjectId -eq $currentUser.id }
+
+    if (!$existingRoleAssignment) {
+        New-AzRoleAssignment `
+            -ObjectId $currentUser.id `
+            -ResourceGroupName $resourceGroupName `
+            -RoleDefinitionName $roleDefinitionName | Out-Null
+    }
+
+    $maxRetries = 30
+    $requiredSuccesses = 12
+    $attempt = 0
+    $successes = 0
+    while ($true) {
+        try {
+            $attempt++
+            & $testAccess
+            $successes++
+            if ($successes -le $requiredSuccesses) {
+                Write-Warning "Attempt $($attempt) - Succeeded, but checking again in 5 seconds to allow for propagation."
+                Start-Sleep 5
+                continue
+            }
+            break
+        }
+        catch {
+            $successes = 0
+            if ($attempt -lt $maxRetries -and ($_.Exception.Status -eq 403 -or $_.Exception.Response.StatusCode -eq 403 -or $_.Exception.InnerException.Response.StatusCode -eq 403)) {
+                Write-Warning "Attempt $($attempt) - HTTP 403 Forbidden. Trying again in 10 seconds."
+                Start-Sleep 10
+                continue
+            }
+            throw
+        }
+    }
+}
+
+function Remove-AzRoleAssignmentWithRetry($currentUser, [string]$resourceGroupName, [string]$roleDefinitionName) {
+    Write-Status "Removing $roleDefinitionName for '$($currentUser.userPrincipalName)' (object ID $($currentUser.id))..."
+
+    $maxRetries = 30
+    $attempt = 0
+    while ($true) {
+        try {
+            $attempt++
+            Remove-AzRoleAssignment `
+                -ObjectId $currentUser.id `
+                -ResourceGroupName $resourceGroupName `
+                -RoleDefinitionName $roleDefinitionName `
+                -ErrorAction Stop
+            break
+        }
+        catch {
+            if ($attempt -lt $maxRetries -and $_.Exception.Response.StatusCode -eq 204) {
+                Write-Warning "Attempt $($attempt) - HTTP 204 No Content. Trying again in 10 seconds."
+                Start-Sleep 10
+                continue
+            }
+            elseif ($attempt -lt $maxRetries -and $_.Exception.Message -eq "The provided information does not map to a role assignment.") {
+                Write-Warning "Attempt $($attempt) - transient duplicate role assignments. Trying again in 10 seconds."
+                Start-Sleep 10
+                continue
+            } 
+            throw
+        }
+    }
+}
+
 
 # Source: https://stackoverflow.com/a/57599481
 if (Get-TypeData -TypeName System.Array) {

@@ -20,7 +20,7 @@ New-AzResourceGroup `
     -Name $ResourceSettings.ResourceGroupName `
     -Location $ResourceSettings.Location `
     -Force `
-    -ErrorAction Stop | Out-Default
+    -ErrorAction Stop | Out-Null
 
 # Deploy the storage account, Key Vault, and deployment container.
 Write-Status "Ensuring the storage account, Key Vault, and base containers exist..."

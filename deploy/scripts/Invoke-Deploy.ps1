@@ -35,47 +35,50 @@ if (!$SkipPrepare) {
         -ResourceSettings $ResourceSettings `
         -DeploymentLabel $DeploymentLabel `
         -DeploymentDir $DeploymentDir
-}
 
-# Verify the number of function app is not decreasing. This is not supported by the script.
-Write-Status "Counting existing function apps..."
-$existingWorkers = Get-AzFunctionApp -ResourceGroupName $ResourceSettings.ResourceGroupName
-$existingWorkerCount = $existingWorkers.Count
-$deployingWorkerCount = $ResourceSettings.WorkerPlanCount * $ResourceSettings.WorkerCountPerPlan
-if ($existingWorkerCount -gt $deployingWorkerCount) {
-    # Would need to:
-    # - Delete function apps
-    # - Remove managed identity from KV policy (maybe done automatically by ARM)
-    # - Delete the File Share (WEBSITE_CONTENTSHARE) created by the function app
-    throw 'Reducing the number of workers is not supported.'
+    # Verify the number of function app is not decreasing. This is not supported by the script.
+    Write-Status "Counting existing function apps..."
+    $existingWorkers = Get-AzFunctionApp -ResourceGroupName $ResourceSettings.ResourceGroupName
+    $existingWorkerCount = $existingWorkers.Count
+    $deployingWorkerCount = $ResourceSettings.WorkerPlanCount * $ResourceSettings.WorkerCountPerPlan
+    if ($existingWorkerCount -gt $deployingWorkerCount) {
+        # Would need to:
+        # - Delete function apps
+        # - Remove managed identity from KV policy (maybe done automatically by ARM)
+        # - Delete the File Share (WEBSITE_CONTENTSHARE) created by the function app
+        throw 'Reducing the number of workers is not supported.'
+    }
 }
 
 # Upload the project ZIPs
-$storageAccountKey = (Get-AzStorageAccountKey `
-        -ResourceGroupName $ResourceSettings.ResourceGroupName `
-        -Name $ResourceSettings.StorageAccountName)[0].Value
 $storageContext = New-AzStorageContext `
     -StorageAccountName $ResourceSettings.StorageAccountName `
-    -StorageAccountKey $storageAccountKey
+    -UseConnectedAccount
 
-function New-DeploymentFile ($Path, $BlobName) {
-    Write-Status "Uploading to '$BlobName'..."
+# Give the current user access
+$currentUser = Get-AzCurrentUser
 
+Add-AzRoleAssignmentWithRetry $currentUser $ResourceSettings.ResourceGroupName "Storage Blob Data Contributor" {
     $container = Get-AzStorageContainer `
-        -Name $Resourcesettings.LocalDeploymentContainerName `
         -Context $storageContext `
-        -ErrorAction SilentlyContinue
+        -ErrorAction Stop `
+    | Where-Object { $_.Name -eq $Resourcesettings.LocalDeploymentContainerName }
     if (!$container) {
         New-AzStorageContainer `
             -Context $storageContext `
             -Name $Resourcesettings.LocalDeploymentContainerName | Out-Null 
     }
+}
+
+function New-DeploymentFile ($Path, $BlobName) {
+    Write-Status "Uploading to '$BlobName'..."
 
     Set-AzStorageBlobContent `
         -Context $storageContext `
-        -Container $Resourcesettings.LocalDeploymentContainerName `
+        -Container $ResourceSettings.LocalDeploymentContainerName `
         -File $Path `
-        -Blob $BlobName | Out-Default
+        -Blob $BlobName | Out-Null
+
     return New-AzStorageBlobSASToken `
         -Container $ResourceSettings.LocalDeploymentContainerName `
         -Blob $BlobName `
@@ -131,33 +134,37 @@ New-Deployment `
     -BicepPath "../bicep/main.bicep" `
     -Parameters $mainParameters
 
-# Warm up the workers, since initial deployment appears to leave them in a hibernation state.
-Write-Status "Warming up the website and workers..."
-foreach ($appName in @($ResourceSettings.WebsiteName) + (0..($deployingWorkerCount - 1) | ForEach-Object { $ResourceSettings.WorkerNamePrefix + $_ })) {
-    $url = "$(Get-AppServiceBaseUrl $appName)/"
-    $attempt = 0;
-    while ($true) {
-        $attempt++
-        try {
-            $response = Invoke-WebRequest `
-                -Method HEAD `
-                -Uri $url `
-                -UseBasicParsing `
-                -ErrorAction Stop
-            Write-Host "$url - $($response.StatusCode) $($response.StatusDescription)"
-            break
-        }
-        catch {
-            if ($attempt -eq 24) {
-                Write-Host "$url is still not ready... we'll keep trying!"
-            }
+Remove-AzRoleAssignmentWithRetry $currentUser $ResourceSettings.ResourceGroupName "Storage Blob Data Contributor"
 
-            if ($attempt -lt 120 -and $_.Exception.Response.StatusCode -ge 500) {
-                Start-Sleep -Seconds 5
-                continue
+if (!$SkipPrepare) {
+    # Warm up the workers, since initial deployment appears to leave them in a hibernation state.
+    Write-Status "Warming up the website and workers..."
+    foreach ($appName in @($ResourceSettings.WebsiteName) + (0..($deployingWorkerCount - 1) | ForEach-Object { $ResourceSettings.WorkerNamePrefix + $_ })) {
+        $url = "$(Get-AppServiceBaseUrl $appName)/"
+        $attempt = 0;
+        while ($true) {
+            $attempt++
+            try {
+                $response = Invoke-WebRequest `
+                    -Method HEAD `
+                    -Uri $url `
+                    -UseBasicParsing `
+                    -ErrorAction Stop
+                Write-Host "$url - $($response.StatusCode) $($response.StatusDescription)"
+                break
             }
-            else {
-                throw
+            catch {
+                if ($attempt -eq 24) {
+                    Write-Host "$url is still not ready... we'll keep trying!"
+                }
+
+                if ($attempt -lt 120 -and $_.Exception.Response.StatusCode -ge 500) {
+                    Start-Sleep -Seconds 5
+                    continue
+                }
+                else {
+                    throw
+                }
             }
         }
     }

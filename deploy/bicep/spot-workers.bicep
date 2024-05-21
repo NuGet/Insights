@@ -14,6 +14,9 @@ param adminUsername string
 @secure()
 param adminPassword string
 param specs array // An array of objects with these properties: "namePrefix", "location", "sku", "minInstances", "maxInstances"
+param deploymentScriptSubnetId string
+param deploymentNamePrefix string
+param subnetIds array
 
 param deploymentTimestamp string = utcNow()
 
@@ -47,8 +50,8 @@ resource leaseContainer 'Microsoft.Storage/storageAccounts/blobServices/containe
   ]
 }
 
-resource uploadBlobs 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
-  name: '${storageAccountName}-spot-worker-upload'
+resource uploadBlobs 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
+  name: '${deploymentNamePrefix}-spot-worker-upload'
   location: location
   kind: 'AzurePowerShell'
   identity: {
@@ -62,8 +65,21 @@ resource uploadBlobs 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
     arguments: '-ManagedIdentityClientId \'${userManagedIdentity.properties.clientId}\' -DeploymentLabel \'${deploymentLabel}\' -StorageAccountName \'${storageAccountName}\' -SpotWorkerDeploymentContainerName \'${spotWorkerDeploymentContainerName}\''
     primaryScriptUri: uploadScriptUrl
     supportingScriptUris: concat(deploymentUrls.files, [
-        'https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1'
-      ])
+      'https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1'
+    ])
+    storageAccountSettings: {
+      storageAccountName: storageAccountName
+    }
+    containerSettings: {
+      containerGroupName: '${deploymentNamePrefix}-spot-worker-upload'
+      subnetIds: [
+        {
+          id: deploymentScriptSubnetId
+        }
+      ]
+    }
+    forceUpdateTag: deploymentTimestamp
+    timeout: 'PT5M'
     cleanupPreference: 'Always'
     retentionInterval: 'PT1H'
   }
@@ -72,31 +88,34 @@ resource uploadBlobs 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
   ]
 }
 
-var workersDeploymentLongName = '${deployment().name}-spot-worker-'
+var workersDeploymentLongName = '${deployment().name}-'
 
 // Subtract 10 from the max length to account for the index appended to the module name
-var workersDeploymentName = length(workersDeploymentLongName) > (64 - 10) ? '${guid(deployment().name)}-spot-worker-' : workersDeploymentLongName
+var workersDeploymentName = length(workersDeploymentLongName) > (64 - 10)
+  ? '${guid(deployment().name)}-'
+  : workersDeploymentLongName
 
-module workers './spot-worker.bicep' = [for (spec, index) in specs: {
-  name: '${workersDeploymentName}${index}'
-  params: {
-    userManagedIdentityName: userManagedIdentityName
-    appInsightsName: appInsightsName
-    deploymentLabel: deploymentLabel
-    customScriptExtensionFiles: uploadBlobs.properties.outputs.customScriptExtensionFiles
-    location: spec.location
-    vmssSku: spec.sku
-    nsgName: '${spec.namePrefix}nsg'
-    vnetName: '${spec.namePrefix}vnet'
-    vmssName: '${spec.namePrefix}vmss'
-    minInstances: spec.minInstances
-    maxInstances: spec.maxInstances
-    nicName: '${spec.namePrefix}nic'
-    ipConfigName: '${spec.namePrefix}ip'
-    loadBalancerName: '${spec.namePrefix}lb'
-    autoscaleName: '${spec.namePrefix}autoscale'
-    adminUsername: adminUsername
-    adminPassword: adminPassword
-    addLoadBalancer: spec.addLoadBalancer
+module workers './spot-worker.bicep' = [
+  for (spec, index) in specs: {
+    name: '${workersDeploymentName}${index}'
+    params: {
+      userManagedIdentityName: userManagedIdentityName
+      appInsightsName: appInsightsName
+      deploymentLabel: deploymentLabel
+      customScriptExtensionFiles: uploadBlobs.properties.outputs.customScriptExtensionFiles
+      location: spec.location
+      vmssSku: spec.sku
+      vmssName: '${spec.namePrefix}vmss'
+      minInstances: spec.minInstances
+      maxInstances: spec.maxInstances
+      nicName: '${spec.namePrefix}nic'
+      ipConfigName: '${spec.namePrefix}ip'
+      loadBalancerName: '${spec.namePrefix}lb'
+      autoscaleName: '${spec.namePrefix}autoscale'
+      adminUsername: adminUsername
+      adminPassword: adminPassword
+      addLoadBalancer: spec.addLoadBalancer
+      subnetId: subnetIds[index]
+    }
   }
-}]
+]

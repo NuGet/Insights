@@ -22,20 +22,22 @@ resource website 'Microsoft.Web/sites@2020-09-01' existing = {
 resource actionGroup 'Microsoft.Insights/actionGroups@2019-06-01' = {
   name: actionGroupName
   location: 'Global'
-  properties: empty(alertEmail) ? {
-    groupShortName: actionGroupShortName
-    enabled: true
-  } : {
-    groupShortName: actionGroupShortName
-    enabled: true
-    emailReceivers: [
-      {
-        name: 'recipient_-EmailAction-'
-        emailAddress: alertEmail
-        useCommonAlertSchema: true
+  properties: empty(alertEmail)
+    ? {
+        groupShortName: actionGroupShortName
+        enabled: true
       }
-    ]
-  }
+    : {
+        groupShortName: actionGroupShortName
+        enabled: true
+        emailReceivers: [
+          {
+            name: 'recipient_-EmailAction-'
+            emailAddress: alertEmail
+            useCommonAlertSchema: true
+          }
+        ]
+      }
 }
 
 resource expandDLQAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = {
