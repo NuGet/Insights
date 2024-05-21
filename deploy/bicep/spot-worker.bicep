@@ -366,7 +366,7 @@ resource autoscale 'Microsoft.Insights/autoscalesettings@2015-04-01' = {
               }
               scaleAction: {
                 direction: 'Increase'
-                type: 'ExactCount'
+                type: 'ChangeCount'
                 cooldown: 'PT1M'
                 value: string(min(maxInstances, 1))
               }
