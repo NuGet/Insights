@@ -21,6 +21,7 @@ param websiteName string
 param websiteZipUrl string
 param websiteAadClientId string
 param websiteConfig array
+param websiteLocation string
 
 param workerPlanNamePrefix string
 param workerPlanLocations array
@@ -204,7 +205,7 @@ module website './website.bicep' = {
   name: websiteDeploymentName
   params: {
     userManagedIdentityName: userManagedIdentityName
-    location: location
+    location: websiteLocation
     planId: websitePlanId
     planName: websitePlanName
     isLinux: websiteIsLinux

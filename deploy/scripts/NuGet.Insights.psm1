@@ -32,6 +32,9 @@ class ResourceSettings {
     [string]$WebsiteName
     
     [ValidateNotNullOrEmpty()]
+    [string]$WebsiteLocation
+    
+    [ValidateNotNullOrEmpty()]
     [string]$WorkerPlanNamePrefix
     
     [ValidateNotNullOrEmpty()]
@@ -183,6 +186,7 @@ class ResourceSettings {
         Set-OrDefault AlertPrefix ""
         Set-OrDefault WebsiteName "NuGetInsights-$StampName"
         Set-OrDefault WebsitePlanName "$($this.WebsiteName)-WebsitePlan"
+        Set-OrDefault WebsiteLocation $this.Location
         Set-OrDefault WorkerNamePrefix "NuGetInsights-$StampName-Worker-"
         Set-OrDefault UserManagedIdentityName "NuGetInsights-$StampName"
         Set-OrDefault WorkerPlanNamePrefix "NuGetInsights-$StampName-WorkerPlan-"
@@ -564,6 +568,7 @@ function New-MainParameters(
         websiteIsLinux            = $isDeploymentLinux;
         websiteName               = $ResourceSettings.WebsiteName;
         websiteZipUrl             = $websiteZipUrl;
+        websiteLocation           = $ResourceSettings.WebsiteLocation;
         workerAutoscaleNamePrefix = $ResourceSettings.WorkerAutoscaleNamePrefix;
         workerConfig              = @($ResourceSettings.WorkerConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
         workerCountPerPlan        = $ResourceSettings.WorkerCountPerPlan;

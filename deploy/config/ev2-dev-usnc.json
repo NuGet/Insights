@@ -29,6 +29,7 @@
     "WebsiteAadAppClientId": "00000000-0000-0000-0000-000000000000",
     "WebsiteName": "ev2-dev-usnc-insights",
     "WebsitePlanName": "ev2-dev-usnc-insights",
+    "WebsiteLocation": "North Central US",
     "WorkerNamePrefix": "ev2-dev-usnc-insights-worker-",
     "WorkerPlanNamePrefix": "ev2-dev-usnc-insights-worker-",
     "WorkerAutoscaleNamePrefix": "ev2-dev-usnc-insights-worker-",
