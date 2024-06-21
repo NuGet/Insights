@@ -5,7 +5,10 @@ param (
   [string]$RuntimeIdentifier,
   
   [Parameter(Mandatory = $false)]
-  [string]$OutputPath
+  [string]$OutputPath,
+  
+  [Parameter(Mandatory = $false)]
+  [switch]$SkipZip
 )
 
 Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1") -Force
@@ -83,9 +86,11 @@ Remove-DirSafe $workersDir
 New-Item $workersDir -ItemType Directory | Out-Null
 
 # Zip the host and app for a stand-alone Azure Functions deployment.
-Write-Host "Zipping host to `"$hostBinZip`""
-if (Test-Path $hostBinZip) { Remove-Item $hostBinZip }
-Compress-Archive -Path (Join-Path $hostBinDir "*") -DestinationPath $hostBinZip
+if (!$SkipZip) {
+  Write-Host "Zipping host to `"$hostBinZip`""
+  if (Test-Path $hostBinZip) { Remove-Item $hostBinZip }
+  Compress-Archive -Path (Join-Path $hostBinDir "*") -DestinationPath $hostBinZip
+}
 
 # Delete the source directory since we don't need it anymore
 Remove-DirSafe $hostSrcDir

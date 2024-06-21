@@ -88,28 +88,14 @@ stages:
       - script: dotnet build $(Build.SourcesDirectory)/src/Website/Website.csproj --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false
         displayName: "Build Website for ${{ rid }}"
 
-      - script: dotnet publish $(Build.SourcesDirectory)/src/Website/Website.csproj --no-build --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false --output $(OutputDirectory)/deploy/Website
-        displayName: "Publish Website for ${{ rid }}"
-
-      - task: ArchiveFiles@2
-        displayName: "Zip Website"
-        inputs:
-          rootFolderOrFile: $(OutputDirectory)/deploy/Website
-          includeRootFolder: false
-          archiveFile: $(OutputDirectory)/deploy/Website.zip
-
       - script: dotnet build $(Build.SourcesDirectory)/src/Worker/Worker.csproj --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false
         displayName: "Build Worker for ${{ rid }}"
 
+      - script: dotnet publish $(Build.SourcesDirectory)/src/Website/Website.csproj --no-build --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false --output $(OutputDirectory)/deploy/Website
+        displayName: "Publish Website for ${{ rid }}"
+
       - script: dotnet publish $(Build.SourcesDirectory)/src/Worker/Worker.csproj --no-build --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false --output $(OutputDirectory)/deploy/Worker
         displayName: "Publish Worker for ${{ rid }}"
-
-      - task: ArchiveFiles@2
-        displayName: "Zip Worker"
-        inputs:
-          rootFolderOrFile: $(OutputDirectory)/deploy/Worker
-          includeRootFolder: false
-          archiveFile: $(OutputDirectory)/deploy/Worker.zip
 
       - task: PowerShell@2
         displayName: "Publish Azure Functions host"
@@ -118,7 +104,28 @@ stages:
           filePath: $(Build.SourcesDirectory)/deploy/build-host.ps1
           arguments: >
             -RuntimeIdentifier ${{ rid }}
-            -OutputPath $(OutputDirectory)/deploy/AzureFunctionsHost.zip
+            -SkipZip
+
+      - task: ArchiveFiles@2
+        displayName: "Zip Website"
+        inputs:
+          rootFolderOrFile: $(OutputDirectory)/deploy/Website
+          includeRootFolder: false
+          archiveFile: $(OutputDirectory)/deploy/Website.zip
+
+      - task: ArchiveFiles@2
+        displayName: "Zip Worker"
+        inputs:
+          rootFolderOrFile: $(OutputDirectory)/deploy/Worker
+          includeRootFolder: false
+          archiveFile: $(OutputDirectory)/deploy/Worker.zip
+
+      - task: ArchiveFiles@2
+        displayName: "Zip Azure Functions host"
+        inputs:
+          rootFolderOrFile: $(OutputDirectory)/azure-functions/host
+          includeRootFolder: false
+          archiveFile: $(OutputDirectory)/deploy/AzureFunctionsHost.zip
 
       - task: PowerShell@2
         displayName: "Generate Ev2 files"
@@ -131,6 +138,13 @@ stages:
             -WebsiteZipPath $(OutputDirectory)/deploy/Website.zip
             -WorkerZipPath $(OutputDirectory)/deploy/Worker.zip
             -AzureFunctionsHostZipPath $(OutputDirectory)/deploy/AzureFunctionsHost.zip
+
+      - task: ArchiveFiles@2
+        displayName: "Zip deploy scripts"
+        inputs:
+          rootFolderOrFile: $(Build.SourcesDirectory)/deploy
+          includeRootFolder: false
+          archiveFile: $(Build.SourcesDirectory)/artifacts/ExpressV2/deploy-scripts.zip
 
       - task: PublishBuildArtifacts@1
         displayName: "Publish build artifacts"
