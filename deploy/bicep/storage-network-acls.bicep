@@ -11,8 +11,8 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-04-01' = {
   }
   properties: {
     networkAcls: {
-      // TODO: switch to 'Deny' when Kusto ingestion allow-list approach is figured out
-      defaultAction: 'Allow'
+      // Kusto ingestion needs manual setup of a private endpoint to this storage account.
+      defaultAction: 'Deny'
       bypass: 'AzureServices'
       virtualNetworkRules: [
         for subnetId in subnetIds: {
