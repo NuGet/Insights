@@ -29,7 +29,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-03-01' = {
           addressPrefix: '172.26.${index}.0/25'
           serviceEndpoints: [
             {
-              service: 'Microsoft.Storage'
+              service: 'Microsoft.Storage.Global'
               locations: [
                 '*'
               ]

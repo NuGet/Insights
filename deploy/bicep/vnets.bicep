@@ -41,7 +41,7 @@ resource websiteVnet 'Microsoft.Network/virtualNetworks@2021-03-01' = {
           addressPrefix: '172.25.0.0/25'
           serviceEndpoints: [
             {
-              service: 'Microsoft.Storage'
+              service: 'Microsoft.Storage.Global'
               locations: [
                 '*'
               ]
@@ -116,7 +116,7 @@ resource deploymentScriptVnet 'Microsoft.Network/virtualNetworks@2021-03-01' = {
           addressPrefix: '172.28.0.0/25'
           serviceEndpoints: [
             {
-              service: 'Microsoft.Storage'
+              service: 'Microsoft.Storage.Global'
               locations: [
                 '*'
               ]
