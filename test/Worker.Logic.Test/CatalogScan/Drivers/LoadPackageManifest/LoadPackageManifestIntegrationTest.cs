@@ -75,8 +75,8 @@ namespace NuGet.Insights.Worker.LoadPackageManifest
 
         private async Task AssertOutputAsync(string testName, string stepName)
         {
-            Assert.Empty(HttpMessageHandlerFactory.Responses.Where(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".nupkg", StringComparison.Ordinal)));
-            Assert.NotEmpty(HttpMessageHandlerFactory.Responses.Where(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".nuspec", StringComparison.Ordinal)));
+            Assert.DoesNotContain(HttpMessageHandlerFactory.Responses, x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".nupkg", StringComparison.Ordinal));
+            Assert.Contains(HttpMessageHandlerFactory.Responses, x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".nuspec", StringComparison.Ordinal));
 
             await AssertWideEntityOutputAsync(
                 Options.Value.PackageManifestTableName,

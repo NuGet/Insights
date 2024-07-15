@@ -198,9 +198,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
             var output = await Target.ProcessLeavesAsync(new[] { leaf });
 
-            Assert.Empty(output.Result.Sets1
-                .SelectMany(x => x.Records)
-                .Where(x => x.RelationshipTypes.HasFlag(CertificateRelationshipTypes.IsAuthorTimestampedBy)));
+            Assert.DoesNotContain(output.Result.Sets1.SelectMany(x => x.Records), x => x.RelationshipTypes.HasFlag(CertificateRelationshipTypes.IsAuthorTimestampedBy));
             Assert.Single(output.Result.Sets1
                 .SelectMany(x => x.Records)
                 .Where(x => x.RelationshipTypes.HasFlag(CertificateRelationshipTypes.IsRepositoryTimestampedBy)));

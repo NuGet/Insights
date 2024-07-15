@@ -694,8 +694,8 @@ namespace NuGet.Insights.Worker
 
         protected async Task AssertPackageReadmeTableAsync(string testName, string stepName, string fileName = null)
         {
-            Assert.Empty(HttpMessageHandlerFactory.Responses.Where(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".nupkg", StringComparison.Ordinal)));
-            Assert.NotEmpty(HttpMessageHandlerFactory.Responses.Where(x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith("/readme", StringComparison.Ordinal)));
+            Assert.DoesNotContain(HttpMessageHandlerFactory.Responses, x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".nupkg", StringComparison.Ordinal));
+            Assert.Contains(HttpMessageHandlerFactory.Responses, x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith("/readme", StringComparison.Ordinal));
 
             await AssertWideEntityOutputAsync(
                 Options.Value.PackageReadmeTableName,

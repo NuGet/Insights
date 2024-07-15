@@ -127,8 +127,8 @@ namespace NuGet.Insights
             var info = await Target.GetOrUpdateInfoFromLeafItemAsync(leaf);
 
             // Assert
-            Assert.Empty(HttpMessageHandlerFactory.Responses.Where(x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith("/readme", StringComparison.Ordinal)));
-            Assert.Empty(HttpMessageHandlerFactory.Responses.Where(x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith("/legacy-readme", StringComparison.Ordinal)));
+            Assert.DoesNotContain(HttpMessageHandlerFactory.Responses, x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith("/readme", StringComparison.Ordinal));
+            Assert.DoesNotContain(HttpMessageHandlerFactory.Responses, x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith("/legacy-readme", StringComparison.Ordinal));
             Assert.Equal(ReadmeType.None, info.ReadmeType);
         }
 

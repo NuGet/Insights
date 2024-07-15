@@ -172,6 +172,11 @@ namespace NuGet.Insights.Worker
             Assert.Equal(i, rows.Count);
         }
 
+        protected override async Task DisposeInternalAsync()
+        {
+            await LazyDriverDocInfoTask.Value;
+        }
+
         private static readonly ConcurrentDictionary<CatalogScanDriverType, DriverDocInfo> CachedDriverDocInfo = new();
         private static Lazy<Task> LazyDriverDocInfoTask;
 

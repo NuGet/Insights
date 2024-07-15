@@ -98,8 +98,8 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             }
             else
             {
-                Assert.Empty(TelemetryClient.MetricValues.Where(x => x.MetricId.EndsWith(".CatalogLeafScan", StringComparison.Ordinal)));
-                Assert.Empty(TelemetryClient.Metrics.Where(x => x.Key.MetricId.EndsWith(".CatalogLeafScan", StringComparison.Ordinal)));
+                Assert.DoesNotContain(TelemetryClient.MetricValues, x => x.MetricId.EndsWith(".CatalogLeafScan", StringComparison.Ordinal));
+                Assert.DoesNotContain(TelemetryClient.Metrics, x => x.Key.MetricId.EndsWith(".CatalogLeafScan", StringComparison.Ordinal));
             }
         }
 
