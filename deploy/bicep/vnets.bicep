@@ -19,7 +19,7 @@ var websiteVnetName = '${websiteName}-vnet'
 
 resource websiteNsg 'Microsoft.Network/networkSecurityGroups@2021-03-01' = {
   name: websiteNsgName
-  location: location
+  location: websiteLocation
   properties: {
     securityRules: []
   }
