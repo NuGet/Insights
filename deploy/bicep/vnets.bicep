@@ -1,6 +1,7 @@
 param location string
 
 param websiteName string
+param websiteLocation string
 param deploymentScriptPrefix string
 
 param workerPlanLocations array
@@ -27,7 +28,7 @@ resource websiteNsg 'Microsoft.Network/networkSecurityGroups@2021-03-01' = {
 
 resource websiteVnet 'Microsoft.Network/virtualNetworks@2021-03-01' = {
   name: websiteVnetName
-  location: location
+  location: websiteLocation
   properties: {
     addressSpace: {
       addressPrefixes: [

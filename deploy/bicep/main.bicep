@@ -168,6 +168,7 @@ module vnets './vnets.bicep' = {
     spotWorkerSpecs: spotWorkerSpecs
     useSpotWorkers: useSpotWorkers
     websiteName: websiteName
+    websiteLocation: websiteLocation
     workerCountPerPlan: workerCountPerPlan
     workerNamePrefix: workerNamePrefix
     workerPlanCount: workerPlanCount
