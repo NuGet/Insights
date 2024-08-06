@@ -149,7 +149,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                         .Select(x => new PackageFramework { FrameworkName = x })
                         .ToList();
 
-                    var compatibility = _compatibilityFactory.Create(frameworks);
+                    var compatibility = _compatibilityFactory.Create(frameworks, leaf.PackageId, leaf.PackageVersion);
 
                     output.NuGetGallerySupported = KustoDynamicSerializer.Serialize(compatibility
                         .Table
@@ -163,10 +163,10 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 
                     output.NuGetGalleryBadges = KustoDynamicSerializer.Serialize(new[]
                     {
-                        new { ProductName = FrameworkProductNames.Net, Minimum = compatibility.Badges.Net?.GetShortFolderName() },
-                        new { ProductName = FrameworkProductNames.NetFramework, Minimum = compatibility.Badges.NetFramework?.GetShortFolderName() },
-                        new { ProductName = FrameworkProductNames.NetCore, Minimum = compatibility.Badges.NetCore?.GetShortFolderName() },
-                        new { ProductName = FrameworkProductNames.NetStandard, Minimum = compatibility.Badges.NetStandard?.GetShortFolderName() },
+                        new { ProductName = FrameworkProductNames.Net, Minimum = compatibility.Badges.Net?.Framework.GetShortFolderName() },
+                        new { ProductName = FrameworkProductNames.NetFramework, Minimum = compatibility.Badges.NetFramework?.Framework.GetShortFolderName() },
+                        new { ProductName = FrameworkProductNames.NetCore, Minimum = compatibility.Badges.NetCore?.Framework.GetShortFolderName() },
+                        new { ProductName = FrameworkProductNames.NetStandard, Minimum = compatibility.Badges.NetStandard?.Framework.GetShortFolderName() },
                     }.Where(x => x.Minimum is not null).ToList());
                 }
 

@@ -62,7 +62,7 @@ class, some fields may be manipulated or parsed projections of the original XML 
 | FrameworkRefGroups             | array of objects | No                   | [docs](https://docs.microsoft.com/en-us/nuget/reference/nuspec#framework-reference-groups)                                                                                                |
 | ContentFilesHasFormatException | bool             | Yes, for non-Deleted | Bad `<file>` element caused an error, defaults to false                                                                                                                                   |
 | DependencyGroupsHasMissingId   | bool             | Yes, for non-Deleted | Missing ID in dependency groups caused an error, defaults to false                                                                                                                        |
-| SplitTags                      | array of strings | Yes, for non-Deleted | Tags split into an array using NuGet.org V3 [`Utils.SplitTags`](https://github.com/NuGet/NuGet.Jobs/blob/main/src/Catalog/Helpers/Utils.cs#L39), may not match all tag splitting variants |
+| SplitTags                      | array of strings | Yes, for non-Deleted | Tags split into an array using NuGet.org V3 [`Utils.SplitTags`](https://github.com/NuGet/NuGetGallery/blob/dev/src/Catalog/Helpers/Utils.cs#L39), may not match all tag splitting variants |
 
 ## ResultType schema
 

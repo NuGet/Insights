@@ -1,4 +1,4 @@
-﻿﻿// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.Extensions.Logging;
 using Microsoft.Win32.SafeHandles;
 using NuGet.Services.Validation;
 
@@ -20,6 +21,12 @@ namespace Validation.PackageSigning.ValidateCertificate
     /// </remarks>
     public class OnlineCertificateVerifier : ICertificateVerifier
     {
+        public OnlineCertificateVerifier(
+            ILogger<OnlineCertificateVerifier> logger)
+        {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
         /// <summary>
         /// RFC 5280 codeSigning attribute, https://tools.ietf.org/html/rfc5280#section-4.2.1.12
         /// </summary>
@@ -39,6 +46,8 @@ namespace Validation.PackageSigning.ValidateCertificate
         /// Certificate trust errors indicating that the certificate was not verified online.
         /// </summary>
         private const CertTrustErrorStatus OfflineErrorStatusFlags = CertTrustErrorStatus.CERT_TRUST_REVOCATION_STATUS_UNKNOWN | CertTrustErrorStatus.CERT_TRUST_IS_OFFLINE_REVOCATION;
+        
+        private readonly ILogger<OnlineCertificateVerifier> _logger;
 
         public CertificateVerificationResult<T> VerifyCertificate<T>(X509Certificate2 certificate, X509Certificate2[] extraCertificates, Func<X509Chain, T> getChainInfo)
         {
@@ -57,58 +66,82 @@ namespace Validation.PackageSigning.ValidateCertificate
 
         private CertificateVerificationResult<T> VerifyCertificate<T>(X509Certificate2 certificate, IReadOnlyList<X509Certificate2> extraCertificates, Oid applicationPolicy, Func<X509Chain, T> getChainInfo)
         {
-            X509Chain chain = null;
-
-            try
+            _logger.LogInformation("Verifying certificate {SubjectName}, {Thumbprint}",
+                certificate.Subject,
+                certificate.Thumbprint);
+            using (_logger.BeginScope("{SubjectName} {Thumbprint}", certificate.Subject, certificate.Thumbprint))
             {
-                chain = new X509Chain();
+                X509Chain chain = null;
 
-                // Allow the chain to use whatever additional extra certificates were provided.
-                chain.ChainPolicy.ExtraStore.AddRange(extraCertificates.ToArray());
-
-                if (applicationPolicy != null)
+                try
                 {
-                    chain.ChainPolicy.ApplicationPolicy.Add(applicationPolicy);
-                }
+                    chain = new X509Chain();
 
-                chain.ChainPolicy.RevocationMode = X509RevocationMode.Online;
-                chain.ChainPolicy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
+                    // Allow the chain to use whatever additional extra certificates were provided.
+                    chain.ChainPolicy.ExtraStore.AddRange(extraCertificates.ToArray());
 
-                var resultBuilder = new CertificateVerificationResult<T>.Builder();
-
-                if (chain.Build(certificate))
-                {
-                    resultBuilder.WithStatus(EndCertificateStatus.Good);
-                    resultBuilder.WithStatusFlags(X509ChainStatusFlags.NoError);
-                }
-                else
-                {
-                    resultBuilder.WithStatus(GetEndCertificateStatusFromInvalidChain(chain));
-                    resultBuilder.WithStatusFlags(FlattenChainStatusFlags(chain));
-                }
-
-                AddRevocationInfo(chain, certificate, resultBuilder);
-
-                resultBuilder.WithChainInfo(getChainInfo(chain));
-
-                return resultBuilder.Build();
-            }
-            finally
-            {
-                if (chain != null)
-                {
-                    foreach (var chainElement in chain.ChainElements)
+                    if (applicationPolicy != null)
                     {
-                        chainElement.Certificate.Dispose();
+                        chain.ChainPolicy.ApplicationPolicy.Add(applicationPolicy);
                     }
 
-                    chain.Dispose();
+                    chain.ChainPolicy.RevocationMode = X509RevocationMode.Online;
+                    chain.ChainPolicy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
+
+                    var resultBuilder = new CertificateVerificationResult<T>.Builder();
+                    var chainBuildSucceeded = chain.Build(certificate);
+                    if (chainBuildSucceeded)
+                    {
+                        _logger.LogInformation("Chain.Build() succeeded");
+                        resultBuilder.WithStatus(EndCertificateStatus.Good);
+                        resultBuilder.WithStatusFlags(X509ChainStatusFlags.NoError);
+                        AddRevocationInfo(chain, certificate, resultBuilder);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Chain.Build() failed");
+                        resultBuilder.WithStatus(GetEndCertificateStatusFromInvalidChain(chain));
+                        resultBuilder.WithStatusFlags(FlattenChainStatusFlags(chain));
+                        if (chain.ChainStatus.Length > 0 && chain.ChainElements.Count > 0)
+                        {
+                            AddRevocationInfo(chain, certificate, resultBuilder);
+                        }
+                    }
+
+                    resultBuilder.WithChainInfo(getChainInfo(chain));
+
+                    return resultBuilder.Build();
+                }
+                finally
+                {
+                    if (chain != null)
+                    {
+                        foreach (var chainElement in chain.ChainElements)
+                        {
+                            chainElement.Certificate.Dispose();
+                        }
+
+                        chain.Dispose();
+                    }
                 }
             }
         }
 
         private EndCertificateStatus GetEndCertificateStatusFromInvalidChain(X509Chain chain)
         {
+            // ChainStatus and ChainElements properties are expected to be populated
+            // even when chain building fails.
+            if (chain.ChainStatus.Length == 0)
+            {
+                _logger.LogWarning("chain.ChainStatus.Length == 0, marking certificate as invalid.");
+                return EndCertificateStatus.Invalid;
+            }
+            if (chain.ChainElements.Count == 0)
+            {
+                _logger.LogWarning("chain.ChainElements.Count == 0, marking certificate as invalid.");
+                return EndCertificateStatus.Invalid;
+            }
+
             // There are multiple reasons why an end certificate may not have a status of EndCertificateStatus.Good:
             //
             // * The end certificate may be revoked or invalid.
@@ -123,6 +156,7 @@ namespace Validation.PackageSigning.ValidateCertificate
             // determined to be invalid here.
             if (OnlyEndCertificateRevokedInInvalidChain(chain))
             {
+                _logger.LogWarning("Certificate is revoked.");
                 return EndCertificateStatus.Revoked;
             }
 
@@ -130,11 +164,13 @@ namespace Validation.PackageSigning.ValidateCertificate
             // dependent signatures should be invalidated.
             if (chain.ChainStatus.Any(s => (s.Status & ~UnknownStatusFlags) != X509ChainStatusFlags.NoError))
             {
+                _logger.LogInformation("Error(s) in ChainStatus.");
                 return EndCertificateStatus.Invalid;
             }
 
             // All status flags are RevocationStatusUnknown, OfflineRevocation, or NoError. The certificate's verification should be
             // retried later.
+            _logger.LogInformation("Defaulting to 'Unknown' status.");
             return EndCertificateStatus.Unknown;
         }
 
@@ -164,6 +200,14 @@ namespace Validation.PackageSigning.ValidateCertificate
         {
             var result = X509ChainStatusFlags.NoError;
 
+            if (chain.ChainElements.Count == 0 || chain.ChainStatus.Length == 0)
+            {
+                // See similar check in GetEndCertificateStatusFromInvalidChain.
+                // Even when chain building fails, both ChainElements and ChainStatus are not
+                // supposed to be empty. If they are, we will include PartialChain in the list
+                // of errors.
+                result = X509ChainStatusFlags.PartialChain;
+            }
             foreach (var chainStatus in chain.ChainStatus)
             {
                 result |= chainStatus.Status;

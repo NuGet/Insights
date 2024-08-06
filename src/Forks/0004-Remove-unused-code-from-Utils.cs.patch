@@ -1,0 +1,69 @@
+From 64487ba2ebb06ab2d9b69e24c51eee88b715d20f Mon Sep 17 00:00:00 2001
+Date: Tue, 6 Aug 2024 12:16:53 -0400
+Subject: [PATCH] Remove unused code from Utils.cs
+
+---
+ .../NuGetGallery/src/Catalog/Helpers/Utils.cs      | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/src/Forks/NuGet/NuGetGallery/src/Catalog/Helpers/Utils.cs b/src/Forks/NuGet/NuGetGallery/src/Catalog/Helpers/Utils.cs
+index 11d1486c..b9d99779 100644
+--- a/src/Forks/NuGet/NuGetGallery/src/Catalog/Helpers/Utils.cs
++++ b/src/Forks/NuGet/NuGetGallery/src/Catalog/Helpers/Utils.cs
+@@ -1,4 +1,4 @@
+-﻿﻿// Copyright (c) .NET Foundation. All rights reserved.
++﻿// Copyright (c) .NET Foundation. All rights reserved.
+ // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+ 
+ using System;
+@@ -16,6 +16,8 @@ using System.Xml.Linq;
+ using System.Xml.Xsl;
+ using Newtonsoft.Json;
+ using Newtonsoft.Json.Linq;
++/*
++
+ using NuGet.Services.Metadata.Catalog.Helpers;
+ #if NETFRAMEWORK
+ using JsonLD.Core;
+@@ -24,15 +26,21 @@ using VDS.RDF;
+ using VDS.RDF.Parsing;
+ #endif
+ 
++*/
++
+ namespace NuGet.Services.Metadata.Catalog
+ {
+     public static class Utils
+     {
++        /*
++
+         private const string XslTransformNuSpec = "xslt.nuspec.xslt";
+         private const string XslTransformNormalizeNuSpecNamespace = "xslt.normalizeNuspecNamespace.xslt";
+ 
+         private static readonly Lazy<XslCompiledTransform> XslTransformNuSpecCache = new Lazy<XslCompiledTransform>(() => SafeLoadXslTransform(XslTransformNuSpec));
+         private static readonly Lazy<XslCompiledTransform> XslTransformNormalizeNuSpecNamespaceCache = new Lazy<XslCompiledTransform>(() => SafeLoadXslTransform(XslTransformNormalizeNuSpecNamespace));
++
++        */
+ 
+         private static readonly char[] TagTrimChars = { ',', ' ', '\t', '|', ';' };
+ 
+@@ -47,6 +55,8 @@ namespace NuGet.Services.Metadata.Catalog
+             return fields;
+         }
+ 
++        /*
++
+         public static Stream GetResourceStream(string resourceName)
+         {
+             if (string.IsNullOrEmpty(resourceName))
+@@ -447,5 +457,7 @@ namespace NuGet.Services.Metadata.Catalog
+             return result;
+         }
+ #endif
++
++        */
+     }
+ }
+-- 
+2.46.0.windows.1
+

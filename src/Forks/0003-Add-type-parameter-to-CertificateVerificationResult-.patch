@@ -1,17 +1,24 @@
-From 434b6517b9c5103589a8db0d050f9360d0b60c80 Mon Sep 17 00:00:00 2001
-Date: Sun, 16 Jan 2022 20:46:34 -0800
-Subject: [PATCH] Add chain info property to CertificateVerificationResult
+From 4eafedb7a81ec5ea31a80beb45bd300e97ac48bb Mon Sep 17 00:00:00 2001
+Date: Tue, 6 Aug 2024 12:17:42 -0400
+Subject: [PATCH] Add type parameter to CertificateVerificationResult to plumb
+ chain info
 
 ---
- .../CertificateVerificationResult.cs          | 22 ++++++++++++++++---
- .../ICertificateVerifier.cs                   |  6 ++---
- .../OnlineCertificateVerifier.cs              | 20 +++++++++--------
- 3 files changed, 33 insertions(+), 15 deletions(-)
+ .../CertificateVerificationResult.cs          | 24 +++++++++++++++----
+ .../ICertificateVerifier.cs                   |  8 +++----
+ .../OnlineCertificateVerifier.cs              | 22 +++++++++--------
+ 3 files changed, 36 insertions(+), 18 deletions(-)
 
-diff --git a/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationResult.cs b/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationResult.cs
-index 87f16a6d..b058e198 100644
---- a/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationResult.cs
-+++ b/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationResult.cs
+diff --git a/src/Forks/NuGet/NuGetGallery/src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationResult.cs b/src/Forks/NuGet/NuGetGallery/src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationResult.cs
+index dc864be7..7dcc084c 100644
+--- a/src/Forks/NuGet/NuGetGallery/src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationResult.cs
++++ b/src/Forks/NuGet/NuGetGallery/src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationResult.cs
+@@ -1,4 +1,4 @@
+-﻿﻿// Copyright (c) .NET Foundation. All rights reserved.
++﻿// Copyright (c) .NET Foundation. All rights reserved.
+ // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+ 
+ using System;
 @@ -11,18 +11,20 @@ namespace Validation.PackageSigning.ValidateCertificate
      /// The result of a <see cref="X509Certificate2"/> verification by the
      /// <see cref="ICertificateValidationService"/>.
@@ -34,17 +41,17 @@ index 87f16a6d..b058e198 100644
              DateTime? statusUpdateTime = null,
              DateTime? revocationTime = null)
          {
-@@ -84,6 +86,7 @@ namespace Validation.PackageSigning.ValidateCertificate
+@@ -82,6 +84,7 @@ namespace Validation.PackageSigning.ValidateCertificate
+ 
+             Status = status;
              StatusFlags = statusFlags;
++            ChainInfo = chainInfo;
              StatusUpdateTime = statusUpdateTime;
              RevocationTime = revocationTime;
-+            ChainInfo = chainInfo;
          }
- 
-         /// <summary>
-@@ -109,6 +112,11 @@ namespace Validation.PackageSigning.ValidateCertificate
+@@ -96,6 +99,11 @@ namespace Validation.PackageSigning.ValidateCertificate
          /// </summary>
-         public DateTime? RevocationTime { get; }
+         public X509ChainStatusFlags StatusFlags { get; }
  
 +        /// <summary>
 +        /// Information extracted from the built chain. This is used to capture state from the chain before it is disposed.
@@ -52,27 +59,34 @@ index 87f16a6d..b058e198 100644
 +        public T ChainInfo { get; }
 +
          /// <summary>
-         /// Convert a verification to a human readable string.
-         /// </summary>
-@@ -143,6 +151,7 @@ namespace Validation.PackageSigning.ValidateCertificate
+         /// The time that the end <see cref="X509Certificate2"/>'s status was last updated, according to the
+         /// Certificate Authority. This value may be <c>null</c> if the <see cref="Status"/> is
+@@ -141,6 +149,7 @@ namespace Validation.PackageSigning.ValidateCertificate
+         {
+             private EndCertificateStatus _status;
              private X509ChainStatusFlags _statusFlags;
++            private T _chainInfo;
              private DateTime? _statusUpdateTime;
              private DateTime? _revocationTime;
-+            private T _chainInfo;
  
-             public Builder WithStatus(EndCertificateStatus value)
+@@ -156,6 +165,12 @@ namespace Validation.PackageSigning.ValidateCertificate
+                 return this;
+             }
+ 
++            public Builder WithChainInfo(T value)
++            {
++                _chainInfo = value;
++                return this;
++            }
++
+             public Builder WithStatusUpdateTime(DateTime? value)
              {
-@@ -168,11 +177,18 @@ namespace Validation.PackageSigning.ValidateCertificate
+                 _statusUpdateTime = value;
+@@ -168,11 +183,12 @@ namespace Validation.PackageSigning.ValidateCertificate
                  return this;
              }
  
 -            public CertificateVerificationResult Build()
-+            public Builder WithChainInfo(T chainInfo)
-+            {
-+                _chainInfo = chainInfo;
-+                return this;
-+            }
-+
 +            public CertificateVerificationResult<T> Build()
              {
 -                return new CertificateVerificationResult(
@@ -83,10 +97,16 @@ index 87f16a6d..b058e198 100644
                      _statusUpdateTime,
                      _revocationTime);
              }
-diff --git a/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/ICertificateVerifier.cs b/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/ICertificateVerifier.cs
-index ca6a2137..d416f0fd 100644
---- a/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/ICertificateVerifier.cs
-+++ b/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/ICertificateVerifier.cs
+diff --git a/src/Forks/NuGet/NuGetGallery/src/Validation.PackageSigning.ValidateCertificate/ICertificateVerifier.cs b/src/Forks/NuGet/NuGetGallery/src/Validation.PackageSigning.ValidateCertificate/ICertificateVerifier.cs
+index 3e087b52..d416f0fd 100644
+--- a/src/Forks/NuGet/NuGetGallery/src/Validation.PackageSigning.ValidateCertificate/ICertificateVerifier.cs
++++ b/src/Forks/NuGet/NuGetGallery/src/Validation.PackageSigning.ValidateCertificate/ICertificateVerifier.cs
+@@ -1,4 +1,4 @@
+-﻿﻿// Copyright (c) .NET Foundation. All rights reserved.
++﻿// Copyright (c) .NET Foundation. All rights reserved.
+ // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+ 
+ using System;
 @@ -19,7 +19,7 @@ namespace Validation.PackageSigning.ValidateCertificate
          /// <param name="extraCertificates">A collection of certificates that may be used to build the certificate chain.</param>
          /// <returns>The result of the verification.</returns>
@@ -113,13 +133,19 @@ index ca6a2137..d416f0fd 100644
 +        CertificateVerificationResult<T> VerifyTimestampingCertificate<T>(X509Certificate2 certificate, IReadOnlyList<X509Certificate2> extraCertificates, Func<X509Chain, T> getChainInfo);
      }
  }
-diff --git a/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/OnlineCertificateVerifier.cs b/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/OnlineCertificateVerifier.cs
-index abbef9d9..ce15c711 100644
---- a/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/OnlineCertificateVerifier.cs
-+++ b/src/Forks/NuGet/NuGet.Jobs/src/Validation.PackageSigning.ValidateCertificate/OnlineCertificateVerifier.cs
-@@ -40,22 +40,22 @@ namespace Validation.PackageSigning.ValidateCertificate
-         /// </summary>
-         private const CertTrustErrorStatus OfflineErrorStatusFlags = CertTrustErrorStatus.CERT_TRUST_REVOCATION_STATUS_UNKNOWN | CertTrustErrorStatus.CERT_TRUST_IS_OFFLINE_REVOCATION;
+diff --git a/src/Forks/NuGet/NuGetGallery/src/Validation.PackageSigning.ValidateCertificate/OnlineCertificateVerifier.cs b/src/Forks/NuGet/NuGetGallery/src/Validation.PackageSigning.ValidateCertificate/OnlineCertificateVerifier.cs
+index 1a86363a..a1175d0e 100644
+--- a/src/Forks/NuGet/NuGetGallery/src/Validation.PackageSigning.ValidateCertificate/OnlineCertificateVerifier.cs
++++ b/src/Forks/NuGet/NuGetGallery/src/Validation.PackageSigning.ValidateCertificate/OnlineCertificateVerifier.cs
+@@ -1,4 +1,4 @@
+-﻿﻿// Copyright (c) .NET Foundation. All rights reserved.
++﻿// Copyright (c) .NET Foundation. All rights reserved.
+ // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+ 
+ using System;
+@@ -49,22 +49,22 @@ namespace Validation.PackageSigning.ValidateCertificate
+         
+         private readonly ILogger<OnlineCertificateVerifier> _logger;
  
 -        public CertificateVerificationResult VerifyCertificate(X509Certificate2 certificate, X509Certificate2[] extraCertificates)
 +        public CertificateVerificationResult<T> VerifyCertificate<T>(X509Certificate2 certificate, X509Certificate2[] extraCertificates, Func<X509Chain, T> getChainInfo)
@@ -145,27 +171,27 @@ index abbef9d9..ce15c711 100644
 -        private CertificateVerificationResult VerifyCertificate(X509Certificate2 certificate, IReadOnlyList<X509Certificate2> extraCertificates, Oid applicationPolicy)
 +        private CertificateVerificationResult<T> VerifyCertificate<T>(X509Certificate2 certificate, IReadOnlyList<X509Certificate2> extraCertificates, Oid applicationPolicy, Func<X509Chain, T> getChainInfo)
          {
-             X509Chain chain = null;
+             _logger.LogInformation("Verifying certificate {SubjectName}, {Thumbprint}",
+                 certificate.Subject,
+@@ -88,7 +88,7 @@ namespace Validation.PackageSigning.ValidateCertificate
+                     chain.ChainPolicy.RevocationMode = X509RevocationMode.Online;
+                     chain.ChainPolicy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
  
-@@ -74,7 +74,7 @@ namespace Validation.PackageSigning.ValidateCertificate
-                 chain.ChainPolicy.RevocationMode = X509RevocationMode.Online;
-                 chain.ChainPolicy.RevocationFlag = X509RevocationFlag.ExcludeRoot;
+-                    var resultBuilder = new CertificateVerificationResult.Builder();
++                    var resultBuilder = new CertificateVerificationResult<T>.Builder();
+                     var chainBuildSucceeded = chain.Build(certificate);
+                     if (chainBuildSucceeded)
+                     {
+@@ -108,6 +108,8 @@ namespace Validation.PackageSigning.ValidateCertificate
+                         }
+                     }
  
--                var resultBuilder = new CertificateVerificationResult.Builder();
-+                var resultBuilder = new CertificateVerificationResult<T>.Builder();
- 
-                 if (chain.Build(certificate))
-                 {
-@@ -89,6 +89,8 @@ namespace Validation.PackageSigning.ValidateCertificate
- 
-                 AddRevocationInfo(chain, certificate, resultBuilder);
- 
-+                resultBuilder.WithChainInfo(getChainInfo(chain));
++                    resultBuilder.WithChainInfo(getChainInfo(chain));
 +
-                 return resultBuilder.Build();
-             }
-             finally
-@@ -170,7 +172,7 @@ namespace Validation.PackageSigning.ValidateCertificate
+                     return resultBuilder.Build();
+                 }
+                 finally
+@@ -214,7 +216,7 @@ namespace Validation.PackageSigning.ValidateCertificate
              return result;
          }
  
@@ -175,5 +201,5 @@ index abbef9d9..ce15c711 100644
              var addedRef = false;
              var chainHandle = chain.SafeHandle;
 -- 
-2.31.1.windows.1
+2.46.0.windows.1
 

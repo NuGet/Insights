@@ -1,4 +1,4 @@
-﻿﻿// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -84,9 +84,9 @@ namespace Validation.PackageSigning.ValidateCertificate
 
             Status = status;
             StatusFlags = statusFlags;
+            ChainInfo = chainInfo;
             StatusUpdateTime = statusUpdateTime;
             RevocationTime = revocationTime;
-            ChainInfo = chainInfo;
         }
 
         /// <summary>
@@ -100,6 +100,11 @@ namespace Validation.PackageSigning.ValidateCertificate
         public X509ChainStatusFlags StatusFlags { get; }
 
         /// <summary>
+        /// Information extracted from the built chain. This is used to capture state from the chain before it is disposed.
+        /// </summary>
+        public T ChainInfo { get; }
+
+        /// <summary>
         /// The time that the end <see cref="X509Certificate2"/>'s status was last updated, according to the
         /// Certificate Authority. This value may be <c>null</c> if the <see cref="Status"/> is
         /// <see cref="EndCertificateStatus.Unknown"/> or if the status could not be determined.
@@ -111,11 +116,6 @@ namespace Validation.PackageSigning.ValidateCertificate
         /// is not <see cref="CertificateStatus.Revoked"/>, this will have a value of <c>null</c>.
         /// </summary>
         public DateTime? RevocationTime { get; }
-
-        /// <summary>
-        /// Information extracted from the built chain. This is used to capture state from the chain before it is disposed.
-        /// </summary>
-        public T ChainInfo { get; }
 
         /// <summary>
         /// Convert a verification to a human readable string.
@@ -149,9 +149,9 @@ namespace Validation.PackageSigning.ValidateCertificate
         {
             private EndCertificateStatus _status;
             private X509ChainStatusFlags _statusFlags;
+            private T _chainInfo;
             private DateTime? _statusUpdateTime;
             private DateTime? _revocationTime;
-            private T _chainInfo;
 
             public Builder WithStatus(EndCertificateStatus value)
             {
@@ -165,6 +165,12 @@ namespace Validation.PackageSigning.ValidateCertificate
                 return this;
             }
 
+            public Builder WithChainInfo(T value)
+            {
+                _chainInfo = value;
+                return this;
+            }
+
             public Builder WithStatusUpdateTime(DateTime? value)
             {
                 _statusUpdateTime = value;
@@ -174,12 +180,6 @@ namespace Validation.PackageSigning.ValidateCertificate
             public Builder WithRevocationTime(DateTime? value)
             {
                 _revocationTime = value;
-                return this;
-            }
-
-            public Builder WithChainInfo(T chainInfo)
-            {
-                _chainInfo = chainInfo;
                 return this;
             }
 

@@ -9,68 +9,49 @@ $files = [ordered]@{
         Patches  = @(
             @{
                 Description = "Add StringComparison.Ordinal to IndexOf"
-                Path        = "0004-Add-StringComparison-to-IndexOf.patch"
-            }
-        )
-    };
-    "NuGet/NuGet.Jobs"   = @{
-        License  = "LICENSE.txt"
-        Files    = @(
-            "src/Catalog/Helpers/Utils.cs",
-            "src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationException.cs",
-            "src/Validation.PackageSigning.ValidateCertificate/Primitives.cs",
-            "src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationResult.cs",
-            "src/Validation.PackageSigning.ValidateCertificate/ICertificateVerifier.cs",
-            "src/Validation.PackageSigning.ValidateCertificate/OnlineCertificateVerifier.cs"
-        );
-        Revision = "be3a837ea4add2d6376f16da562d67f83699cce0"
-        Patches  = @(
-            @{
-                Description = "Trim unneeeded code from Utils.cs to allow just simple tag splitting"
-                Path        = "0001-Trim-unneeded-code-from-Utils.cs.patch"
-            },
-            @{
-                Description = "Add ``ChainInfo`` property to ``CertificateVerificationResult`` to allow reading the chain before disposal"
-                Path        = "0002-Add-chain-info-property-to-CertificateVerificationResult.patch"
+                Path        = "0001-Add-StringComparison-to-IndexOf.patch"
             }
         )
     };
     "NuGet/NuGetGallery" = @{
         License  = "LICENSE.txt"
         Files    = @(
+            "src/Catalog/Helpers/Utils.cs",
             "src/NuGet.Services.Entities/IEntity.cs",
             "src/NuGet.Services.Entities/PackageFramework.cs",
+            "src/NuGet.Services.Validation/Entities/EndCertificateStatus.cs",
+            "src/NuGet.Services.Validation/Entities/EndCertificateUse.cs"
             "src/NuGetGallery.Core/Frameworks/FrameworkCompatibilityService.cs",
             "src/NuGetGallery.Core/Frameworks/FrameworkProductNames.cs",
             "src/NuGetGallery.Core/Frameworks/IPackageFrameworkCompatibilityFactory.cs",
             "src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibility.cs",
             "src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityBadges.cs",
+            "src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityData.cs",
             "src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityFactory.cs",
-            "src/NuGetGallery.Core/Frameworks/PackageFrameworkCompatibilityTableData.cs",
             "src/NuGetGallery.Core/Frameworks/SupportedFrameworks.cs",
-            "src/NuGetGallery.Core/Services/AssetFrameworkHelper.cs"
+            "src/NuGetGallery.Core/Services/AssetFrameworkHelper.cs",
+            "src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationException.cs",
+            "src/Validation.PackageSigning.ValidateCertificate/CertificateVerificationResult.cs",
+            "src/Validation.PackageSigning.ValidateCertificate/ICertificateVerifier.cs",
+            "src/Validation.PackageSigning.ValidateCertificate/OnlineCertificateVerifier.cs",
+            "src/Validation.PackageSigning.ValidateCertificate/Primitives.cs"
         );
-        Revision = "bc567a1a1e975d54dddc28b6f33af1fc3c76bca8"
+        Revision = "968432180cad66123c6541ba89b562e0cbb22a8d"
         Patches  = @(
             @{
                 Description = "Remove unused property from ``PackageFramework`` and make ``FrameworkName`` settable"
-                Path        = "0003-Remove-unused-property-and-make-framework-name-setta.patch"
+                Path        = "0002-Remove-Package-make-FrameworkName-settable-in-Packag.patch"
             },
             @{
-                Description = "Use NuGetFrameworkSorter.Instance to avoid obsolete warning"
-                Path        = "0005-Use-NuGetFrameworkSorter.Instance-to-avoid-obsolete-.patch"
+                Description = "Add ``ChainInfo`` property to ``CertificateVerificationResult`` to allow reading the chain before disposal"
+                Path        = "0003-Add-type-parameter-to-CertificateVerificationResult-.patch"
+            },
+            @{
+                Description = "Trim unneeded code from Utils.cs to allow just simple tag splitting"
+                Path        = "0004-Remove-unused-code-from-Utils.cs.patch"
             }
         )
     };
-    "NuGet/ServerCommon" = @{
-        License  = "License.md";
-        Files    = @(
-            "src/NuGet.Services.Validation/Entities/EndCertificateStatus.cs",
-            "src/NuGet.Services.Validation/Entities/EndCertificateUse.cs"
-        );
-        Revision = "dd614b153e2476b1bf1a9e8a7553a8625ed3cc87";
-        Patches  = @()
-    }
 }
 
 $encoding = New-Object System.Text.UTF8Encoding $true
@@ -103,6 +84,9 @@ foreach ($pair in $files.GetEnumerator()) {
     foreach ($patch in $pair.Value.Patches) {
         Write-Host "  Applying $($patch.Path)"
         git apply (Join-Path $PSScriptRoot $patch.Path)
+        if ($LASTEXITCODE -ne 0) {
+            throw "git apply failed with exit code $LASTEXITCODE"
+        }
     }
 
     # Append to the README
