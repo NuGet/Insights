@@ -15,7 +15,7 @@ Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1") -Force
 $RuntimeIdentifier = Get-DefaultRuntimeIdentifier $RuntimeIdentifier
 
 $hostRepo = "https://github.com/Azure/azure-functions-host.git"
-$hostVersion = "v4.34.2"
+$hostVersion = "v4.35.2"
 
 $artifactsDir = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../artifacts/azure-functions"))
 $hostSrcDir = Join-Path $artifactsDir "azure-functions-host-$hostVersion"
@@ -70,11 +70,11 @@ Write-Host "Resetting repository level settings"
 "root = true" | Out-File (Join-Path $artifactsDir ".editorconfig") -Encoding UTF8
 
 Write-Host "Publishing host"
-dotnet restore $hostProjectPath --verbosity Normal
+dotnet restore $hostProjectPath --verbosity Minimal
 
 # NoWarn on SA1518 due to inconsistent line endings.
 # See: https://github.com/Azure/azure-functions-host/pull/9564
-dotnet publish $hostProjectPath -c Release --output $hostBinDir --runtime $RuntimeIdentifier --self-contained false /p:NoWarn=SA1518
+dotnet publish $hostProjectPath -c Release --output $hostBinDir --framework "net8.0" --runtime $RuntimeIdentifier --self-contained false /p:NoWarn=SA1518
 
 if ($LASTEXITCODE -ne 0) {
   throw "Failed to publish the Azure Functions Host."
