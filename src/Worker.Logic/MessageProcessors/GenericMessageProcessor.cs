@@ -120,7 +120,7 @@ namespace NuGet.Insights.Worker
         {
             if (result.Failed.Any())
             {
-                _logger.LogError("{ErrorCount} messages in a batch of {Count} failed. Retrying messages individually.", result.Failed.Count, messageCount);
+                _logger.LogTransientWarning("{ErrorCount} messages in a batch of {Count} failed. Retrying messages individually.", result.Failed.Count, messageCount);
                 await _messageEnqueuer.AddAsync(
                     QueueType.Work,
                     result.Failed.Select(x => serializer.SerializeMessage(x).AsString()).ToList());
@@ -177,8 +177,9 @@ namespace NuGet.Insights.Worker
                 }
                 catch (Exception ex) when (!throwOnException)
                 {
-                    // Log warning instead of error as to not trigger integration testing fail-fast.
-                    _logger.LogWarning(
+                    // Log as a transient warning instead of a warning or error as to not trigger integration testing fail-fast.
+                    // These messages will be retried.
+                    _logger.LogTransientWarning(
                         ex,
                         "An exception was thrown while processing a batch of {Count} messages with schema {SchemaName}.",
                         messages.Count,
@@ -218,8 +219,9 @@ namespace NuGet.Insights.Worker
                     }
                     catch (Exception ex) when (!throwOnException)
                     {
-                        // Log warning instead of error as to not trigger integration testing fail-fast.
-                        _logger.LogWarning(
+                        // Log as a transient warning instead of a warning or error as to not trigger integration testing fail-fast.
+                        // These messages will be retried.
+                        _logger.LogTransientWarning(
                             ex,
                             "An exception was thrown while processing a message with schema {SchemaName}.",
                             schemaName);
