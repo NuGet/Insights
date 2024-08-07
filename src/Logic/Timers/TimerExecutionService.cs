@@ -46,10 +46,24 @@ namespace NuGet.Insights
             return await _timerExecutionService.GetStateAsync(_nameToTimer.Values);
         }
 
+        public async Task<TimerState> GetStateAsync(string timerName)
+        {
+            var timer = ValidateAndGetTimer(timerName);
+            var states = await _timerExecutionService.GetStateAsync([timer]);
+            return states.First(x => x.Name == timerName);
+        }
+
         public async Task SetIsEnabledAsync(string timerName, bool isEnabled)
         {
             var timer = ValidateAndGetTimer(timerName);
             await _timerExecutionService.SetIsEnabledAsync(timer, isEnabled);
+        }
+
+        public async Task SetNextRunAsync(string timerName, DateTimeOffset nextRun)
+        {
+            var timer = ValidateAndGetTimer(timerName);
+            var state = await GetStateAsync(timerName);
+            await _timerExecutionService.SetNextRunAsync(timer, state.IsEnabledInStorage, nextRun);
         }
 
         public async Task AbortAsync(string timerName)

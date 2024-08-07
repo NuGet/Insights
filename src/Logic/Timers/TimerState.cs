@@ -5,13 +5,14 @@ namespace NuGet.Insights
 {
     public record TimerState
     {
-        public string Name { get; init; }
-        public bool? IsEnabledInStorage { get; init; }
-        public bool IsEnabledInConfig { get; init; }
-        public bool IsRunning { get; init; }
-        public bool CanAbort { get; init; }
-        public bool CanDestroy { get; init; }
-        public DateTimeOffset? LastExecuted { get; init; }
-        public TimeSpan Frequency { get; init; }
+        public required string Name { get; init; }
+        public required bool IsEnabledInStorage { get; init; }
+        public required bool IsEnabledInConfig { get; init; }
+        public required bool IsRunning { get; init; }
+        public required bool CanAbort { get; init; }
+        public required bool CanDestroy { get; init; }
+        public required DateTimeOffset? LastExecuted { get; init; }
+        public required TimeSpan Frequency { get; init; }
+        public required DateTimeOffset? NextRun { get; init; }
     }
 }

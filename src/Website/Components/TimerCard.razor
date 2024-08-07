@@ -26,6 +26,12 @@
         statusTitle = null;
         inlineStatus = "disabled";
     }
+    else if (Model.NextRun.HasValue)
+    {
+        statusText = "⏰";
+        statusTitle = "The timer is scheduled for a specific time.";
+        inlineStatus = "scheduled";
+    }
     else
     {
         statusText = "⏱️";
@@ -33,15 +39,36 @@
         inlineStatus = "scheduled";
     }
 
+    var now = DateTimeOffset.UtcNow;
+    var lastRunRounded = new DateTimeOffset(now.Ticks - (now.Ticks % Model.Frequency.Ticks), TimeSpan.Zero);
+
     string nextRun;
+    string nextRunBasedOn;
     if (!isEnabled)
     {
         nextRun = "disabled";
+        nextRunBasedOn = string.Empty;
     }
     else
     {
-        var nextRunTimestamp = Model.LastExecuted.GetValueOrDefault(DateTimeOffset.MinValue) + Model.Frequency;
-        var untilNextRun = nextRunTimestamp - DateTimeOffset.UtcNow;
+        DateTimeOffset nextRunTimestamp;
+        if (Model.NextRun.HasValue)
+        {
+            nextRunTimestamp = Model.NextRun.Value;
+            nextRunBasedOn = "(forced timestamp)";
+        }
+        else if (Model.LastExecuted.HasValue)
+        {
+            nextRunTimestamp = Model.LastExecuted.Value + Model.Frequency;
+            nextRunBasedOn = "(based on last execution)";
+        }
+        else
+        {
+            nextRunTimestamp = now;
+            nextRunBasedOn = "(first run pending)";
+        }
+
+        var untilNextRun = nextRunTimestamp - now;
         if (untilNextRun > TimeSpan.Zero)
         {
             nextRun = untilNextRun.Humanize(precision: 2, minUnit: Humanizer.Localisation.TimeUnit.Second);
@@ -74,7 +101,7 @@
             <b>Last started:</b> @lastStarted
         </li>
         <li class="list-group-item">
-            <b>Next run:</b> @nextRun
+            <b>Next run:</b> @nextRun <i>@nextRunBasedOn</i>
         </li>
     </ul>
 
@@ -111,6 +138,13 @@
                     data-message="Are you sure you want to reset the timer? This will delete the output. It's best to do this when the timer is not running."
                     value="true">💣 Reset</button>
             }
+
+            <div class="form-group mr-1">
+                <label class="sr-only" for="@Model.Name-next-run">Next run</label>
+                <input type="text" class="form-control" name="nextRun" id="@Model.Name-next-run" value="@lastRunRounded.ToZuluMinutes()">
+            </div>
+            <button type="submit" class="btn btn-info mr-1" name="setNextRun"
+                    value="true">Set next run</button>
 
             @if (!Model.IsEnabledInConfig)
             {

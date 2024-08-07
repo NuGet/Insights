@@ -65,6 +65,48 @@ namespace NuGet.Insights
             }
         }
 
+        public class TheSetNextRunMethod : TimerExecutionServiceTest
+        {
+            public TheSetNextRunMethod(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+            {
+            }
+
+            [Theory]
+            [InlineData(false)]
+            [InlineData(true)]
+            public async Task SetsNextRunOnNewEntity(bool autoStart)
+            {
+                Timer.Setup(x => x.AutoStart).Returns(autoStart);
+                var nextRun = DateTimeOffset.UtcNow + TimeSpan.FromDays(1);
+
+                await Target.SetNextRunAsync(TimerName, nextRun);
+
+                var entities = await GetEntitiesAsync<TableEntity>();
+                var entity = Assert.Single(entities);
+                Assert.Equal(new[] { "ClientRequestId", "IsEnabled", "NextRun", "PartitionKey", "RowKey", "Timestamp", "odata.etag" }, entity.Keys.OrderBy(x => x, StringComparer.Ordinal).ToArray());
+                Assert.Equal(autoStart, entity.GetBoolean("IsEnabled"));
+                Assert.Equal(nextRun, entity.GetDateTimeOffset("NextRun"));
+            }
+
+            [Fact]
+            public async Task SetsNextRunOnExistingEntity()
+            {
+                var before = DateTimeOffset.UtcNow;
+                Assert.True(await Target.ExecuteAsync());
+                var after = DateTimeOffset.UtcNow;
+                var nextRun = DateTimeOffset.UtcNow + TimeSpan.FromDays(1);
+
+                await Target.SetNextRunAsync(TimerName, nextRun);
+
+                var entities = await GetEntitiesAsync<TableEntity>();
+                var entity = Assert.Single(entities);
+                Assert.Equal(new[] { "ClientRequestId", "IsEnabled", "LastExecuted", "NextRun", "PartitionKey", "RowKey", "Timestamp", "odata.etag" }, entity.Keys.OrderBy(x => x, StringComparer.Ordinal).ToArray());
+                Assert.True(entity.GetBoolean("IsEnabled"));
+                Assert.InRange(entity.GetDateTimeOffset("LastExecuted").Value, before, after);
+                Assert.Equal(nextRun, entity.GetDateTimeOffset("NextRun"));
+            }
+        }
+
         public class TheExecuteNowAsyncMethod : TimerExecutionServiceTest
         {
             public TheExecuteNowAsyncMethod(Fixture fixture, ITestOutputHelper output) : base(fixture, output)

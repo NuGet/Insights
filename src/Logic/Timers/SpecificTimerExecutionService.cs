@@ -46,6 +46,13 @@ namespace NuGet.Insights
             await table.UpsertEntityAsync(entity);
         }
 
+        public async Task SetNextRunAsync(ITimer timer, bool isEnabled, DateTimeOffset nextRun)
+        {
+            var table = await GetTableAsync();
+            var entity = new TimerEntity(timer.Name) { IsEnabled = isEnabled, NextRun = nextRun };
+            await table.UpsertEntityAsync(entity);
+        }
+
         public async Task<IReadOnlyList<TimerState>> GetStateAsync(IEnumerable<ITimer> timers)
         {
             var pairs = timers
@@ -78,6 +85,7 @@ namespace NuGet.Insights
                         Frequency = pair.Frequency,
                         CanAbort = pair.CanAbort,
                         CanDestroy = pair.CanDestroy,
+                        NextRun = entity?.NextRun,
                     };
                 })
                 .ToList();
@@ -130,6 +138,21 @@ namespace NuGet.Insights
                 else if (!entity.IsEnabled)
                 {
                     _logger.LogInformation("Timer {Name} will not be run because it is disabled in storage.", timer.Name);
+                }
+                else if (entity.NextRun.HasValue)
+                {
+                    if (entity.NextRun <= now)
+                    {
+                        _logger.LogInformation("Timer {Name} will be run because the next run timestamp is in the past.", timer.Name);
+                        toExecute.Add((
+                            timer,
+                            entity,
+                            () => table.UpdateEntityAsync(entity, entity.ETag, mode: TableUpdateMode.Replace)));
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Timer {Name} will not be run because the next run timestamp is in the future.", timer.Name);
+                    }
                 }
                 else if (!entity.LastExecuted.HasValue)
                 {
@@ -221,6 +244,7 @@ namespace NuGet.Insights
             if (executed || error)
             {
                 entity.LastExecuted = now;
+                entity.NextRun = null;
 
                 // Update table storage after the execute. In other words, if Table Storage fails, we could run the
                 // timer again too frequently.

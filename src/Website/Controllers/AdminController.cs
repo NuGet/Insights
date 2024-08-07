@@ -286,7 +286,9 @@ namespace NuGet.Insights.Website.Controllers
             bool disable,
             bool enable,
             bool abort,
-            bool reset)
+            bool reset,
+            bool setNextRun,
+            string nextRun)
         {
             if (runNow)
             {
@@ -314,6 +316,18 @@ namespace NuGet.Insights.Website.Controllers
             {
                 await _timerExecutionService.DestroyOutputAsync(timerName);
                 TempData[timerName + ".Success"] = "The output of the timer has been destroyed.";
+            }
+            else if (setNextRun)
+            {
+                if (!DateTimeOffset.TryParse(nextRun, out var parsedNextRun))
+                {
+                    TempData[timerName + ".Error"] = $"The next run timestamp could not be parsed.";
+                }
+                else
+                {
+                    await _timerExecutionService.SetNextRunAsync(timerName, parsedNextRun);
+                    TempData[timerName + ".Success"] = $"The timer's next run time has been updated to {parsedNextRun.ToZulu()}.";
+                }
             }
 
             return RedirectToAction(nameof(Index), ControllerContext.ActionDescriptor.ControllerName, fragment: timerName);

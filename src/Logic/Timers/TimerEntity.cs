@@ -30,5 +30,11 @@ namespace NuGet.Insights
 
         public DateTimeOffset? LastExecuted { get; set; }
         public bool IsEnabled { get; set; }
+
+        /// <summary>
+        /// The time to next run this timer, as an override. This value will override the timer's normal schedule only
+        /// once, and then will be cleared.
+        /// </summary>
+        public DateTimeOffset? NextRun { get; set; }
     }
 }

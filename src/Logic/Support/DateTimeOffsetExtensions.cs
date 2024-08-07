@@ -10,6 +10,11 @@ namespace NuGet.Insights
             return input.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture).Replace("+00:00", "Z", StringComparison.Ordinal);
         }
 
+        public static string ToZuluMinutes(this DateTimeOffset input)
+        {
+            return input.ToUniversalTime().ToString("yyyy-MM-ddTHH:mmZ", CultureInfo.InvariantCulture);
+        }
+
         public static string ToZuluDate(this DateTimeOffset input)
         {
             return input.ToUniversalTime().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
