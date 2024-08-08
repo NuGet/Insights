@@ -44,4 +44,5 @@ Patches:
   - [Remove unused property from `PackageFramework` and make `FrameworkName` settable](0002-Remove-Package-make-FrameworkName-settable-in-Packag.patch)
   - [Add `ChainInfo` property to `CertificateVerificationResult` to allow reading the chain before disposal](0003-Add-type-parameter-to-CertificateVerificationResult-.patch)
   - [Trim unneeded code from Utils.cs to allow just simple tag splitting](0004-Remove-unused-code-from-Utils.cs.patch)
+  - [Remove unnecessary usings in Utils.cs](0005-Remove-unnecessary-usings-in-Forks-Utils.cs.patch)
 

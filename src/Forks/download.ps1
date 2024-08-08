@@ -49,6 +49,10 @@ $files = [ordered]@{
             @{
                 Description = "Trim unneeded code from Utils.cs to allow just simple tag splitting"
                 Path        = "0004-Remove-unused-code-from-Utils.cs.patch"
+            },
+            @{
+                Description = "Remove unnecessary usings in Utils.cs"
+                Path        = "0005-Remove-unnecessary-usings-in-Forks-Utils.cs.patch"
             }
         )
     };

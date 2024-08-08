@@ -1,0 +1,46 @@
+From 0bcbc657c93d482c3bef82638d5a382a1b8087da Mon Sep 17 00:00:00 2001
+Date: Thu, 8 Aug 2024 18:17:51 -0400
+Subject: [PATCH] Remove unnecessary usings in Forks Utils.cs
+
+---
+ .../NuGet/NuGetGallery/src/Catalog/Helpers/Utils.cs   | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/src/Forks/NuGet/NuGetGallery/src/Catalog/Helpers/Utils.cs b/src/Forks/NuGet/NuGetGallery/src/Catalog/Helpers/Utils.cs
+index 223b62a9..182d3fba 100644
+--- a/src/Forks/NuGet/NuGetGallery/src/Catalog/Helpers/Utils.cs
++++ b/src/Forks/NuGet/NuGetGallery/src/Catalog/Helpers/Utils.cs
+@@ -1,13 +1,20 @@
+-﻿// Copyright (c) .NET Foundation. All rights reserved.
++// Copyright (c) .NET Foundation. All rights reserved.
+ // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+ 
++/*
++
+ using System;
+ using System.Collections.Generic;
+ using System.Diagnostics;
+ using System.Globalization;
+ using System.IO;
+ using System.IO.Compression;
++
++*/
++
+ using System.Linq;
++
++/*
+ using System.Reflection;
+ using System.Security.Cryptography;
+ using System.Text;
+@@ -16,8 +23,6 @@ using System.Xml.Linq;
+ using System.Xml.Xsl;
+ using Newtonsoft.Json;
+ using Newtonsoft.Json.Linq;
+-/*
+-
+ using NuGet.Services.Metadata.Catalog.Helpers;
+ #if NETFRAMEWORK
+ using JsonLD.Core;
+-- 
+2.43.0.windows.1
+
