@@ -794,8 +794,10 @@ function Add-AzRoleAssignmentWithRetry($currentUser, [string]$resourceGroupName,
                 Write-Warning "Attempt $($attempt) - HTTP 403 Forbidden. Trying again in 10 seconds."
                 Start-Sleep 10
                 continue
+            } else {
+                Write-Warning "No access. Have you checked the network firewall settings on the resource?"
+                throw
             }
-            throw
         }
     }
 }
