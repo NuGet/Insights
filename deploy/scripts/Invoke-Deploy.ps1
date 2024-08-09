@@ -58,6 +58,18 @@ $storageContext = New-AzStorageContext `
 # Give the current user access
 $currentUser = Get-AzCurrentUser
 
+# disable the storage firewall if it is enabled, it will be restored in the deployment
+$storageFirewall = Get-AzStorageAccountNetworkRuleSet `
+    -ResourceGroupName $ResourceSettings.ResourceGroupName `
+    -Name $ResourceSettings.StorageAccountName
+if ($storageFirewall.DefaultAction -ne "Allow") {
+    Write-Status "Temporarily disabling the storage account firewall for local deployment..."    
+    Update-AzStorageAccountNetworkRuleSet `
+        -ResourceGroupName $ResourceSettings.ResourceGroupName `
+        -Name $ResourceSettings.StorageAccountName `
+        -DefaultAction Allow | Out-Null
+}
+
 Add-AzRoleAssignmentWithRetry $currentUser $ResourceSettings.ResourceGroupName "Storage Blob Data Contributor" {
     $container = Get-AzStorageContainer `
         -Context $storageContext `
