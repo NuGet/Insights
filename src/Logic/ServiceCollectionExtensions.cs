@@ -46,9 +46,20 @@ namespace NuGet.Insights
             }
         }
 
-        private static HttpMessageHandler GetHttpMessageHandler(IServiceProvider serviceProvider, bool enableLogging, bool automaticDecompression)
+        private enum HttpHandlerFlavor
         {
-            HttpMessageHandler pipeline = automaticDecompression ? DecompressingHandler : NoDecompressingHandler;
+            Decompressing,
+            NoDecompressing,
+        }
+
+        private static HttpMessageHandler GetHttpMessageHandler(IServiceProvider serviceProvider, bool enableLogging, HttpHandlerFlavor httpHandlerFlavor)
+        {
+            HttpMessageHandler pipeline = httpHandlerFlavor switch
+            {
+                HttpHandlerFlavor.Decompressing => DecompressingHandler,
+                HttpHandlerFlavor.NoDecompressing => NoDecompressingHandler,
+                _ => throw new NotImplementedException(),
+            };
 
             // Protect against unintentional disposal
             pipeline = new NoDisposeHandler { InnerHandler = pipeline };
@@ -76,9 +87,9 @@ namespace NuGet.Insights
         private static HttpClient GetHttpClient(
             IServiceProvider serviceProvider,
             bool enableLogging,
-            bool automaticDecompression)
+            HttpHandlerFlavor httpHandlerFlavor)
         {
-            var handler = GetHttpMessageHandler(serviceProvider, enableLogging, automaticDecompression);
+            var handler = GetHttpMessageHandler(serviceProvider, enableLogging, httpHandlerFlavor);
             var httpClient = new HttpClient(handler) { Timeout = HttpClientTimeout };
             UserAgent.SetUserAgent(httpClient);
             return httpClient;
@@ -135,7 +146,8 @@ namespace NuGet.Insights
                 .SetMethod
                 .Invoke(null, new object[] { userAgent });
 
-            serviceCollection.AddSingleton(x => GetHttpClient(x, enableLogging: true, automaticDecompression: true));
+            serviceCollection.AddSingleton(x => GetHttpClient(x, enableLogging: true, HttpHandlerFlavor.Decompressing));
+            serviceCollection.AddTransient<RedirectResolver>();
 
             serviceCollection.AddLogging(o =>
             {
@@ -144,7 +156,7 @@ namespace NuGet.Insights
 
             serviceCollection.AddSingleton(x =>
             {
-                var httpClient = GetHttpClient(x, enableLogging: true, automaticDecompression: false);
+                var httpClient = GetHttpClient(x, enableLogging: true, HttpHandlerFlavor.NoDecompressing);
                 return new ServiceClientFactory(
                     () => httpClient,
                     x.GetRequiredService<IOptions<NuGetInsightsSettings>>(),
@@ -161,7 +173,7 @@ namespace NuGet.Insights
                         new PackageSource(options.Value.V3ServiceIndex),
                         () =>
                         {
-                            var handler = GetHttpMessageHandler(x, enableLogging: false, automaticDecompression: true);
+                            var handler = GetHttpMessageHandler(x, enableLogging: false, HttpHandlerFlavor.Decompressing);
                             var handlerResource = new HttpMessageHandlerResource(handler);
                             return Task.FromResult<HttpHandlerResource>(handlerResource);
                         },
