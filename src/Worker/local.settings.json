@@ -5,6 +5,7 @@
     "NUGET_INSIGHTS_ALLOW_ICU": "true",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "QueueTriggerConnection": "UseDevelopmentStorage=true",
+    "NuGetInsights__StorageConnectionString": "UseDevelopmentStorage=true",
     "NuGetInsights__WorkQueueName": "work",
     "NuGetInsights__ExpandQueueName": "expand"
   }

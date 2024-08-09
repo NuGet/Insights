@@ -356,6 +356,8 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
         {
             ConfigureSettings = x =>
             {
+                x.UseBlobClientForExternalData = false;
+
                 if (useV1)
                 {
                     x.DownloadsV1Urls = new List<string> { $"http://localhost/{TestInput}/{dirName}/downloads.v1.json" };

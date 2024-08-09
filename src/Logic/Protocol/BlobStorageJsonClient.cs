@@ -3,6 +3,9 @@
 
 #nullable enable
 
+using Azure;
+using Azure.Storage.Blobs.Models;
+
 namespace NuGet.Insights
 {
     public record BlobStorageJsonEndpoint<T>(
@@ -14,14 +17,29 @@ namespace NuGet.Insights
     public class BlobStorageJsonClient
     {
         private readonly HttpClient _httpClient;
+        private readonly RedirectResolver _redirectResolver;
+        private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IThrottle _throttle;
         private readonly ITelemetryClient _telemetryClient;
+        private readonly IOptions<NuGetInsightsSettings> _options;
+        private readonly ILogger<BlobStorageJsonClient> _logger;
 
-        public BlobStorageJsonClient(HttpClient httpClient, IThrottle throttle, ITelemetryClient telemetryClient)
+        public BlobStorageJsonClient(
+            HttpClient httpClient,
+            RedirectResolver redirectResolver,
+            ServiceClientFactory serviceClientFactory,
+            IThrottle throttle,
+            ITelemetryClient telemetryClient,
+            IOptions<NuGetInsightsSettings> options,
+            ILogger<BlobStorageJsonClient> logger)
         {
             _httpClient = httpClient;
+            _redirectResolver = redirectResolver;
+            _serviceClientFactory = serviceClientFactory;
             _throttle = throttle;
             _telemetryClient = telemetryClient;
+            _options = options;
+            _logger = logger;
         }
 
         public async Task<AsOfData<T>> DownloadNewestAsync<T>(IReadOnlyCollection<BlobStorageJsonEndpoint<T>> endpoints, string generalName)
@@ -56,74 +74,180 @@ namespace NuGet.Insights
 
         private async Task<(BlobStorageJsonEndpoint<T> Endpoint, DateTimeOffset AsOfTimestamp)> GetAsOfTimestampAsync<T>(BlobStorageJsonEndpoint<T> endpoint)
         {
-            HttpResponseMessage? response = null;
+            DownloadResult? result = null;
             try
             {
-                DateTimeOffset asOfTimestamp;
-                (response, asOfTimestamp, _) = await GetResponseAsync(HttpMethod.Head, endpoint.Url, HttpCompletionOption.ResponseContentRead);
+                result = await GetResponseAsync(endpoint.Url, head: true);
 
-                var age = DateTimeOffset.UtcNow - asOfTimestamp;
-
+                var age = DateTimeOffset.UtcNow - result.LastModified;
                 _telemetryClient.TrackMetric(
                     nameof(BlobStorageJsonClient) + "." + nameof(GetAsOfTimestampAsync) + ".AgeMinutes",
                     age.TotalMinutes,
                     new Dictionary<string, string>
                     {
                         { "Url", endpoint.Url },
+                        { "DownloadMethod", result.Method.ToString() },
+                        { "LastUrl", result.LastUrl.AbsoluteUri },
                     });
 
-                return (endpoint, asOfTimestamp);
+                return (endpoint, result.LastModified);
             }
             finally
             {
+                result?.Dispose();
                 _throttle.Release();
-                response?.Dispose();
             }
         }
 
         private async Task<AsOfData<T>> DownloadAsync<T>(string url, Func<Stream, IAsyncEnumerable<T>> deserialize)
         {
-            HttpResponseMessage? response = null;
+            var result = await GetResponseAsync(url, head: false);
+            return new AsOfData<T>(
+                result.LastModified,
+                url,
+                result.ETag,
+                AsyncEnumerableEx.Using(
+                    () => new ThrottledDisposable(result, _throttle),
+                    _ => deserialize(result.Stream!)));
+        }
+
+        private async Task<DownloadResult> GetResponseAsync(string url, bool head)
+        {
             try
             {
-                DateTimeOffset asOfTimestamp;
-                string etag;
-                (response, asOfTimestamp, etag) = await GetResponseAsync(HttpMethod.Get, url, HttpCompletionOption.ResponseHeadersRead);
+                await _throttle.WaitAsync();
 
-                var stream = await response.Content.ReadAsStreamAsync();
+                if (_options.Value.UseBlobClientForExternalData != false)
+                {
+                    try
+                    {
+                        var result = await GetResponseWithBlobClientAsync(url, head);
+                        if (result is not null)
+                        {
+                            return result;
+                        }
+                    }
+                    catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.Unauthorized || ex.Status == (int)HttpStatusCode.Forbidden)
+                    {
+                        _logger.LogWarning(
+                            ex,
+                            "Blob client request to {Url} failed with status code {StatusCode}. Trying without authorization.",
+                            url,
+                            ex.Status);
+                    }
+                }
 
-                return new AsOfData<T>(
-                    asOfTimestamp,
-                    url,
-                    etag,
-                    AsyncEnumerableEx.Using(
-                        () => new ResponseAndThrottle(response, _throttle),
-                        _ => deserialize(stream)));
+                return await GetResponseWithHttpClientAsync(url, head);
             }
             catch
             {
-                response?.Dispose();
                 _throttle.Release();
                 throw;
             }
         }
 
-        private async Task<(HttpResponseMessage Message, DateTimeOffset LastModified, string ETag)> GetResponseAsync(
-            HttpMethod method,
-            string url,
-            HttpCompletionOption completionOption)
+        public enum DownloadMethod
+        {
+            HttpClient = 1,
+            BlobClient,
+        }
+
+        private class DownloadResult : IDisposable
+        {
+            public DownloadResult(DownloadMethod method, Uri lastUrl, IDisposable disposable, Stream stream, DateTimeOffset lastModified, string etag)
+            {
+                Method = method;
+                LastUrl = lastUrl;
+                Disposable = disposable;
+                Stream = stream;
+                LastModified = lastModified;
+                ETag = etag;
+            }
+
+            public DownloadResult(DownloadMethod method, Uri lastUrl, DateTimeOffset lastModified, string etag)
+            {
+                Method = method;
+                LastUrl = lastUrl;
+                LastModified = lastModified;
+                ETag = etag;
+            }
+
+            public DownloadMethod Method { get; }
+            public Uri LastUrl { get; }
+            public IDisposable? Disposable { get; }
+            public Stream? Stream { get; }
+            public DateTimeOffset LastModified { get; }
+            public string ETag { get; }
+
+            public void Dispose()
+            {
+                Stream?.Dispose();
+                Disposable?.Dispose();
+            }
+        }
+
+        private async Task<DownloadResult?> GetResponseWithBlobClientAsync(string url, bool head)
+        {
+            var storageTokenCredential = await _serviceClientFactory.GetStorageTokenCredentialAsync();
+            if (storageTokenCredential is null)
+            {
+                if (_options.Value.UseBlobClientForExternalData == true)
+                {
+                    var storageCredentialType = await _serviceClientFactory.GetStorageCredentialTypeAsync();
+                    throw new InvalidOperationException($"The {nameof(NuGetInsightsSettings.UseBlobClientForExternalData)} setting is only supported when a storage token credential is used. The storage credential type is {storageCredentialType}.");
+                }
+
+                return null;
+            }
+
+            var lastUrl = await _redirectResolver.FollowRedirectsAsync(url);
+            if (lastUrl.Scheme != "https" || !IsAzureBlobStorage(lastUrl))
+            {
+                return null;
+            }
+
+            var blobClient = await _serviceClientFactory.GetBlobClientAsync(lastUrl);
+
+            if (head)
+            {
+                BlobProperties properties = await blobClient.GetPropertiesAsync();
+                return new DownloadResult(DownloadMethod.BlobClient, lastUrl, properties.LastModified, properties.ETag.ToString());
+            }
+            else
+            {
+                BlobDownloadStreamingResult? result = null;
+                try
+                {
+                    result = await blobClient.DownloadStreamingAsync();
+                    return new DownloadResult(DownloadMethod.BlobClient, lastUrl, result, result.Content, result.Details.LastModified, result.Details.ETag.ToString());
+                }
+                catch
+                {
+                    result?.Dispose();
+                    throw;
+                }
+            }
+
+        }
+
+        private static bool IsAzureBlobStorage(Uri lastUrl)
+        {
+            return lastUrl.Host.EndsWith(".blob.core.windows.net", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private async Task<DownloadResult> GetResponseWithHttpClientAsync(string url, bool head)
         {
             HttpResponseMessage? response = null;
             try
             {
+                var method = head ? HttpMethod.Head : HttpMethod.Get;
+                var completionOption = head ? HttpCompletionOption.ResponseContentRead : HttpCompletionOption.ResponseHeadersRead;
                 var request = new HttpRequestMessage(method, url);
 
                 // Prior to this version, Azure Blob Storage did not put quotes around etag headers...
                 request.Headers.TryAddWithoutValidation("x-ms-version", "2017-04-17");
 
-                await _throttle.WaitAsync();
                 response = await _httpClient.SendAsync(request, completionOption);
-
                 response.EnsureSuccessStatusCode();
 
                 if (response.Content.Headers.LastModified is null)
@@ -138,13 +262,14 @@ namespace NuGet.Insights
 
                 var asOfTimestamp = response.Content.Headers.LastModified.Value.ToUniversalTime();
                 var etag = response.Headers.ETag.ToString();
+                var stream = await response.Content.ReadAsStreamAsync();
+                var lastUrl = response.RequestMessage?.RequestUri ?? request.RequestUri!;
 
-                return (response, asOfTimestamp, etag);
+                return new DownloadResult(DownloadMethod.HttpClient, lastUrl, response, stream, asOfTimestamp, etag);
             }
             catch
             {
                 response?.Dispose();
-                _throttle.Release();
                 throw;
             }
         }

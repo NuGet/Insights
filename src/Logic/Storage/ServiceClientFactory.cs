@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
 using Azure.Core;
 using Azure.Core.Pipeline;
 using Azure.Data.Tables;
@@ -12,13 +13,26 @@ using Azure.Storage.Queues;
 using Azure.Storage.Sas;
 using NuGet.Insights.StorageNoOpRetry;
 
+#nullable enable
+
 namespace NuGet.Insights
 {
-    public class ServiceClientFactory
+    public enum StorageCredentialType
+    {
+        ClientCertificateCredentialFromPath = 1,
+        ClientCertificateCredentialFromKeyVault,
+        UserAssignedManagedIdentityCredential,
+        DefaultAzureCredential,
+        ConnectionStringWithStorageAccountKey,
+        ConnectionStringWithSharedAccessSignature,
+        UseDevelopmentStorage,
+    }
+
+    public partial class ServiceClientFactory
     {
         private readonly SemaphoreSlim _lock = new SemaphoreSlim(1);
-        private ServiceClients _serviceClients;
-        private readonly Func<HttpClient> _httpClientFactory;
+        private ServiceClients? _serviceClients;
+        private readonly Func<HttpClient>? _httpClientFactory;
         private readonly IOptions<NuGetInsightsSettings> _options;
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger<ServiceClientFactory> _logger;
@@ -30,7 +44,7 @@ namespace NuGet.Insights
         }
 
         public ServiceClientFactory(
-            Func<HttpClient> httpClientFactory,
+            Func<HttpClient>? httpClientFactory,
             IOptions<NuGetInsightsSettings> options,
             ILoggerFactory loggerFactory)
         {
@@ -48,6 +62,17 @@ namespace NuGet.Insights
         public async Task<BlobServiceClient> GetBlobServiceClientAsync()
         {
             return (await GetCachedServiceClientsAsync()).BlobServiceClient;
+        }
+
+        public async Task<BlobClient> GetBlobClientAsync(Uri blobUrl)
+        {
+            var serviceClients = await GetCachedServiceClientsAsync();
+            if (serviceClients.StorageTokenCredential is null)
+            {
+                throw new ArgumentNullException("A blob client can only be created by URL when a token credential is used.");
+            }
+
+            return new BlobClient(blobUrl, serviceClients.StorageTokenCredential, serviceClients.BlobClientOptions);
         }
 
         public async Task<Uri> GetBlobReadUrlAsync(string containerName, string blobName)
@@ -89,6 +114,16 @@ namespace NuGet.Insights
             return (await GetCachedServiceClientsAsync()).TableServiceClientWithRetryContext;
         }
 
+        public async Task<StorageCredentialType> GetStorageCredentialTypeAsync()
+        {
+            return (await GetCachedServiceClientsAsync()).StorageCredentialType;
+        }
+
+        public async Task<TokenCredential?> GetStorageTokenCredentialAsync()
+        {
+            return (await GetCachedServiceClientsAsync()).StorageTokenCredential;
+        }
+
         private async Task<ServiceClients> GetCachedServiceClientsAsync(CancellationToken token = default)
         {
             if (TryGetServiceClients(out var serviceClients))
@@ -113,12 +148,19 @@ namespace NuGet.Insights
             }
         }
 
-        private bool TryGetServiceClients(out ServiceClients serviceClients)
+        private bool TryGetServiceClients([NotNullWhen(true)] out ServiceClients? serviceClients)
         {
             serviceClients = _serviceClients;
+            if (serviceClients is null)
+            {
+                return false;
+
+            }
+
             var untilRefresh = GetTimeUntilRefresh(serviceClients);
             if (untilRefresh <= TimeSpan.Zero)
             {
+                serviceClients = null;
                 return false;
             }
 
@@ -127,12 +169,6 @@ namespace NuGet.Insights
 
         private TimeSpan GetTimeUntilRefresh(ServiceClients serviceClients)
         {
-            if (serviceClients == null)
-            {
-                // The service clients have never been initialized (successfully).
-                return TimeSpan.Zero;
-            }
-
             // Refresh at half of the SAS duration or the default refresh period, whichever is lesser.
             var sasDuration = serviceClients.SharedAccessSignatureExpiry - serviceClients.Created;
             var refreshPeriod = TimeSpan.FromTicks(Math.Min(sasDuration.Ticks / 2, _options.Value.ServiceClientRefreshPeriod.Ticks));
@@ -142,7 +178,7 @@ namespace NuGet.Insights
             return untilRefresh > TimeSpan.Zero ? untilRefresh : TimeSpan.Zero;
         }
 
-        private T GetOptions<T>(T options, HttpPipelineTransport transport) where T : ClientOptions
+        private T GetOptions<T>(T options, HttpPipelineTransport? transport) where T : ClientOptions
         {
             if (transport is not null)
             {
@@ -159,23 +195,75 @@ namespace NuGet.Insights
             return options;
         }
 
+        public static StorageCredentialType GetStorageCredentialType(NuGetInsightsSettings settings)
+        {
+            if (settings.StorageConnectionString is not null)
+            {
+                var match = ConnectionStringCredentialRegex().Match(settings.StorageConnectionString);
+                if (match.Success)
+                {
+                    var key = match.Groups["Key"].ValueSpan;
+                    var value = match.Groups["Value"].ValueSpan;
+                    if (key.Equals("AccountKey", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return StorageCredentialType.ConnectionStringWithStorageAccountKey;
+                    }
+                    else if (key.Equals("SharedAccessSignature", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return StorageCredentialType.ConnectionStringWithSharedAccessSignature;
+                    }
+                    else if (key.Equals("UseDevelopmentStorage", StringComparison.OrdinalIgnoreCase) && value.Equals("true", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return StorageCredentialType.UseDevelopmentStorage;
+                    }
+                }
+
+                throw new ArgumentException($"The {nameof(settings.StorageConnectionString)} must either have an AccountKey or SharedAccessSignature setting.");
+            }
+            else if (settings.StorageAccountName is not null)
+            {
+                if (settings.StorageClientCertificatePath is not null)
+                {
+                    return StorageCredentialType.ClientCertificateCredentialFromPath;
+                }
+                else if (settings.StorageClientCertificateKeyVault is not null)
+                {
+                    return StorageCredentialType.ClientCertificateCredentialFromKeyVault;
+                }
+                else if (settings.UserManagedIdentityClientId is not null)
+                {
+                    return StorageCredentialType.UserAssignedManagedIdentityCredential;
+                }
+                else
+                {
+                    return StorageCredentialType.DefaultAzureCredential;
+                }
+            }
+            else
+            {
+                throw new ArgumentException(
+                    $"Either the {nameof(settings.StorageConnectionString)} property or the {nameof(settings.StorageAccountName)} must be set. " +
+                    $"Set {nameof(settings.StorageConnectionString)} to '{StorageUtility.EmulatorConnectionString}' if you want to use Azurite.");
+            }
+        }
+
         private async Task<ServiceClients> GetServiceClientsAsync(DateTimeOffset created)
         {
             var httpPipelineTransport = GetHttpPipelineTransport();
 
             BlobServiceClient blob;
+            BlobClientOptions blobClientOptions;
             QueueServiceClient queue;
             TableServiceClient table;
-            UserDelegationKey userDelegationKey;
+            TokenCredential? tokenCredential;
+            UserDelegationKey? userDelegationKey;
             DateTimeOffset sasExpiry = DateTimeOffset.UtcNow.Add(_options.Value.ServiceClientSasDuration);
 
-            if (_options.Value.StorageAccountName is not null)
+            var storageCredentialType = GetStorageCredentialType(_options.Value);
+            switch (storageCredentialType)
             {
-                TokenCredential credential;
-                string credentialType;
-                if (_options.Value.StorageClientCertificatePath is not null)
-                {
-                    credential = await CredentialCache.GetLazyClientCertificateCredentialTask(
+                case StorageCredentialType.ClientCertificateCredentialFromPath:
+                    tokenCredential = await CredentialCache.GetLazyClientCertificateCredentialTask(
                         _options.Value.StorageClientTenantId,
                         _options.Value.StorageClientApplicationId,
                         () =>
@@ -183,49 +271,54 @@ namespace NuGet.Insights
                             var certificate = new X509Certificate2(_options.Value.StorageClientCertificatePath);
                             return Task.FromResult(certificate);
                         }).Value;
-                    credentialType = "client certificate credential from disk";
-                }
-                else if (_options.Value.StorageClientCertificateKeyVault is not null)
-                {
-                    credential = await CredentialCache.GetLazyClientCertificateCredentialTask(
+                    break;
+                case StorageCredentialType.ClientCertificateCredentialFromKeyVault:
+                    tokenCredential = await CredentialCache.GetLazyClientCertificateCredentialTask(
                         _options.Value.StorageClientTenantId,
                         _options.Value.StorageClientApplicationId,
                         () => CredentialCache.GetLazyCertificateTask(
                             _options.Value.StorageClientCertificateKeyVault,
                             _options.Value.StorageClientCertificateKeyVaultCertificateName).Value).Value;
-                    credentialType = "client certificate credential from KeyVault";
-                }
-                else if (_options.Value.UserManagedIdentityClientId is not null)
-                {
-                    credential = new ManagedIdentityCredential(
+                    break;
+                case StorageCredentialType.UserAssignedManagedIdentityCredential:
+                    tokenCredential = new ManagedIdentityCredential(
                         _options.Value.UserManagedIdentityClientId);
-                    credentialType = "user managed identity credential";
-                }
-                else
-                {
-                    credential = CredentialCache.DefaultAzureCredential;
-                    credentialType = "default Azure credential";
-                }
+                    break;
+                case StorageCredentialType.DefaultAzureCredential:
+                    tokenCredential = CredentialCache.DefaultAzureCredential;
+                    break;
+                case StorageCredentialType.ConnectionStringWithStorageAccountKey:
+                case StorageCredentialType.ConnectionStringWithSharedAccessSignature:
+                case StorageCredentialType.UseDevelopmentStorage:
+                    tokenCredential = null;
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
 
+            blobClientOptions = GetOptions(new BlobClientOptions(), httpPipelineTransport);
+
+            if (tokenCredential is not null)
+            {
                 blob = new BlobServiceClient(
                     new Uri($"https://{_options.Value.StorageAccountName}.blob.core.windows.net"),
-                    credential,
-                    GetOptions(new BlobClientOptions(), httpPipelineTransport));
+                    tokenCredential,
+                    blobClientOptions);
 
                 queue = new QueueServiceClient(
                     new Uri($"https://{_options.Value.StorageAccountName}.queue.core.windows.net"),
-                    credential,
+                    tokenCredential,
                     GetOptions(new QueueClientOptions(), httpPipelineTransport));
 
                 table = new TableServiceClient(
                     new Uri($"https://{_options.Value.StorageAccountName}.table.core.windows.net"),
-                    credential,
+                    tokenCredential,
                     GetOptions(new TableClientOptions(), httpPipelineTransport));
 
                 _logger.LogInformation(
                     "Using storage account '{StorageAccountName}' with a {CredentialType} and a user delegation key expiring at {Expiry:O}, which is in {RemainingHours:F2} hours.",
                     _options.Value.StorageAccountName,
-                    credentialType,
+                    storageCredentialType,
                     sasExpiry,
                     (sasExpiry - DateTimeOffset.UtcNow).TotalHours);
 
@@ -237,7 +330,7 @@ namespace NuGet.Insights
 
                 blob = new BlobServiceClient(
                     _options.Value.StorageConnectionString,
-                    GetOptions(new BlobClientOptions(), httpPipelineTransport));
+                    blobClientOptions);
 
                 queue = new QueueServiceClient(
                     _options.Value.StorageConnectionString,
@@ -246,6 +339,13 @@ namespace NuGet.Insights
                 table = new TableServiceClient(
                     _options.Value.StorageConnectionString,
                     GetOptions(new TableClientOptions(), httpPipelineTransport));
+
+                var canGenerateAccountSasUri = storageCredentialType == StorageCredentialType.ConnectionStringWithStorageAccountKey
+                    || storageCredentialType == StorageCredentialType.UseDevelopmentStorage;
+                if (canGenerateAccountSasUri != blob.CanGenerateAccountSasUri)
+                {
+                    throw new InvalidOperationException("The storage connection string appears to have an storage account key but cannot generate account SAS.");
+                }
 
                 userDelegationKey = null;
             }
@@ -256,15 +356,18 @@ namespace NuGet.Insights
 
             return new ServiceClients(
                 created,
+                storageCredentialType,
+                tokenCredential,
                 userDelegationKey,
                 sasExpiry,
                 blob,
+                blobClientOptions,
                 queue,
                 table,
                 new TableServiceClientWithRetryContext(table));
         }
 
-        protected virtual HttpPipelineTransport GetHttpPipelineTransport()
+        protected virtual HttpPipelineTransport? GetHttpPipelineTransport()
         {
             if (_logger.IsEnabled(LogLevel.Debug))
             {
@@ -277,11 +380,19 @@ namespace NuGet.Insights
 
         private record ServiceClients(
             DateTimeOffset Created,
-            UserDelegationKey UserDelegationKey,
+            StorageCredentialType StorageCredentialType,
+            TokenCredential? StorageTokenCredential,
+            UserDelegationKey? UserDelegationKey,
             DateTimeOffset SharedAccessSignatureExpiry,
             BlobServiceClient BlobServiceClient,
+            BlobClientOptions BlobClientOptions,
             QueueServiceClient QueueServiceClient,
             TableServiceClient TableServiceClient,
             TableServiceClientWithRetryContext TableServiceClientWithRetryContext);
+
+        [GeneratedRegex(
+            "(^|;)\\s*(?<Key>AccountKey|SharedAccessSignature|UseDevelopmentStorage)\\s*=\\s*(?<Value>[^\\s;]+)",
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture)]
+        private static partial Regex ConnectionStringCredentialRegex();
     }
 }

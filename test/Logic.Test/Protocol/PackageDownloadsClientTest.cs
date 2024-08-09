@@ -21,6 +21,7 @@ namespace NuGet.Insights
 
                     return new HttpResponseMessage(HttpStatusCode.OK)
                     {
+                        RequestMessage = r,
                         Headers = { ETag = new EntityTagHeaderValue("\"my-etag\"", isWeak: true) },
                         Content = new StringContent(json)
                         {
@@ -63,6 +64,7 @@ namespace NuGet.Insights
 
                     return new HttpResponseMessage(HttpStatusCode.OK)
                     {
+                        RequestMessage = r,
                         Headers = { ETag = new EntityTagHeaderValue("\"my-etag\"", isWeak: true) },
                         Content = new StringContent(json)
                         {
@@ -80,6 +82,7 @@ namespace NuGet.Insights
 
                     return new HttpResponseMessage(HttpStatusCode.OK)
                     {
+                        RequestMessage = r,
                         Headers = { ETag = new EntityTagHeaderValue("\"my-etag\"", isWeak: true) },
                         Content = new StringContent(json)
                         {
@@ -97,6 +100,7 @@ namespace NuGet.Insights
 
                     return new HttpResponseMessage(HttpStatusCode.OK)
                     {
+                        RequestMessage = r,
                         Headers = { ETag = new EntityTagHeaderValue("\"my-etag\"", isWeak: true) },
                         Content = new StringContent(json)
                         {
@@ -139,6 +143,7 @@ namespace NuGet.Insights
 
                     return new HttpResponseMessage(HttpStatusCode.OK)
                     {
+                        RequestMessage = r,
                         Headers = { ETag = new EntityTagHeaderValue("\"my-etag\"", isWeak: true) },
                         Content = new StringContent(json)
                         {
@@ -176,6 +181,7 @@ namespace NuGet.Insights
 
                     return new HttpResponseMessage(HttpStatusCode.OK)
                     {
+                        RequestMessage = r,
                         Headers = { ETag = new EntityTagHeaderValue("\"my-etag\"", isWeak: true) },
                         Content = new StringContent(json)
                         {
@@ -231,6 +237,7 @@ namespace NuGet.Insights
 
                     return new HttpResponseMessage(HttpStatusCode.OK)
                     {
+                        RequestMessage = r,
                         Headers = { ETag = new EntityTagHeaderValue("\"my-etag\"", isWeak: true) },
                         Content = new StringContent(json)
                         {
@@ -269,14 +276,23 @@ namespace NuGet.Insights
             {
                 DownloadsV1Urls = new List<string> { "https://api.example.com/downloads.v1.json" },
                 DownloadsV1AgeLimit = TimeSpan.MaxValue,
-            };
+            }.WithTestStorageSettings();
             Options = new Mock<IOptions<NuGetInsightsSettings>>();
             Options.Setup(x => x.Value).Returns(() => Settings);
             HttpMessageHandlerFactory = new TestHttpMessageHandlerFactory();
             HttpClient = new HttpClient(HttpMessageHandlerFactory.Create());
             Throttle = new SemaphoreSlimThrottle(new SemaphoreSlim(1));
+            RedirectResolver = new RedirectResolver(HttpClient, output.GetLogger<RedirectResolver>());
+            ServiceClientFactory = new ServiceClientFactory(Options.Object, output.GetLoggerFactory());
             TelemetryClient = output.GetTelemetryClient();
-            StorageClient = new BlobStorageJsonClient(HttpClient, Throttle, TelemetryClient);
+            StorageClient = new BlobStorageJsonClient(
+                HttpClient,
+                RedirectResolver,
+                ServiceClientFactory,
+                Throttle,
+                TelemetryClient,
+                Options.Object,
+                output.GetLogger<BlobStorageJsonClient>());
             Target = new PackageDownloadsClient(StorageClient, Options.Object);
         }
 
@@ -285,6 +301,8 @@ namespace NuGet.Insights
         public TestHttpMessageHandlerFactory HttpMessageHandlerFactory { get; }
         public HttpClient HttpClient { get; }
         public SemaphoreSlimThrottle Throttle { get; }
+        public RedirectResolver RedirectResolver { get; }
+        public ServiceClientFactory ServiceClientFactory { get; }
         public ITelemetryClient TelemetryClient { get; }
         public BlobStorageJsonClient StorageClient { get; }
         public PackageDownloadsClient Target { get; }

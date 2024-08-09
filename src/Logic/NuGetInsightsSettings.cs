@@ -14,6 +14,13 @@ namespace NuGet.Insights
         public string V2BaseUrl { get; set; } = "https://www.nuget.org/api/v2";
         public string V3ServiceIndex { get; set; } = "https://api.nuget.org/v3/index.json";
         public string FlatContainerBaseUrlOverride { get; set; } = null;
+
+        /// <summary>
+        /// Whether or not to use an authenticated Azure Storage blob client to fetch the auxiliary file URLs
+        /// configured in <see cref="DownloadsV1Urls"/>, <see cref="DownloadsV2Urls"/>, etc.
+        /// </summary>
+        public bool? UseBlobClientForExternalData { get; set; } = null;
+
         public List<string> DownloadsV1Urls { get; set; } = new List<string>();
         public TimeSpan DownloadsV1AgeLimit { get; set; } = TimeSpan.FromDays(7);
         public List<string> DownloadsV2Urls { get; set; } = new List<string>();
@@ -35,7 +42,7 @@ namespace NuGet.Insights
         public string StorageClientCertificateKeyVault { get; set; } = null;
         public string StorageClientCertificateKeyVaultCertificateName { get; set; } = null;
         public string StorageBlobReadSharedAccessSignature { get; set; } = null;
-        public string StorageConnectionString { get; set; } = StorageUtility.EmulatorConnectionString;
+        public string StorageConnectionString { get; set; } = null;
         public TimeSpan ServiceClientRefreshPeriod { get; set; } = TimeSpan.FromMinutes(30);
         public TimeSpan ServiceClientSasDuration { get; set; } = TimeSpan.FromHours(12);
 

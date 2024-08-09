@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 
@@ -18,48 +17,10 @@ namespace NuGet.Insights
         private const string StorageSasEnv = "NUGETINSIGHTS_STORAGESAS";
         private const string StorageBlobReadSasEnv = "NUGETINSIGHTS_STORAGEBLOBREADSAS";
 
-        private static readonly Lazy<StorageType> LazyStorageType = new Lazy<StorageType>(() =>
-        {
-            if (!IsStorageEmulator)
-            {
-                return StorageType.Azure;
-            }
-            else
-            {
-                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    // The legacy emulator does not work on non-Windows platforms.
-                    return StorageType.Azurite;
-                }
+        public static bool IsStorageEmulator => StorageCredentialType == StorageCredentialType.UseDevelopmentStorage;
+        public static StorageCredentialType StorageCredentialType => ServiceClientFactory.GetStorageCredentialType(new NuGetInsightsSettings().WithTestStorageSettings());
 
-                try
-                {
-                    using var httpClient = new HttpClient();
-                    using var request = new HttpRequestMessage(HttpMethod.Get, "http://127.0.0.1:10000/devstoreaccount1");
-                    using var response = httpClient.Send(request);
-
-                    if (response.Headers.TryGetValues("Server", out var serverHeaders)
-                        && serverHeaders.Any(x => x.Contains("Azurite", StringComparison.Ordinal)))
-                    {
-                        // Azurite returns a header like this: "Server: Azurite-Blob/3.16.0"
-                        return StorageType.Azurite;
-                    }
-                }
-                catch
-                {
-                    // Ignore this exception
-                }
-
-                return StorageType.LegacyEmulator;
-            }
-        });
-
-        private const string StorageEmulatorConnectionString = StorageUtility.EmulatorConnectionString;
-
-        public static bool IsStorageEmulator => StorageConnectionString == StorageEmulatorConnectionString;
-        public static StorageType StorageType => LazyStorageType.Value;
-
-        private static string StorageAccountName => GetEnvOrNull(StorageAccountNameEnv);
+        public static string StorageAccountName => GetEnvOrNull(StorageAccountNameEnv);
         public static string StorageClientApplicationId => GetEnvOrNull(StorageClientApplicationIdEnv);
         private static string StorageClientTenantId => GetEnvOrNull(StorageClientTenantIdEnv);
         private static string StorageClientCertificatePath => GetEnvOrNull(StorageClientCertificatePathEnv);
@@ -87,10 +48,15 @@ namespace NuGet.Insights
             {
                 if (StorageAccountName is null)
                 {
-                    return StorageEmulatorConnectionString;
+                    return StorageUtility.EmulatorConnectionString;
                 }
 
-                return $"AccountName={StorageAccountName};SharedAccessSignature={StorageSharedAccessSignature}";
+                if (StorageSharedAccessSignature is not null)
+                {
+                    return $"AccountName={StorageAccountName};SharedAccessSignature={StorageSharedAccessSignature}";
+                }
+
+                return null;
             }
         }
 
