@@ -7,11 +7,12 @@ parameters:
     - osx-x64
     - win-x64
 - name: storageTypes
-  displayName: The types of Azure Storage to test against ("Azurite" or "Azure")
+  displayName: The types of Azure Storage to test against ("Azurite", "AzureWithoutKusto", or "AzureWithKusto")
   type: object
   default:
-    - Azure
     - Azurite
+    - AzureWithoutKusto
+    - AzureWithKusto
 
 schedules:
 - cron: "0 0 * * *"
@@ -181,7 +182,7 @@ stages:
             Set-Content $certFile -Value $rawCert -AsByteStream
             echo "##vso[task.setvariable variable=NUGETINSIGHTS_STORAGECLIENTCERTIFICATEPATH;]$certFile"
           displayName: "Save Storage client certificate"
-          condition: eq('${{ storageType }}', 'Azure')
+          condition: or(eq('${{ storageType }}', 'AzureWithoutKusto'), eq('${{ storageType }}', 'AzureWithKusto'))
 
         - pwsh: |
             $rawCertBase64 = "$(nugetinsightstests-KustoClientCertificate)"
@@ -190,7 +191,7 @@ stages:
             Set-Content $certFile -Value $rawCert -AsByteStream
             echo "##vso[task.setvariable variable=NUGETINSIGHTS_KUSTOCLIENTCERTIFICATEPATH;]$certFile"
           displayName: "Save Kusto client certificate"
-          condition: eq('${{ storageType }}', 'Azure')
+          condition: eq('${{ storageType }}', 'AzureWithKusto')
 
         - script: npx --yes --loglevel info azurite --version
           displayName: "Install Azurite for npx"
@@ -211,10 +212,11 @@ stages:
         - script: dotnet test $(BuildSolution) --no-build --no-restore --configuration $(BuildConfiguration) --logger trx --logger "console;verbosity=normal" --blame-crash-dump-type full --blame-hang-timeout 20m --collect "Code coverage" --results-directory $(OutputDirectory)/TestResults/
           displayName: "Run tests"
           env:
-            ${{ if eq(storageType, 'Azure') }}:
+            ${{ if or(eq(storageType, 'AzureWithoutKusto'), eq(storageType, 'AzureWithKusto')) }}:
               NUGETINSIGHTS_STORAGEACCOUNTNAME: $(nugetinsightstests-StorageAccountName)
               NUGETINSIGHTS_STORAGECLIENTAPPLICATIONID: $(nugetinsightstests-StorageClientApplicationId)
               NUGETINSIGHTS_STORAGECLIENTTENANTID: $(nugetinsightstests-StorageClientTenantId)
+            ${{ if eq(storageType, 'AzureWithKusto') }}:
               NUGETINSIGHTS_KUSTOCONNECTIONSTRING: $(nugetinsightstests-KustoConnectionString)
               NUGETINSIGHTS_KUSTODATABASENAME: $(nugetinsightstests-KustoDatabaseName)
           retryCountOnTaskFailure: 1
