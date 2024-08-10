@@ -131,8 +131,8 @@ namespace NuGet.Insights.Worker
             }
             catch (RequestFailedException ex) when (
                 records.Count >= 2
-                && ex.Status == (int)HttpStatusCode.RequestEntityTooLarge
-                && ex.ErrorCode == "RequestBodyTooLarge")
+                && ((ex.Status == (int)HttpStatusCode.RequestEntityTooLarge && ex.ErrorCode == "RequestBodyTooLarge")
+                    || (ex.Status == (int)HttpStatusCode.BadRequest && ex.ErrorCode == "EntityTooLarge")))
             {
                 var recordName = typeof(T).FullName;
                 GetTooLargeRecordCountMetric().TrackValue(records.Count, recordName);
