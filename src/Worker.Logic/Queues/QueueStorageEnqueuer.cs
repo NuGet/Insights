@@ -10,16 +10,29 @@ namespace NuGet.Insights.Worker
     {
         private readonly IWorkerQueueFactory _workerQueueFactory;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<QueueStorageEnqueuer> _logger;
+        private readonly IMetric _durationMs;
+        private readonly IMetric _batchDurationMs;
+        private readonly IMetric _averageDurationMs;
+        private readonly IMetric _batchSizeMs;
 
         public QueueStorageEnqueuer(
             IWorkerQueueFactory workerQueueFactory,
             IOptions<NuGetInsightsWorkerSettings> options,
+            ITelemetryClient telemetryClient,
             ILogger<QueueStorageEnqueuer> logger)
         {
             _workerQueueFactory = workerQueueFactory;
             _options = options;
+            _telemetryClient = telemetryClient;
             _logger = logger;
+
+            _durationMs = _telemetryClient.GetMetric("QueueStorageEnqueuer.SendMessageAsync.DurationMs", "QueueType", "IsPoison");
+            _batchDurationMs = _telemetryClient.GetMetric("QueueStorageEnqueuer.BatchDurationMs", "QueueType", "IsPoison");
+            _averageDurationMs = _telemetryClient.GetMetric("QueueStorageEnqueuer.AverageDurationMs", "QueueType", "IsPoison");
+            _batchSizeMs = _telemetryClient.GetMetric("QueueStorageEnqueuer.BatchSize", "QueueType", "IsPoison");
+
             BulkEnqueueStrategy = _options.Value.UseBulkEnqueueStrategy
                 ? BulkEnqueueStrategy.Enabled(_options.Value.BulkEnqueueThreshold)
                 : BulkEnqueueStrategy.Disabled();
@@ -84,7 +97,7 @@ namespace NuGet.Insights.Worker
 
         public async Task AddAsync(QueueType queue, IReadOnlyList<string> messages, TimeSpan visibilityDelay)
         {
-            await AddAsync(queue, _workerQueueFactory.GetQueueAsync, messages, visibilityDelay);
+            await AddAsync(queue, isPoison: false, _workerQueueFactory.GetQueueAsync, messages, visibilityDelay);
         }
 
         public async Task AddPoisonAsync(QueueType queue, IReadOnlyList<string> messages)
@@ -94,10 +107,10 @@ namespace NuGet.Insights.Worker
 
         public async Task AddPoisonAsync(QueueType queue, IReadOnlyList<string> messages, TimeSpan visibilityDelay)
         {
-            await AddAsync(queue, _workerQueueFactory.GetPoisonQueueAsync, messages, visibilityDelay);
+            await AddAsync(queue, isPoison: true, _workerQueueFactory.GetPoisonQueueAsync, messages, visibilityDelay);
         }
 
-        private async Task AddAsync(QueueType queueType, Func<QueueType, Task<QueueClient>> getQueueAsync, IReadOnlyList<string> messages, TimeSpan visibilityDelay)
+        private async Task AddAsync(QueueType queueType, bool isPoison, Func<QueueType, Task<QueueClient>> getQueueAsync, IReadOnlyList<string> messages, TimeSpan visibilityDelay)
         {
             if (messages.Count == 0)
             {
@@ -106,13 +119,18 @@ namespace NuGet.Insights.Worker
 
             var queue = await getQueueAsync(queueType);
             var workers = Math.Min(messages.Count, _options.Value.EnqueueWorkers);
+
+            var queueTypeString = queueType.ToString();
+            var isPoisonString = isPoison.ToString();
+
+            var sw = Stopwatch.StartNew();
             if (workers < 2)
             {
                 _logger.LogInformation("Enqueueing {Count} individual messages to {QueueName}.", messages.Count, queue.Name);
                 var completedCount = 0;
                 foreach (var message in messages)
                 {
-                    await SendMessageAsync(queue, message, visibilityDelay);
+                    await SendMessageAsync(queueTypeString, isPoisonString, queue, message, visibilityDelay);
                     completedCount++;
                     if (completedCount % 500 == 0 && completedCount < messages.Count)
                     {
@@ -137,7 +155,7 @@ namespace NuGet.Insights.Worker
                     {
                         while (work.TryDequeue(out var message))
                         {
-                            await SendMessageAsync(queue, message, visibilityDelay);
+                            await SendMessageAsync(queueTypeString, isPoisonString, queue, message, visibilityDelay);
                         }
                     })
                     .ToList();
@@ -150,11 +168,19 @@ namespace NuGet.Insights.Worker
                     queue.Name,
                     workers);
             }
+            sw.Stop();
+
+            _batchDurationMs.TrackValue(sw.Elapsed.TotalMilliseconds, queueTypeString, isPoisonString);
+            _averageDurationMs.TrackValue(sw.Elapsed.TotalMilliseconds / messages.Count, queueTypeString, isPoisonString);
+            _batchSizeMs.TrackValue(messages.Count, queueTypeString, isPoisonString);
         }
 
-        private async Task SendMessageAsync(QueueClient queue, string message, TimeSpan visibilityTimeout)
+        private async Task SendMessageAsync(string queueTypeString, string isPoisonString, QueueClient queue, string message, TimeSpan visibilityTimeout)
         {
+            var sw = Stopwatch.StartNew();
             await queue.SendMessageAsync(message, visibilityTimeout > TimeSpan.Zero && !_options.Value.DisableMessageDelay ? visibilityTimeout : null);
+            sw.Stop();
+            _durationMs.TrackValue(sw.Elapsed.TotalMilliseconds, queueTypeString, isPoisonString);
         }
     }
 }
