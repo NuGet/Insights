@@ -49,7 +49,7 @@ namespace NuGet.Insights.Worker
                 sinceLastCompletion = DateTimeOffset.UtcNow - latestCompletedRun.Completed.Value;
             }
 
-            _telemetryClient.TrackMetric("SinceLastWorkflowCompletedHours", sinceLastCompletion.TotalHours);
+            _telemetryClient.TrackMetric(MetricNames.SinceLastWorkflowCompletedHours, sinceLastCompletion.TotalHours);
         }
 
         private async Task EmitQueueSizeMetricsAsync()
@@ -62,15 +62,24 @@ namespace NuGet.Insights.Worker
                 poison += await EmitQueueSizeAsync(_messageEnqueuer.GetPoisonApproximateMessageCountAsync(x), x, isPoison: true);
             }
 
-            _telemetryClient.TrackMetric("StorageQueueSize.Main", main);
-            _telemetryClient.TrackMetric("StorageQueueSize.Poison", poison);
-            _telemetryClient.TrackMetric("StorageQueueSize", main + poison);
+            _telemetryClient.TrackMetric(MetricNames.StorageQueueSizeMain, main);
+            _telemetryClient.TrackMetric(MetricNames.StorageQueueSizeExpandPoison, poison);
+            _telemetryClient.TrackMetric(MetricNames.StorageQueueSize, main + poison);
         }
 
         private async Task<int> EmitQueueSizeAsync(Task<int> countAsync, QueueType queue, bool isPoison)
         {
             var count = await countAsync;
-            _telemetryClient.TrackMetric($"StorageQueueSize.{queue}.{(isPoison ? "Poison" : "Main")}", count);
+            var metricName = (queue, isPoison) switch
+            {
+                (QueueType.Work, false) => MetricNames.StorageQueueSizeWorkMain,
+                (QueueType.Work, true) => MetricNames.StorageQueueSizeWorkPoison,
+                (QueueType.Expand, false) => MetricNames.StorageQueueSizeExpandMain,
+                (QueueType.Expand, true) => MetricNames.StorageQueueSizeExpandPoison,
+                _ => throw new NotImplementedException(),
+            };
+
+            _telemetryClient.TrackMetric(metricName, count);
             return count;
         }
 

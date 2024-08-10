@@ -172,7 +172,7 @@ namespace NuGet.Insights.Worker.Workflow
                     var nextState = await transition.TransitionAsync(this, run);
 
                     _telemetryClient.TrackMetric(
-                        "Workflow.StateTransition",
+                        MetricNames.WorkflowStateTransition,
                         1,
                         new Dictionary<string, string> { { "NextState", nextState.ToString() } });
                     run.State = nextState;

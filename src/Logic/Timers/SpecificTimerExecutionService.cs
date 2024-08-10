@@ -221,7 +221,7 @@ namespace NuGet.Insights
             try
             {
                 _telemetryClient.TrackMetric(
-                    "Timer.Execute",
+                    MetricNames.TimerExecute,
                     1,
                     new Dictionary<string, string> { { "Name", entity.Name } });
 

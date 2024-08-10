@@ -212,7 +212,7 @@ namespace NuGet.Insights.Worker
         private void EmitResultMetric(CatalogScanDriverType driverType, CatalogScanServiceResult result)
         {
             _telemetryClient.TrackMetric(
-                "CatalogScanService.Update",
+                MetricNames.CatalogScanUpdate,
                 1,
                 new Dictionary<string, string>
                 {
