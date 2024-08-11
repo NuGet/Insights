@@ -64,11 +64,7 @@ namespace NuGet.Insights
 
                             response.EnsureSuccessStatusCode();
 
-                            headers = Enumerable.Empty<KeyValuePair<string, IEnumerable<string>>>()
-                                .Concat(response.Headers)
-                                .Concat(response.Content.Headers)
-                                .SelectMany(x => x.Value.Select(y => new { x.Key, Value = y }))
-                                .ToLookup(x => x.Key, x => x.Value, StringComparer.OrdinalIgnoreCase);
+                            headers = response.GetHeaderLookup();
 
                             if (response.Content.Headers.ContentLength is null)
                             {

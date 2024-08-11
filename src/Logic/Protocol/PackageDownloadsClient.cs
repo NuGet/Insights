@@ -15,10 +15,10 @@ namespace NuGet.Insights
             Converters = { new PackageIdDownloadsConverter() },
         };
 
-        private readonly BlobStorageJsonClient _storageClient;
+        private readonly ExternalBlobStorageClient _storageClient;
         private readonly IOptions<NuGetInsightsSettings> _options;
 
-        public PackageDownloadsClient(BlobStorageJsonClient storageClient, IOptions<NuGetInsightsSettings> options)
+        public PackageDownloadsClient(ExternalBlobStorageClient storageClient, IOptions<NuGetInsightsSettings> options)
         {
             _storageClient = storageClient;
             _options = options;
@@ -31,7 +31,7 @@ namespace NuGet.Insights
             if (_options.Value.DownloadsV1Urls != null)
             {
                 endpoints.AddRange(_options.Value.DownloadsV1Urls.Select(url => new BlobStorageJsonEndpoint<PackageDownloads>(
-                    url,
+                    new Uri(url),
                     _options.Value.DownloadsV1AgeLimit,
                     "downloads.v1.json",
                     DeserializeV1Async)));
@@ -40,7 +40,7 @@ namespace NuGet.Insights
             if (_options.Value.DownloadsV2Urls != null)
             {
                 endpoints.AddRange(_options.Value.DownloadsV2Urls.Select(url => new BlobStorageJsonEndpoint<PackageDownloads>(
-                    url,
+                    new Uri(url),
                     _options.Value.DownloadsV2AgeLimit,
                     "downloads.v2.json",
                     DeserializeV2Async)));

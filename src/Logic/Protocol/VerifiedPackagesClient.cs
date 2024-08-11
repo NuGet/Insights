@@ -7,11 +7,11 @@ namespace NuGet.Insights
 {
     public class VerifiedPackagesClient
     {
-        private readonly BlobStorageJsonClient _storageClient;
+        private readonly ExternalBlobStorageClient _storageClient;
         private readonly IOptions<NuGetInsightsSettings> _options;
 
         public VerifiedPackagesClient(
-            BlobStorageJsonClient storageClient,
+            ExternalBlobStorageClient storageClient,
             IOptions<NuGetInsightsSettings> options)
         {
             _storageClient = storageClient;
@@ -21,7 +21,7 @@ namespace NuGet.Insights
         public async Task<AsOfData<VerifiedPackage>> GetAsync()
         {
             return await _storageClient.DownloadNewestAsync(
-                _options.Value.VerifiedPackagesV1Urls,
+                _options.Value.VerifiedPackagesV1Urls.Select(x => new Uri(x)).ToList(),
                 _options.Value.VerifiedPackagesV1AgeLimit,
                 "verifiedPackages.json",
                 DeserializeAsync);

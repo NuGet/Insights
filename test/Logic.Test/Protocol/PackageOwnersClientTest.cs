@@ -38,7 +38,7 @@ namespace NuGet.Insights
 
             // Assert
             Assert.Equal(asOfTimestamp, set.AsOfTimestamp);
-            Assert.Equal(url, set.Url);
+            Assert.Equal(url, set.Url.AbsoluteUri);
             Assert.Equal("\"1d6ea9f13639114\"", set.ETag);
             var owners = new List<PackageOwner>();
             await foreach (var owner in set.Entries)

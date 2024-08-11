@@ -18,7 +18,7 @@ namespace NuGet.Insights
             _logger = logger;
         }
 
-        public async Task<Uri> FollowRedirectsAsync(string url)
+        public async Task<Uri> FollowRedirectsAsync(Uri url)
         {
             using var request = new HttpRequestMessage(HttpMethod.Head, url);
             using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
@@ -29,7 +29,7 @@ namespace NuGet.Insights
                 throw new InvalidOperationException("No request URL was found on the response message.");
             }
 
-            if (lastUrl.OriginalString == url)
+            if (lastUrl == url)
             {
                 _logger.LogInformation(
                     "The request HEAD {Url} does not have a redirect. The final status is {StatusCode} {ReasonPhrase}.",

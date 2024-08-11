@@ -115,7 +115,7 @@ namespace NuGet.Insights
             await using var data = await Target.GetAsync();
 
             var entries = await data.Entries.ToArrayAsync();
-            Assert.Equal("https://api.example.com/b/downloads.v1.json", data.Url);
+            Assert.Equal("https://api.example.com/b/downloads.v1.json", data.Url.AbsoluteUri);
             Assert.Equal(
                 new[]
                 {
@@ -253,7 +253,7 @@ namespace NuGet.Insights
 
             Assert.Equal("W/\"my-etag\"", data.ETag);
             Assert.Equal(lastModified, data.AsOfTimestamp);
-            Assert.Equal(Settings.DownloadsV1Urls.Single(), data.Url);
+            Assert.Equal(Settings.DownloadsV1Urls.Single(), data.Url.AbsoluteUri);
             var entries = await data.Entries.ToArrayAsync();
             Assert.Equal(
                 new[]
@@ -285,14 +285,14 @@ namespace NuGet.Insights
             RedirectResolver = new RedirectResolver(HttpClient, output.GetLogger<RedirectResolver>());
             ServiceClientFactory = new ServiceClientFactory(Options.Object, output.GetLoggerFactory());
             TelemetryClient = output.GetTelemetryClient();
-            StorageClient = new BlobStorageJsonClient(
+            StorageClient = new ExternalBlobStorageClient(
                 HttpClient,
                 RedirectResolver,
                 ServiceClientFactory,
                 Throttle,
                 TelemetryClient,
                 Options.Object,
-                output.GetLogger<BlobStorageJsonClient>());
+                output.GetLogger<ExternalBlobStorageClient>());
             Target = new PackageDownloadsClient(StorageClient, Options.Object);
         }
 
@@ -304,7 +304,7 @@ namespace NuGet.Insights
         public RedirectResolver RedirectResolver { get; }
         public ServiceClientFactory ServiceClientFactory { get; }
         public ITelemetryClient TelemetryClient { get; }
-        public BlobStorageJsonClient StorageClient { get; }
+        public ExternalBlobStorageClient StorageClient { get; }
         public PackageDownloadsClient Target { get; }
     }
 }

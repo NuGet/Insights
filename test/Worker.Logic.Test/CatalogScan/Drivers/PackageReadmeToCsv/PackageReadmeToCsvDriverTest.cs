@@ -47,11 +47,16 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
                     return new HttpResponseMessage(HttpStatusCode.OK)
                     {
                         RequestMessage = r,
+                        Headers =
+                        {
+                            ETag = new EntityTagHeaderValue("\"some-etag\""),
+                        },
                         Content = new StringContent(content)
                         {
                             Headers =
                             {
                                 ContentType = new MediaTypeHeaderValue("text/plain"),
+                                LastModified = DateTimeOffset.Parse("2024-08-11T08:15:00Z", CultureInfo.InvariantCulture),
                             },
                         },
                     };

@@ -8,7 +8,7 @@ namespace NuGet.Insights
         [Fact]
         public async Task ResolvesNoRedirects()
         {
-            var lastUrl = await Target.FollowRedirectsAsync("https://api.nuget.org/v3/index.json");
+            var lastUrl = await Target.FollowRedirectsAsync(new Uri("https://api.nuget.org/v3/index.json"));
 
             Assert.Equal("https://api.nuget.org/v3/index.json", lastUrl.AbsoluteUri);
         }
@@ -16,7 +16,7 @@ namespace NuGet.Insights
         [Fact]
         public async Task ResolvesRedirect()
         {
-            var lastUrl = await Target.FollowRedirectsAsync("http://nuget.org/");
+            var lastUrl = await Target.FollowRedirectsAsync(new Uri("http://nuget.org/"));
 
             Assert.Equal("https://www.nuget.org/", lastUrl.AbsoluteUri);
         }

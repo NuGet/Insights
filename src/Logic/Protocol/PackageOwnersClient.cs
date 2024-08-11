@@ -9,11 +9,11 @@ namespace NuGet.Insights
 {
     public class PackageOwnersClient
     {
-        private readonly BlobStorageJsonClient _storageClient;
+        private readonly ExternalBlobStorageClient _storageClient;
         private readonly IOptions<NuGetInsightsSettings> _options;
 
         public PackageOwnersClient(
-            BlobStorageJsonClient storageClient,
+            ExternalBlobStorageClient storageClient,
             IOptions<NuGetInsightsSettings> options)
         {
             _storageClient = storageClient;
@@ -23,7 +23,7 @@ namespace NuGet.Insights
         public async Task<AsOfData<PackageOwner>> GetAsync()
         {
             return await _storageClient.DownloadNewestAsync(
-                _options.Value.OwnersV2Urls,
+                _options.Value.OwnersV2Urls.Select(x => new Uri(x)).ToList(),
                 _options.Value.OwnersV2AgeLimit,
                 "owners.v2.json",
                 DeserializeAsync);

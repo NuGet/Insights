@@ -120,17 +120,11 @@ namespace NuGet.Insights
                         using var responseStream = await response.Content.ReadAsStreamAsync();
                         await responseStream.CopyToAsync(destStream);
 
-                        var headers = Enumerable.Empty<KeyValuePair<string, IEnumerable<string>>>()
-                            .Concat(response.Headers)
-                            .Concat(response.Content.Headers)
-                            .SelectMany(x => x.Value.Select(y => new { x.Key, Value = y }))
-                            .ToLookup(x => x.Key, x => x.Value, StringComparer.OrdinalIgnoreCase);
-
                         return new PackageManifestInfoV1
                         {
                             CommitTimestamp = leafItem.CommitTimestamp,
                             Available = true,
-                            HttpHeaders = headers,
+                            HttpHeaders = response.GetHeaderLookup(),
                             ManifestBytes = new Memory<byte>(destStream.GetBuffer(), 0, (int)destStream.Length),
                         };
                     },

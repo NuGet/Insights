@@ -56,11 +56,57 @@ namespace NuGet.Insights
             Assert.Equal(ReadmeType.None, info.ReadmeType);
         }
 
+        [StorageTokenCredentialFact]
+        public async Task ReturnsReadmeContentWithLegacyPatternFromPrivateAzureStorage()
+        {
+            // Arrange
+            var serviceClientFactory = new ServiceClientFactory(
+                Options.Create(new NuGetInsightsSettings().WithTestStorageSettings()),
+                Output.GetLoggerFactory());
+            var blobClient = await serviceClientFactory.GetBlobServiceClientAsync();
+            var container = blobClient.GetBlobContainerClient($"{StoragePrefix}1lr1");
+            await container.CreateIfNotExistsAsync();
+            var blob = container.GetBlobClient("windowsazure.storage/9.3.3/legacy-readme");
+            await blob.UploadAsync(Resources.LoadMemoryStream(Resources.READMEs.WindowsAzure_Storage_9_3_3));
+
+            ConfigureSettings = x =>
+            {
+                x.UseBlobClientForExternalData = true;
+                x.LegacyReadmeUrlPattern = container.Uri.AbsoluteUri + "/{0}/{1}/legacy-readme";
+            };
+
+            var expected = await Resources.LoadStringReader(Resources.READMEs.WindowsAzure_Storage_9_3_3).ReadToEndAsync();
+
+            // Arrange
+            await Target.InitializeAsync();
+            var leaf = new PackageIdentityCommit
+            {
+                PackageId = "WindowsAzure.Storage",
+                PackageVersion = "9.3.3",
+                LeafType = CatalogLeafType.PackageDetails,
+                CommitTimestamp = DateTimeOffset.Parse("2020-07-08T17:12:18.5692562Z", CultureInfo.InvariantCulture),
+            };
+
+            // Act
+            var info = await Target.GetOrUpdateInfoFromLeafItemAsync(leaf);
+
+            // Assert
+            Assert.Equal(ReadmeType.Legacy, info.ReadmeType);
+            Assert.Equal(618, info.ReadmeBytes.Length);
+            Assert.NotEmpty(info.HttpHeaders);
+            var readme = Encoding.UTF8.GetString(info.ReadmeBytes.Span);
+            Assert.Equal(expected, readme);
+        }
+
         [Fact]
         public async Task ReturnsReadmeContentWithLegacyPattern()
         {
             // This URL pattern is fake.
-            ConfigureSettings = x => x.LegacyReadmeUrlPattern = "https://api.nuget.org/v3-flatcontainer/{0}/{1}/legacy-readme";
+            ConfigureSettings = x =>
+            {
+                x.UseBlobClientForExternalData = false;
+                x.LegacyReadmeUrlPattern = "https://api.nuget.org/v3-flatcontainer/{0}/{1}/legacy-readme";
+            };
             HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
             {
                 if (r.RequestUri.LocalPath.EndsWith("/legacy-readme", StringComparison.Ordinal))
@@ -69,11 +115,16 @@ namespace NuGet.Insights
                     return new HttpResponseMessage(HttpStatusCode.OK)
                     {
                         RequestMessage = r,
+                        Headers =
+                        {
+                            ETag = new EntityTagHeaderValue("\"some-etag\""),
+                        },
                         Content = new StreamContent(stream)
                         {
                             Headers =
                             {
                                 ContentType = new MediaTypeHeaderValue("text/plain"),
+                                LastModified = DateTimeOffset.Parse("2024-08-11T08:15:00Z", CultureInfo.InvariantCulture),
                             },
                         },
                     };

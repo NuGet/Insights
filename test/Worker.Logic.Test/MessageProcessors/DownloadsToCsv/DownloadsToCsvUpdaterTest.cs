@@ -260,7 +260,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
         {
             return new AsOfData<PackageDownloads>(
                 DateTimeOffset.MinValue,
-                "https://example.com/v3/index.json",
+                new Uri("https://example.com/v3/index.json"),
                 "foo",
                 entries.ToAsyncEnumerable());
         }

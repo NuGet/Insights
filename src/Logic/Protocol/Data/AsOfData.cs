@@ -5,7 +5,7 @@ namespace NuGet.Insights
 {
     public class AsOfData<T> : IAsyncDisposable, IAsOfData
     {
-        public AsOfData(DateTimeOffset asOfTimestamp, string url, string etag, IAsyncEnumerable<T> data)
+        public AsOfData(DateTimeOffset asOfTimestamp, Uri url, string etag, IAsyncEnumerable<T> data)
         {
             AsOfTimestamp = asOfTimestamp;
             Url = url;
@@ -14,7 +14,7 @@ namespace NuGet.Insights
         }
 
         public DateTimeOffset AsOfTimestamp { get; }
-        public string Url { get; }
+        public Uri Url { get; }
         public string ETag { get; }
         public IAsyncEnumerable<T> Entries { get; }
 

@@ -38,7 +38,7 @@ namespace NuGet.Insights
 
             // Assert
             Assert.Equal(asOfTimestamp, set.AsOfTimestamp);
-            Assert.Equal(url, set.Url);
+            Assert.Equal(url, set.Url.AbsoluteUri);
             Assert.Equal("\"1d6ea9f13639062\"", set.ETag);
             var verifiedPackages = new List<VerifiedPackage>();
             await foreach (var entry in set.Entries)

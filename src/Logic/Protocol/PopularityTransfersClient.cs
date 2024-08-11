@@ -9,11 +9,11 @@ namespace NuGet.Insights
 {
     public class PopularityTransfersClient
     {
-        private readonly BlobStorageJsonClient _storageClient;
+        private readonly ExternalBlobStorageClient _storageClient;
         private readonly IOptions<NuGetInsightsSettings> _options;
 
         public PopularityTransfersClient(
-            BlobStorageJsonClient storageClient,
+            ExternalBlobStorageClient storageClient,
             IOptions<NuGetInsightsSettings> options)
         {
             _storageClient = storageClient;
@@ -23,7 +23,7 @@ namespace NuGet.Insights
         public async Task<AsOfData<PopularityTransfer>> GetAsync()
         {
             return await _storageClient.DownloadNewestAsync(
-                _options.Value.PopularityTransfersV1Urls,
+                _options.Value.PopularityTransfersV1Urls.Select(x => new Uri(x)).ToList(),
                 _options.Value.PopularityTransfersV1AgeLimit,
                 "popularity-transfers.v1.json",
                 DeserializeAsync);
