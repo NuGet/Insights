@@ -39,7 +39,7 @@ namespace NuGet.Insights
         {
             if (value == null)
             {
-                throw new ArgumentNullException(nameof(value),  NoNullString);
+                throw new ArgumentNullException(nameof(value), NoNullString);
             }
 
             if (value.StartsWith(" ", StringComparison.Ordinal)
