@@ -591,7 +591,8 @@ namespace NuGet.Insights.Worker
                     // coordination, we can't be sure the other thread will properly continue work in another message,
                     // so we'll complete this message and enqueue another one in the future. This can lead to duplicated
                     // work but this is better than dropping a message before the catalog index scan is complete.
-                    message.AttemptCount++;
+
+                    message.AttemptCount += 60; // artificially increase the attempt count to delay retries
                     var messageDelay = StorageUtility.GetMessageDelay(message.AttemptCount);
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, messageDelay);
                     _logger.LogTransientWarning("Catalog index scan {ScanId} was updated by another actor. The message will be tried again in {MessageDelay}.", scan.ScanId, messageDelay);
