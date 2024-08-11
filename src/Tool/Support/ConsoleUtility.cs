@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace NuGet.Insights.Tool
 {
     public static class ConsoleUtility
     {
-        private static readonly object _consoleLock = new object();
+        private static readonly object ConsoleLock = new object();
 
         /// <summary>
         /// Log a message to the console.
@@ -19,7 +19,7 @@ namespace NuGet.Insights.Tool
 
             var color = GetColor(level);
 
-            lock (_consoleLock)
+            lock (ConsoleLock)
             {
                 // Colorize
                 if (color.HasValue)

@@ -281,7 +281,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                     idToVersionToDeleted.Add(package.Id, pair);
                 }
 
-                pair.Value[package.Version] = ReadableKey.Create(package.Version, package.IsDeleted); 
+                pair.Value[package.Version] = ReadableKey.Create(package.Version, package.IsDeleted);
             }
 
             return new VersionSet(DateTimeOffset.MinValue, idToVersionToDeleted);

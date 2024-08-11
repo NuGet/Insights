@@ -5,13 +5,13 @@ using System.IO.Compression;
 using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using Kusto.Data.Net.Client;
 using Kusto.Data;
-using McMaster.Extensions.CommandLineUtils;
-using NuGet.Insights.Worker.DownloadsToCsv;
 using Kusto.Data.Common;
-using NuGet.Insights.Worker.BuildVersionSet;
+using Kusto.Data.Net.Client;
+using McMaster.Extensions.CommandLineUtils;
 using MessagePack;
+using NuGet.Insights.Worker.BuildVersionSet;
+using NuGet.Insights.Worker.DownloadsToCsv;
 
 namespace NuGet.Insights.Tool
 {

@@ -14,7 +14,7 @@ namespace NuGet.Insights
             [Fact]
             public async Task ReturnsCommitTimestamp()
             {
-                for (var attempt = 0;; attempt++)
+                for (var attempt = 0; ; attempt++)
                 {
                     var index = await Target.GetCatalogIndexAsync();
                     var commitTimestamp = await Target.GetCommitTimestampAsync();

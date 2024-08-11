@@ -19,7 +19,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
             BucketedPackageService bucketedPackageService,
             TimedReprocessStorageService storageService,
             AutoRenewingStorageLeaseService leaseService,
-            CatalogScanService catalogScanService, 
+            CatalogScanService catalogScanService,
             IMessageEnqueuer messageEnqueuer,
             IOptions<NuGetInsightsWorkerSettings> options)
         {

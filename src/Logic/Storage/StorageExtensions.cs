@@ -42,7 +42,7 @@ namespace NuGet.Insights
         }
 
         private static async Task CreateIfNotExistsAsync(
-            Func<Task<bool>> existsAsync, 
+            Func<Task<bool>> existsAsync,
             Func<Task> createIfNotExistsAsync,
             bool retry,
             string errorCode)

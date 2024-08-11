@@ -98,7 +98,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
 
         public async Task<IReadOnlyList<TimedReprocessRun>> GetLatestRunsAsync(int maxEntities)
         {
-            return await(await GetTableAsync())
+            return await (await GetTableAsync())
                 .QueryAsync<TimedReprocessRun>(x => x.PartitionKey == TimedReprocessRun.DefaultPartitionKey)
                 .Take(maxEntities)
                 .ToListAsync();

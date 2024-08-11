@@ -189,7 +189,7 @@ namespace NuGet.Insights
 
         public static IEnumerable<List<T>> GroupAndOrder<T>(IEnumerable<T> items, Func<T, ITimer> getTimer, IComparer<ITimer> comparer)
         {
-            List<T> currentGroup = null; 
+            List<T> currentGroup = null;
 
             foreach (var timer in items.OrderBy(getTimer, comparer))
             {

@@ -224,7 +224,7 @@ namespace NuGet.Insights.Worker
 
         public static IReadOnlyList<CatalogScanDriverType> StartableDriverTypes { get; } = ValidDriverTypes
             .Order()
-            .ToList();        
+            .ToList();
 
         private static readonly FrozenDictionary<CatalogScanDriverType, IReadOnlyList<CatalogScanDriverType>> TypeToTransitiveClosures = StartableDriverTypes
             .ToFrozenDictionary(x => x, driverType =>

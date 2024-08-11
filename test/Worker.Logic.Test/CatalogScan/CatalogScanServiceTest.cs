@@ -124,7 +124,7 @@ namespace NuGet.Insights.Worker
             public async Task AlreadyRunning()
             {
                 // Arrange
-                await CatalogScanService.InitializeAsync(); 
+                await CatalogScanService.InitializeAsync();
                 var first = await CatalogScanService.UpdateAsync(ScanId, StorageSuffix, DriverType, Buckets);
 
                 // Act

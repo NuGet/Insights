@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO.Compression;
-using NuGet.Insights.Worker.PackageAssetToCsv;
-using NuGet.ContentModel;
 using System.Buffers;
+using System.IO.Compression;
 using System.Security.Cryptography;
 using Knapcode.MiniZip;
+using NuGet.ContentModel;
+using NuGet.Insights.Worker.PackageAssetToCsv;
 
 namespace NuGet.Insights.Worker.PackageContentToCsv
 {

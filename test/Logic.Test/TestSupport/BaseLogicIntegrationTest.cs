@@ -306,15 +306,15 @@ namespace NuGet.Insights
             var destPath = Path.Combine(repoDir, "test", projectDir, testDataFile);
 
             lock (StringLock.GetOrAdd(sourcePath, _ => new object()))
-            lock (StringLock.GetOrAdd(destPath, _ => new object()))
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(testDataFile));
-                File.WriteAllText(testDataFile, actual);
+                lock (StringLock.GetOrAdd(destPath, _ => new object()))
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(testDataFile));
+                    File.WriteAllText(testDataFile, actual);
 
-                Directory.CreateDirectory(Path.GetDirectoryName(destPath));
+                    Directory.CreateDirectory(Path.GetDirectoryName(destPath));
 
-                File.Copy(sourcePath, destPath, overwrite: true);
-            }
+                    File.Copy(sourcePath, destPath, overwrite: true);
+                }
         }
 
         public Task InitializeAsync()

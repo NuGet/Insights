@@ -210,7 +210,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 assembly.Culture = metadataReader.GetString(assemblyDefinition.Culture);
                 assembly.HashAlgorithm = assemblyDefinition.HashAlgorithm;
                 assembly.EdgeCases = PackageAssemblyEdgeCases.None;
-                
+
                 SetPublicKeyInfo(assembly, metadataReader, assemblyDefinition);
                 SetAssemblyAttributeInfo(assembly, metadataReader);
 

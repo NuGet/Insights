@@ -11,7 +11,7 @@ namespace NuGet.Insights.Website
         public TimeSpan CursorAge { get; set; }
         public CursorTableEntity Cursor { get; set; }
         public IReadOnlyList<CatalogIndexScan> LatestScans { get; set; }
-        public IReadOnlyList<CatalogScanDriverType> Dependencies { get; set; } 
+        public IReadOnlyList<CatalogScanDriverType> Dependencies { get; set; }
 
         public DateTimeOffset DefaultMax { get; set; }
 

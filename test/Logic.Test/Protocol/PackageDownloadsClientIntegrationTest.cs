@@ -35,7 +35,7 @@ namespace NuGet.Insights
             Assert.NotEmpty(actual);
             Assert.Equal(expected, actual);
         }
-        
+
         public PackageDownloadsClient Target => Host.Services.GetRequiredService<PackageDownloadsClient>();
         private string TestDataPath => Path.Combine("DownloadsToCsv", Step1, "downloads.v1.json");
 

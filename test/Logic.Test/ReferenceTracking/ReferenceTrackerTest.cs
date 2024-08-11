@@ -92,9 +92,9 @@ namespace NuGet.Insights.ReferenceTracking
 
         public class InterleavedOperation_6 : BaseInterleavedOperation
         {
-            public InterleavedOperation_6(Fixture fixture, ITestOutputHelper output) : base(fixture, output) {}
+            public InterleavedOperation_6(Fixture fixture, ITestOutputHelper output) : base(fixture, output) { }
             public static IEnumerable<object[]> TestData => AllTestData.Where((x, i) => i % ParallelTestCount == 6);
-            [Theory(Skip = "Too slow.")] [MemberData(nameof(TestData))] public Task Execute(string desiredOrder) => TestAsync(desiredOrder);
+            [Theory(Skip = "Too slow.")][MemberData(nameof(TestData))] public Task Execute(string desiredOrder) => TestAsync(desiredOrder);
         }
 
         public class InterleavedOperation_7 : BaseInterleavedOperation

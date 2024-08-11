@@ -133,7 +133,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                         assembly.Path);
                     continue;
                 }
-                
+
                 var attributeValueLength = blobReader.Length;
                 totalValueLength += attributeValueLength;
 
@@ -164,7 +164,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                         assembly.Path);
                     continue;
                 }
-                catch (OutOfMemoryException ex) when (decoder.ArrayCount > 0) 
+                catch (OutOfMemoryException ex) when (decoder.ArrayCount > 0)
                 {
                     // It's possible a mega array gets allocated, mitigate this, e.g. Kentico.Xperience.AspNet.Mvc5.Libraries 13.0.18)
                     edgeCases |= PackageAssemblyEdgeCases.CustomAttributes_ArrayOutOfMemory;

@@ -70,7 +70,7 @@ namespace NuGet.Insights
                 sourceFilePath,
                 memberName,
                 dimensionNames: new[] { dimension1Name },
-                dimensionValues: new[] { dimension1Value } );
+                dimensionValues: new[] { dimension1Value });
         }
 
         public static QueryLoopMetrics New(

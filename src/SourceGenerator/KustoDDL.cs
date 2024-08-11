@@ -5,45 +5,45 @@ namespace NuGet.Insights
 {
     public static partial class KustoDDL
     {
-        private static Dictionary<Type, string> _typeToDefaultTableName;
-        private static Dictionary<Type, IReadOnlyList<string>> _typeToDDL;
-        private static Dictionary<Type, string> _typeToPartitioningPolicy;
+        private static Dictionary<Type, string> InternalTypeToDefaultTableName;
+        private static Dictionary<Type, IReadOnlyList<string>> InternalTypeToDDL;
+        private static Dictionary<Type, string> InternalTypeToPartitioningPolicy;
 
-        public static IReadOnlyDictionary<Type, string> TypeToDefaultTableName => _typeToDefaultTableName;
-        public static IReadOnlyDictionary<Type, IReadOnlyList<string>> TypeToDDL => _typeToDDL;
-        public static IReadOnlyDictionary<Type, string> TypeToPartitioningPolicy => _typeToPartitioningPolicy;
+        public static IReadOnlyDictionary<Type, string> TypeToDefaultTableName => InternalTypeToDefaultTableName;
+        public static IReadOnlyDictionary<Type, IReadOnlyList<string>> TypeToDDL => InternalTypeToDDL;
+        public static IReadOnlyDictionary<Type, string> TypeToPartitioningPolicy => InternalTypeToPartitioningPolicy;
         public const string CsvMappingName = "BlobStorageMapping";
 
         private static bool AddTypeToDefaultTableName(Type type, string tableName)
         {
-            if (_typeToDefaultTableName == null)
+            if (InternalTypeToDefaultTableName == null)
             {
-                _typeToDefaultTableName = new Dictionary<Type, string>();
+                InternalTypeToDefaultTableName = new Dictionary<Type, string>();
             }
 
-            _typeToDefaultTableName.Add(type, tableName);
+            InternalTypeToDefaultTableName.Add(type, tableName);
             return true;
         }
 
         private static bool AddTypeToDDL(Type type, IReadOnlyList<string> ddl)
         {
-            if (_typeToDDL == null)
+            if (InternalTypeToDDL == null)
             {
-                _typeToDDL = new Dictionary<Type, IReadOnlyList<string>>();
+                InternalTypeToDDL = new Dictionary<Type, IReadOnlyList<string>>();
             }
 
-            _typeToDDL.Add(type, ddl);
+            InternalTypeToDDL.Add(type, ddl);
             return true;
         }
 
         private static bool AddTypeToPartitioningPolicy(Type type, string partitioningPolicy)
         {
-            if (_typeToPartitioningPolicy == null)
+            if (InternalTypeToPartitioningPolicy == null)
             {
-                _typeToPartitioningPolicy = new Dictionary<Type, string>();
+                InternalTypeToPartitioningPolicy = new Dictionary<Type, string>();
             }
 
-            _typeToPartitioningPolicy.Add(type, partitioningPolicy);
+            InternalTypeToPartitioningPolicy.Add(type, partitioningPolicy);
             return true;
         }
     }
