@@ -5,7 +5,7 @@ This driver loads package README content into Azure Table Storage for other driv
 |                                    |                                                                                                                                                    |
 | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CatalogScanDriverType` enum value | `LoadPackageVersion`                                                                                                                               |
-| Driver implementation              | [`LoadPackageVersionDriver`](../../src/Worker.Logic/CatalogScan/Drivers/LoadPackageVersion/LoadPackageVersionDriver.cs)                            |
+| Driver implementation              | [`LoadPackageVersionDriver`](../../src/Worker.Logic/Drivers/LoadPackageVersion/LoadPackageVersionDriver.cs)                                        |
 | Processing mode                    | process latest catalog leaf per package ID and version                                                                                             |
 | Cursor dependencies                | [V3 package content](https://learn.microsoft.com/en-us/nuget/api/package-base-address-resource): blocks on this cursor to align with other drivers |
 | Components using driver output     | [`PackageVersionToCsv`](PackageVersionToCsv.md): needs the full version list to determine latest                                                   |

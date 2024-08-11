@@ -4,15 +4,15 @@ This table has the package vulnerability information associated with individual 
 
 Package vulnerability information on NuGet.org is sourced from GitHub's security advisory data feed available on the GraphQL API. The fields available in this data set are limited to those exposed in the V3 catalog and does not include all information that GitHub has about the vulnerability.
 
-|                              |                                                                                                                           |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Cardinality                  | One or more rows per package, more than one if the package has multiple vulnerabilities                                   |
-| Child tables                 |                                                                                                                           |
-| Parent tables                |                                                                                                                           |
-| Column used for partitioning | Identity                                                                                                                  |
-| Data file container name     | packagevulnerabilities                                                                                                    |
-| Driver                       | [`CatalogDataToCsv`](../drivers/CatalogDataToCsv.md)                                                                      |
-| Record type                  | [`PackageVulnerabilityRecord`](../../src/Worker.Logic/CatalogScan/Drivers/CatalogDataToCsv/PackageVulnerabilityRecord.cs) |
+|                              |                                                                                                               |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Cardinality                  | One or more rows per package, more than one if the package has multiple vulnerabilities                       |
+| Child tables                 |                                                                                                               |
+| Parent tables                |                                                                                                               |
+| Column used for partitioning | Identity                                                                                                      |
+| Data file container name     | packagevulnerabilities                                                                                        |
+| Driver                       | [`CatalogDataToCsv`](../drivers/CatalogDataToCsv.md)                                                          |
+| Record type                  | [`PackageVulnerabilityRecord`](../../src/Worker.Logic/Drivers/CatalogDataToCsv/PackageVulnerabilityRecord.cs) |
 
 ## Table schema
 

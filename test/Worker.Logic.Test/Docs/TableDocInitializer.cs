@@ -26,7 +26,7 @@ namespace NuGet.Insights.Worker
             builder.AppendLine(CultureInfo.InvariantCulture, $"| Column used for partitioning | TODO |");
             builder.AppendLine(CultureInfo.InvariantCulture, $"| Data file container name     | {_info.DefaultContainerName} |");
             builder.AppendLine(CultureInfo.InvariantCulture, $"| Driver                       | [`TODO`](../drivers/TODO.md) |");
-            builder.AppendLine(CultureInfo.InvariantCulture, $"| Record type                  | [`{_info.RecordType.Name}`](../../src/Worker.Logic/CatalogScan/Drivers/TODO/{_info.RecordType.Name}.cs) |");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"| Record type                  | [`{_info.RecordType.Name}`](../../src/Worker.Logic/Drivers/TODO/{_info.RecordType.Name}.cs) |");
             builder.AppendLine(CultureInfo.InvariantCulture, $"");
 
             var enumAndDynamics = new List<(string name, bool isEnum)>();

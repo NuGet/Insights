@@ -22,7 +22,7 @@ namespace NuGet.Insights.Worker
         {
             var builder = new StringBuilder();
 
-            var processingMode = (_info.IndexResult, _info.PageResult) switch 
+            var processingMode = (_info.IndexResult, _info.PageResult) switch
             {
                 (CatalogIndexScanResult.ExpandAllLeaves, CatalogPageScanResult.Processed) => "process just the catalog page",
                 (CatalogIndexScanResult.ExpandAllLeaves, CatalogPageScanResult.ExpandAllowDuplicates) => "process all catalog leaves, including duplicates",
@@ -69,7 +69,7 @@ namespace NuGet.Insights.Worker
             builder.AppendLine(CultureInfo.InvariantCulture, $"|                                    |      |");
             builder.AppendLine(CultureInfo.InvariantCulture, $"| ---------------------------------- | ---- |");
             builder.AppendLine(CultureInfo.InvariantCulture, $"| `CatalogScanDriverType` enum value | `{_info.DriverType}` |");
-            builder.AppendLine(CultureInfo.InvariantCulture, $"| Driver implementation              | [`{_info.DriverType}Driver`](../../src/Worker.Logic/CatalogScan/Drivers/{_info.DriverType}/{_info.DriverType}Driver.cs) |");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"| Driver implementation              | [`{_info.DriverType}Driver`](../../src/Worker.Logic/Drivers/{_info.DriverType}/{_info.DriverType}Driver.cs) |");
             builder.AppendLine(CultureInfo.InvariantCulture, $"| Processing mode                    | {processingMode} |");
             builder.AppendLine(CultureInfo.InvariantCulture, $"| Cursor dependencies                | {string.Join("<br />", cursorDependencies)} |");
             builder.AppendLine(CultureInfo.InvariantCulture, $"| Components using driver output     | {string.Join("<br />", dependents)} |");

@@ -10,10 +10,10 @@
     <None Include="$(CompilerGeneratedFilesOutputPath)\**\*.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(EnableNPE)' != 'true'">
-    <Compile Remove="CatalogScan\Drivers\NuGetPackageExplorerToCsv\*" />
+    <Compile Remove="Drivers\NuGetPackageExplorerToCsv\*" />
   </ItemGroup>
   <ItemGroup Condition="'$(EnableCryptoAPI)' != 'true'">
-    <Compile Remove="CatalogScan\Drivers\PackageCertificateToCsv\*" />
+    <Compile Remove="Drivers\PackageCertificateToCsv\*" />
     <Compile Remove="MessageProcessors\ReferenceTracking\CleanupOrphanCertificateRecordsAdapter.cs" />
   </ItemGroup>
   <ItemGroup>

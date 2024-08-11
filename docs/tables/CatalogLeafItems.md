@@ -16,7 +16,7 @@ some packages were created before their first commit timestamp.
 | Column used for partitioning | PageUrl                                                                                                                                                                                 |
 | Data file container name     | catalogleafitems                                                                                                                                                                        |
 | Driver                       | [`CatalogDataToCsv`](../drivers/CatalogDataToCsv.md)                                                                                                                                    |
-| Record type                  | [`CatalogLeafItemRecord`](../../src/Worker.Logic/CatalogScan/Drivers/CatalogDataToCsv/CatalogLeafItemRecord.cs)                                                                         |
+| Record type                  | [`CatalogLeafItemRecord`](../../src/Worker.Logic/Drivers/CatalogDataToCsv/CatalogLeafItemRecord.cs)                                                                                     |
 
 ## Table schema
 

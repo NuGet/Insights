@@ -56,7 +56,7 @@ and how it fetches and persists data about packages.
    You'll need to add a Azure Blob Storage container name to
    [`NuGetInsightsWorkerSettings.cs`](../src/Worker.Logic/NuGetInsightsWorkerSettings.cs) to store the CSV files.
 
-   - Example implementation: [`PackageAssetToCsvDriver`](../src/Worker.Logic/CatalogScan/Drivers/PackageAssetToCsv/PackageAssetToCsvDriver.cs) -
+   - Example implementation: [`PackageAssetToCsvDriver`](../src/Worker.Logic/Drivers/PackageAssetToCsv/PackageAssetToCsvDriver.cs) -
      For each catalog leaf item, this driver fetches the list of file in the .nupkg and execute's NuGet client tooling's
      restore pattern sets (i.e. the rules used by `dotnet restore` to understand the significance of each package file)
      on the file list to determine what assets are in the package. For each asset, it writes out all of the properties (such
@@ -68,7 +68,7 @@ and how it fetches and persists data about packages.
    information in a catalog leaf item (package ID + version + leaf URL + type). You can do whatever you want to process
    that package. It's up to you to fetch the data about the package you care about and persist the results.
 
-   - Example implementation: [`BuildVersionSet`](../src/Worker.Logic/CatalogScan/Drivers/BuildVersionSet/BuildVersionSetDriver.cs).
+   - Example implementation: [`BuildVersionSet`](../src/Worker.Logic/Drivers/BuildVersionSet/BuildVersionSetDriver.cs).
      This driver operates that this level since it doesn't even need to process each leaf item individually. Instead, it
      can just observe the data at the [catalog page](https://docs.microsoft.com/en-us/nuget/api/catalog-resource#catalog-page)
      level and drive each leaf item to CSV.
@@ -79,7 +79,7 @@ and how it fetches and persists data about packages.
    operating on multiple package leaves at once. The only reason you'd use this is for performance reasons. You can
    process and save results for multiple packages at once. This can be used to reduce round trips to storage.
 
-   - Example implementation: [`LoadPackageArchiveDriver`](../src/Worker.Logic/CatalogScan/Drivers/LoadPackageArchive/LoadPackageArchiveDriver.cs) -
+   - Example implementation: [`LoadPackageArchiveDriver`](../src/Worker.Logic/Drivers/LoadPackageArchive/LoadPackageArchiveDriver.cs) -
      This driver uses [MiniZip](https://github.com/joelverhagen/MiniZip) to fetch the ZIP central directory and package
      signature file for several packages and store them in Table Storage. The "batch" part of this flow is saving the
      results into Azure Table Storage.
