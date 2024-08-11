@@ -63,7 +63,7 @@ namespace NuGet.Insights.Worker
             }
 
             _telemetryClient.TrackMetric(MetricNames.StorageQueueSizeMain, main);
-            _telemetryClient.TrackMetric(MetricNames.StorageQueueSizeExpandPoison, poison);
+            _telemetryClient.TrackMetric(MetricNames.StorageQueueSizePoison, poison);
             _telemetryClient.TrackMetric(MetricNames.StorageQueueSize, main + poison);
         }
 
