@@ -8,6 +8,7 @@ namespace NuGet.Insights.Worker
         public bool UseBulkEnqueueStrategy { get; set; } = true;
         public int BulkEnqueueThreshold { get; set; } = 10;
         public int EnqueueWorkers { get; set; } = 1;
+        public int MaxBulkEnqueueMessageCount { get; set; } = 50;
         public int AppendResultStorageBucketCount { get; set; } = 1000; // Azure Data Explorer can only import up to 1000 blobs.
         public bool AllowBatching { get; set; } = true;
         public bool DisableMessageDelay { get; set; } = false;

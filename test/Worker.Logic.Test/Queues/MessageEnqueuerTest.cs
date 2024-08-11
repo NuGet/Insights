@@ -24,6 +24,25 @@ namespace NuGet.Insights.Worker
         }
 
         [Theory]
+        [InlineData(8, 1)]
+        [InlineData(9, 1)]
+        [InlineData(10, 1)]
+        [InlineData(11, 2)]
+        [InlineData(12, 2)]
+        public async Task CanLimitBatchSizeByMessageCount(int messageCount, int batchCount)
+        {
+            Settings.MaxBulkEnqueueMessageCount = 10;
+            var schema = new SchemaV1<string>("i");
+
+            await Target.EnqueueAsync(
+                Enumerable.Range(0, messageCount).Select(i => GetSerializedMessage(i, 20)).ToList(),
+                schema,
+                TimeSpan.Zero);
+
+            Assert.Equal(batchCount, EnqueuedMessages.Count);
+        }
+
+        [Theory]
         [InlineData(3)]
         [InlineData(100)]
         [InlineData(101)]
@@ -150,6 +169,7 @@ namespace NuGet.Insights.Worker
                 MessageBatcher.Object,
                 RawMessageEnqueuer.Object,
                 output.GetTelemetryClient(),
+                Options.Object,
                 output.GetLogger<MessageEnqueuer>());
         }
 

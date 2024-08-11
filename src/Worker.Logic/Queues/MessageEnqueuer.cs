@@ -14,6 +14,7 @@ namespace NuGet.Insights.Worker
         private readonly IMessageBatcher _batcher;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
         private readonly ITelemetryClient _telemetryClient;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<MessageEnqueuer> _logger;
 
         public MessageEnqueuer(
@@ -21,12 +22,14 @@ namespace NuGet.Insights.Worker
             IMessageBatcher batcher,
             IRawMessageEnqueuer rawMessageEnqueuer,
             ITelemetryClient telemetryClient,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<MessageEnqueuer> logger)
         {
             _serializer = serializer;
             _batcher = batcher;
             _rawMessageEnqueuer = rawMessageEnqueuer;
             _telemetryClient = telemetryClient;
+            _options = options;
             _logger = logger;
         }
 
@@ -178,7 +181,7 @@ namespace NuGet.Insights.Worker
                     else
                     {
                         var newBatchMessageLength = batchMessageLength + ",".Length + innerDataLength;
-                        if (newBatchMessageLength > _rawMessageEnqueuer.MaxMessageSize)
+                        if (newBatchMessageLength > _rawMessageEnqueuer.MaxMessageSize || batch.Count >= _options.Value.MaxBulkEnqueueMessageCount)
                         {
                             await EnqueueBulkEnqueueMessageAsync(isPoison, addAsync, batchMessage, batchMessageLength);
                             batch.Clear();
