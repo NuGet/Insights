@@ -92,6 +92,24 @@ namespace NuGet.Insights.StorageNoOpRetry
                 () => _client.UpdateEntityAsync(entity, ifMatch, mode, cancellationToken));
         }
 
+        public async Task<EntityChangeResult> TryUpdateEntityAsync<T>(
+            T entity,
+            ETag ifMatch,
+            TableUpdateMode mode = TableUpdateMode.Merge,
+            string clientRequestIdColumn = nameof(ITableEntityWithClientRequestId.ClientRequestId),
+            CancellationToken cancellationToken = default) where T : ITableEntity
+        {
+            try
+            {
+                var response = await UpdateEntityAsync(entity, ifMatch, mode, clientRequestIdColumn, cancellationToken);
+                return EntityChangeResult.Success(response);
+            }
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.PreconditionFailed && ex.ErrorCode == TableErrorCode.UpdateConditionNotSatisfied)
+            {
+                return EntityChangeResult.PreconditionFailed();
+            }
+        }
+
         public async Task<Response> AddEntityAsync<T>(
             T entity,
             string clientRequestIdColumn = nameof(ITableEntityWithClientRequestId.ClientRequestId),

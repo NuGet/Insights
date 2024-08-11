@@ -329,6 +329,28 @@ namespace NuGet.Insights.Worker
 
         public async Task ReplaceAsync(CatalogIndexScan scan)
         {
+            TrackCatalogIndexScanUpdate(scan);
+            await (await GetIndexScanTableAsync()).UpdateEntityAsync(scan, scan.ETag, TableUpdateMode.Replace);
+        }
+
+        public async Task<EntityChangeResult> TryReplaceAsync(CatalogIndexScan scan)
+        {
+            TrackCatalogIndexScanUpdate(scan);
+            var result = await (await GetIndexScanTableAsync()).TryUpdateEntityAsync(scan, scan.ETag, TableUpdateMode.Replace);
+            switch (result.Type)
+            {
+                case EntityChangeResultType.Success:
+                    scan.UpdateETag(result.Response);
+                    return result;
+                case EntityChangeResultType.PreconditionFailed:
+                    return result;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        private void TrackCatalogIndexScanUpdate(CatalogIndexScan scan)
+        {
             var runtime = scan.Started.HasValue ? (scan.Completed ?? DateTimeOffset.UtcNow) - scan.Started.Value : TimeSpan.Zero;
 
             _telemetryClient.TrackMetric(
@@ -355,8 +377,6 @@ namespace NuGet.Insights.Worker
                 });
 
             _logger.LogInformation("Replacing catalog index scan {ScanId}, state: {State}.", scan.ScanId, scan.State);
-            var response = await (await GetIndexScanTableAsync()).UpdateEntityAsync(scan, scan.ETag, TableUpdateMode.Replace);
-            scan.UpdateETag(response);
         }
 
         public async Task ReplaceAsync(CatalogPageScan pageScan)

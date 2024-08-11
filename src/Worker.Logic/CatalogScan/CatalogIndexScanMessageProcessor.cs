@@ -87,7 +87,10 @@ namespace NuGet.Insights.Worker
 
                 scan.State = CatalogIndexScanState.Initialized;
                 scan.Started = DateTimeOffset.UtcNow;
-                await _storageService.ReplaceAsync(scan);
+                if (!await TryReplaceAsync(message, scan))
+                {
+                    return;
+                }
 
                 _telemetryClient
                     .GetMetric("CatalogIndexScan.Count", "DriverType", "ParentDriverType", "RangeType")
@@ -123,7 +126,10 @@ namespace NuGet.Insights.Worker
                         throw new NotSupportedException($"Catalog index scan result '{scan.Result}' is not supported.");
                 }
 
-                await _storageService.ReplaceAsync(scan);
+                if (!await TryReplaceAsync(message, scan))
+                {
+                    return;
+                }
             }
 
             if (scan.BucketRanges is null)
@@ -156,7 +162,7 @@ namespace NuGet.Insights.Worker
 
         private async Task ExpandAllLeavesAsync(CatalogIndexScanMessage message, CatalogIndexScan scan, ICatalogScanDriver driver)
         {
-            await HandleInitializedStateAsync(scan, nextState: CatalogIndexScanState.Expanding);
+            await HandleInitializedStateAsync(message, scan, nextState: CatalogIndexScanState.Expanding);
 
             var lazyIndexTask = new Lazy<Task<CatalogIndex>>(GetCatalogIndexAsync);
             var lazyPageScansTask = new Lazy<Task<List<CatalogPageScan>>>(async () => GetPageScans(scan, await lazyIndexTask.Value));
@@ -168,7 +174,10 @@ namespace NuGet.Insights.Worker
                 await ExpandAsync(scan, pageScans);
 
                 scan.State = CatalogIndexScanState.Enqueuing;
-                await _storageService.ReplaceAsync(scan);
+                if (!await TryReplaceAsync(message, scan))
+                {
+                    return;
+                }
             }
 
             // Enqueueing: enqueue a message for each page
@@ -179,7 +188,10 @@ namespace NuGet.Insights.Worker
 
                 scan.State = CatalogIndexScanState.Working;
                 message.AttemptCount = 0;
-                await _storageService.ReplaceAsync(scan);
+                if (!await TryReplaceAsync(message, scan))
+                {
+                    return;
+                }
             }
 
             // Waiting: wait for the page scans and subsequent leaf scans to complete
@@ -194,7 +206,10 @@ namespace NuGet.Insights.Worker
                 else
                 {
                     scan.State = CatalogIndexScanState.StartingAggregate;
-                    await _storageService.ReplaceAsync(scan);
+                    if (!await TryReplaceAsync(message, scan))
+                    {
+                        return;
+                    }
                 }
             }
 
@@ -206,7 +221,7 @@ namespace NuGet.Insights.Worker
             var findLatestLeafScanId = _storageService.GenerateFindLatestScanId(scan);
             var enqueueTaskStateKey = new TaskStateKey(scan.StorageSuffix, $"{scan.ScanId}-{TableScanDriverType.EnqueueCatalogLeafScans}", "start");
 
-            await HandleInitializedStateAsync(scan, nextState: CatalogIndexScanState.FindingLatest);
+            await HandleInitializedStateAsync(message, scan, nextState: CatalogIndexScanState.FindingLatest);
 
             // FindingLatest: start and wait on a "find latest leaves" scan for the range of this parent scan
             if (scan.State == CatalogIndexScanState.FindingLatest)
@@ -251,7 +266,10 @@ namespace NuGet.Insights.Worker
                     _logger.LogInformation("Finding the latest catalog leaf scans is complete.");
 
                     scan.State = CatalogIndexScanState.Expanding;
-                    await _storageService.ReplaceAsync(scan);
+                    if (!await TryReplaceAsync(message, scan))
+                    {
+                        return;
+                    }
                 }
             }
 
@@ -270,7 +288,10 @@ namespace NuGet.Insights.Worker
                 await _taskStateStorageService.InitializeAsync(scan.StorageSuffix);
                 await _taskStateStorageService.AddAsync(enqueueTaskStateKey);
                 scan.State = CatalogIndexScanState.Enqueuing;
-                await _storageService.ReplaceAsync(scan);
+                if (!await TryReplaceAsync(message, scan))
+                {
+                    return;
+                }
             }
 
             // NOTE: this table scan does not strictly need to be only on partition key. Since we are only
@@ -303,7 +324,10 @@ namespace NuGet.Insights.Worker
                     BucketRange.ParseRanges(scan.BucketRanges).Select(x => $"{bucketRangeRowKeyPrefix}{x}").ToList());
 
                 scan.State = CatalogIndexScanState.Expanding;
-                await _storageService.ReplaceAsync(scan);
+                if (!await TryReplaceAsync(message, scan))
+                {
+                    return;
+                }
             }
 
             // Expanding: start the table scans which create the leaf scans
@@ -341,7 +365,10 @@ namespace NuGet.Insights.Worker
 
                 await _taskStateStorageService.AddAsync(enqueueTaskStateKey);
                 scan.State = CatalogIndexScanState.Enqueuing;
-                await _storageService.ReplaceAsync(scan);
+                if (!await TryReplaceAsync(message, scan))
+                {
+                    return;
+                }
             }
 
             await HandleEnqueueAggregateAndFinalizeStatesAsync(message, scan, driver, enqueueTaskStateKey, enqueuePerId: false);
@@ -385,14 +412,17 @@ namespace NuGet.Insights.Worker
             return true;
         }
 
-        private async Task HandleInitializedStateAsync(CatalogIndexScan scan, CatalogIndexScanState nextState)
+        private async Task HandleInitializedStateAsync(CatalogIndexScanMessage message, CatalogIndexScan scan, CatalogIndexScanState nextState)
         {
             // Initialized: set the started timestamp
             if (scan.State == CatalogIndexScanState.Initialized)
             {
                 scan.State = nextState;
                 scan.Started = DateTimeOffset.UtcNow;
-                await _storageService.ReplaceAsync(scan);
+                if (!await TryReplaceAsync(message, scan))
+                {
+                    return;
+                }
             }
         }
 
@@ -414,7 +444,10 @@ namespace NuGet.Insights.Worker
 
                 scan.State = CatalogIndexScanState.Working;
                 message.AttemptCount = 0;
-                await _storageService.ReplaceAsync(scan);
+                if (!await TryReplaceAsync(message, scan))
+                {
+                    return;
+                }
             }
 
             // Working: wait for the table scan and subsequent leaf scans to complete
@@ -429,7 +462,10 @@ namespace NuGet.Insights.Worker
                 else
                 {
                     scan.State = CatalogIndexScanState.StartingAggregate;
-                    await _storageService.ReplaceAsync(scan);
+                    if (!await TryReplaceAsync(message, scan))
+                    {
+                        return;
+                    }
                 }
             }
 
@@ -445,7 +481,10 @@ namespace NuGet.Insights.Worker
 
                 scan.State = CatalogIndexScanState.Aggregating;
                 message.AttemptCount = 0;
-                await _storageService.ReplaceAsync(scan);
+                if (!await TryReplaceAsync(message, scan))
+                {
+                    return;
+                }
             }
 
             // Aggregating: wait for the aggregation step is complete
@@ -461,7 +500,10 @@ namespace NuGet.Insights.Worker
                 else
                 {
                     scan.State = CatalogIndexScanState.Finalizing;
-                    await _storageService.ReplaceAsync(scan);
+                    if (!await TryReplaceAsync(message, scan))
+                    {
+                        return;
+                    }
                 }
             }
 
@@ -521,15 +563,43 @@ namespace NuGet.Insights.Worker
                 }
 
                 _logger.LogInformation("The catalog scan is complete.");
-                await CompleteAsync(scan);
+                await CompleteAsync(message, scan);
             }
         }
 
-        private async Task CompleteAsync(CatalogIndexScan scan)
+        private async Task CompleteAsync(CatalogIndexScanMessage message, CatalogIndexScan scan)
         {
             scan.State = CatalogIndexScanState.Complete;
             scan.Completed = DateTimeOffset.UtcNow;
-            await _storageService.ReplaceAsync(scan);
+            if (!await TryReplaceAsync(message, scan))
+            {
+                return;
+            }
+        }
+
+        private async Task<bool> TryReplaceAsync(CatalogIndexScanMessage message, CatalogIndexScan scan)
+        {
+            var result = await _storageService.TryReplaceAsync(scan);
+            switch (result.Type)
+            {
+                case EntityChangeResultType.Success:
+                    return true;
+
+                case EntityChangeResultType.PreconditionFailed:
+                    // If this happens, there was likely a lease timeout on the message, causing another thread
+                    // to process this catalog index scan, leading to an etag mismatch on this thread. Without further
+                    // coordination, we can't be sure the other thread will properly continue work in another message,
+                    // so we'll complete this message and enqueue another one in the future. This can lead to duplicated
+                    // work but this is better than dropping a message before the catalog index scan is complete.
+                    message.AttemptCount++;
+                    var messageDelay = StorageUtility.GetMessageDelay(message.AttemptCount);
+                    await _messageEnqueuer.EnqueueAsync(new[] { message }, messageDelay);
+                    _logger.LogTransientWarning("Catalog index scan {ScanId} was updated by another actor. The message will be tried again in {MessageDelay}.", scan.ScanId, messageDelay);
+                    return false;
+
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         private async Task<CatalogIndex> GetCatalogIndexAsync()

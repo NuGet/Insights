@@ -39,12 +39,11 @@ namespace NuGet.Insights.Worker
             };
 
             // Act & Assert
-            var ex = await Assert.ThrowsAsync<RequestFailedException>(() => ProcessQueueAsync(
+            var ex = await Assert.ThrowsAnyAsync<Exception>(() => ProcessQueueAsync(
                 () => Task.FromResult(firstGetTask.Task.IsCompleted && firstUpdateTask.Task.IsCompleted),
                 parallel: true,
                 visibilityTimeout: TimeSpan.FromSeconds(1)));
 
-            Assert.Equal(HttpStatusCode.PreconditionFailed, (HttpStatusCode)ex.Status);
             Assert.Contains(
                 LogMessages,
                 x => Regex.IsMatch(x, "Skipping message .+? because it's already being processed") && x.Contains(scan.ScanId, StringComparison.Ordinal));
