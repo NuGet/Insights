@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 namespace NuGet.Insights
 {
     public class TempStreamService
@@ -12,7 +14,7 @@ namespace NuGet.Insights
             _serviceProvider = serviceProvider;
         }
 
-        public async Task<TempStreamResult> CopyToTempStreamAsync(Func<Stream> getStream, long length, Func<IIncrementalHash> getHashAlgorithm)
+        public async Task<TempStreamResult> CopyToTempStreamAsync(Func<Stream> getStream, long length, Func<IIncrementalHash> getHashAlgorithm, Func<string> getTempFileName)
         {
             var writer = GetWriter();
             TempStreamResult result;
@@ -20,7 +22,7 @@ namespace NuGet.Insights
             {
                 using var src = getStream();
                 using var hashAlgorithm = getHashAlgorithm();
-                result = await writer.CopyToTempStreamAsync(src, length, hashAlgorithm);
+                result = await writer.CopyToTempStreamAsync(src, length, hashAlgorithm, getTempFileName);
             }
             while (result.Type == TempStreamResultType.NeedNewStream);
             return result;

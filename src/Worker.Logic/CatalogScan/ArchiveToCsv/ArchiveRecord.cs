@@ -23,12 +23,12 @@ namespace NuGet.Insights.Worker
 
         public ArchiveResultType ResultType { get; set; }
 
-        public long Size { get; set; }
+        public long? Size { get; set; }
 
-        public long OffsetAfterEndOfCentralDirectory { get; set; }
-        public uint CentralDirectorySize { get; set; }
-        public uint OffsetOfCentralDirectory { get; set; }
-        public int EntryCount { get; set; }
+        public long? OffsetAfterEndOfCentralDirectory { get; set; }
+        public uint? CentralDirectorySize { get; set; }
+        public uint? OffsetOfCentralDirectory { get; set; }
+        public int? EntryCount { get; set; }
         public string Comment { get; set; }
     }
 }

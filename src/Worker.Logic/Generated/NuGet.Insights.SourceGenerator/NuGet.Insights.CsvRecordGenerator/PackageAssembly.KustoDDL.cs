@@ -43,7 +43,8 @@ namespace NuGet.Insights
     CustomAttributes: dynamic,
     CustomAttributesFailedDecode: dynamic,
     CustomAttributesTotalCount: int,
-    CustomAttributesTotalDataLength: int
+    CustomAttributesTotalDataLength: int,
+    SequenceNumber: int
 ) with (docstring = __DOCSTRING__, folder = __FOLDER__)",
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
@@ -77,7 +78,8 @@ namespace NuGet.Insights
     '{""Column"":""CustomAttributes"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":26}},'
     '{""Column"":""CustomAttributesFailedDecode"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":27}},'
     '{""Column"":""CustomAttributesTotalCount"",""DataType"":""int"",""Properties"":{""Ordinal"":28}},'
-    '{""Column"":""CustomAttributesTotalDataLength"",""DataType"":""int"",""Properties"":{""Ordinal"":29}}'
+    '{""Column"":""CustomAttributesTotalDataLength"",""DataType"":""int"",""Properties"":{""Ordinal"":29}},'
+    '{""Column"":""SequenceNumber"",""DataType"":""int"",""Properties"":{""Ordinal"":30}}'
 ']'",
         };
 

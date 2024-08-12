@@ -47,6 +47,7 @@ For simplicity, only files with the `.dll` or `.exe` file extension are analyzed
 | CustomAttributesFailedDecode    | array of strings | No                         | Custom attribute names that failed to decode                           |
 | CustomAttributesTotalCount      | int              | No                         | Total number of assembly custom attributes                             |
 | CustomAttributesTotalDataLength | int              | No                         | Total size of custom attribute value blobs in bytes                    |
+| SequenceNumber                  | int              | Yes, for ZIP entries       | The index of this entry within the whole ZIP file                      |
 
 Records are referred to as "ZIP entries" in the table above if it does not have ResultType `NoAssemblies` or `Deleted`.
 

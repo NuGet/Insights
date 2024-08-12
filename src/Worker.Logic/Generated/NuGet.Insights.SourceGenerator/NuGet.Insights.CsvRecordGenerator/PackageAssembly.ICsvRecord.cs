@@ -43,7 +43,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         CustomAttributes: dynamic,
         CustomAttributesFailedDecode: dynamic,
         CustomAttributesTotalCount: int,
-        CustomAttributesTotalDataLength: int
+        CustomAttributesTotalDataLength: int,
+        SequenceNumber: int
     ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/PackageAssemblies.md", folder = "");
 
     .alter-merge table PackageAssemblies policy retention softdelete = 30d;
@@ -90,17 +91,18 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         '{"Column":"CustomAttributes","DataType":"dynamic","Properties":{"Ordinal":26}},'
         '{"Column":"CustomAttributesFailedDecode","DataType":"dynamic","Properties":{"Ordinal":27}},'
         '{"Column":"CustomAttributesTotalCount","DataType":"int","Properties":{"Ordinal":28}},'
-        '{"Column":"CustomAttributesTotalDataLength","DataType":"int","Properties":{"Ordinal":29}}'
+        '{"Column":"CustomAttributesTotalDataLength","DataType":"int","Properties":{"Ordinal":29}},'
+        '{"Column":"SequenceNumber","DataType":"int","Properties":{"Ordinal":30}}'
     ']'
 
     */
     partial record PackageAssembly
     {
-        public int FieldCount => 30;
+        public int FieldCount => 31;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Path,FileName,FileExtension,TopLevelFolder,CompressedLength,EntryUncompressedLength,ActualUncompressedLength,FileSHA256,EdgeCases,AssemblyName,AssemblyVersion,Culture,PublicKeyToken,HashAlgorithm,HasPublicKey,PublicKeyLength,PublicKeySHA1,CustomAttributes,CustomAttributesFailedDecode,CustomAttributesTotalCount,CustomAttributesTotalDataLength");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Path,FileName,FileExtension,TopLevelFolder,CompressedLength,EntryUncompressedLength,ActualUncompressedLength,FileSHA256,EdgeCases,AssemblyName,AssemblyVersion,Culture,PublicKeyToken,HashAlgorithm,HasPublicKey,PublicKeyLength,PublicKeySHA1,CustomAttributes,CustomAttributesFailedDecode,CustomAttributesTotalCount,CustomAttributesTotalDataLength,SequenceNumber");
         }
 
         public void Write(List<string> fields)
@@ -135,6 +137,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             fields.Add(CustomAttributesFailedDecode);
             fields.Add(CustomAttributesTotalCount.ToString());
             fields.Add(CustomAttributesTotalDataLength.ToString());
+            fields.Add(SequenceNumber.ToString());
         }
 
         public void Write(TextWriter writer)
@@ -198,6 +201,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             writer.Write(CustomAttributesTotalCount);
             writer.Write(',');
             writer.Write(CustomAttributesTotalDataLength);
+            writer.Write(',');
+            writer.Write(SequenceNumber);
             writer.WriteLine();
         }
 
@@ -262,6 +267,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             await writer.WriteAsync(CustomAttributesTotalCount.ToString());
             await writer.WriteAsync(',');
             await writer.WriteAsync(CustomAttributesTotalDataLength.ToString());
+            await writer.WriteAsync(',');
+            await writer.WriteAsync(SequenceNumber.ToString());
             await writer.WriteLineAsync();
         }
 
@@ -299,6 +306,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 CustomAttributesFailedDecode = getNextField(),
                 CustomAttributesTotalCount = CsvUtility.ParseNullable(getNextField(), int.Parse),
                 CustomAttributesTotalDataLength = CsvUtility.ParseNullable(getNextField(), int.Parse),
+                SequenceNumber = CsvUtility.ParseNullable(getNextField(), int.Parse),
             };
         }
 

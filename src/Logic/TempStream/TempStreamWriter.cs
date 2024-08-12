@@ -69,6 +69,11 @@ namespace NuGet.Insights
 
         public async Task<TempStreamResult> CopyToTempStreamAsync(Stream src, long length, IIncrementalHash hashAlgorithm)
         {
+            return await CopyToTempStreamAsync(src, length, hashAlgorithm, static () => StorageUtility.GenerateDescendingId().ToString());
+        }
+
+        public async Task<TempStreamResult> CopyToTempStreamAsync(Stream src, long length, IIncrementalHash hashAlgorithm, Func<string> getTempFileName)
+        {
             if (length < 0)
             {
                 length = src.Length;
@@ -171,7 +176,7 @@ namespace NuGet.Insights
                         }
                     }
 
-                    var tempPath = Path.Combine(tempDir, StorageUtility.GenerateDescendingId().ToString());
+                    var tempPath = Path.Combine(tempDir, getTempFileName());
                     if (!await _leaseScope.WaitAsync(tempDir))
                     {
                         return TempStreamResult.SemaphoreNotAvailable();

@@ -55,5 +55,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
         public int? CustomAttributesTotalCount { get; set; }
         public int? CustomAttributesTotalDataLength { get; set; }
+
+        public int? SequenceNumber { get; set; }
     }
 }

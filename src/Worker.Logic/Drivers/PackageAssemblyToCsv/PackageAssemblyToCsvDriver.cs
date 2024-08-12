@@ -7,6 +7,8 @@ using System.Reflection.PortableExecutable;
 using System.Security;
 using System.Security.Cryptography;
 
+#nullable enable
+
 namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 {
     public class PackageAssemblyToCsvDriver : ICatalogLeafToCsvDriver<PackageAssembly>, ICsvResultStorage<PackageAssembly>
@@ -100,7 +102,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                     using var zipArchive = new ZipArchive(result.Value.Body.Stream);
                     var entries = zipArchive
                         .Entries
-                        .Where(x => FileExtensions.Contains(Path.GetExtension(x.FullName)))
+                        .Select((entry, i) => (SequenceNumber: i, Entry: entry))
+                        .Where(x => FileExtensions.Contains(Path.GetExtension(x.Entry.FullName)))
                         .ToList();
 
                     if (!entries.Any())
@@ -109,9 +112,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                     }
 
                     var assemblies = new List<PackageAssembly>();
-                    foreach (var entry in entries)
+                    foreach (var (sequenceNumber, entry) in entries)
                     {
-                        var assemblyResult = await AnalyzeAsync(scanId, scanTimestamp, leaf, entry);
+                        var assemblyResult = await AnalyzeAsync(scanId, scanTimestamp, leaf, sequenceNumber, entry);
                         if (assemblyResult.Type == DriverResultType.TryAgainLater)
                         {
                             return DriverResult.TryAgainLater<CsvRecordSet<PackageAssembly>>();
@@ -141,10 +144,12 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             return MakeResults(leaf, new List<PackageAssembly> { new PackageAssembly(scanId, scanTimestamp, leaf, PackageAssemblyResultType.NoAssemblies) });
         }
 
-        private async Task<DriverResult<PackageAssembly>> AnalyzeAsync(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf, ZipArchiveEntry entry)
+        private async Task<DriverResult<PackageAssembly>> AnalyzeAsync(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf, int sequenceNumber, ZipArchiveEntry entry)
         {
             var assembly = new PackageAssembly(scanId, scanTimestamp, leaf, PackageAssemblyResultType.ValidAssembly)
             {
+                SequenceNumber = sequenceNumber,
+
                 Path = entry.FullName,
                 FileName = Path.GetFileName(entry.FullName),
                 FileExtension = Path.GetExtension(entry.FullName),
@@ -167,12 +172,16 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         {
             _logger.LogInformation("Analyzing ZIP entry {FullName} of length {Length} bytes.", entry.FullName, entry.Length);
 
-            TempStreamResult tempStreamResult = null;
+            TempStreamResult? tempStreamResult = null;
             try
             {
                 try
                 {
-                    tempStreamResult = await _tempStreamService.CopyToTempStreamAsync(() => entry.Open(), entry.Length, IncrementalHash.CreateSHA256);
+                    tempStreamResult = await _tempStreamService.CopyToTempStreamAsync(
+                        entry.Open,
+                        entry.Length,
+                        IncrementalHash.CreateSHA256,
+                        () => $"{StorageUtility.GenerateDescendingId()}.{assembly.Id}.{assembly.Version}.{assembly.SequenceNumber}{assembly.FileExtension ?? ".dll"}");
                 }
                 catch (InvalidDataException ex)
                 {
@@ -234,9 +243,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             }
         }
 
-        private AssemblyName GetAssemblyName(PackageAssembly assembly, AssemblyDefinition assemblyDefinition)
+        private AssemblyName? GetAssemblyName(PackageAssembly assembly, AssemblyDefinition assemblyDefinition)
         {
-            AssemblyName assemblyName = null;
+            AssemblyName? assemblyName = null;
             try
             {
                 assemblyName = assemblyDefinition.GetAssemblyName();
@@ -273,7 +282,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
         private void SetPublicKeyTokenInfo(PackageAssembly assembly, AssemblyName assemblyName)
         {
-            byte[] publicKeyTokenBytes = null;
+            byte[]? publicKeyTokenBytes = null;
             try
             {
                 publicKeyTokenBytes = assemblyName.GetPublicKeyToken();

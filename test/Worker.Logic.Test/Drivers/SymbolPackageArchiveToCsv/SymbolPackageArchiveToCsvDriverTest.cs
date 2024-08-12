@@ -96,8 +96,8 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             Assert.Equal(".rels", entries[0].FileName);
             Assert.Equal(".rels", entries[0].FileExtension);
             Assert.Equal("_rels", entries[0].TopLevelFolder);
-            Assert.Equal(0, entries[0].Flags);
-            Assert.Equal(8, entries[0].CompressionMethod);
+            Assert.Equal(0, entries[0].Flags.Value);
+            Assert.Equal(8, entries[0].CompressionMethod.Value);
             Assert.Equal(DateTimeOffset.Parse("2021-03-06T16:28:30.0000000+00:00", CultureInfo.InvariantCulture), entries[0].LastModified);
             Assert.Equal(4198631635, entries[0].Crc32);
             Assert.Equal(286u, entries[0].CompressedSize);
@@ -110,8 +110,8 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             Assert.Equal("Knapcode.TorSharp.nuspec", entries[1].FileName);
             Assert.Equal(".nuspec", entries[1].FileExtension);
             Assert.Null(entries[1].TopLevelFolder);
-            Assert.Equal(0, entries[1].Flags);
-            Assert.Equal(8, entries[1].CompressionMethod);
+            Assert.Equal(0, entries[1].Flags.Value);
+            Assert.Equal(8, entries[1].CompressionMethod.Value);
             Assert.Equal(DateTimeOffset.Parse("2021-03-06T16:28:30.0000000+00:00", CultureInfo.InvariantCulture), entries[1].LastModified);
             Assert.Equal(3823684902, entries[1].Crc32);
             Assert.Equal(1728u, entries[1].CompressedSize);
@@ -124,8 +124,8 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             Assert.Equal("Knapcode.TorSharp.pdb", entries[2].FileName);
             Assert.Equal(".pdb", entries[2].FileExtension);
             Assert.Equal("lib", entries[2].TopLevelFolder);
-            Assert.Equal(0, entries[2].Flags);
-            Assert.Equal(8, entries[2].CompressionMethod);
+            Assert.Equal(0, entries[2].Flags.Value);
+            Assert.Equal(8, entries[2].CompressionMethod.Value);
             Assert.Equal(DateTimeOffset.Parse("2021-03-07T00:28:30.0000000+00:00", CultureInfo.InvariantCulture), entries[2].LastModified);
             Assert.Equal(3116723293, entries[2].Crc32);
             Assert.Equal(14284u, entries[2].CompressedSize);
@@ -138,8 +138,8 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             Assert.Equal("Knapcode.TorSharp.pdb", entries[3].FileName);
             Assert.Equal(".pdb", entries[3].FileExtension);
             Assert.Equal("lib", entries[3].TopLevelFolder);
-            Assert.Equal(0, entries[3].Flags);
-            Assert.Equal(8, entries[3].CompressionMethod);
+            Assert.Equal(0, entries[3].Flags.Value);
+            Assert.Equal(8, entries[3].CompressionMethod.Value);
             Assert.Equal(DateTimeOffset.Parse("2021-03-07T00:28:30.0000000+00:00", CultureInfo.InvariantCulture), entries[3].LastModified);
             Assert.Equal(3552305110, entries[3].Crc32);
             Assert.Equal(17806u, entries[3].CompressedSize);
@@ -152,8 +152,8 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             Assert.Equal("[Content_Types].xml", entries[4].FileName);
             Assert.Equal(".xml", entries[4].FileExtension);
             Assert.Null(entries[4].TopLevelFolder);
-            Assert.Equal(0, entries[4].Flags);
-            Assert.Equal(8, entries[4].CompressionMethod);
+            Assert.Equal(0, entries[4].Flags.Value);
+            Assert.Equal(8, entries[4].CompressionMethod.Value);
             Assert.Equal(DateTimeOffset.Parse("2021-03-06T16:28:30.0000000+00:00", CultureInfo.InvariantCulture), entries[4].LastModified);
             Assert.Equal(1981492428u, entries[4].Crc32);
             Assert.Equal(212u, entries[4].CompressedSize);
@@ -166,8 +166,8 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             Assert.Equal("add523d6d7c24a66bcf78466aedc12dc.psmdcp", entries[5].FileName);
             Assert.Equal(".psmdcp", entries[5].FileExtension);
             Assert.Equal("package", entries[5].TopLevelFolder);
-            Assert.Equal(0, entries[5].Flags);
-            Assert.Equal(8, entries[5].CompressionMethod);
+            Assert.Equal(0, entries[5].Flags.Value);
+            Assert.Equal(8, entries[5].CompressionMethod.Value);
             Assert.Equal(DateTimeOffset.Parse("2021-03-06T16:28:30.0000000+00:00", CultureInfo.InvariantCulture), entries[5].LastModified);
             Assert.Equal(268762850u, entries[5].Crc32);
             Assert.Equal(451u, entries[5].CompressedSize);
