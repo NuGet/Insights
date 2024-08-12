@@ -26,6 +26,7 @@ The following drivers are currently implemented in NuGet Insights.
 | [PackageCertificateToCsv](PackageCertificateToCsv.md)     | Write certificate metadata and package relationships to CSV           |
 | [PackageCompatibilityToCsv](PackageCompatibilityToCsv.md) | Write package framework compatibility to CSV                          |
 | [PackageContentToCsv](PackageContentToCsv.md)             | Write full package content to CSV from specific interesting files     |
+| [PackageFileToCsv](PackageFileToCsv.md)                   | Download the .nupkg and process each file ZIP entry stream            |
 | [PackageIconToCsv](PackageIconToCsv.md)                   | Write package icon metadata to CSV                                    |
 | [PackageLicenseToCsv](PackageLicenseToCsv.md)             | Write package license content and metadata to CSV                     |
 | [PackageManifestToCsv](PackageManifestToCsv.md)           | Write package .nuspec data to CSV                                     |
@@ -33,6 +34,7 @@ The following drivers are currently implemented in NuGet Insights.
 | [PackageSignatureToCsv](PackageSignatureToCsv.md)         | Write summarized package signature metadata to CSV                    |
 | [PackageVersionToCsv](PackageVersionToCsv.md)             | Write latest version state (and related inputs) to CSV                |
 | [SymbolPackageArchiveToCsv](SymbolPackageArchiveToCsv.md) | Write symbol package ZIP metadata to ZIP                              |
+| [SymbolPackageFileToCsv](SymbolPackageFileToCsv.md)       | Download the .snupkg and process each file ZIP entry stream           |
 
 ## Terminology & concepts
 
@@ -72,18 +74,20 @@ flowchart LR
     FlatContainer --> LoadSymbolPackageArchive
     FlatContainer --> NuGetPackageExplorerToCsv
     LoadPackageArchive --> PackageArchiveToCsv
-    PackageAssemblyToCsv --> PackageArchiveToCsv
-    FlatContainer --> PackageAssemblyToCsv
+    PackageFileToCsv --> PackageArchiveToCsv
+    LoadPackageArchive --> PackageAssemblyToCsv
     LoadPackageArchive --> PackageAssetToCsv
     LoadPackageArchive --> PackageCertificateToCsv
     LoadPackageArchive --> PackageCompatibilityToCsv
     LoadPackageManifest --> PackageCompatibilityToCsv
     LoadPackageArchive --> PackageContentToCsv
+    FlatContainer --> PackageFileToCsv
     FlatContainer --> PackageIconToCsv
     FlatContainer --> PackageLicenseToCsv
     LoadPackageManifest --> PackageManifestToCsv
     LoadPackageReadme --> PackageReadmeToCsv
     LoadPackageArchive --> PackageSignatureToCsv
     LoadPackageVersion --> PackageVersionToCsv
-    LoadSymbolPackageArchive --> SymbolPackageArchiveToCsv
+    SymbolPackageFileToCsv --> SymbolPackageArchiveToCsv
+    LoadSymbolPackageArchive --> SymbolPackageFileToCsv
 ```

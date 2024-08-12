@@ -19,11 +19,11 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
-            await SetCursorAsync(CatalogScanDriverType.PackageAssemblyToCsv, min0);
+            await SetCursorAsync(CatalogScanDriverType.PackageFileToCsv, min0);
             await SetCursorAsync(min0);
 
             // Act
-            await UpdateAsync(CatalogScanDriverType.PackageAssemblyToCsv, onlyLatestLeaves: true, max1);
+            await UpdateAsync(CatalogScanDriverType.PackageFileToCsv, onlyLatestLeaves: true, max1);
             await UpdateAsync(max1);
 
             // Assert
@@ -32,7 +32,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             await AssertOutputAsync(PackageArchiveToCsvDir, Step1, 2);
 
             // Act
-            await UpdateAsync(CatalogScanDriverType.PackageAssemblyToCsv, onlyLatestLeaves: true, max2);
+            await UpdateAsync(CatalogScanDriverType.PackageFileToCsv, onlyLatestLeaves: true, max2);
             await UpdateAsync(max2);
 
             // Assert
@@ -52,11 +52,11 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
-            await SetCursorAsync(CatalogScanDriverType.PackageAssemblyToCsv, min0);
+            await SetCursorAsync(CatalogScanDriverType.PackageFileToCsv, min0);
             await SetCursorAsync(min0);
 
             // Act
-            await UpdateAsync(CatalogScanDriverType.PackageAssemblyToCsv, onlyLatestLeaves: true, max1);
+            await UpdateAsync(CatalogScanDriverType.PackageFileToCsv, onlyLatestLeaves: true, max1);
             await UpdateAsync(max1);
 
             // Assert
@@ -65,7 +65,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             await AssertOutputAsync(PackageArchiveToCsv_WithDeleteDir, Step1, 2);
 
             // Act
-            await UpdateAsync(CatalogScanDriverType.PackageAssemblyToCsv, onlyLatestLeaves: true, max2);
+            await UpdateAsync(CatalogScanDriverType.PackageFileToCsv, onlyLatestLeaves: true, max2);
             await UpdateAsync(max2);
 
             // Assert
@@ -83,11 +83,11 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
-            await SetCursorAsync(CatalogScanDriverType.PackageAssemblyToCsv, min0);
+            await SetCursorAsync(CatalogScanDriverType.PackageFileToCsv, min0);
             await SetCursorAsync(min0);
 
             // Act
-            await UpdateAsync(CatalogScanDriverType.PackageAssemblyToCsv, onlyLatestLeaves: true, max1);
+            await UpdateAsync(CatalogScanDriverType.PackageFileToCsv, onlyLatestLeaves: true, max1);
             await UpdateAsync(max1);
 
             // Assert
@@ -123,7 +123,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         protected override string DestinationContainerName1 => Options.Value.PackageArchiveContainerName;
         protected override string DestinationContainerName2 => Options.Value.PackageArchiveEntryContainerName;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageArchiveToCsv;
-        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType, CatalogScanDriverType.PackageAssemblyToCsv };
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType, CatalogScanDriverType.PackageFileToCsv };
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
 
         protected override IEnumerable<string> GetExpectedCursorNames()
@@ -131,7 +131,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             return base.GetExpectedCursorNames().Concat(new[]
             {
                 "CatalogScan-" + CatalogScanDriverType.LoadPackageArchive,
-                "CatalogScan-" + CatalogScanDriverType.PackageAssemblyToCsv,
+                "CatalogScan-" + CatalogScanDriverType.PackageFileToCsv,
             });
         }
 
@@ -139,7 +139,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         {
             return base.GetExpectedLeaseNames().Concat(new[]
             {
-                "Start-" + CatalogScanDriverType.PackageAssemblyToCsv,
+                "Start-" + CatalogScanDriverType.PackageFileToCsv,
             });
         }
 
@@ -147,7 +147,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         {
             return base.GetExpectedBlobContainerNames().Concat(new[]
             {
-                Options.Value.PackageAssemblyContainerName,
+                Options.Value.PackageFileContainerName,
             });
         }
 

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO.Compression;
+using System.Text.RegularExpressions;
 using Azure;
 using Azure.Data.Tables;
 using Azure.Storage.Blobs;
@@ -133,23 +134,102 @@ namespace NuGet.Insights
             return hostBuilder.Build();
         }
 
-        protected void AssertStoragePrefix(object x)
+        protected void AssertStoragePrefix<T>(T settings) where T : NuGetInsightsSettings
         {
             // Verify all container names are prefixed, so that parallel tests and cleanup work properly.
-            var storageNameProperties = x
-                .GetType()
+            var storageNames = new HashSet<string>();
+            foreach (var property in GetStorageNameProperties(settings))
+            {
+                Assert.StartsWith(StoragePrefix, property.Value, StringComparison.Ordinal);
+                Assert.DoesNotContain(property.Value, storageNames); // Make sure there are no duplicates
+                storageNames.Add(property.Value);
+            }
+        }
+
+        protected void InitializeStoragePrefix<T>(T settings) where T : NuGetInsightsSettings
+        {
+            string ApplyStoragePrefix(string name)
+            {
+                const int boundary = 1;
+                return $"{StoragePrefix}{boundary}{name}{boundary}";
+            }
+
+            var properties = GetStorageNameProperties(settings);
+            var usedNames = new HashSet<string>(properties.Where(x => !x.DirectProperty).Select(x => x.Value));
+            foreach (var property in properties.Where(x => x.DirectProperty))
+            {
+                var words = Regex
+                    .Matches(property.Name, "([A-Z][^A-Z]*)")
+                    .Select(m => m.Value)
+                    .SkipLast(2) // skip "QueueName", "TableName", "ContainerName"
+                    .ToList();
+
+                // try the acronym first
+                var name = string.Join(string.Empty, words.Select(x => x[0])).ToLowerInvariant();
+                if (!usedNames.Add(ApplyStoragePrefix(name)))
+                {
+                    var maxWordLength = words.Max(x => x.Length);
+                    var wordIndex = 0;
+                    var wordLength = 2;
+                    var pieces = words.Select(x => x[0].ToString()).ToList();
+                    name = string.Empty;
+                    do
+                    {
+                        var word = words[wordIndex];
+                        if (wordLength <= word.Length)
+                        {
+                            pieces[wordIndex] = word.Substring(0, wordLength);
+                        }
+
+                        wordIndex++;
+
+                        if (wordIndex >= words.Count)
+                        {
+                            wordIndex = 0;
+                            wordLength++;
+                        }
+
+                        if (wordLength > maxWordLength)
+                        {
+                            throw new InvalidOperationException($"Could not generate a name for storage property {property.Name}.");
+                        }
+
+                        name = string.Join(string.Empty, pieces).ToLowerInvariant();
+                    }
+                    while (!usedNames.Add(ApplyStoragePrefix(name)));
+                }
+
+                property.SetValue(ApplyStoragePrefix(name));
+            }
+        }
+
+        private static List<(string Name, string Value, Action<string> SetValue, bool DirectProperty)> GetStorageNameProperties<T>(T settings) where T : NuGetInsightsSettings
+        {
+            int CountBaseTypes(Type type)
+            {
+                var count = 0;
+                while (type != null)
+                {
+                    count++;
+                    type = type.BaseType;
+                }
+
+                return count;
+            }
+
+            return typeof(T)
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
                 .Where(x => x.Name.EndsWith("QueueName", StringComparison.Ordinal)
-                         || x.Name.EndsWith("TableName", StringComparison.Ordinal)
-                         || x.Name.EndsWith("ContainerName", StringComparison.Ordinal));
-            var storageNames = new HashSet<string>();
-            foreach (var property in storageNameProperties)
-            {
-                var value = (string)property.GetMethod.Invoke(x, null);
-                Assert.StartsWith(StoragePrefix, value, StringComparison.Ordinal);
-                Assert.DoesNotContain(value, storageNames); // Make sure there are no duplicates
-                storageNames.Add(value);
-            }
+                            || x.Name.EndsWith("TableName", StringComparison.Ordinal)
+                            || x.Name.EndsWith("ContainerName", StringComparison.Ordinal))
+                .OrderBy(x => CountBaseTypes(x.DeclaringType))
+                .ThenBy(x => x.Name)
+                .Select(x => (
+                    x.Name,
+                    Value: (string)x.GetMethod.Invoke(settings, null),
+                    SetValue: (Action<string>)(v => x.SetMethod.Invoke(settings, [v])),
+                    DirectProperty: x.DeclaringType == typeof(T)))
+                .ToList();
         }
 
         protected LogLevel FailFastLogLevel { get; set; } = LogLevel.Error;
@@ -185,13 +265,7 @@ namespace NuGet.Insights
             x.ExcludedPackagesV1AgeLimit = TimeSpan.MaxValue;
             x.PopularityTransfersV1AgeLimit = TimeSpan.MaxValue;
 
-            x.LeaseContainerName = $"{StoragePrefix}1l1";
-            x.PackageArchiveTableName = $"{StoragePrefix}1pa1";
-            x.PackageHashesTableName = $"{StoragePrefix}1ph1";
-            x.PackageManifestTableName = $"{StoragePrefix}1pm1";
-            x.PackageReadmeTableName = $"{StoragePrefix}1prm1";
-            x.SymbolPackageArchiveTableName = $"{StoragePrefix}1sa1";
-            x.TimerTableName = $"{StoragePrefix}1t1";
+            InitializeStoragePrefix(x);
 
             if (ConfigureSettings != null)
             {

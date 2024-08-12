@@ -3,6 +3,7 @@
 
 using Castle.Core.Internal;
 using Humanizer;
+using Markdig.Extensions.Tables;
 
 namespace NuGet.Insights.Worker
 {
@@ -59,6 +60,16 @@ namespace NuGet.Insights.Worker
         public static bool IsDynamic(PropertyInfo property)
         {
             return property.GetAttribute<KustoTypeAttribute>()?.KustoType == "dynamic";
+        }
+
+        public List<TableRow> GetFirstTableRows()
+        {
+            ReadMarkdown();
+
+            var table = MarkdownDocument.OfType<Table>().FirstOrDefault();
+            Assert.NotNull(table);
+
+            return table.Cast<TableRow>().ToList();
         }
 
         public static bool TryGetEnumType(Type type, out Type enumType)

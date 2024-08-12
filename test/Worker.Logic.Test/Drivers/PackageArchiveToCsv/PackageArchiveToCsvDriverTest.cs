@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using NuGet.Insights.Worker.PackageAssemblyToCsv;
+using NuGet.Insights.Worker.PackageFileToCsv;
 
 namespace NuGet.Insights.Worker.PackageArchiveToCsv
 {
@@ -13,7 +13,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             FailFastLogLevel = LogLevel.None;
         }
 
-        public ICatalogLeafToCsvDriver<PackageAssembly> PackageAssemblyToCsv => Host.Services.GetRequiredService<ICatalogLeafToCsvDriver<PackageAssembly>>();
+        public ICatalogLeafToCsvDriver<PackageFileRecord> PackageFileToCsv => Host.Services.GetRequiredService<ICatalogLeafToCsvDriver<PackageFileRecord>>();
         public ICatalogLeafToCsvDriver<PackageArchiveRecord, PackageArchiveEntry> Target => Host.Services.GetRequiredService<ICatalogLeafToCsvDriver<PackageArchiveRecord, PackageArchiveEntry>>();
 
         [Fact]
@@ -49,6 +49,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
                 PackageVersion = "1.0.0",
             };
             await InitializeAsync(leaf);
+            TelemetryClient.Metrics.Clear();
 
             var output = await Target.ProcessLeafAsync(leaf);
 
@@ -56,11 +57,11 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Empty(Assert.Single(output.Value.Sets1).Records);
             Assert.Empty(Assert.Single(output.Value.Sets2).Records);
             Assert.True(TelemetryClient.Metrics.TryGetValue(
-                new("FileDownloader.GetZipDirectoryReaderAsync.NotFound", "PackageId", "PackageVersion", "ArtifactFileType", "DownloadMode"),
+                new("PackageWideEntityService.GetExistingAsync.Outcome", "Type", "ForceUpdate", "TimestampComparison", "UseExisting"),
                 out var metric));
             var value = Assert.Single(metric.MetricValues);
             Assert.Equal(1, value.MetricValue);
-            Assert.Equal<string[]>(["NuGet.Platform", "1.0.0", "Nupkg", "DefaultMiniZip"], value.DimensionValues);
+            Assert.Equal<string[]>(["NuGet.Insights.PackageSpecificHashService+HashInfoVersions", "false", "Equal", "true"], value.DimensionValues);
         }
 
         [Fact]
@@ -86,12 +87,12 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal(21894u, archive.OffsetOfCentralDirectory);
             Assert.Equal(6, archive.EntryCount);
             Assert.Empty(archive.Comment);
+            Assert.Null(archive.HeaderMD5);
+            Assert.Null(archive.HeaderSHA512);
             Assert.Equal("Iv31+aZ1FrwwrVXrkkw6jw==", archive.MD5);
             Assert.Equal("5mVQoxKAOBG4EfcMtAlbNA9j/BY=", archive.SHA1);
             Assert.Equal("Un5Uw7RzNNFRXRGb4+6+ZB6zAU1+rSJi1UdjwEm+Dos=", archive.SHA256);
             Assert.Equal("0j3nBhz6LgdRGkWED8U9UYpbK06J0adJdmdatPjsDtVrk6TvALANKEBD77uDUs67eIjpa3Bfs9QO/wuVWMrwLw==", archive.SHA512);
-            Assert.Null(archive.HeaderMD5);
-            Assert.Null(archive.HeaderSHA512);
 
             Assert.Equal(6, Assert.Single(output.Value.Sets2).Records.Count);
             var entries = Assert.Single(output.Value.Sets2).Records;
@@ -200,12 +201,12 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var archive = Assert.Single(Assert.Single(output.Value.Sets1).Records);
             Assert.Equal(ArchiveResultType.Available, archive.ResultType);
+            Assert.Equal("51Dz2WBmpNVUFi/7p9ymEA==", archive.HeaderMD5);
+            Assert.Equal("iIj773J+QLTUU7ni5dRqCRgz9z5GuHLYfDV0K89f3R32BBW9OjDjwV6kS0gd3o8hvLtcgDynnh6cNjImqJqkVg==", archive.HeaderSHA512);
             Assert.Equal("51Dz2WBmpNVUFi/7p9ymEA==", archive.MD5);
             Assert.Equal("iHwGsx3e8FXAQuMzPJ/9C2ulYHk=", archive.SHA1);
             Assert.Equal("DBvlRoqFfaNzdV+67czh+04noWznw76eG473ZQkmulg=", archive.SHA256);
             Assert.Equal("iIj773J+QLTUU7ni5dRqCRgz9z5GuHLYfDV0K89f3R32BBW9OjDjwV6kS0gd3o8hvLtcgDynnh6cNjImqJqkVg==", archive.SHA512);
-            Assert.Equal("51Dz2WBmpNVUFi/7p9ymEA==", archive.HeaderMD5);
-            Assert.Equal("iIj773J+QLTUU7ni5dRqCRgz9z5GuHLYfDV0K89f3R32BBW9OjDjwV6kS0gd3o8hvLtcgDynnh6cNjImqJqkVg==", archive.HeaderSHA512);
         }
 
         [Fact]
@@ -226,15 +227,15 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             var archive = Assert.Single(Assert.Single(output.Value.Sets1).Records);
             Assert.Equal(ArchiveResultType.Available, archive.ResultType);
             Assert.Equal(69294, archive.Size);
-            Assert.Equal("YChbobHPT7otNUCa9TWMqA==", archive.MD5);
-            Assert.Equal("Zng0ROCOk8Qtml+wTEUAYtbfhGI=", archive.SHA1);
-            Assert.Equal("KI1WXvnF/Xe9cKTdDjzm0vd5h9bmM+3KinuWlsF/X+c=", archive.SHA256);
-            Assert.Equal("MUBW1eAqbVex8q0bnCxZ0npzJtiKCMW5OHWKCBYtScmyJ+iTVP9Pv6R9JnnF0UY+PspIkDPNXqo4pxQi/HV+yw==", archive.SHA512);
             Assert.Equal(69276, archive.OffsetAfterEndOfCentralDirectory);
             Assert.Equal(928u, archive.CentralDirectorySize);
             Assert.Equal(68344u, archive.OffsetOfCentralDirectory);
             Assert.Equal(11, archive.EntryCount);
             Assert.Empty(archive.Comment);
+            Assert.Equal("YChbobHPT7otNUCa9TWMqA==", archive.MD5);
+            Assert.Equal("Zng0ROCOk8Qtml+wTEUAYtbfhGI=", archive.SHA1);
+            Assert.Equal("KI1WXvnF/Xe9cKTdDjzm0vd5h9bmM+3KinuWlsF/X+c=", archive.SHA256);
+            Assert.Equal("MUBW1eAqbVex8q0bnCxZ0npzJtiKCMW5OHWKCBYtScmyJ+iTVP9Pv6R9JnnF0UY+PspIkDPNXqo4pxQi/HV+yw==", archive.SHA512);
 
             Assert.Equal(11, Assert.Single(output.Value.Sets2).Records.Count);
             var entries = Assert.Single(output.Value.Sets2).Records;
@@ -270,8 +271,8 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
 
         private async Task InitializeAsync(CatalogLeafScan leaf)
         {
-            await PackageAssemblyToCsv.InitializeAsync();
-            await PackageAssemblyToCsv.ProcessLeafAsync(leaf.SetDefaults());
+            await PackageFileToCsv.InitializeAsync();
+            await PackageFileToCsv.ProcessLeafAsync(leaf.SetDefaults());
             await Target.InitializeAsync();
         }
     }

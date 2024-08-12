@@ -18,9 +18,11 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(CatalogScanDriverType.LoadSymbolPackageArchive, max2);
+            await SetCursorAsync(CatalogScanDriverType.SymbolPackageFileToCsv, min0);
             await SetCursorAsync(min0);
 
             // Act
+            await UpdateAsync(CatalogScanDriverType.SymbolPackageFileToCsv, onlyLatestLeaves: true, max1);
             await UpdateAsync(max1);
 
             // Assert
@@ -28,6 +30,7 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             await AssertCsvCountAsync(1);
 
             // Act
+            await UpdateAsync(CatalogScanDriverType.SymbolPackageFileToCsv, onlyLatestLeaves: true, max2);
             await UpdateAsync(max2);
 
             // Assert
@@ -47,9 +50,11 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(CatalogScanDriverType.LoadSymbolPackageArchive, max2);
+            await SetCursorAsync(CatalogScanDriverType.SymbolPackageFileToCsv, min0);
             await SetCursorAsync(min0);
 
             // Act
+            await UpdateAsync(CatalogScanDriverType.SymbolPackageFileToCsv, onlyLatestLeaves: true, max1);
             await UpdateAsync(max1);
 
             // Assert
@@ -58,6 +63,7 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             await AssertOutputAsync(SymbolPackageArchiveToCsv_WithDeleteDir, Step1, 2);
 
             // Act
+            await UpdateAsync(CatalogScanDriverType.SymbolPackageFileToCsv, onlyLatestLeaves: true, max2);
             await UpdateAsync(max2);
 
             // Assert
@@ -74,7 +80,7 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
         protected override string DestinationContainerName1 => Options.Value.SymbolPackageArchiveContainerName;
         protected override string DestinationContainerName2 => Options.Value.SymbolPackageArchiveEntryContainerName;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.SymbolPackageArchiveToCsv;
-        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType, CatalogScanDriverType.SymbolPackageFileToCsv };
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
 
         protected override IEnumerable<string> GetExpectedCursorNames()
@@ -82,6 +88,23 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             return base.GetExpectedCursorNames().Concat(new[]
             {
                 "CatalogScan-" + CatalogScanDriverType.LoadSymbolPackageArchive,
+                "CatalogScan-" + CatalogScanDriverType.SymbolPackageFileToCsv,
+            });
+        }
+
+        protected override IEnumerable<string> GetExpectedLeaseNames()
+        {
+            return base.GetExpectedLeaseNames().Concat(new[]
+            {
+                "Start-" + CatalogScanDriverType.SymbolPackageFileToCsv,
+            });
+        }
+
+        protected override IEnumerable<string> GetExpectedBlobContainerNames()
+        {
+            return base.GetExpectedBlobContainerNames().Concat(new[]
+            {
+                Options.Value.SymbolPackageFileContainerName,
             });
         }
 
@@ -90,6 +113,7 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             return base.GetExpectedTableNames().Concat(new[]
             {
                 Options.Value.SymbolPackageArchiveTableName,
+                Options.Value.SymbolPackageHashesTableName,
             });
         }
     }

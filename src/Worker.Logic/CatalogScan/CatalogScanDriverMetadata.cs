@@ -43,9 +43,10 @@ namespace NuGet.Insights.Worker
 #endif
 
             Default(CatalogScanDriverType.PackageArchiveToCsv)
-                with { Dependencies = [CatalogScanDriverType.LoadPackageArchive, CatalogScanDriverType.PackageAssemblyToCsv] },
+                with { Dependencies = [CatalogScanDriverType.LoadPackageArchive, CatalogScanDriverType.PackageFileToCsv] },
 
-            Default(CatalogScanDriverType.PackageAssemblyToCsv),
+            Default(CatalogScanDriverType.PackageAssemblyToCsv)
+                with { Dependencies = [CatalogScanDriverType.LoadPackageArchive] },
 
             Default(CatalogScanDriverType.PackageAssetToCsv)
                 with { Dependencies = [CatalogScanDriverType.LoadPackageArchive] },
@@ -60,6 +61,8 @@ namespace NuGet.Insights.Worker
 
             Default(CatalogScanDriverType.PackageContentToCsv)
                 with { Dependencies = [CatalogScanDriverType.LoadPackageArchive] },
+
+            Default(CatalogScanDriverType.PackageFileToCsv),
 
             Default(CatalogScanDriverType.PackageIconToCsv),
 
@@ -79,6 +82,9 @@ namespace NuGet.Insights.Worker
                 with { OnlyLatestLeavesSupport = true, Dependencies = [CatalogScanDriverType.LoadPackageVersion] },
 
             Default(CatalogScanDriverType.SymbolPackageArchiveToCsv)
+                with { Dependencies = [CatalogScanDriverType.SymbolPackageFileToCsv] },
+
+            Default(CatalogScanDriverType.SymbolPackageFileToCsv)
                 with { Dependencies = [CatalogScanDriverType.LoadSymbolPackageArchive] },
         };
 

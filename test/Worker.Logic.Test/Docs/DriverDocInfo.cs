@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Markdig.Extensions.Tables;
+
 namespace NuGet.Insights.Worker
 {
     public record ConfiguredStorage(StorageContainerType Type, string Name, bool Prefix);
@@ -19,9 +21,8 @@ namespace NuGet.Insights.Worker
             DriverType = driverType;
             IndexResult = indexResult;
             PageResult = pageResult;
-            DependsOnFlatContainer = CatalogScanDriverMetadata.GetFlatContainerDependents().Contains(driverType);
-            DriverDependencies = CatalogScanDriverMetadata.GetDependencies(driverType);
-            DriverDependents = CatalogScanDriverMetadata.GetDependents(driverType);
+            DriverDependencies = CatalogScanDriverMetadata.GetDependencies(driverType).OrderBy(x => x.ToString()).ToList();
+            DriverDependents = CatalogScanDriverMetadata.GetDependents(driverType).OrderBy(x => x.ToString()).ToList();
             IntermediateContainers = intermediateContainers;
             PersistentContainers = persistentContainers;
             CsvTables = csvTables;
@@ -30,7 +31,6 @@ namespace NuGet.Insights.Worker
         public CatalogScanDriverType DriverType { get; }
         public CatalogIndexScanResult IndexResult { get; }
         public CatalogPageScanResult? PageResult { get; }
-        public bool DependsOnFlatContainer { get; }
         public IReadOnlyList<CatalogScanDriverType> DriverDependencies { get; }
         public IReadOnlyList<CatalogScanDriverType> DriverDependents { get; }
         public HashSet<ConfiguredStorage> IntermediateContainers { get; }
@@ -52,6 +52,16 @@ namespace NuGet.Insights.Worker
             }
 
             base.ReadMarkdown();
+        }
+
+        public List<TableRow> GetFirstTableRows()
+        {
+            ReadMarkdown();
+
+            var table = MarkdownDocument.OfType<Table>().FirstOrDefault();
+            Assert.NotNull(table);
+
+            return table.Cast<TableRow>().ToList();
         }
     }
 }

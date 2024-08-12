@@ -57,17 +57,20 @@ namespace NuGet.Insights.Worker
             // Load the symbol packages
             var loadSymbolPackageArchive = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadSymbolPackageArchive, max1);
             await UpdateAsync(loadSymbolPackageArchive);
+            var symbolPackageAssemblyToCsv = await CatalogScanService.UpdateAsync(CatalogScanDriverType.SymbolPackageFileToCsv, max1);
 
             var startingSnupkgRequestCount = GetSnupkgRequestCount();
 
             // Load the packages, process package assemblies, and run NuGet Package Explorer.
             var loadPackageArchive = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadPackageArchive, max1);
             await UpdateAsync(loadPackageArchive);
+            var packageFileToCsv = await CatalogScanService.UpdateAsync(CatalogScanDriverType.PackageFileToCsv, max1);
             var packageAssemblyToCsv = await CatalogScanService.UpdateAsync(CatalogScanDriverType.PackageAssemblyToCsv, max1);
             var packageContentToCsv = await CatalogScanService.UpdateAsync(CatalogScanDriverType.PackageContentToCsv, max1);
 #if ENABLE_NPE
             var nuGetPackageExplorerToCsv = await CatalogScanService.UpdateAsync(CatalogScanDriverType.NuGetPackageExplorerToCsv, max1);
 #endif
+            await UpdateAsync(packageFileToCsv);
             await UpdateAsync(packageAssemblyToCsv);
             await UpdateAsync(packageContentToCsv);
 #if ENABLE_NPE

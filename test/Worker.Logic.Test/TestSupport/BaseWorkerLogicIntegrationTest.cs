@@ -108,68 +108,25 @@ namespace NuGet.Insights.Worker
             });
         }
 
-        protected void AssertWorkerDefaultsAndSettings(NuGetInsightsWorkerSettings x)
+        protected void AssertWorkerDefaultsAndSettings(NuGetInsightsWorkerSettings settings)
         {
-            x.TimedReprocessIsEnabled = true;
-            x.DisableMessageDelay = true;
-            x.AppendResultStorageBucketCount = 3;
-            x.KustoDatabaseName = "TestKustoDb";
-            x.PackageContentFileExtensions = new List<string> { ".txt" };
-            x.SkipContentMD5HeaderInCsv = true;
+            ConfigureDefaultsAndSettings(settings);
 
-            x.BucketedPackageTableName = $"{StoragePrefix}1bp1";
-            x.CatalogIndexScanTableName = $"{StoragePrefix}1cis1";
-            x.CatalogLeafItemContainerName = $"{StoragePrefix}1fcli1";
-            x.CatalogLeafScanTableName = $"{StoragePrefix}1cls1";
-            x.CatalogPageScanTableName = $"{StoragePrefix}1cps1";
-            x.CertificateContainerName = $"{StoragePrefix}1r1";
-            x.CertificateToPackageTableName = $"{StoragePrefix}1c2p1";
-            x.CsvRecordTableName = $"{StoragePrefix}1cr1";
-            x.CursorTableName = $"{StoragePrefix}1c1";
-            x.ExcludedPackageContainerName = $"{StoragePrefix}1ep1";
-            x.ExpandQueueName = $"{StoragePrefix}1xq1";
-            x.KustoIngestionTableName = $"{StoragePrefix}1ki1";
-            x.LatestPackageLeafTableName = $"{StoragePrefix}1lpl1";
-            x.NuGetPackageExplorerContainerName = $"{StoragePrefix}1npe2c1";
-            x.NuGetPackageExplorerFileContainerName = $"{StoragePrefix}1npef2c1";
-            x.PackageArchiveContainerName = $"{StoragePrefix}1pa2c1";
-            x.PackageArchiveEntryContainerName = $"{StoragePrefix}1pae2c1";
-            x.PackageAssemblyContainerName = $"{StoragePrefix}1fpi1";
-            x.PackageAssetContainerName = $"{StoragePrefix}1fpa1";
-            x.PackageCertificateContainerName = $"{StoragePrefix}1pr1";
-            x.PackageCompatibilityContainerName = $"{StoragePrefix}1pc1";
-            x.PackageContentContainerName = $"{StoragePrefix}1pco1";
-            x.PackageDeprecationContainerName = $"{StoragePrefix}1pe1";
-            x.PackageDownloadContainerName = $"{StoragePrefix}1pd1";
-            x.PackageIconContainerName = $"{StoragePrefix}1pi1";
-            x.PackageLicenseContainerName = $"{StoragePrefix}1pl2c1";
-            x.PackageManifestContainerName = $"{StoragePrefix}1pm2c1";
-            x.PackageOwnerContainerName = $"{StoragePrefix}1po1";
-            x.PackageReadmeContainerName = $"{StoragePrefix}1pmd2c1";
-            x.PackageSignatureContainerName = $"{StoragePrefix}1fps1";
-            x.PackageToCertificateTableName = $"{StoragePrefix}1p2c1";
-            x.PackageVersionContainerName = $"{StoragePrefix}1pvc1";
-            x.PackageVersionTableName = $"{StoragePrefix}1pv1";
-            x.PackageVulnerabilityContainerName = $"{StoragePrefix}1pu1";
-            x.PopularityTransferContainerName = $"{StoragePrefix}1pt1";
-            x.SymbolPackageArchiveContainerName = $"{StoragePrefix}1sa2c1";
-            x.SymbolPackageArchiveEntryContainerName = $"{StoragePrefix}1sae2c1";
-            x.TaskStateTableName = $"{StoragePrefix}1ts1";
-            x.TimedReprocessTableName = $"{StoragePrefix}1tr1";
-            x.VerifiedPackageContainerName = $"{StoragePrefix}1vp1";
-            x.VersionSetAggregateTableName = $"{StoragePrefix}1vsa1";
-            x.VersionSetContainerName = $"{StoragePrefix}1vs1";
-            x.WorkflowRunTableName = $"{StoragePrefix}1wr1";
-            x.WorkQueueName = $"{StoragePrefix}1wq1";
+            settings.TimedReprocessIsEnabled = true;
+            settings.DisableMessageDelay = true;
+            settings.AppendResultStorageBucketCount = 3;
+            settings.KustoDatabaseName = "TestKustoDb";
+            settings.PackageContentFileExtensions = new List<string> { ".txt" };
+            settings.SkipContentMD5HeaderInCsv = true;
 
-            ConfigureDefaultsAndSettings(x);
+            InitializeStoragePrefix(settings);
 
             if (ConfigureWorkerSettings != null)
             {
-                ConfigureWorkerSettings(x);
+                ConfigureWorkerSettings(settings);
             }
 
-            AssertStoragePrefix(x);
+            AssertStoragePrefix(settings);
         }
 
         protected void SetupDefaultMockVersionSet()
@@ -720,6 +677,62 @@ namespace NuGet.Insights.Worker
                         entity.V1.CommitTimestamp,
                         HttpHeaders = httpHeaders,
                         ReadmeHash = readmeHash,
+                    };
+                },
+                fileName);
+        }
+
+        protected async Task AssertPackageHashesTableAsync(string testName, string stepName, string fileName = null)
+        {
+            await AssertPackageSpecificHashTableAsync(
+                Options.Value.PackageHashesTableName,
+                testName,
+                stepName,
+                fileName);
+        }
+
+        protected async Task AssertSymbolPackageHashesTableAsync(string testName, string stepName, string fileName = null)
+        {
+            await AssertPackageSpecificHashTableAsync(
+                Options.Value.SymbolPackageHashesTableName,
+                testName,
+                stepName,
+                fileName);
+        }
+
+        private async Task AssertPackageSpecificHashTableAsync(string tableName, string testName, string stepName, string fileName)
+        {
+            await AssertWideEntityOutputAsync(
+                tableName,
+                Path.Combine(testName, stepName),
+                stream =>
+                {
+                    var entity = MessagePackSerializer.Deserialize<PackageSpecificHashService.HashInfoVersions>(stream, NuGetInsightsMessagePack.Options);
+
+                    SortedDictionary<string, List<string>> httpHeaders = null;
+                    string md5 = null;
+                    string sha1 = null;
+                    string sha256 = null;
+                    string sha512 = null;
+
+                    if (entity.V1.Available)
+                    {
+                        httpHeaders = NormalizeHeaders(entity.V1.HttpHeaders);
+                        md5 = entity.V1.MD5.ToBase64();
+                        sha1 = entity.V1.SHA1.ToBase64();
+                        sha256 = entity.V1.SHA256.ToBase64();
+                        sha512 = entity.V1.SHA512.ToBase64();
+                    }
+
+                    return new
+                    {
+                        entity.V1.Available,
+                        entity.V1.CommitTimestamp,
+                        HttpHeaders = httpHeaders,
+                        MD5 = md5,
+                        SHA1 = sha1,
+                        SHA256 = sha256,
+                        SHA512 = sha512,
                     };
                 },
                 fileName);

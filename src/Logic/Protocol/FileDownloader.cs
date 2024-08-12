@@ -140,6 +140,16 @@ namespace NuGet.Insights
             FullDownload,
         }
 
+        public static string GetFileExtension(ArtifactFileType fileType)
+        {
+            return fileType switch
+            {
+                ArtifactFileType.Nupkg => ".nupkg",
+                ArtifactFileType.Snupkg => ".snupkg",
+                _ => throw new NotImplementedException(),
+            };
+        }
+
         private async Task<ZipDirectoryReader?> GetZipDirectoryReaderAsync(string id, string version, ArtifactFileType fileType, string url, ZipDownloadMode mode)
         {
             var metric = _telemetryClient.GetMetric(
@@ -199,7 +209,7 @@ namespace NuGet.Insights
                 {
                     var result = await DownloadUrlToFileAsync(
                         url,
-                        () => $"{StorageUtility.GenerateDescendingId()}.{id}.{version}.reader.nupkg",
+                        () => $"{StorageUtility.GenerateDescendingId()}.{id}.{version}.reader{GetFileExtension(fileType)}",
                         CancellationToken.None);
 
                     if (result is null)

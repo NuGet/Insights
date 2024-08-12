@@ -21,6 +21,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var max2 = DateTimeOffset.Parse("2020-11-27T19:36:50.4909042Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
             await SetCursorAsync(min0);
 
             // Act
@@ -56,6 +57,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
             await SetCursorAsync(min0);
 
             // Act
@@ -90,6 +92,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
             await SetCursorAsync(min0);
 
             // Act
@@ -119,6 +122,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var max1 = DateTimeOffset.Parse("2018-08-29T04:24:40.3247223Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
             await SetCursorAsync(min0);
 
             // Act
@@ -160,6 +164,16 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => MutableLatestLeavesTypes;
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
 
+        protected override IEnumerable<string> GetExpectedCursorNames()
+        {
+            return base.GetExpectedCursorNames().Concat(new[] { "CatalogScan-" + CatalogScanDriverType.LoadPackageArchive });
+        }
+
+        protected override IEnumerable<string> GetExpectedTableNames()
+        {
+            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageArchiveTableName });
+        }
+
         private async Task PackageAssemblyToCsv_WithDuplicates()
         {
             ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
@@ -169,6 +183,14 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
+
+            // initialize the ZIP listing cache
+            MutableLatestLeavesTypes.Add(CatalogScanDriverType.LoadPackageArchive);
+            AdditionalLeaseNames.Add("Start-" + CatalogScanDriverType.LoadPackageArchive);
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, min0);
+            await UpdateAsync(CatalogScanDriverType.LoadPackageArchive, max1);
+            HttpMessageHandlerFactory.Clear();
+
             await SetCursorAsync(min0);
 
             // Act
@@ -182,11 +204,6 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 .Where(x => x.RequestUri.GetLeftPart(UriPartial.Path).EndsWith("/gosms.ge-sms-api.1.0.1.nupkg", StringComparison.Ordinal))
                 .ToList();
             Assert.Equal(LatestLeavesTypes.Contains(DriverType) ? 1 : 2, duplicatePackageRequests.Count());
-        }
-
-        protected override IEnumerable<string> GetExpectedTableNames()
-        {
-            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageHashesTableName });
         }
     }
 }

@@ -30,9 +30,9 @@ namespace NuGet.Insights.Worker
             MarkdownDocument = Markdown.Parse(UnparsedMarkdown, Pipeline);
         }
 
-        public string GetMarkdown(MarkdownObject obj)
+        public string ToMarkdown(MarkdownObject obj)
         {
-            return UnparsedMarkdown.Substring(obj.Span.Start, obj.Span.Length);
+            return UnparsedMarkdown.Substring(obj.Span.Start, obj.Span.Length).Trim();
         }
 
         public IReadOnlyList<string> GetHeadings()

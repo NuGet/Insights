@@ -16,6 +16,9 @@ namespace NuGet.Insights.Worker
         {
             var builder = new StringBuilder();
 
+            Assert.StartsWith("NuGet.Insights.", _info.RecordType.Namespace, StringComparison.Ordinal);
+            var driverName = _info.RecordType.Namespace.Split('.').Last();
+
             builder.AppendLine(CultureInfo.InvariantCulture, $"# {_info.TableName}");
             builder.AppendLine(CultureInfo.InvariantCulture, $"");
             builder.AppendLine(CultureInfo.InvariantCulture, $"|                              |      |");
@@ -25,8 +28,8 @@ namespace NuGet.Insights.Worker
             builder.AppendLine(CultureInfo.InvariantCulture, $"| Parent tables                | TODO |");
             builder.AppendLine(CultureInfo.InvariantCulture, $"| Column used for partitioning | TODO |");
             builder.AppendLine(CultureInfo.InvariantCulture, $"| Data file container name     | {_info.DefaultContainerName} |");
-            builder.AppendLine(CultureInfo.InvariantCulture, $"| Driver                       | [`TODO`](../drivers/TODO.md) |");
-            builder.AppendLine(CultureInfo.InvariantCulture, $"| Record type                  | [`{_info.RecordType.Name}`](../../src/Worker.Logic/Drivers/TODO/{_info.RecordType.Name}.cs) |");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"| Driver                       | [`{driverName}`](../drivers/{driverName}.md) |");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"| Record type                  | [`{_info.RecordType.Name}`](../../src/Worker.Logic/Drivers/{driverName}/{_info.RecordType.Name}.cs) |");
             builder.AppendLine(CultureInfo.InvariantCulture, $"");
 
             var enumAndDynamics = new List<(string name, bool isEnum)>();

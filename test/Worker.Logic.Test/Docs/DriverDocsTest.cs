@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Kusto.Cloud.Platform.Utils;
 using Markdig.Extensions.Tables;
 #if DEBUG
 using Markdig.Helpers;
@@ -39,7 +40,7 @@ namespace NuGet.Insights.Worker
             for (var i = 0; i < rows.Count && i < DriverNames.Count; i++)
             {
                 Block rowObj = rows[i];
-                Output.WriteLine("Testing row: " + info.GetMarkdown(rowObj));
+                Output.WriteLine("Testing row: " + info.ToMarkdown(rowObj));
                 var row = Assert.IsType<TableRow>(rowObj);
                 Assert.False(row.IsHeader);
 
@@ -130,12 +131,7 @@ namespace NuGet.Insights.Worker
         public async Task FirstTableIsGeneralDriverProperties(CatalogScanDriverType driverType)
         {
             var info = await GetDriverInfoAsync(driverType);
-            info.ReadMarkdown();
-
-            var table = info.MarkdownDocument.OfType<Table>().FirstOrDefault();
-            Assert.NotNull(table);
-
-            var rows = table.Cast<TableRow>().ToList();
+            var rows = info.GetFirstTableRows();
 
             var i = 0;
             Assert.Equal(2, rows[i].Count);
@@ -172,9 +168,128 @@ namespace NuGet.Insights.Worker
             Assert.Equal(i, rows.Count);
         }
 
+        [DocsTheory]
+        [MemberData(nameof(StartabledDriverTypesData))]
+        public async Task CsvTablesMatchesMetadata(CatalogScanDriverType driverType)
+        {
+            var driverInfo = await GetDriverInfoAsync(driverType);
+
+            foreach (var csvTable in driverInfo.CsvTables)
+            {
+                var info = new TableDocInfo(csvTable);
+                var rows = info.GetFirstTableRows();
+                var driverRow = rows.FirstOrDefault(x => info.ToPlainText(x[0]) == "Driver");
+                Assert.NotNull(driverRow);
+                Assert.Equal($"[`{driverType}`](../drivers/{driverType}.md)", info.ToMarkdown(driverRow[1]));
+            }
+        }
+
+        [DocsTheory]
+        [MemberData(nameof(StartabledDriverTypesData))]
+        public async Task IsMentionedByTableDocument(CatalogScanDriverType driverType)
+        {
+            var info = await GetDriverInfoAsync(driverType);
+            var rows = info.GetFirstTableRows();
+            var row = rows.SingleOrDefault(row => info.ToPlainText(row[0]) == "Output CSV tables");
+            Assert.NotNull(row);
+
+            var expected = DriverDocInitializer.GetCsvTablesList(info.CsvTables);
+            Assert.Equal(expected, info.ToMarkdown(row[1]));
+        }
+
+        [DocsTheory]
+        [MemberData(nameof(StartabledDriverTypesData))]
+        public async Task DependenciesRowMatchesMetadata(CatalogScanDriverType driverType)
+        {
+            var info = await GetDriverInfoAsync(driverType);
+            var rows = info.GetFirstTableRows();
+            var row = rows.SingleOrDefault(row => info.ToPlainText(row[0]) == "Cursor dependencies");
+            Assert.NotNull(row);
+
+            var dependenciesMarkdown = info
+                .ToMarkdown(row[1])
+                .Split("<br />")
+                .Select(x => x.Trim())
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .ToList();
+
+            var (directPrefixes, transitiveLines) = DriverDocInitializer.GetDriverDependencyLines(driverType);
+
+            for (var i = 0; i < directPrefixes.Count; i++)
+            {
+                Assert.StartsWith(directPrefixes[i], dependenciesMarkdown.ElementAtOrDefault(i), StringComparison.Ordinal);
+            }
+
+            for (var i = 0; i < transitiveLines.Count; i++)
+            {
+                Assert.Equal(transitiveLines[i], dependenciesMarkdown.ElementAtOrDefault(directPrefixes.Count + i));
+            }
+
+            Assert.Equal(directPrefixes.Count + transitiveLines.Count, dependenciesMarkdown.Count);
+        }
+
+        [DocsTheory]
+        [MemberData(nameof(StartabledDriverTypesData))]
+        public async Task DriverDependentsInUsingRow(CatalogScanDriverType driverType)
+        {
+            var dependentsMarkdown = await GetDependentsLines(driverType);
+
+            // ignore lines that don't refer to a driver
+            var driverLines = dependentsMarkdown
+                .Where(x => CatalogScanDriverMetadata.StartableDriverTypes.Any(y => x.Contains(y.ToString(), StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+            var dependents = CatalogScanDriverMetadata
+                .GetDependents(driverType)
+                .OrderBy(x => x.ToString())
+                .ToList();
+
+            for (var i = 0; i < dependents.Count; i++)
+            {
+                Assert.StartsWith(DriverDocInitializer.GetDriverLink(dependents[i]) + ": ", driverLines.ElementAtOrDefault(i), StringComparison.Ordinal);
+            }
+            Assert.Equal(dependents.Count, driverLines.Count);
+        }
+
+        private async Task<List<string>> GetDependentsLines(CatalogScanDriverType driverType)
+        {
+            var info = await GetDriverInfoAsync(driverType);
+            var rows = info.GetFirstTableRows();
+            var row = rows.SingleOrDefault(row => info.ToPlainText(row[0]) == "Components using driver output");
+            Assert.NotNull(row);
+
+            var dependentsMarkdown = info
+                .ToMarkdown(row[1])
+                .Split("<br />")
+                .Select(x => x.Trim())
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .ToList();
+            return dependentsMarkdown;
+        }
+
+        [DocsTheory]
+        [MemberData(nameof(StartabledDriverTypesData))]
+        public async Task KustoInUsingRowIfDriverProducesCsv(CatalogScanDriverType driverType)
+        {
+            var info = await GetDriverInfoAsync(driverType);
+            var dependentsMarkdown = await GetDependentsLines(driverType);
+
+            if (info.CsvTables.Any())
+            {
+                Assert.Contains(DriverDocInitializer.KustoDependency, dependentsMarkdown);
+                Assert.Equal(DriverDocInitializer.KustoDependency, dependentsMarkdown.Last());
+            }
+            else
+            {
+                Assert.DoesNotContain(DriverDocInitializer.KustoDependency, dependentsMarkdown);
+            }
+        }
+
         protected override async Task DisposeInternalAsync()
         {
-            await LazyDriverDocInfoTask.Value;
+            if (LazyDriverDocInfoTask is not null)
+            {
+                await LazyDriverDocInfoTask.Value;
+            }
         }
 
         private static readonly ConcurrentDictionary<CatalogScanDriverType, DriverDocInfo> CachedDriverDocInfo = new();

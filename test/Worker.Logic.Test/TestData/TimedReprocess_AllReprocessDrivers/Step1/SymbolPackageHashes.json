@@ -1,0 +1,93 @@
+[
+  {
+    "PartitionKey": "dawnx.npoi",
+    "RowKey": "1.0.10",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": null,
+      "HttpHeaders": null,
+      "MD5": null,
+      "SHA1": null,
+      "SHA256": null,
+      "SHA512": null
+    }
+  },
+  {
+    "PartitionKey": "dawnx.npoi",
+    "RowKey": "1.0.5.3",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": null,
+      "HttpHeaders": null,
+      "MD5": null,
+      "SHA1": null,
+      "SHA256": null,
+      "SHA512": null
+    }
+  },
+  {
+    "PartitionKey": "dawnx.npoi",
+    "RowKey": "1.0.5",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": null,
+      "HttpHeaders": null,
+      "MD5": null,
+      "SHA1": null,
+      "SHA256": null,
+      "SHA512": null
+    }
+  },
+  {
+    "PartitionKey": "dawnx.npoi",
+    "RowKey": "1.0.7.12",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": null,
+      "HttpHeaders": null,
+      "MD5": null,
+      "SHA1": null,
+      "SHA256": null,
+      "SHA512": null
+    }
+  },
+  {
+    "PartitionKey": "dawnx.npoi",
+    "RowKey": "1.0.7.6",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": null,
+      "HttpHeaders": null,
+      "MD5": null,
+      "SHA1": null,
+      "SHA256": null,
+      "SHA512": null
+    }
+  },
+  {
+    "PartitionKey": "dawnx.npoi",
+    "RowKey": "1.0.9",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": null,
+      "HttpHeaders": null,
+      "MD5": null,
+      "SHA1": null,
+      "SHA256": null,
+      "SHA512": null
+    }
+  },
+  {
+    "PartitionKey": "glr.afy.utils",
+    "RowKey": "1.1.0.13",
+    "Entity": {
+      "Available": false,
+      "CommitTimestamp": null,
+      "HttpHeaders": null,
+      "MD5": null,
+      "SHA1": null,
+      "SHA256": null,
+      "SHA512": null
+    }
+  }
+]

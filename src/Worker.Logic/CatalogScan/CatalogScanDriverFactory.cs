@@ -29,6 +29,8 @@ using NuGet.Insights.Worker.SymbolPackageArchiveToCsv;
 using NuGet.Insights.Worker.PackageContentToCsv;
 using NuGet.Insights.Worker.PackageLicenseToCsv;
 using NuGet.Insights.Worker.LoadBucketedPackage;
+using NuGet.Insights.Worker.PackageFileToCsv;
+using NuGet.Insights.Worker.SymbolPackageFileToCsv;
 
 namespace NuGet.Insights.Worker
 {
@@ -93,6 +95,10 @@ namespace NuGet.Insights.Worker
                     return _serviceProvider.GetRequiredService<FindLatestLeafDriver<LatestPackageLeaf>>();
                 case CatalogScanDriverType.LoadBucketedPackage:
                     return _serviceProvider.GetRequiredService<FindLatestLeafDriver<BucketedPackage>>();
+                case CatalogScanDriverType.PackageFileToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageFileRecord>>();
+                case CatalogScanDriverType.SymbolPackageFileToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<SymbolPackageFileRecord>>();
                 case CatalogScanDriverType.PackageArchiveToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageArchiveRecord, PackageArchiveEntry>>();
                 case CatalogScanDriverType.SymbolPackageArchiveToCsv:

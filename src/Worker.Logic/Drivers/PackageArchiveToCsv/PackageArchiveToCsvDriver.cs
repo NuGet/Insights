@@ -58,7 +58,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             (var archive, var entries) = await ProcessLeafInternalAsync(leafScan);
             var bucketKey = PackageRecord.GetBucketKey(leafScan);
             return DriverResult.Success(new CsvRecordSets<PackageArchiveRecord, PackageArchiveEntry>(
-                new CsvRecordSet<PackageArchiveRecord>(bucketKey, archive != null ? new[] { archive } : Array.Empty<PackageArchiveRecord>()),
+                new CsvRecordSet<PackageArchiveRecord>(bucketKey, archive != null ? [archive] : Array.Empty<PackageArchiveRecord>()),
                 new CsvRecordSet<PackageArchiveEntry>(bucketKey, entries ?? Array.Empty<PackageArchiveEntry>())));
         }
 
@@ -79,17 +79,17 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
-                (var zipDirectory, var size, var headers) = await _packageFileService.GetZipDirectoryAndSizeAsync(leafScan.ToPackageIdentityCommit());
-                if (zipDirectory == null)
+                var hashes = await _packageHashService.GetHashesAsync(leafScan.ToPackageIdentityCommit(), requireFresh: false);
+                if (hashes is null)
                 {
-                    // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted record.
+                    // Ignore packages where the hashes are missing. A subsequent scan will produce a deleted record.
                     return (null, null);
                 }
 
-                var hashes = await _packageHashService.GetHashesOrNullAsync(leafScan.PackageId, leafScan.PackageVersion);
-                if (hashes == null)
+                (var zipDirectory, var size, var headers) = await _packageFileService.GetZipDirectoryAndSizeAsync(leafScan.ToPackageIdentityCommit());
+                if (zipDirectory is null)
                 {
-                    // Ignore packages where the hashes are missing. A subsequent scan will produce a deleted record.
+                    // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted record.
                     return (null, null);
                 }
 

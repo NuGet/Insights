@@ -35,6 +35,10 @@ have symbol packages.
 | Comment                          | string    | No                 | The comment at the end of the ZIP archive                                                 |
 | HeaderMD5                        | string    | No                 | The Base64 encoded MD5 hash of the .snupkg from the HTTP header                           |
 | HeaderSHA512                     | string    | No                 | The Base64 encoded SHA512 hash of the .snupkg from the HTTP header                        |
+| MD5                              | string    | Yes, for Available | The Base64 encoded MD5 hash of the .snupkg                                                |
+| SHA1                             | string    | Yes, for Available | The Base64 encoded SHA1 hash of the .snupkg                                               |
+| SHA256                           | string    | Yes, for Available | The Base64 encoded SHA256 hash of the .snupkg                                             |
+| SHA512                           | string    | Yes, for Available | The Base64 encoded SHA512 hash of the .snupkg                                             |
 
 ## ResultType schema
 

@@ -211,7 +211,9 @@ namespace NuGet.Insights.Worker
                 await CatalogScanService.InitializeAsync();
                 var expectedMax = new DateTimeOffset(2023, 11, 22, 9, 37, 13, TimeSpan.Zero);
                 await SetDependencyCursorsAsync(driverType, expectedMax);
-                await SetCursorsAsync([CatalogScanDriverType.LoadBucketedPackage, driverType], expectedMax);
+                await SetCursorsAsync(
+                    CatalogScanDriverMetadata.GetTransitiveClosure(driverType).Append(CatalogScanDriverType.LoadBucketedPackage),
+                    expectedMax);
 
                 // Act
                 var result = await CatalogScanService.UpdateAsync(ScanId, StorageSuffix, driverType, Buckets);
@@ -550,7 +552,7 @@ namespace NuGet.Insights.Worker
     #if ENABLE_NPE
                         CatalogScanDriverType.NuGetPackageExplorerToCsv,
     #endif
-                        CatalogScanDriverType.PackageAssemblyToCsv,
+                        CatalogScanDriverType.PackageFileToCsv,
                         CatalogScanDriverType.PackageIconToCsv,
                         CatalogScanDriverType.PackageLicenseToCsv,
                     },
@@ -597,6 +599,61 @@ namespace NuGet.Insights.Worker
 
             public TheUpdateAllAsyncMethod(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {
+            }
+        }
+
+        public class TypeToInfoTest : CatalogScanServiceTest
+        {
+            public TypeToInfoTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
+
+            [Theory]
+            [MemberData(nameof(StartabledDriverTypesData))]
+            public async Task SetDependencyCursorAsyncMatchesDeclaredDependencies(CatalogScanDriverType type)
+            {
+                // Arrange
+                var min = new DateTimeOffset(2024, 8, 13, 11, 50, 0, TimeSpan.Zero);
+                FlatContainerCursor = CursorTableEntity.Min;
+                await CatalogScanCursorService.InitializeAsync();
+
+                // Act
+                await SetDependencyCursorsAsync(type, min);
+
+                // Assert
+                var cursors = await CatalogScanCursorService.GetCursorsAsync();
+                var dependencies = CatalogScanDriverMetadata.GetDependencies(type);
+                if (dependencies.Any())
+                {
+                    // set
+                    foreach (var dependency in dependencies)
+                    {
+                        Logger.LogInformation("Checking cursor for {Dependency}.", dependency);
+                        Assert.Contains(dependency, cursors.Keys);
+                        Assert.Equal(min, cursors[dependency].Value);
+                        cursors.Remove(dependency);
+                    }
+
+                    // not set
+                    Assert.Equal(CursorTableEntity.Min, FlatContainerCursor);
+                    foreach (var nonDependency in cursors.Keys)
+                    {
+                        Logger.LogInformation("Checking cursor for {NonDependency}.", nonDependency);
+                        Assert.Equal(CursorTableEntity.Min, cursors[nonDependency].Value);
+                    }
+                }
+                else
+                {
+                    // set
+                    Assert.Equal(min, FlatContainerCursor);
+
+                    // not set
+                    foreach (var nonDependency in cursors.Keys)
+                    {
+                        Logger.LogInformation("Checking cursor for {NonDependency}.", nonDependency);
+                        Assert.Equal(CursorTableEntity.Min, cursors[nonDependency].Value);
+                    }
+                }
             }
         }
 
@@ -767,10 +824,9 @@ namespace NuGet.Insights.Worker
                     DefaultMin = CatalogClient.NuGetOrgMinDeleted,
                     OnlyLatestLeavesSupport = null,
                     SupportsBucketRangeProcessing = true,
-                    SetDependencyCursorAsync = (self, x) =>
+                    SetDependencyCursorAsync = async (self, x) =>
                     {
-                        self.FlatContainerCursor = x;
-                        return Task.CompletedTask;
+                        await self.SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, x);
                     },
                 }
             },
@@ -799,7 +855,7 @@ namespace NuGet.Insights.Worker
                     SetDependencyCursorAsync = async (self, x) =>
                     {
                         await self.SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, x);
-                        await self.SetCursorAsync(CatalogScanDriverType.PackageAssemblyToCsv, x);
+                        await self.SetCursorAsync(CatalogScanDriverType.PackageFileToCsv, x);
                     },
                 }
             },
@@ -845,6 +901,21 @@ namespace NuGet.Insights.Worker
                     SetDependencyCursorAsync = async (self, x) =>
                     {
                         await self.SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, x);
+                    },
+                }
+            },
+
+            {
+                CatalogScanDriverType.PackageFileToCsv,
+                new DriverInfo
+                {
+                    DefaultMin = CatalogClient.NuGetOrgMinDeleted,
+                    OnlyLatestLeavesSupport = null,
+                    SupportsBucketRangeProcessing = true,
+                    SetDependencyCursorAsync = (self, x) =>
+                    {
+                        self.FlatContainerCursor = x;
+                        return Task.CompletedTask;
                     },
                 }
             },
@@ -937,6 +1008,20 @@ namespace NuGet.Insights.Worker
 
             {
                 CatalogScanDriverType.SymbolPackageArchiveToCsv,
+                new DriverInfo
+                {
+                    DefaultMin = CatalogClient.NuGetOrgMinDeleted,
+                    OnlyLatestLeavesSupport = null,
+                    SupportsBucketRangeProcessing = true,
+                    SetDependencyCursorAsync = async (self, x) =>
+                    {
+                        await self.SetCursorAsync(CatalogScanDriverType.SymbolPackageFileToCsv, x);
+                    },
+                }
+            },
+
+            {
+                CatalogScanDriverType.SymbolPackageFileToCsv,
                 new DriverInfo
                 {
                     DefaultMin = CatalogClient.NuGetOrgMinDeleted,

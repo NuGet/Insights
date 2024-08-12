@@ -6,6 +6,7 @@ using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Security;
 using System.Security.Cryptography;
+using Knapcode.MiniZip;
 
 #nullable enable
 
@@ -14,7 +15,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
     public class PackageAssemblyToCsvDriver : ICatalogLeafToCsvDriver<PackageAssembly>, ICsvResultStorage<PackageAssembly>
     {
         private readonly CatalogClient _catalogClient;
-        private readonly PackageHashService _packageHashService;
+        private readonly PackageFileService _packageFileService;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly FileDownloader _fileDownloader;
         private readonly TempStreamService _tempStreamService;
@@ -25,7 +26,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
         public PackageAssemblyToCsvDriver(
             CatalogClient catalogClient,
-            PackageHashService packageHashService,
+            PackageFileService packageFileService,
             FlatContainerClient flatContainerClient,
             FileDownloader fileDownloader,
             TempStreamService tempStreamService,
@@ -33,7 +34,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             ILogger<PackageAssemblyToCsvDriver> logger)
         {
             _catalogClient = catalogClient;
-            _packageHashService = packageHashService;
+            _packageFileService = packageFileService;
             _flatContainerClient = flatContainerClient;
             _fileDownloader = fileDownloader;
             _tempStreamService = tempStreamService;
@@ -51,12 +52,12 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
         public async Task InitializeAsync()
         {
-            await _packageHashService.InitializeAsync();
+            await _packageFileService.InitializeAsync();
         }
 
-        public async Task DestroyAsync()
+        public Task DestroyAsync()
         {
-            await _packageHashService.DestroyAsync();
+            return Task.CompletedTask;
         }
 
         public async Task<DriverResult<CsvRecordSet<PackageAssembly>>> ProcessLeafAsync(CatalogLeafScan leafScan)
@@ -68,14 +69,22 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             {
                 var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
-                // We must clear the data related to deleted packages.
-                await _packageHashService.SetHashesAsync(leafScan, hashes: null);
-
                 return MakeResults(leafScan, new List<PackageAssembly> { new PackageAssembly(scanId, scanTimestamp, leaf) });
             }
             else
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
+
+                var zipDirectory = await _packageFileService.GetZipDirectoryAsync(leafScan.ToPackageIdentityCommit());
+                if (zipDirectory == null)
+                {
+                    return MakeEmptyResults(leaf);
+                }
+
+                if (!zipDirectory.Entries.Any(e => FileExtensions.Contains(Path.GetExtension(e.GetName()))))
+                {
+                    return MakeNoAssemblies(scanId, scanTimestamp, leaf);
+                }
 
                 var url = await _flatContainerClient.GetPackageContentUrlAsync(leafScan.PackageId, leafScan.PackageVersion);
                 var result = await _fileDownloader.DownloadUrlToFileAsync(
@@ -89,9 +98,6 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
                 if (result is null)
                 {
-                    // We must clear the data related to deleted packages.
-                    await _packageHashService.SetHashesAsync(leafScan, hashes: null);
-
                     return MakeEmptyResults(leafScan);
                 }
 
@@ -102,9 +108,6 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                     {
                         return DriverResult.TryAgainLater<CsvRecordSet<PackageAssembly>>();
                     }
-
-                    // We have downloaded the full .nupkg here so we can capture the calculated hashes.
-                    await _packageHashService.SetHashesAsync(leafScan, result.Value.Body.Hash);
 
                     using var zipArchive = new ZipArchive(result.Value.Body.Stream);
                     var entries = zipArchive

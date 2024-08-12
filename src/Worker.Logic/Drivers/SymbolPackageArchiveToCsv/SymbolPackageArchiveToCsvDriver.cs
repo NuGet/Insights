@@ -13,15 +13,18 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
     {
         private readonly CatalogClient _catalogClient;
         private readonly SymbolPackageFileService _symbolPackageFileService;
+        private readonly SymbolPackageHashService _symbolPackageHashService;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
         public SymbolPackageArchiveToCsvDriver(
             CatalogClient catalogClient,
             SymbolPackageFileService symbolPackageFileService,
+            SymbolPackageHashService symbolPackageHashService,
             IOptions<NuGetInsightsWorkerSettings> options)
         {
             _catalogClient = catalogClient;
             _symbolPackageFileService = symbolPackageFileService;
+            _symbolPackageHashService = symbolPackageHashService;
             _options = options;
         }
 
@@ -42,6 +45,7 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
         public async Task InitializeAsync()
         {
             await _symbolPackageFileService.InitializeAsync();
+            await _symbolPackageHashService.InitializeAsync();
         }
 
         public Task DestroyAsync()
@@ -54,7 +58,7 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             (var archive, var entries) = await ProcessLeafInternalAsync(leafScan);
             var bucketKey = PackageRecord.GetBucketKey(leafScan);
             return DriverResult.Success(new CsvRecordSets<SymbolPackageArchiveRecord, SymbolPackageArchiveEntry>(
-                new CsvRecordSet<SymbolPackageArchiveRecord>(bucketKey, archive != null ? new[] { archive } : Array.Empty<SymbolPackageArchiveRecord>()),
+                new CsvRecordSet<SymbolPackageArchiveRecord>(bucketKey, archive != null ? [archive] : Array.Empty<SymbolPackageArchiveRecord>()),
                 new CsvRecordSet<SymbolPackageArchiveEntry>(bucketKey, entries ?? Array.Empty<SymbolPackageArchiveEntry>())));
         }
 
@@ -75,13 +79,16 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
-                (var zipDirectory, var size, var headers) = await _symbolPackageFileService.GetZipDirectoryFromLeafItemAsync(leafScan.ToPackageIdentityCommit());
-                if (zipDirectory == null)
+                var hashes = await _symbolPackageHashService.GetHashesAsync(leafScan.ToPackageIdentityCommit(), requireFresh: false);
+                if (hashes is null)
                 {
-                    return (
-                        new SymbolPackageArchiveRecord(scanId, scanTimestamp, leaf) { ResultType = ArchiveResultType.DoesNotExist },
-                        new[] { new SymbolPackageArchiveEntry(scanId, scanTimestamp, leaf) { ResultType = ArchiveResultType.DoesNotExist } }
-                    );
+                    return MakeDoesNotExist(scanId, scanTimestamp, leaf);
+                }
+
+                (var zipDirectory, var size, var headers) = await _symbolPackageFileService.GetZipDirectoryFromLeafItemAsync(leafScan.ToPackageIdentityCommit());
+                if (zipDirectory is null)
+                {
+                    return MakeDoesNotExist(scanId, scanTimestamp, leaf);
                 }
 
                 // Necessary because of https://github.com/neuecc/MessagePack-CSharp/issues/1431
@@ -99,6 +106,11 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
 
                     HeaderMD5 = headerMD5,
                     HeaderSHA512 = headerSHA512,
+
+                    MD5 = hashes.MD5.ToBase64(),
+                    SHA1 = hashes.SHA1.ToBase64(),
+                    SHA256 = hashes.SHA256.ToBase64(),
+                    SHA512 = hashes.SHA512.ToBase64(),
                 };
                 var entries = new List<SymbolPackageArchiveEntry>();
 
@@ -134,6 +146,22 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
 
                 return (archive, entries);
             }
+        }
+
+        private static (SymbolPackageArchiveRecord, IReadOnlyList<SymbolPackageArchiveEntry>) MakeDoesNotExist(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf)
+        {
+            return (
+                new SymbolPackageArchiveRecord(scanId, scanTimestamp, leaf) { ResultType = ArchiveResultType.DoesNotExist },
+                new[] { new SymbolPackageArchiveEntry(scanId, scanTimestamp, leaf) { ResultType = ArchiveResultType.DoesNotExist } }
+            );
+        }
+
+        private static (SymbolPackageArchiveRecord, IReadOnlyList<SymbolPackageArchiveEntry>) MakeEmpty()
+        {
+            return (
+                null,
+                Array.Empty<SymbolPackageArchiveEntry>()
+            );
         }
     }
 }

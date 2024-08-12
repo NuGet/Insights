@@ -11,17 +11,20 @@ namespace NuGet.Insights
 {
     public class SymbolPackageFileService
     {
+        private readonly SymbolPackageClient _symbolPackageClient;
         private readonly PackageWideEntityService _wideEntityService;
         private readonly FileDownloader _fileDownloader;
         private readonly MZipFormat _mzipFormat;
         private readonly IOptions<NuGetInsightsSettings> _options;
 
         public SymbolPackageFileService(
+            SymbolPackageClient symbolPackageClient,
             PackageWideEntityService wideEntityService,
             FileDownloader fileDownloader,
             MZipFormat mzipFormat,
             IOptions<NuGetInsightsSettings> options)
         {
+            _symbolPackageClient = symbolPackageClient;
             _wideEntityService = wideEntityService;
             _fileDownloader = fileDownloader;
             _mzipFormat = mzipFormat;
@@ -87,9 +90,7 @@ namespace NuGet.Insights
 
         private async Task<SymbolPackageFileInfoV1> GetInfoAsync(IPackageIdentityCommit item)
         {
-            var url = $"{_options.Value.SymbolPackagesContainerBaseUrl.TrimEnd('/')}/" +
-                $"{item.PackageId.ToLowerInvariant()}." +
-                $"{NuGetVersion.Parse(item.PackageVersion).ToNormalizedString().ToLowerInvariant()}.snupkg";
+            var url = _symbolPackageClient.GetSymbolPackageUrl(item.PackageId, item.PackageVersion);
 
             using var reader = await _fileDownloader.GetZipDirectoryReaderAsync(
                 item.PackageId,

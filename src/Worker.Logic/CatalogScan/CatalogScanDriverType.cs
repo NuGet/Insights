@@ -84,6 +84,18 @@ namespace NuGet.Insights.Worker
         SymbolPackageArchiveToCsv,
 
         /// <summary>
+        /// Implemented by <see cref="PackageFileToCsv.PackageFileToCsvDriver"/>.
+        /// Gathers common information (e.g. hash) about each ZIP file in the package (the .nupkg file).
+        /// </summary>
+        PackageFileToCsv,
+
+        /// <summary>
+        /// Implemented by <see cref="SymbolPackageFileToCsv.SymbolPackageFileToCsvDriver"/>.
+        /// Gathers common information (e.g. hash) about each ZIP file in the symbol package (the .snupkg file).
+        /// </summary>
+        SymbolPackageFileToCsv,
+
+        /// <summary>
         /// Implemented by <see cref="PackageAssemblyToCsv.PackageAssemblyToCsvDriver"/>. For packages that contain
         /// assemblies, downloads the entire .nupkg and extract metadata about each assembly.
         /// </summary>

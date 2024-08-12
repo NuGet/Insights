@@ -31,7 +31,7 @@ namespace NuGet.Insights.Worker
             for (var i = 0; i < rows.Count; i++)
             {
                 Block rowObj = rows[i];
-                _output.WriteLine("Testing row: " + info.GetMarkdown(rowObj));
+                _output.WriteLine("Testing row: " + info.ToMarkdown(rowObj));
                 var row = Assert.IsType<TableRow>(rowObj);
                 Assert.False(row.IsHeader);
 
@@ -74,12 +74,7 @@ namespace NuGet.Insights.Worker
         public void FirstTableIsGeneralTableProperties(string tableName)
         {
             var info = new TableDocInfo(tableName);
-            info.ReadMarkdown();
-
-            var table = info.MarkdownDocument.OfType<Table>().FirstOrDefault();
-            Assert.NotNull(table);
-
-            var rows = table.Cast<TableRow>().ToList();
+            var rows = info.GetFirstTableRows();
 
             var i = 0;
             Assert.Equal(2, rows[i].Count);
@@ -144,7 +139,7 @@ namespace NuGet.Insights.Worker
             var index = 0;
             foreach (var rowObj in rows)
             {
-                _output.WriteLine("Testing row: " + info.GetMarkdown(rowObj));
+                _output.WriteLine("Testing row: " + info.ToMarkdown(rowObj));
                 var row = Assert.IsType<TableRow>(rowObj);
                 Assert.False(row.IsHeader);
 
@@ -232,7 +227,7 @@ namespace NuGet.Insights.Worker
                     var index = 0;
                     foreach (var rowObj in rows)
                     {
-                        _output.WriteLine("Testing row: " + info.GetMarkdown(rowObj));
+                        _output.WriteLine("Testing row: " + info.ToMarkdown(rowObj));
                         var row = Assert.IsType<TableRow>(rowObj);
                         Assert.False(row.IsHeader);
 

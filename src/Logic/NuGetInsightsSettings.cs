@@ -53,6 +53,7 @@ namespace NuGet.Insights
         public string PackageManifestTableName { get; set; } = "packagemanifests";
         public string PackageReadmeTableName { get; set; } = "packagereadmes";
         public string PackageHashesTableName { get; set; } = "packagehashes";
+        public string SymbolPackageHashesTableName { get; set; } = "symbolpackagehashes";
         public string TimerTableName { get; set; } = "timers";
         public int MaxTempMemoryStreamSize { get; set; } = 1024 * 1024 * 196;
         public string UserManagedIdentityClientId { get; set; } = null;

@@ -30,13 +30,15 @@ using NuGet.Insights.Worker.SymbolPackageArchiveToCsv;
 using NuGet.Insights.Worker.TableCopy;
 using NuGet.Insights.Worker.TimedReprocess;
 using NuGet.Insights.Worker.Workflow;
+using NuGet.Insights.Worker.PackageFileToCsv;
+using NuGet.Insights.Worker.SymbolPackageFileToCsv;
 
 namespace NuGet.Insights.Worker
 {
     public class SchemaCollectionBuilder
     {
-        public static IReadOnlyList<ISchemaDeserializer> DefaultMessageSchemas { get; } = new ISchemaDeserializer[]
-        {
+        public static IReadOnlyList<ISchemaDeserializer> DefaultMessageSchemas { get; } =
+        [
             new SchemaV1<HomogeneousBulkEnqueueMessage>("hbe"),
             new SchemaV1<HeterogeneousBulkEnqueueMessage>("htbe"),
             new SchemaV1<HomogeneousBatchMessage>("hb"),
@@ -54,6 +56,8 @@ namespace NuGet.Insights.Worker
             new SchemaV1<WorkflowRunMessage>("wr"),
 
             new SchemaV1<CsvCompactMessage<CatalogLeafItemRecord>>("cc.fcli"),
+            new SchemaV1<CsvCompactMessage<PackageFileRecord>>("cc.pf2c"),
+            new SchemaV1<CsvCompactMessage<SymbolPackageFileRecord>>("cc.spf2c"),
             new SchemaV1<CsvCompactMessage<PackageArchiveRecord>>("cc.pa2c"),
             new SchemaV1<CsvCompactMessage<PackageArchiveEntry>>("cc.pae2c"),
             new SchemaV1<CsvCompactMessage<SymbolPackageArchiveRecord>>("cc.sa2c"),
@@ -94,10 +98,10 @@ namespace NuGet.Insights.Worker
             new SchemaV1<AuxiliaryFileUpdaterMessage<AsOfData<VerifiedPackage>>>("vp2c"),
             new SchemaV1<AuxiliaryFileUpdaterMessage<AsOfData<ExcludedPackage>>>("ep2c"),
             new SchemaV1<AuxiliaryFileUpdaterMessage<AsOfData<PopularityTransfer>>>("pt2c"),
-        };
+        ];
 
-        public static IReadOnlyList<ISchemaDeserializer> DefaultParameterSchemas { get; } = new ISchemaDeserializer[]
-        {
+        public static IReadOnlyList<ISchemaDeserializer> DefaultParameterSchemas { get; } =
+        [
             new SchemaV1<TablePrefixScanStartParameters>("tps.s"),
             new SchemaV1<TablePrefixScanPartitionKeyQueryParameters>("tps.pkq"),
             new SchemaV1<TablePrefixScanPrefixQueryParameters>("tps.pq"),
@@ -107,7 +111,7 @@ namespace NuGet.Insights.Worker
             new SchemaV1<TableCopyParameters>("tc"),
 
             new SchemaV1<CleanupOrphanRecordsParameters>("cor"),
-        };
+        ];
 
         public static SchemaCollectionBuilder Default => new SchemaCollectionBuilder()
             .AddRange(DefaultMessageSchemas)

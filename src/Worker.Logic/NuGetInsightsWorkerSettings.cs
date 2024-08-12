@@ -118,6 +118,8 @@ namespace NuGet.Insights.Worker
         public string PackageArchiveEntryContainerName { get; set; } = "packagearchiveentries";
         public string SymbolPackageArchiveContainerName { get; set; } = "symbolpackagearchives";
         public string SymbolPackageArchiveEntryContainerName { get; set; } = "symbolpackagearchiveentries";
+        public string PackageFileContainerName { get; set; } = "packagefiles";
+        public string SymbolPackageFileContainerName { get; set; } = "symbolpackagefiles";
         public string PackageVersionTableName { get; set; } = "packageversions";
         public string PackageVersionContainerName { get; set; } = "packageversions";
         public string NuGetPackageExplorerContainerName { get; set; } = "nugetpackageexplorer";

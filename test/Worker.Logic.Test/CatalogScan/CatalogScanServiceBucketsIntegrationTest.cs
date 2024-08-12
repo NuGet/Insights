@@ -164,7 +164,8 @@ namespace NuGet.Insights.Worker
                 var tableName = CsvRecordContainers.GetDefaultKustoTableName(recordType);
                 await AssertCsvAsync(recordType, containerName, dir, Step1, bucket, $"{tableName}.csv");
             }
-            Assert.Equal(1, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
+            Assert.Equal(1, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.Method == HttpMethod.Head && x.OriginalRequest.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
+            Assert.Equal(1, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.Method == HttpMethod.Get && x.OriginalRequest.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
             Assert.Equal(1, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.RequestUri.AbsolutePath.EndsWith("/readme", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
 
             // Arrange
@@ -215,7 +216,8 @@ namespace NuGet.Insights.Worker
                 var tableName = CsvRecordContainers.GetDefaultKustoTableName(recordType);
                 await AssertCsvAsync(recordType, containerName, dir, expectCached ? Step1 : Step2, bucket, $"{tableName}.csv");
             }
-            Assert.Equal(expectCached ? 1 : 2, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
+            Assert.Equal(expectCached ? 1 : 2, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.Method == HttpMethod.Head && x.OriginalRequest.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
+            Assert.Equal(expectCached ? 1 : 2, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.Method == HttpMethod.Get && x.OriginalRequest.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
             Assert.Equal(expectCached ? 1 : 2, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.RequestUri.AbsolutePath.EndsWith("/readme", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
         }
 

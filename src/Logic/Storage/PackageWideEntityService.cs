@@ -102,6 +102,32 @@ namespace NuGet.Insights
             await _wideEntityService.DeleteTableAsync(tableName);
         }
 
+        public async Task<TOutput?> GetInfoAsync<TItem, TData, TOutput>(
+            string tableName,
+            TItem item,
+            Func<TData, TOutput> dataToOutput,
+            bool requireFresh)
+            where TItem : IPackageIdentityCommit
+            where TData : IPackageWideEntity
+        {
+            var partitionKey = GetPartitionKey(item.PackageId);
+            var rowKey = GetRowKey(item.PackageVersion);
+
+            (var existingEntity, var matchingData) = await GetExistingAsync<TData>(
+                tableName,
+                partitionKey,
+                rowKey,
+                item,
+                forceUpdate: requireFresh);
+
+            if (matchingData != null)
+            {
+                return dataToOutput(matchingData);
+            }
+
+            return default;
+        }
+
         public async Task<TOutput> GetOrUpdateInfoAsync<TItem, TData, TOutput>(
             string tableName,
             TItem item,

@@ -4,6 +4,7 @@
 using NuGet.Insights.Worker.LoadBucketedPackage;
 using NuGet.Insights.Worker.PackageReadmeToCsv;
 using NuGet.Insights.Worker.SymbolPackageArchiveToCsv;
+using NuGet.Insights.Worker.SymbolPackageFileToCsv;
 
 namespace NuGet.Insights.Worker.TimedReprocess
 {
@@ -24,7 +25,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
             var max1 = DateTimeOffset.Parse("2018-12-06T03:17:41.9986142Z", CultureInfo.InvariantCulture);
             await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);
             var initialLbp = await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, max1);
-            await SetCursorsAsync([CatalogScanDriverType.LoadPackageReadme, CatalogScanDriverType.LoadSymbolPackageArchive], max1);
+            await SetCursorsForTimedProcessDriversAsync(max1);
 
             await TimedReprocessService.InitializeAsync();
 
@@ -73,11 +74,47 @@ namespace NuGet.Insights.Worker.TimedReprocess
 
             // verify output data
             await AssertPackageReadmeTableAsync(TimedReprocess_AllReprocessDriversDir, Step1, "PackageReadmes.json");
+            await AssertSymbolPackageHashesTableAsync(TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageHashes.json");
             await AssertSymbolPackageArchiveTableAsync(TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageArchives.json");
 
             await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_AllReprocessDriversDir, Step1, "PackageReadmes.csv");
+            await AssertCsvAsync<SymbolPackageFileRecord>(Options.Value.SymbolPackageFileContainerName, TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageFiles.csv");
             await AssertCsvAsync<SymbolPackageArchiveRecord>(Options.Value.SymbolPackageArchiveContainerName, TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageArchives.csv");
             await AssertCsvAsync<SymbolPackageArchiveEntry>(Options.Value.SymbolPackageArchiveEntryContainerName, TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageArchiveEntries.csv");
+
+            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
+            var tables = await tableServiceClient.QueryAsync(prefix: StoragePrefix).ToListAsync();
+            Assert.Equal(
+                new string[]
+                {
+                    // infrastructure
+                    Options.Value.BucketedPackageTableName,
+                    Options.Value.CatalogIndexScanTableName,
+                    Options.Value.CursorTableName,
+                    Options.Value.TimedReprocessTableName,
+
+                    // intermediate data
+                    Options.Value.PackageReadmeTableName,
+                    Options.Value.SymbolPackageArchiveTableName,
+                    Options.Value.SymbolPackageHashesTableName,
+                }.Order().ToArray(),
+                tables.Select(x => x.Name).ToArray());
+
+            var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
+            var containers = await blobServiceClient.GetBlobContainersAsync(prefix: StoragePrefix).ToListAsync();
+            Assert.Equal(
+                new string[]
+                {
+                    // infrastructure
+                    Options.Value.LeaseContainerName,
+
+                    // intermediate data
+                    Options.Value.PackageReadmeContainerName,
+                    Options.Value.SymbolPackageArchiveEntryContainerName,
+                    Options.Value.SymbolPackageArchiveContainerName,
+                    Options.Value.SymbolPackageFileContainerName,
+                }.Order().ToArray(),
+                containers.Select(x => x.Name).ToArray());
         }
 
         [Fact]
@@ -95,7 +132,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
             await SetCursorAsync(CatalogScanDriverType.LoadSymbolPackageArchive, min0);
             var parallelLspaResult = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadSymbolPackageArchive, max1);
 
-            await SetCursorsAsync([CatalogScanDriverType.LoadPackageReadme, CatalogScanDriverType.LoadSymbolPackageArchive], max1);
+            await SetCursorsAsync([CatalogScanDriverType.LoadPackageReadme, CatalogScanDriverType.SymbolPackageFileToCsv, CatalogScanDriverType.LoadSymbolPackageArchive], max1);
 
             await TimedReprocessService.InitializeAsync();
 
@@ -137,7 +174,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
             ConfigureWorkerSettings = x =>
             {
                 x.AppendResultStorageBucketCount = 1;
-                x.DisabledDrivers = [CatalogScanDriverType.LoadSymbolPackageArchive, CatalogScanDriverType.SymbolPackageArchiveToCsv];
+                x.DisabledDrivers = [CatalogScanDriverType.LoadSymbolPackageArchive, CatalogScanDriverType.SymbolPackageFileToCsv, CatalogScanDriverType.SymbolPackageArchiveToCsv];
             };
 
             await CatalogScanService.InitializeAsync();
@@ -185,7 +222,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
             ConfigureWorkerSettings = x =>
             {
                 x.AppendResultStorageBucketCount = 1;
-                x.DisabledDrivers = [CatalogScanDriverType.LoadSymbolPackageArchive, CatalogScanDriverType.SymbolPackageArchiveToCsv];
+                x.DisabledDrivers = [CatalogScanDriverType.LoadSymbolPackageArchive, CatalogScanDriverType.SymbolPackageFileToCsv, CatalogScanDriverType.SymbolPackageArchiveToCsv];
             };
 
             await CatalogScanService.InitializeAsync();
@@ -226,7 +263,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
             ConfigureWorkerSettings = x =>
             {
                 x.AppendResultStorageBucketCount = 1;
-                x.DisabledDrivers = [CatalogScanDriverType.LoadSymbolPackageArchive, CatalogScanDriverType.SymbolPackageArchiveToCsv];
+                x.DisabledDrivers = [CatalogScanDriverType.LoadSymbolPackageArchive, CatalogScanDriverType.SymbolPackageFileToCsv, CatalogScanDriverType.SymbolPackageArchiveToCsv];
             };
 
             await CatalogScanService.InitializeAsync();
@@ -250,6 +287,11 @@ namespace NuGet.Insights.Worker.TimedReprocess
             // Assert
             Assert.Equal(TimedReprocessState.Complete, started.State);
             Assert.Equal(latestRun.RunId, started.RunId);
+        }
+
+        private async Task SetCursorsForTimedProcessDriversAsync(DateTimeOffset min)
+        {
+            await SetCursorsAsync(TimedReprocessService.GetReprocessBatches().SelectMany(x => x), min);
         }
 
         private async Task SetNextBucketsAsync(IReadOnlyList<int> buckets)

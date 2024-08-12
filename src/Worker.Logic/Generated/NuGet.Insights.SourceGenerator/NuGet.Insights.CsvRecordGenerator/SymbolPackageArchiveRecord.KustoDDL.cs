@@ -30,7 +30,11 @@ namespace NuGet.Insights
     EntryCount: int,
     Comment: string,
     HeaderMD5: string,
-    HeaderSHA512: string
+    HeaderSHA512: string,
+    MD5: string,
+    SHA1: string,
+    SHA256: string,
+    SHA512: string
 ) with (docstring = __DOCSTRING__, folder = __FOLDER__)",
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
@@ -51,7 +55,11 @@ namespace NuGet.Insights
     '{""Column"":""EntryCount"",""DataType"":""int"",""Properties"":{""Ordinal"":13}},'
     '{""Column"":""Comment"",""DataType"":""string"",""Properties"":{""Ordinal"":14}},'
     '{""Column"":""HeaderMD5"",""DataType"":""string"",""Properties"":{""Ordinal"":15}},'
-    '{""Column"":""HeaderSHA512"",""DataType"":""string"",""Properties"":{""Ordinal"":16}}'
+    '{""Column"":""HeaderSHA512"",""DataType"":""string"",""Properties"":{""Ordinal"":16}},'
+    '{""Column"":""MD5"",""DataType"":""string"",""Properties"":{""Ordinal"":17}},'
+    '{""Column"":""SHA1"",""DataType"":""string"",""Properties"":{""Ordinal"":18}},'
+    '{""Column"":""SHA256"",""DataType"":""string"",""Properties"":{""Ordinal"":19}},'
+    '{""Column"":""SHA512"",""DataType"":""string"",""Properties"":{""Ordinal"":20}}'
 ']'",
         };
 

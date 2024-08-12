@@ -54,6 +54,31 @@ namespace NuGet.Insights.Worker
             CatalogScanDriverMetadata.GetDependencies(type);
         }
 
+        [Theory]
+        [MemberData(nameof(StartabledDriverTypesData))]
+        public void NoDriverHasRedundantDependencies(CatalogScanDriverType type)
+        {
+            var directDependencies = CatalogScanDriverMetadata.GetDependencies(type);
+
+            var transitiveDependencies = new HashSet<CatalogScanDriverType>();
+            var toExplore = new Queue<CatalogScanDriverType>(directDependencies);
+            while (toExplore.Count > 0)
+            {
+                var current = toExplore.Dequeue();
+                var dependencies = CatalogScanDriverMetadata.GetDependencies(current);
+                foreach (var dependency in dependencies)
+                {
+                    if (transitiveDependencies.Add(dependency))
+                    {
+                        toExplore.Enqueue(dependency);
+                    }
+                }
+            }
+
+            var overlap = directDependencies.Intersect(transitiveDependencies).Order().ToList();
+            Assert.Empty(overlap);
+        }
+
         public CatalogScanDriverMetadataTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
         }

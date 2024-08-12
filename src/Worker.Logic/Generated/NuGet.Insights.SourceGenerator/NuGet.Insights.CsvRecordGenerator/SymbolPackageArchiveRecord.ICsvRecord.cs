@@ -30,7 +30,11 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
         EntryCount: int,
         Comment: string,
         HeaderMD5: string,
-        HeaderSHA512: string
+        HeaderSHA512: string,
+        MD5: string,
+        SHA1: string,
+        SHA256: string,
+        SHA512: string
     ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/SymbolPackageArchives.md", folder = "");
 
     .alter-merge table SymbolPackageArchives policy retention softdelete = 30d;
@@ -64,17 +68,21 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
         '{"Column":"EntryCount","DataType":"int","Properties":{"Ordinal":13}},'
         '{"Column":"Comment","DataType":"string","Properties":{"Ordinal":14}},'
         '{"Column":"HeaderMD5","DataType":"string","Properties":{"Ordinal":15}},'
-        '{"Column":"HeaderSHA512","DataType":"string","Properties":{"Ordinal":16}}'
+        '{"Column":"HeaderSHA512","DataType":"string","Properties":{"Ordinal":16}},'
+        '{"Column":"MD5","DataType":"string","Properties":{"Ordinal":17}},'
+        '{"Column":"SHA1","DataType":"string","Properties":{"Ordinal":18}},'
+        '{"Column":"SHA256","DataType":"string","Properties":{"Ordinal":19}},'
+        '{"Column":"SHA512","DataType":"string","Properties":{"Ordinal":20}}'
     ']'
 
     */
     partial record SymbolPackageArchiveRecord
     {
-        public int FieldCount => 17;
+        public int FieldCount => 21;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Size,OffsetAfterEndOfCentralDirectory,CentralDirectorySize,OffsetOfCentralDirectory,EntryCount,Comment,HeaderMD5,HeaderSHA512");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Size,OffsetAfterEndOfCentralDirectory,CentralDirectorySize,OffsetOfCentralDirectory,EntryCount,Comment,HeaderMD5,HeaderSHA512,MD5,SHA1,SHA256,SHA512");
         }
 
         public void Write(List<string> fields)
@@ -96,6 +104,10 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             fields.Add(Comment);
             fields.Add(HeaderMD5);
             fields.Add(HeaderSHA512);
+            fields.Add(MD5);
+            fields.Add(SHA1);
+            fields.Add(SHA256);
+            fields.Add(SHA512);
         }
 
         public void Write(TextWriter writer)
@@ -133,6 +145,14 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             CsvUtility.WriteWithQuotes(writer, HeaderMD5);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, HeaderSHA512);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, MD5);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, SHA1);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, SHA256);
+            writer.Write(',');
+            CsvUtility.WriteWithQuotes(writer, SHA512);
             writer.WriteLine();
         }
 
@@ -171,6 +191,14 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             await CsvUtility.WriteWithQuotesAsync(writer, HeaderMD5);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, HeaderSHA512);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, MD5);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, SHA1);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, SHA256);
+            await writer.WriteAsync(',');
+            await CsvUtility.WriteWithQuotesAsync(writer, SHA512);
             await writer.WriteLineAsync();
         }
 
@@ -195,6 +223,10 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
                 Comment = getNextField(),
                 HeaderMD5 = getNextField(),
                 HeaderSHA512 = getNextField(),
+                MD5 = getNextField(),
+                SHA1 = getNextField(),
+                SHA256 = getNextField(),
+                SHA512 = getNextField(),
             };
         }
 
@@ -233,6 +265,26 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             if (HeaderSHA512 is null)
             {
                 HeaderSHA512 = string.Empty;
+            }
+
+            if (MD5 is null)
+            {
+                MD5 = string.Empty;
+            }
+
+            if (SHA1 is null)
+            {
+                SHA1 = string.Empty;
+            }
+
+            if (SHA256 is null)
+            {
+                SHA256 = string.Empty;
+            }
+
+            if (SHA512 is null)
+            {
+                SHA512 = string.Empty;
             }
         }
     }

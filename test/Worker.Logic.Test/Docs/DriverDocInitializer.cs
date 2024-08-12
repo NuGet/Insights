@@ -8,14 +8,67 @@ namespace NuGet.Insights.Worker
         private const string None = "none";
         private readonly DriverDocInfo _info;
 
+        public static readonly string KustoDependency =
+            "Kusto ingestion via " +
+            "[`KustoIngestionMessageProcessor`](../../src/Worker.Logic/MessageProcessors/KustoIngestion/KustoIngestionMessageProcessor.cs)" +
+            ", since this driver produces CSV data";
+
         public DriverDocInitializer(DriverDocInfo info)
         {
             _info = info;
         }
 
-        private string GetDriverLink(CatalogScanDriverType driverType)
+        public static string GetDriverLink(CatalogScanDriverType driverType)
         {
             return $"[`{driverType}`]({driverType}.md)";
+        }
+
+        public static (List<string> DirectPrefixes, List<string> TransitiveLines) GetDriverDependencyLines(CatalogScanDriverType driverType)
+        {
+            var directPrefixes = CatalogScanDriverMetadata
+                .GetDependencies(driverType)
+                .OrderBy(x => x.ToString())
+                .Select(x => GetDriverLink(x) + ":")
+                .ToList();
+            if (directPrefixes.Count == 0)
+            {
+                directPrefixes.Add("[V3 package content](https://learn.microsoft.com/en-us/nuget/api/package-base-address-resource): ");
+            }
+
+            var closure = CatalogScanDriverMetadata.GetTransitiveClosure(driverType);
+            var transitiveLines = closure
+                .Except([driverType])
+                .Except(CatalogScanDriverMetadata.GetDependencies(driverType))
+                .OrderBy(x => x.ToString())
+                .Select(transitive =>
+                {
+                    var prefix = $"(transitive) {GetDriverLink(transitive)}: needed by ";
+                    var neededBy = CatalogScanDriverMetadata
+                        .GetDependents(transitive)
+                        .Intersect(closure)
+                        .OrderBy(x => x.ToString())
+                        .Select(x => $"`{x}`")
+                        .ToList();
+                    return prefix + string.Join(", ", neededBy);
+                })
+                .ToList();
+
+            return (directPrefixes, transitiveLines);
+        }
+
+        public static string GetCsvTablesList(IReadOnlyList<string> tables)
+        {
+            var csvTables = new List<string>();
+            foreach (var csvTable in tables.Order())
+            {
+                csvTables.Add($"[`{csvTable}`](../tables/{csvTable}.md)");
+            }
+            if (csvTables.Count == 0)
+            {
+                csvTables.Add(None);
+            }
+
+            return string.Join("<br />", csvTables);
         }
 
         public string Build()
@@ -32,35 +85,31 @@ namespace NuGet.Insights.Worker
             };
 
             var cursorDependencies = new List<string>();
-            if (_info.DependsOnFlatContainer)
+            var (directPrefixes, transitiveLines) = GetDriverDependencyLines(_info.DriverType);
+
+            foreach (var prefix in directPrefixes)
             {
-                cursorDependencies.Add("[V3 package content](https://learn.microsoft.com/en-us/nuget/api/package-base-address-resource): TODO SHORT DESCRIPTION");
+                cursorDependencies.Add(prefix + " TODO SHORT DESCRIPTION");
             }
 
-            foreach (var dependency in _info.DriverDependencies)
-            {
-                cursorDependencies.Add(GetDriverLink(dependency) + ": TODO SHORT DESCRIPTION");
-            }
+            cursorDependencies.AddRange(transitiveLines);
 
             var dependents = new List<string>();
+
             foreach (var dependent in _info.DriverDependents)
             {
                 dependents.Add(GetDriverLink(dependent) + ": TODO SHORT DESCRIPTION");
             }
+
+            if (_info.CsvTables.Any())
+            {
+                dependents.Add(KustoDependency);
+            }
+
             dependents.Add("TODO OTHER COMPONENTS");
 
             var intermediateContainerLines = GetStorageContainerLines(_info.IntermediateContainers);
             var addedContainerLines = GetStorageContainerLines(_info.PersistentContainers);
-
-            var csvTables = new List<string>();
-            foreach (var csvTable in _info.CsvTables)
-            {
-                csvTables.Add($"[`{csvTable}`](../tables/{csvTable}.md)");
-            }
-            if (csvTables.Count == 0)
-            {
-                csvTables.Add(None);
-            }
 
             builder.AppendLine(CultureInfo.InvariantCulture, $"# {_info.DriverType}");
             builder.AppendLine(CultureInfo.InvariantCulture, $"");
@@ -75,7 +124,7 @@ namespace NuGet.Insights.Worker
             builder.AppendLine(CultureInfo.InvariantCulture, $"| Components using driver output     | {string.Join("<br />", dependents)} |");
             builder.AppendLine(CultureInfo.InvariantCulture, $"| Temporary storage config           | {string.Join("<br />", intermediateContainerLines)} |");
             builder.AppendLine(CultureInfo.InvariantCulture, $"| Persistent storage config          | {string.Join("<br />", addedContainerLines)} |");
-            builder.AppendLine(CultureInfo.InvariantCulture, $"| Output CSV tables                  | {string.Join("<br />", csvTables)} |");
+            builder.AppendLine(CultureInfo.InvariantCulture, $"| Output CSV tables                  | {GetCsvTablesList(_info.CsvTables)} |");
             builder.AppendLine(CultureInfo.InvariantCulture, $"");
             builder.AppendLine(CultureInfo.InvariantCulture, $"## Algorithm");
             builder.AppendLine(CultureInfo.InvariantCulture, $"");

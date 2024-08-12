@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using NuGet.Insights.Worker.SymbolPackageFileToCsv;
+
 namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
 {
     public class SymbolPackageArchiveToCsvDriverTest : BaseWorkerLogicIntegrationTest
@@ -11,6 +13,7 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             FailFastLogLevel = LogLevel.None;
         }
 
+        public ICatalogLeafToCsvDriver<SymbolPackageFileRecord> SymbolPackageFileToCsv => Host.Services.GetRequiredService<ICatalogLeafToCsvDriver<SymbolPackageFileRecord>>();
         public ICatalogLeafToCsvDriver<SymbolPackageArchiveRecord, SymbolPackageArchiveEntry> Target => Host.Services.GetRequiredService<ICatalogLeafToCsvDriver<SymbolPackageArchiveRecord, SymbolPackageArchiveEntry>>();
 
         [Fact]
@@ -23,7 +26,7 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
                 PackageId = "NuGet.Platform",
                 PackageVersion = "1.0.0",
             };
-            await Target.InitializeAsync();
+            await InitializeAsync(leaf);
 
             var output = await Target.ProcessLeafAsync(leaf);
 
@@ -45,7 +48,7 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
                 PackageId = "NuGet.Platform",
                 PackageVersion = "1.0.0",
             };
-            await Target.InitializeAsync();
+            await InitializeAsync(leaf);
 
             var output = await Target.ProcessLeafAsync(leaf);
 
@@ -72,7 +75,7 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
                 PackageId = "Knapcode.TorSharp",
                 PackageVersion = "2.6.0",
             };
-            await Target.InitializeAsync();
+            await InitializeAsync(leaf);
 
             var output = await Target.ProcessLeafAsync(leaf);
 
@@ -174,6 +177,13 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             Assert.Equal(730u, entries[5].UncompressedSize);
             Assert.Equal(34591u, entries[5].LocalHeaderOffset);
             Assert.Empty(entries[5].Comment);
+        }
+
+        private async Task InitializeAsync(CatalogLeafScan leaf)
+        {
+            await SymbolPackageFileToCsv.InitializeAsync();
+            await SymbolPackageFileToCsv.ProcessLeafAsync(leaf.SetDefaults());
+            await Target.InitializeAsync();
         }
     }
 }

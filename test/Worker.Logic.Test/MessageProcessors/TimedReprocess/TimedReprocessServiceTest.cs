@@ -12,13 +12,16 @@ namespace NuGet.Insights.Worker.TimedReprocess
             {
                 var batches = TimedReprocessService.GetReprocessBatches();
 
-                Assert.Equal(2, batches.Count);
+                Assert.Equal(3, batches.Count);
                 Assert.Equal(
-                    new[] { CatalogScanDriverType.LoadPackageReadme, CatalogScanDriverType.LoadSymbolPackageArchive },
+                    [CatalogScanDriverType.LoadPackageReadme, CatalogScanDriverType.LoadSymbolPackageArchive],
                     batches[0]);
                 Assert.Equal(
-                    new[] { CatalogScanDriverType.PackageReadmeToCsv, CatalogScanDriverType.SymbolPackageArchiveToCsv },
+                    [CatalogScanDriverType.PackageReadmeToCsv, CatalogScanDriverType.SymbolPackageFileToCsv],
                     batches[1]);
+                Assert.Equal(
+                    [CatalogScanDriverType.SymbolPackageArchiveToCsv],
+                    batches[2]);
             }
 
             [Fact]
@@ -28,29 +31,51 @@ namespace NuGet.Insights.Worker.TimedReprocess
 
                 var batches = TimedReprocessService.GetReprocessBatches();
 
-                Assert.Equal(2, batches.Count);
+                Assert.Equal(3, batches.Count);
                 Assert.Equal(
-                    new[] { CatalogScanDriverType.LoadPackageReadme, CatalogScanDriverType.LoadSymbolPackageArchive },
+                    [CatalogScanDriverType.LoadPackageReadme, CatalogScanDriverType.LoadSymbolPackageArchive],
                     batches[0]);
                 Assert.Equal(
-                    new[] { CatalogScanDriverType.SymbolPackageArchiveToCsv },
+                    [CatalogScanDriverType.SymbolPackageFileToCsv],
                     batches[1]);
+                Assert.Equal(
+                    [CatalogScanDriverType.SymbolPackageArchiveToCsv],
+                    batches[2]);
             }
 
             [Fact]
-            public void AllowsDisabledChain()
+            public void AllowsDisableEndOfChain()
             {
-                ConfigureWorkerSettings = x => x.DisabledDrivers = [CatalogScanDriverType.LoadPackageReadme, CatalogScanDriverType.PackageReadmeToCsv];
+                ConfigureWorkerSettings = x => x.DisabledDrivers = [CatalogScanDriverType.SymbolPackageFileToCsv, CatalogScanDriverType.SymbolPackageArchiveToCsv];
 
                 var batches = TimedReprocessService.GetReprocessBatches();
 
                 Assert.Equal(2, batches.Count);
                 Assert.Equal(
-                    new[] { CatalogScanDriverType.LoadSymbolPackageArchive },
+                    [CatalogScanDriverType.LoadPackageReadme, CatalogScanDriverType.LoadSymbolPackageArchive],
                     batches[0]);
                 Assert.Equal(
-                    new[] { CatalogScanDriverType.SymbolPackageArchiveToCsv },
+                    [CatalogScanDriverType.PackageReadmeToCsv],
                     batches[1]);
+            }
+
+            [Fact]
+            public void AllowsDisableFullChain()
+            {
+                ConfigureWorkerSettings = x => x.DisabledDrivers = [CatalogScanDriverType.LoadPackageReadme, CatalogScanDriverType.PackageReadmeToCsv];
+
+                var batches = TimedReprocessService.GetReprocessBatches();
+
+                Assert.Equal(3, batches.Count);
+                Assert.Equal(
+                    [CatalogScanDriverType.LoadSymbolPackageArchive],
+                    batches[0]);
+                Assert.Equal(
+                    [CatalogScanDriverType.SymbolPackageFileToCsv],
+                    batches[1]);
+                Assert.Equal(
+                    [CatalogScanDriverType.SymbolPackageArchiveToCsv],
+                    batches[2]);
             }
 
             [Fact]
