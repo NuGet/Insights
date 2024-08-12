@@ -82,7 +82,12 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                     Directory.CreateDirectory(tempDir);
                 }
 
-                var tempPath = Path.Combine(tempDir, StorageUtility.GenerateDescendingId().ToString() + ".nupkg");
+                var tempFileName = TempStreamWriter.GetTempFileNameFactory(
+                    leafScan.PackageId,
+                    leafScan.PackageVersion,
+                    "npe",
+                    ".nupkg")();
+                var tempPath = Path.Combine(tempDir, tempFileName);
                 try
                 {
                     var exists = await DownloadToFileAsync(leaf, leafScan.AttemptCount, tempPath);

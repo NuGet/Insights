@@ -89,7 +89,14 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
                 }
 
                 var url = await _flatContainerClient.GetPackageContentUrlAsync(leafScan.PackageId, leafScan.PackageVersion);
-                var result = await _fileDownloader.DownloadUrlToFileAsync(url, CancellationToken.None);
+                var result = await _fileDownloader.DownloadUrlToFileAsync(
+                    url,
+                    TempStreamWriter.GetTempFileNameFactory(
+                        leafScan.PackageId,
+                        leafScan.PackageVersion,
+                        "content",
+                        ".nupkg"),
+                    CancellationToken.None);
 
                 if (result is null)
                 {

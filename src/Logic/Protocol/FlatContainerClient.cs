@@ -80,7 +80,14 @@ namespace NuGet.Insights
         public async Task<(string? ContentType, TempStreamResult Body)?> DownloadPackageIconToFileAsync(string id, string version, CancellationToken token)
         {
             var url = await GetPackageIconUrlAsync(id, version);
-            var result = await _fileDownloader.DownloadUrlToFileAsync(url, token);
+            var result = await _fileDownloader.DownloadUrlToFileAsync(
+                url,
+                TempStreamWriter.GetTempFileNameFactory(
+                    id,
+                    version,
+                    "icon",
+                    ".tmp"),
+                token);
             if (result is null)
             {
                 return null;
@@ -141,7 +148,14 @@ namespace NuGet.Insights
         public async Task<TempStreamResult?> DownloadPackageLicenseToFileAsync(string id, string version, CancellationToken token)
         {
             var url = await GetPackageLicenseUrlAsync(id, version);
-            var result = await _fileDownloader.DownloadUrlToFileAsync(url, token);
+            var result = await _fileDownloader.DownloadUrlToFileAsync(
+                url,
+                TempStreamWriter.GetTempFileNameFactory(
+                    id,
+                    version,
+                    "license",
+                    ".txt"),
+                token);
             if (result is null)
             {
                 return null;

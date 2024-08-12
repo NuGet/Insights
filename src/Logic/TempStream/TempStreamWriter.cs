@@ -36,6 +36,33 @@ namespace NuGet.Insights
         private bool _skipMemory;
         private int _tempDirIndex;
 
+        public static Func<string> GetTempFileNameFactory(string id, string version, string contextHint, string extension)
+        {
+            var suffix = $"{id}_{version}";
+            if (!string.IsNullOrEmpty(contextHint))
+            {
+                suffix += "_" + suffix;
+            }
+
+            if (!string.IsNullOrEmpty(extension))
+            {
+                if (extension[0] == '.')
+                {
+                    suffix += extension;
+                }
+                else
+                {
+                    suffix += "." + extension;
+                }
+            }
+            else
+            {
+                suffix += ".tmp";
+            }
+
+            return () => $"{Guid.NewGuid():N}_{suffix}";
+        }
+
         public TempStreamWriter(TempStreamLeaseScope leaseScope, IOptions<NuGetInsightsSettings> options, ILogger<TempStreamWriter> logger)
         {
             _leaseScope = leaseScope;
@@ -57,22 +84,7 @@ namespace NuGet.Insights
             _tempDirIndex = 0;
         }
 
-        public async Task<TempStreamResult> CopyToTempStreamAsync(Stream src)
-        {
-            return await CopyToTempStreamAsync(src, -1);
-        }
-
-        public async Task<TempStreamResult> CopyToTempStreamAsync(Stream src, long length)
-        {
-            return await CopyToTempStreamAsync(src, length, IncrementalHash.CreateNone());
-        }
-
-        public async Task<TempStreamResult> CopyToTempStreamAsync(Stream src, long length, IIncrementalHash hashAlgorithm)
-        {
-            return await CopyToTempStreamAsync(src, length, hashAlgorithm, static () => StorageUtility.GenerateDescendingId().ToString());
-        }
-
-        public async Task<TempStreamResult> CopyToTempStreamAsync(Stream src, long length, IIncrementalHash hashAlgorithm, Func<string> getTempFileName)
+        public async Task<TempStreamResult> CopyToTempStreamAsync(Stream src, Func<string> getTempFileName, long length, IIncrementalHash hashAlgorithm)
         {
             if (length < 0)
             {

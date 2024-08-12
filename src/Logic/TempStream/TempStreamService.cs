@@ -14,7 +14,7 @@ namespace NuGet.Insights
             _serviceProvider = serviceProvider;
         }
 
-        public async Task<TempStreamResult> CopyToTempStreamAsync(Func<Stream> getStream, long length, Func<IIncrementalHash> getHashAlgorithm, Func<string> getTempFileName)
+        public async Task<TempStreamResult> CopyToTempStreamAsync(Func<Stream> getStream, Func<string> getTempFileName, long length, Func<IIncrementalHash> getHashAlgorithm)
         {
             var writer = GetWriter();
             TempStreamResult result;
@@ -22,7 +22,7 @@ namespace NuGet.Insights
             {
                 using var src = getStream();
                 using var hashAlgorithm = getHashAlgorithm();
-                result = await writer.CopyToTempStreamAsync(src, length, hashAlgorithm, getTempFileName);
+                result = await writer.CopyToTempStreamAsync(src, getTempFileName, length, hashAlgorithm);
             }
             while (result.Type == TempStreamResultType.NeedNewStream);
             return result;

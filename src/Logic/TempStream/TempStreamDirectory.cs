@@ -6,7 +6,7 @@ namespace NuGet.Insights
     public class TempStreamDirectory
     {
         /// <summary>
-        /// This is the default buffer size for <see cref="System.IO.Stream.CopyToAsync(System.IO.Stream)"/> (80 KiB)
+        /// This is the default buffer size for <see cref="Stream.CopyToAsync(Stream)"/> (80 KiB)
         /// rounded up to the nearest power of 2. This adheres to the default array pool behavior.
         /// </summary>
         public const int DefaultBufferSize = 128 * 1024;

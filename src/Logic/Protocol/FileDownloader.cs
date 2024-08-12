@@ -37,12 +37,12 @@ namespace NuGet.Insights
             _logger = logger;
         }
 
-        public async Task<(ILookup<string, string> Headers, TempStreamResult Body)?> DownloadUrlToFileAsync(string url, CancellationToken token)
+        public async Task<(ILookup<string, string> Headers, TempStreamResult Body)?> DownloadUrlToFileAsync(string url, Func<string> getTempFileName, CancellationToken token)
         {
-            return await DownloadUrlToFileAsync(url, allowNotFound: true, token);
+            return await DownloadUrlToFileAsync(url, getTempFileName, allowNotFound: true, token);
         }
 
-        private async Task<(ILookup<string, string> Headers, TempStreamResult Body)?> DownloadUrlToFileAsync(string url, bool allowNotFound, CancellationToken token)
+        private async Task<(ILookup<string, string> Headers, TempStreamResult Body)?> DownloadUrlToFileAsync(string url, Func<string> getTempFileName, bool allowNotFound, CancellationToken token)
         {
             var nuGetLogger = _logger.ToNuGetLogger();
             var writer = _tempStreamService.GetWriter();
@@ -74,6 +74,7 @@ namespace NuGet.Insights
                             using var networkStream = await response.Content.ReadAsStreamAsync();
                             return await writer.CopyToTempStreamAsync(
                                 networkStream,
+                                getTempFileName,
                                 response.Content.Headers.ContentLength.Value,
                                 IncrementalHash.CreateAll());
                         },
@@ -112,7 +113,11 @@ namespace NuGet.Insights
             catch (MiniZipHttpException ex)
             {
                 _logger.LogTransientWarning(ex, "Fetching signature bytes from {Url} for {Id} {Version} failed using MiniZip. Trying again with a full download.", url, id, version);
-                var result = await DownloadUrlToFileAsync(url, allowNotFound: false, CancellationToken.None);
+                var result = await DownloadUrlToFileAsync(
+                    url,
+                    () => $"{StorageUtility.GenerateDescendingId()}.{id}.{version}.sig-bytes.nupkg",
+                    allowNotFound: false,
+                    CancellationToken.None);
                 try
                 {
                     using var fullReader = new ZipDirectoryReader(result.Value.Body.Stream, leaveOpen: false, result.Value.Headers);
@@ -192,7 +197,10 @@ namespace NuGet.Insights
                 }
                 else if (mode == ZipDownloadMode.FullDownload)
                 {
-                    var result = await DownloadUrlToFileAsync(url, CancellationToken.None);
+                    var result = await DownloadUrlToFileAsync(
+                        url,
+                        () => $"{StorageUtility.GenerateDescendingId()}.{id}.{version}.reader.nupkg",
+                        CancellationToken.None);
 
                     if (result is null)
                     {

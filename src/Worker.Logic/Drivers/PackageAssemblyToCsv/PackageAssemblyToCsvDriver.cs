@@ -78,7 +78,14 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
                 var url = await _flatContainerClient.GetPackageContentUrlAsync(leafScan.PackageId, leafScan.PackageVersion);
-                var result = await _fileDownloader.DownloadUrlToFileAsync(url, CancellationToken.None);
+                var result = await _fileDownloader.DownloadUrlToFileAsync(
+                    url,
+                    TempStreamWriter.GetTempFileNameFactory(
+                        leafScan.PackageId,
+                        leafScan.PackageVersion,
+                        "assemblies",
+                        ".nupkg"),
+                    CancellationToken.None);
 
                 if (result is null)
                 {
@@ -179,9 +186,13 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 {
                     tempStreamResult = await _tempStreamService.CopyToTempStreamAsync(
                         entry.Open,
+                        TempStreamWriter.GetTempFileNameFactory(
+                            assembly.Id,
+                            assembly.Version,
+                            assembly.SequenceNumber?.ToString(CultureInfo.InvariantCulture),
+                            assembly.FileExtension),
                         entry.Length,
-                        IncrementalHash.CreateSHA256,
-                        () => $"{StorageUtility.GenerateDescendingId()}.{assembly.Id}.{assembly.Version}.{assembly.SequenceNumber}{assembly.FileExtension ?? ".dll"}");
+                        IncrementalHash.CreateSHA256);
                 }
                 catch (InvalidDataException ex)
                 {
