@@ -1,0 +1,37 @@
+[
+  {
+    "PartitionKey": "newtonsoft.json",
+    "RowKey": "13.0.1",
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2021-03-22T20:13:54.6075418+00:00",
+      "HttpHeaders": {
+        "Content-Length": [
+          "750829"
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D8ED6EDCF11441\u0022"
+        ],
+        "Last-Modified": [
+          "Mon, 22 Mar 2021 20:12:48 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "vaWuAPufkOrRT0f48FuX90NnymmB/hrLUvg\u002BXsQUHkaht/cwpqkLYcNlUPrjiak7Uhw4uX14dcXUT/NznHHHHg=="
+        ]
+      },
+      "MD5": "jRzvirf3Q1udIjn2m1L6vQ==",
+      "SHA1": "Z0LHaGXHLUmrGbGzISv1stCGByE=",
+      "SHA256": "9WljKAdpVsA7D4Odw\u002BcmHxZH2p3tFTfWPhIsVHH8h8Y=",
+      "SHA512": "vaWuAPufkOrRT0f48FuX90NnymmB/hrLUvg\u002BXsQUHkaht/cwpqkLYcNlUPrjiak7Uhw4uX14dcXUT/NznHHHHg=="
+    }
+  }
+]
