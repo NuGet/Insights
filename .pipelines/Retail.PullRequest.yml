@@ -53,9 +53,12 @@ stages:
       displayName: "Static analysis"
 
       steps:
-      - script: dotnet format --exclude "src/Forks" --verify-no-changes
-        workingDirectory: $(Build.SourcesDirectory)
+      - task: PowerShell@2
         displayName: "Check for incorrect formatting"
+        inputs:
+          targetType: "filePath"
+          filePath: $(Build.SourcesDirectory)/scripts/Invoke-Format.ps1
+          arguments: -Verify
 
       - task: PowerShell@2
         displayName: "Check for Forks changes"
