@@ -5,13 +5,19 @@ namespace NuGet.Insights.Worker
 {
     public class CsvRecordBlob
     {
-        public CsvRecordBlob(string name, long rawSizeBytes)
+        public CsvRecordBlob(string containerName, string name, long compressedSizeBytes, long rawSizeBytes, long recordCount)
         {
+            ContainerName = containerName;
             Name = name;
+            CompressedSizeBytes = compressedSizeBytes;
             RawSizeBytes = rawSizeBytes;
+            RecordCount = recordCount;
         }
 
+        public string ContainerName { get; }
         public string Name { get; }
+        public long CompressedSizeBytes { get; }
         public long RawSizeBytes { get; }
+        public long RecordCount { get; }
     }
 }

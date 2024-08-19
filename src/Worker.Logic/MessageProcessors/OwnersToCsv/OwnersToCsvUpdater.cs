@@ -32,10 +32,11 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             return await _packageOwnersClient.GetAsync();
         }
 
-        public async Task WriteAsync(IVersionSet versionSet, AsOfData<PackageOwner> data, TextWriter writer)
+        public async Task<long> WriteAsync(IVersionSet versionSet, AsOfData<PackageOwner> data, TextWriter writer)
         {
             var record = new PackageOwnerRecord { AsOfTimestamp = data.AsOfTimestamp };
             record.WriteHeader(writer);
+            long recordCount = 0;
 
             var idToOwners = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
             await foreach (var entry in data.Entries)
@@ -51,7 +52,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
                     // Only write when we move to the next ID. This ensures all of the owners of a given ID are in the same record.
                     if (idToOwners.Any())
                     {
-                        WriteAndClear(writer, record, idToOwners);
+                        recordCount += WriteAndClear(writer, record, idToOwners);
                     }
 
                     owners = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -63,7 +64,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
 
             if (idToOwners.Any())
             {
-                WriteAndClear(writer, record, idToOwners);
+                recordCount += WriteAndClear(writer, record, idToOwners);
             }
 
             // Add IDs that are not mentioned in the data and therefore have no owners. This makes joins on the
@@ -74,20 +75,28 @@ namespace NuGet.Insights.Worker.OwnersToCsv
                 record.Id = id;
                 record.Owners = "[]";
                 record.Write(writer);
+                recordCount++;
             }
+
+            return recordCount;
         }
 
-        private static void WriteAndClear(TextWriter writer, PackageOwnerRecord record, Dictionary<string, HashSet<string>> idToOwners)
+        private static long WriteAndClear(TextWriter writer, PackageOwnerRecord record, Dictionary<string, HashSet<string>> idToOwners)
         {
+            long recordCount = 0;
+
             foreach (var pair in idToOwners)
             {
                 record.LowerId = pair.Key.ToLowerInvariant();
                 record.Id = pair.Key;
                 record.Owners = KustoDynamicSerializer.Serialize(pair.Value.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList());
                 record.Write(writer);
+                recordCount++;
             }
 
             idToOwners.Clear();
+
+            return recordCount;
         }
     }
 }

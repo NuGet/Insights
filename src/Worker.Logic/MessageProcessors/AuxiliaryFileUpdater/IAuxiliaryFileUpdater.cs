@@ -19,6 +19,6 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
     public interface IAuxiliaryFileUpdater<T> : IAuxiliaryFileUpdater where T : IAsOfData
     {
         Task<T> GetDataAsync();
-        Task WriteAsync(IVersionSet versionSet, T data, TextWriter writer);
+        Task<long> WriteAsync(IVersionSet versionSet, T data, TextWriter writer);
     }
 }

@@ -1,12 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO.Compression;
 using System.Text.RegularExpressions;
 using Azure;
 using Azure.Data.Tables;
 using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
 using MessagePack;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
@@ -327,43 +325,6 @@ namespace NuGet.Insights
             var client = await ServiceClientFactory.GetBlobServiceClientAsync();
             var container = client.GetBlobContainerClient(containerName);
             return container.GetBlobClient(blobName);
-        }
-
-        protected async Task<(BlobClient Blob, string Content)> GetBlobContentAsync(string containerName, string blobName, bool gzip = false)
-        {
-            var blob = await GetBlobAsync(containerName, blobName);
-
-            string actual;
-            if (gzip)
-            {
-                Assert.EndsWith(".gz", blobName, StringComparison.Ordinal);
-
-                using var destStream = new MemoryStream();
-                using BlobDownloadInfo downloadInfo = await blob.DownloadAsync();
-                await downloadInfo.Content.CopyToAsync(destStream);
-                destStream.Position = 0;
-
-                Assert.Contains(StorageUtility.RawSizeBytesMetadata, downloadInfo.Details.Metadata);
-                var uncompressedLength = long.Parse(downloadInfo.Details.Metadata[StorageUtility.RawSizeBytesMetadata], CultureInfo.InvariantCulture);
-
-                using var gzipStream = new GZipStream(destStream, CompressionMode.Decompress);
-                using var decompressedStream = new MemoryStream();
-                await gzipStream.CopyToAsync(decompressedStream);
-                decompressedStream.Position = 0;
-
-                Assert.Equal(uncompressedLength, decompressedStream.Length);
-
-                using var reader = new StreamReader(decompressedStream);
-                actual = await reader.ReadToEndAsync();
-            }
-            else
-            {
-                using BlobDownloadInfo downloadInfo = await blob.DownloadAsync();
-                using var reader = new StreamReader(downloadInfo.Content);
-                actual = await reader.ReadToEndAsync();
-            }
-
-            return (blob, actual);
         }
 
         private static readonly ConcurrentDictionary<string, object> StringLock = new ConcurrentDictionary<string, object>();

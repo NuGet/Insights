@@ -87,18 +87,48 @@ namespace NuGet.Insights.Worker.Workflow
                 IsIncompleteAsync: self => Task.FromResult(false),
                 TransitionAsync: async (self, run) =>
                 {
-                    await self._storageService.DeleteOldRunsAsync(run.RunId);
-                    self._logger.LogInformation("The workflow is complete.");
-                    run.Completed = DateTimeOffset.UtcNow;
+                    await self.FinalizeAsync(run);
+
                     return WorkflowRunState.Complete;
                 }),
         };
+
+        private async Task FinalizeAsync(WorkflowRun run)
+        {
+            await _storageService.DeleteOldRunsAsync(run.RunId);
+            _logger.LogInformation("The workflow is complete.");
+
+            await EmitCsvBlobMetricsAsync();
+
+            run.Completed = DateTimeOffset.UtcNow;
+        }
+
+        private async Task EmitCsvBlobMetricsAsync()
+        {
+            var countMetric = _telemetryClient.GetMetric(MetricNames.CsvBlobCount, "ContainerName");
+            var recordCountMetric = _telemetryClient.GetMetric(MetricNames.CsvBlobRecordCount, "ContainerName");
+            var compressedSizeMetric = _telemetryClient.GetMetric(MetricNames.CsvBlobCompressedSize, "ContainerName");
+            var uncompressedSizeMetric = _telemetryClient.GetMetric(MetricNames.CsvBlobUncompressedSize, "ContainerName");
+
+            foreach (var containerName in _csvRecordContainers.ContainerNames)
+            {
+                var blobs = await _csvRecordContainers.GetBlobsAsync(containerName);
+                countMetric.TrackValue(blobs.Count, containerName);
+                foreach (var blob in blobs)
+                {
+                    recordCountMetric.TrackValue(blob.RecordCount, containerName);
+                    compressedSizeMetric.TrackValue(blob.CompressedSizeBytes, containerName);
+                    uncompressedSizeMetric.TrackValue(blob.RawSizeBytes, containerName);
+                }
+            }
+        }
 
         private static readonly IReadOnlyDictionary<WorkflowRunState, WorkflowStateTransition> CurrentStateToTransition = Transitions
             .ToDictionary(x => x.CurrentState);
 
         private readonly WorkflowService _workflowService;
         private readonly WorkflowStorageService _storageService;
+        private readonly CsvRecordContainers _csvRecordContainers;
         private readonly KustoIngestionStorageService _kustoIngestionStorageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly IMessageEnqueuer _messageEnqueuer;
@@ -109,6 +139,7 @@ namespace NuGet.Insights.Worker.Workflow
         public WorkflowRunMessageProcessor(
             WorkflowService workflowService,
             WorkflowStorageService storageService,
+            CsvRecordContainers csvRecordContainers,
             KustoIngestionStorageService kustoIngestionStorageService,
             AutoRenewingStorageLeaseService leaseService,
             IMessageEnqueuer messageEnqueuer,
@@ -118,6 +149,7 @@ namespace NuGet.Insights.Worker.Workflow
         {
             _workflowService = workflowService;
             _storageService = storageService;
+            _csvRecordContainers = csvRecordContainers;
             _kustoIngestionStorageService = kustoIngestionStorageService;
             _leaseService = leaseService;
             _messageEnqueuer = messageEnqueuer;

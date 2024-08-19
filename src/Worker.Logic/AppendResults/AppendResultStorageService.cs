@@ -334,6 +334,10 @@ namespace NuGet.Insights.Worker
                             StorageUtility.RawSizeBytesMetadata,
                             uncompressedLength.ToString(CultureInfo.InvariantCulture)
                         },
+                        {
+                            StorageUtility.RecordCountMetadata,
+                            records.Count.ToString(CultureInfo.InvariantCulture)
+                        },
                     },
                 });
 

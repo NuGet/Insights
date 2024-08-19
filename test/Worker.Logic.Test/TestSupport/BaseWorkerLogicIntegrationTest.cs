@@ -1,9 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.IO.Compression;
 using System.Security.Cryptography;
 using Azure;
 using Azure.Data.Tables;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using DiffPlex;
@@ -446,7 +449,7 @@ namespace NuGet.Insights.Worker
         protected async Task<string> AssertCsvAsync(Type recordType, string containerName, string testName, string stepName, string fileName, string blobName)
         {
             Assert.EndsWith(".csv.gz", blobName, StringComparison.Ordinal);
-            var (_, actual) = await GetBlobContentAsync(containerName, blobName, gzip: true);
+            var (_, actual) = await GetCsvContentAsync(recordType, containerName, blobName);
 
             fileName ??= blobName.Substring(0, blobName.Length - ".gz".Length);
             var testDataFile = Path.Combine(TestData, testName, stepName, fileName);
@@ -457,12 +460,59 @@ namespace NuGet.Insights.Worker
             var expected = File.ReadAllText(testDataFile);
             Assert.Equal(expected, actual);
 
+            return actual;
+        }
+
+        private async Task<(BlobClient Blob, string Content)> GetCsvContentAsync(Type recordType, string containerName, string blobName)
+        {
+            var blob = await GetBlobAsync(containerName, blobName);
+
+            using var destStream = new MemoryStream();
+            using BlobDownloadInfo downloadInfo = await blob.DownloadAsync();
+            await downloadInfo.Content.CopyToAsync(destStream);
+            destStream.Position = 0;
+
+            Assert.Contains(StorageUtility.RawSizeBytesMetadata, downloadInfo.Details.Metadata);
+            var uncompressedLength = long.Parse(downloadInfo.Details.Metadata[StorageUtility.RawSizeBytesMetadata], CultureInfo.InvariantCulture);
+
+            Assert.Contains(StorageUtility.RecordCountMetadata, downloadInfo.Details.Metadata);
+            var recordCount = long.Parse(downloadInfo.Details.Metadata[StorageUtility.RecordCountMetadata], CultureInfo.InvariantCulture);
+
+            // decompress the content
+            using var gzipStream = new GZipStream(destStream, CompressionMode.Decompress);
+            using var decompressedStream = new MemoryStream();
+            await gzipStream.CopyToAsync(decompressedStream);
+            decompressedStream.Position = 0;
+            Assert.Equal(uncompressedLength, decompressedStream.Length);
+
+            // read the content
+            string actual;
+            using (var reader = new StreamReader(decompressedStream, leaveOpen: true))
+            {
+                actual = reader.ReadToEnd();
+            }
+            decompressedStream.Position = 0;
+
+            // verify the header
             var headerFactory = (ICsvRecord)Activator.CreateInstance(recordType);
             var stringWriter = new StringWriter { NewLine = "\n" };
             headerFactory.WriteHeader(stringWriter);
             Assert.StartsWith(stringWriter.ToString(), actual, StringComparison.Ordinal);
 
-            return actual;
+            // verify the record count
+            long actualRecordCount;
+            using (var reader = new StreamReader(decompressedStream, leaveOpen: true))
+            {
+                var csvReader = Host.Services.GetRequiredService<ICsvReader>();
+                var getRecordMethod = csvReader.GetType().GetMethod(nameof(ICsvReader.GetRecords)).MakeGenericMethod(recordType);
+                var result = getRecordMethod.Invoke(csvReader, [reader, CsvReaderAdapter.MaxBufferSize]);
+                var records = (System.Collections.IList)result.GetType().GetProperty(nameof(CsvReaderResult<ICsvRecord>.Records)).GetValue(result);
+                actualRecordCount = records.Count;
+            }
+            decompressedStream.Position = 0;
+            Assert.Equal(recordCount, actualRecordCount);
+
+            return (blob, actual);
         }
 
         public async Task<IKustoIngestionResult> MakeTableReportIngestionResultAsync(StorageSourceOptions options, Status status)

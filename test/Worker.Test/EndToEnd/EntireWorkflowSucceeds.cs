@@ -150,6 +150,12 @@ namespace NuGet.Insights.Worker
                     It.Is<string>(y => y.Contains(containerName)),
                     It.IsAny<KustoIngestionProperties>(),
                     It.IsAny<StorageSourceOptions>()));
+
+                // Make sure there are metrics for each container.
+                Assert.Contains(containerName, TelemetryClient.Metrics[new("CsvBlob.Count", "ContainerName")].MetricValues.Select(x => x.DimensionValues[0]));
+                Assert.Contains(containerName, TelemetryClient.Metrics[new("CsvBlob.RecordCount", "ContainerName")].MetricValues.Select(x => x.DimensionValues[0]));
+                Assert.Contains(containerName, TelemetryClient.Metrics[new("CsvBlob.CompressedSize", "ContainerName")].MetricValues.Select(x => x.DimensionValues[0]));
+                Assert.Contains(containerName, TelemetryClient.Metrics[new("CsvBlob.UncompressedSize", "ContainerName")].MetricValues.Select(x => x.DimensionValues[0]));
             }
 
             // Make sure no workflow step is running.

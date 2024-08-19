@@ -32,15 +32,16 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             return await _packageDownloadsClient.GetAsync();
         }
 
-        public async Task WriteAsync(IVersionSet versionSet, AsOfData<PackageDownloads> data, TextWriter writer)
+        public async Task<long> WriteAsync(IVersionSet versionSet, AsOfData<PackageDownloads> data, TextWriter writer)
         {
             var record = new PackageDownloadRecord { AsOfTimestamp = data.AsOfTimestamp };
-            await WriteAsync(versionSet, record, data.Entries, writer);
+            return await WriteAsync(versionSet, record, data.Entries, writer);
         }
 
-        public static async Task WriteAsync(IVersionSet versionSet, IPackageDownloadRecord record, IAsyncEnumerable<PackageDownloads> entries, TextWriter writer)
+        public static async Task<long> WriteAsync(IVersionSet versionSet, IPackageDownloadRecord record, IAsyncEnumerable<PackageDownloads> entries, TextWriter writer)
         {
             record.WriteHeader(writer);
+            long recordCount = 0;
 
             var idToVersions = new CaseInsensitiveDictionary<CaseInsensitiveDictionary<long>>();
             await foreach (var entry in entries)
@@ -66,7 +67,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                     // Only write when we move to the next ID. This ensures all of the versions of a given ID are in the same segment.
                     if (idToVersions.Any())
                     {
-                        WriteAndClear(writer, record, idToVersions, versionSet);
+                        recordCount += WriteAndClear(writer, record, idToVersions, versionSet);
                     }
 
                     versionToDownloads = new CaseInsensitiveDictionary<long>();
@@ -78,7 +79,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
 
             if (idToVersions.Any())
             {
-                WriteAndClear(writer, record, idToVersions, versionSet);
+                recordCount += WriteAndClear(writer, record, idToVersions, versionSet);
             }
 
             // Add IDs that are not mentioned in the data and therefore have no downloads.
@@ -95,12 +96,17 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                     record.Downloads = 0;
 
                     record.Write(writer);
+                    recordCount++;
                 }
             }
+
+            return recordCount;
         }
 
-        private static void WriteAndClear(TextWriter writer, IPackageDownloadRecord record, CaseInsensitiveDictionary<CaseInsensitiveDictionary<long>> idToVersions, IVersionSet versionSet)
+        private static long WriteAndClear(TextWriter writer, IPackageDownloadRecord record, CaseInsensitiveDictionary<CaseInsensitiveDictionary<long>> idToVersions, IVersionSet versionSet)
         {
+            var recordCount = 0;
+
             foreach (var idPair in idToVersions)
             {
                 record.Id = idPair.Key;
@@ -114,6 +120,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                     record.Downloads = versionPair.Value;
 
                     record.Write(writer);
+                    recordCount++;
                 }
 
                 // Add versions that are not mentioned in the data and therefore have no downloads.
@@ -124,10 +131,13 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                     record.Downloads = 0;
 
                     record.Write(writer);
+                    recordCount++;
                 }
             }
 
             idToVersions.Clear();
+
+            return recordCount;
         }
     }
 }

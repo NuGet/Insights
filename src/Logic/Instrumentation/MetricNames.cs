@@ -23,5 +23,10 @@ namespace NuGet.Insights
         public const string StorageQueueSizeWorkPoison = "StorageQueueSize.Work.Poison";
         public const string StorageQueueSizeExpandMain = "StorageQueueSize.Expand.Main";
         public const string StorageQueueSizeExpandPoison = "StorageQueueSize.Expand.Poison";
+
+        public const string CsvBlobCount = "CsvBlob.Count";
+        public const string CsvBlobRecordCount = "CsvBlob.RecordCount";
+        public const string CsvBlobCompressedSize = "CsvBlob.CompressedSize";
+        public const string CsvBlobUncompressedSize = "CsvBlob.UncompressedSize";
     }
 }

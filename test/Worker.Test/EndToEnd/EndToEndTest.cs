@@ -18,7 +18,9 @@ namespace NuGet.Insights.Worker
                 .ConfigureNuGetInsightsWorker()
                 .ConfigureServices(serviceCollection =>
                 {
-                    serviceCollection.AddTransient(s => Output.GetTelemetryClient());
+                    serviceCollection.AddSingleton(s => new LoggerTelemetryClient(
+                        TestOutputHelperExtensions.ShouldIgnoreMetricLog,
+                        s.GetRequiredService<ILogger<LoggerTelemetryClient>>()));
                     serviceCollection.AddTransient<Functions>();
 
                     serviceCollection.Configure((Action<NuGetInsightsSettings>)AssertDefaultsAndSettings);

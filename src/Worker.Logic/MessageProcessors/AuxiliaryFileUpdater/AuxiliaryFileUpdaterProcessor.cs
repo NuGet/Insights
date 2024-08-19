@@ -84,10 +84,11 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
             else
             {
                 var dataBlob = await GetBlobAsync($"{_updater.BlobName}_{StorageUtility.GetDescendingId(data.AsOfTimestamp)}.csv.gz");
-                (var uncompressedLength, var etag) = await WriteDataAsync(versionSetHandle.Value, data, dataBlob);
+                (var uncompressedLength, var recordCount, var etag) = await WriteDataAsync(versionSetHandle.Value, data, dataBlob);
                 var dataRequestConditions = new BlobRequestConditions { IfMatch = etag };
                 await CopyLatestAsync(
                     uncompressedLength,
+                    recordCount,
                     data.AsOfTimestamp,
                     versionSetHandle.Value.CommitTimestamp,
                     dataBlob,
@@ -99,9 +100,9 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
             return TaskStateProcessResult.Complete;
         }
 
-        private async Task<(long uncompressedLength, ETag etag)> WriteDataAsync(IVersionSet versionSet, T data, BlobClient destBlob)
+        private async Task<(long uncompressedLength, long recordCount, ETag etag)> WriteDataAsync(IVersionSet versionSet, T data, BlobClient destBlob)
         {
-            (var stream, var uncompressedLength) = await SerializeDataAsync(versionSet, data);
+            (var stream, var uncompressedLength, var recordCount) = await SerializeDataAsync(versionSet, data);
 
             using (stream)
             {
@@ -114,18 +115,19 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
                             ContentType = "text/plain",
                             ContentEncoding = "gzip",
                         },
-                        Metadata = GetMetadata(uncompressedLength, data.AsOfTimestamp, versionSet.CommitTimestamp)
+                        Metadata = GetMetadata(uncompressedLength, recordCount, data.AsOfTimestamp, versionSet.CommitTimestamp)
                     });
 
-                return (uncompressedLength, info.ETag);
+                return (uncompressedLength, recordCount, info.ETag);
             }
         }
 
-        private async Task<(MemoryStream stream, long uncompressedLength)> SerializeDataAsync(IVersionSet versionSet, T data)
+        private async Task<(MemoryStream stream, long uncompressedLength, long recordCount)> SerializeDataAsync(IVersionSet versionSet, T data)
         {
             var memoryStream = new MemoryStream();
 
             long uncompressedLength;
+            long recordCount;
             using (var gzipStream = new GZipStream(memoryStream, CompressionLevel.Optimal, leaveOpen: true))
             {
                 using var countingStream = new CountingWriterStream(gzipStream);
@@ -134,7 +136,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
                     NewLine = "\n",
                 };
 
-                await _updater.WriteAsync(versionSet, data, writer);
+                recordCount = await _updater.WriteAsync(versionSet, data, writer);
 
                 await writer.FlushAsync();
                 await gzipStream.FlushAsync();
@@ -144,11 +146,12 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 
             memoryStream.Position = 0;
 
-            return (memoryStream, uncompressedLength);
+            return (memoryStream, uncompressedLength, recordCount);
         }
 
         private async Task CopyLatestAsync(
             long uncompressedLength,
+            long recordCount,
             DateTimeOffset asOfTimestamp,
             DateTimeOffset versionSetCommitTimestamp,
             BlobClient dataBlob,
@@ -162,19 +165,23 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
                 {
                     SourceConditions = dataRequestConditions,
                     DestinationConditions = latestRequestConditions,
-                    Metadata = GetMetadata(uncompressedLength, asOfTimestamp, versionSetCommitTimestamp),
+                    Metadata = GetMetadata(uncompressedLength, recordCount, asOfTimestamp, versionSetCommitTimestamp),
                 });
 
             await operation.WaitForCompletionAsync();
         }
 
-        private static Dictionary<string, string> GetMetadata(long uncompressedLength, DateTimeOffset asOfTimestamp, DateTimeOffset versionSetCommitTimestamp)
+        private static Dictionary<string, string> GetMetadata(long uncompressedLength, long recordCount, DateTimeOffset asOfTimestamp, DateTimeOffset versionSetCommitTimestamp)
         {
             return new Dictionary<string, string>
             {
                 {
                     StorageUtility.RawSizeBytesMetadata,
                     uncompressedLength.ToString(CultureInfo.InvariantCulture)
+                },
+                {
+                    StorageUtility.RecordCountMetadata,
+                    recordCount.ToString(CultureInfo.InvariantCulture)
                 },
                 {
                     VersionSetCommitTimestampMetadata,

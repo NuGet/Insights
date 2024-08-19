@@ -32,10 +32,11 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
             return await _client.GetAsync();
         }
 
-        public async Task WriteAsync(IVersionSet versionSet, AsOfData<ExcludedPackage> data, TextWriter writer)
+        public async Task<long> WriteAsync(IVersionSet versionSet, AsOfData<ExcludedPackage> data, TextWriter writer)
         {
             var record = new ExcludedPackageRecord { AsOfTimestamp = data.AsOfTimestamp };
             record.WriteHeader(writer);
+            long recordCount = 0;
 
             var verifiedPackageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             await foreach (var entry in data.Entries)
@@ -55,6 +56,7 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
                 record.Id = packageId;
                 record.IsExcluded = true;
                 record.Write(writer);
+                recordCount++;
             }
 
             // Add IDs that are not mentioned in the data and therefore are not excluded. This makes joins on the
@@ -65,7 +67,10 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
                 record.Id = id;
                 record.IsExcluded = false;
                 record.Write(writer);
+                recordCount++;
             }
+
+            return recordCount;
         }
     }
 }

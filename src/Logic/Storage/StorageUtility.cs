@@ -31,6 +31,8 @@ namespace NuGet.Insights
         /// </summary>
         public const string RawSizeBytesMetadata = "rawSizeBytes";
 
+        public const string RecordCountMetadata = "recordCount";
+
         public const string EmulatorConnectionString = "UseDevelopmentStorage=true";
 
         public static readonly IList<string> MinSelectColumns = new[] { PartitionKey, RowKey };
