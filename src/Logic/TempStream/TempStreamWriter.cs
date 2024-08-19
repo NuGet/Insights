@@ -41,7 +41,7 @@ namespace NuGet.Insights
             var suffix = $"{id}_{version}";
             if (!string.IsNullOrEmpty(contextHint))
             {
-                suffix += "_" + suffix;
+                suffix += "_" + contextHint;
             }
 
             if (!string.IsNullOrEmpty(extension))
@@ -60,7 +60,7 @@ namespace NuGet.Insights
                 suffix += ".tmp";
             }
 
-            return () => $"{Guid.NewGuid():N}_{suffix}";
+            return () => $"{Guid.NewGuid().ToByteArray().ToTrimmedBase32()}_{suffix}";
         }
 
         public TempStreamWriter(TempStreamLeaseScope leaseScope, IOptions<NuGetInsightsSettings> options, ILogger<TempStreamWriter> logger)
