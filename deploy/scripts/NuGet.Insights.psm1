@@ -757,7 +757,7 @@ function Get-AzCurrentUser() {
     return $currentUser
 }
 
-function Add-AzRoleAssignmentWithRetry($currentUser, [string]$resourceGroupName, [string]$roleDefinitionName, [scriptblock]$testAccess) {
+function Add-AzRoleAssignmentWithRetry($currentUser, [string]$resourceGroupName, [string]$roleDefinitionName, [scriptblock]$testAccess, $requiredSuccesses = 12) {
     Write-Status "Adding $roleDefinitionName role assignment for '$($currentUser.userPrincipalName)' (object ID $($currentUser.id))..."
 
     $existingRoleAssignment = Get-AzRoleAssignment `
@@ -773,7 +773,6 @@ function Add-AzRoleAssignmentWithRetry($currentUser, [string]$resourceGroupName,
     }
 
     $maxRetries = 30
-    $requiredSuccesses = 12
     $attempt = 0
     $successes = 0
     while ($true) {
@@ -802,7 +801,7 @@ function Add-AzRoleAssignmentWithRetry($currentUser, [string]$resourceGroupName,
     }
 }
 
-function Remove-AzRoleAssignmentWithRetry($currentUser, [string]$resourceGroupName, [string]$roleDefinitionName) {
+function Remove-AzRoleAssignmentWithRetry($currentUser, [string]$resourceGroupName, [string]$roleDefinitionName, [switch]$AllowMissing) {
     Write-Status "Removing $roleDefinitionName for '$($currentUser.userPrincipalName)' (object ID $($currentUser.id))..."
 
     $maxRetries = 30
@@ -824,6 +823,9 @@ function Remove-AzRoleAssignmentWithRetry($currentUser, [string]$resourceGroupNa
                 continue
             }
             elseif ($attempt -lt $maxRetries -and $_.Exception.Message -eq "The provided information does not map to a role assignment.") {
+                if ($allowMissing) {
+                    break
+                }
                 Write-Warning "Attempt $($attempt) - transient duplicate role assignments. Trying again in 10 seconds."
                 Start-Sleep 10
                 continue
@@ -831,8 +833,21 @@ function Remove-AzRoleAssignmentWithRetry($currentUser, [string]$resourceGroupNa
             throw
         }
     }
+
 }
 
+function Set-StorageFirewallDefaultAction($ResourceSettings, $DefaultAction) {
+    $storageFirewall = Get-AzStorageAccountNetworkRuleSet `
+        -ResourceGroupName $ResourceSettings.ResourceGroupName `
+        -Name $ResourceSettings.StorageAccountName
+
+    if ($storageFirewall.DefaultAction -ne $DefaultAction) {
+        Update-AzStorageAccountNetworkRuleSet `
+            -ResourceGroupName $ResourceSettings.ResourceGroupName `
+            -Name $ResourceSettings.StorageAccountName `
+            -DefaultAction $DefaultAction | Out-Null
+    }
+}
 
 # Source: https://stackoverflow.com/a/57599481
 if (Get-TypeData -TypeName System.Array) {
