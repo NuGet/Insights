@@ -16,6 +16,7 @@ namespace NuGet.Insights.Worker
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<MessageEnqueuer> _logger;
+        private readonly IMetric _enqueueMetric;
 
         public MessageEnqueuer(
             SchemaSerializer serializer,
@@ -31,6 +32,8 @@ namespace NuGet.Insights.Worker
             _telemetryClient = telemetryClient;
             _options = options;
             _logger = logger;
+
+            _enqueueMetric = _telemetryClient.GetMetric($"{nameof(MessageEnqueuer)}.Enqueue", "QueueType", "IsPoison", "SchemaName", "IsBulkEnqueue");
         }
 
         public async Task InitializeAsync()
@@ -144,7 +147,7 @@ namespace NuGet.Insights.Worker
                     serializedMessages.Add(serializedMessage.AsString());
                 }
 
-                TrackEnqueue(queue, isPoison, serializedMessages.Count);
+                TrackEnqueue(queue, isPoison, serializer.Name, isBulkEnqueue: false, serializedMessages.Count);
                 await addAsync(queue, serializedMessages, notBefore);
             }
             else
@@ -183,7 +186,7 @@ namespace NuGet.Insights.Worker
                         var newBatchMessageLength = batchMessageLength + ",".Length + innerDataLength;
                         if (newBatchMessageLength > _rawMessageEnqueuer.MaxMessageSize || batch.Count >= _options.Value.MaxBulkEnqueueMessageCount)
                         {
-                            await EnqueueBulkEnqueueMessageAsync(isPoison, addAsync, batchMessage, batchMessageLength);
+                            await EnqueueBulkEnqueueMessageAsync(isPoison, serializer.Name, addAsync, batchMessage, batchMessageLength);
                             batch.Clear();
                             batch.Add(innerData.AsJsonElement());
                             batchMessageLength = emptyBatchMessageLength + innerDataLength;
@@ -198,7 +201,7 @@ namespace NuGet.Insights.Worker
 
                 if (batch.Count > 0)
                 {
-                    await EnqueueBulkEnqueueMessageAsync(isPoison, addAsync, batchMessage, batchMessageLength);
+                    await EnqueueBulkEnqueueMessageAsync(isPoison, serializer.Name, addAsync, batchMessage, batchMessageLength);
                 }
             }
         }
@@ -259,7 +262,7 @@ namespace NuGet.Insights.Worker
             return false;
         }
 
-        private async Task EnqueueBulkEnqueueMessageAsync(bool isPoison, AddAsync addAsync, HomogeneousBulkEnqueueMessage batchMessage, int expectedLength)
+        private async Task EnqueueBulkEnqueueMessageAsync(bool isPoison, string schemaName, AddAsync addAsync, HomogeneousBulkEnqueueMessage batchMessage, int expectedLength)
         {
             var rawMessage = _serializer.Serialize(batchMessage).AsString();
             if (GetMessageLength(rawMessage) != expectedLength)
@@ -271,22 +274,19 @@ namespace NuGet.Insights.Worker
             }
 
             _logger.LogInformation("Enqueueing a bulk enqueue message containing {Count} individual messages.", batchMessage.Messages.Count);
-            TrackEnqueue(QueueType.Expand, isPoison, 1);
-            await addAsync(QueueType.Expand, new[] { rawMessage }, TimeSpan.Zero);
+            TrackEnqueue(QueueType.Expand, isPoison, schemaName, isBulkEnqueue: true, 1);
+            await addAsync(QueueType.Expand, [rawMessage], TimeSpan.Zero);
 
         }
 
-        private void TrackEnqueue(QueueType queue, bool isPoison, int count)
+        private void TrackEnqueue(QueueType queue, bool isPoison, string schemaName, bool isBulkEnqueue, int count)
         {
-            _telemetryClient
-                .GetMetric($"{nameof(MessageEnqueuer)}.Enqueue.{queue}.{(isPoison ? "Poison" : "Main")}")
-                .TrackValue(count);
-            _telemetryClient
-                .GetMetric($"{nameof(MessageEnqueuer)}.Enqueue.{(isPoison ? "Poison" : "Main")}")
-                .TrackValue(count);
-            _telemetryClient
-                .GetMetric($"{nameof(MessageEnqueuer)}.Enqueue")
-                .TrackValue(count);
+            _enqueueMetric.TrackValue(
+                count,
+                queue.ToString(),
+                isPoison ? "true" : "false",
+                schemaName,
+                isBulkEnqueue ? "true" : "false");
         }
 
         private int GetMessageLength(HomogeneousBulkEnqueueMessage batchMessage)
