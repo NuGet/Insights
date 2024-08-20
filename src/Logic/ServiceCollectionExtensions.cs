@@ -160,6 +160,7 @@ namespace NuGet.Insights
                 return new ServiceClientFactory(
                     () => httpClient,
                     x.GetRequiredService<IOptions<NuGetInsightsSettings>>(),
+                    x.GetRequiredService<ITelemetryClient>(),
                     x.GetRequiredService<ILoggerFactory>());
             });
 

@@ -8,6 +8,8 @@ namespace NuGet.Insights.Worker
 {
     public class QueueStorageEnqueuer : IRawMessageEnqueuer
     {
+        public const string MetricIdPrefix = "QueueStorageEnqueuer.";
+
         private readonly IWorkerQueueFactory _workerQueueFactory;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ITelemetryClient _telemetryClient;
@@ -28,10 +30,10 @@ namespace NuGet.Insights.Worker
             _telemetryClient = telemetryClient;
             _logger = logger;
 
-            _durationMs = _telemetryClient.GetMetric("QueueStorageEnqueuer.SendMessageAsync.DurationMs", "QueueType", "IsPoison");
-            _batchDurationMs = _telemetryClient.GetMetric("QueueStorageEnqueuer.BatchDurationMs", "QueueType", "IsPoison");
-            _averageDurationMs = _telemetryClient.GetMetric("QueueStorageEnqueuer.AverageDurationMs", "QueueType", "IsPoison");
-            _batchSizeMs = _telemetryClient.GetMetric("QueueStorageEnqueuer.BatchSize", "QueueType", "IsPoison");
+            _durationMs = _telemetryClient.GetMetric(MetricIdPrefix + "SendMessageAsync.DurationMs", "QueueType", "IsPoison");
+            _batchDurationMs = _telemetryClient.GetMetric(MetricIdPrefix + "BatchDurationMs", "QueueType", "IsPoison");
+            _averageDurationMs = _telemetryClient.GetMetric(MetricIdPrefix + "AverageDurationMs", "QueueType", "IsPoison");
+            _batchSizeMs = _telemetryClient.GetMetric(MetricIdPrefix + "BatchSize", "QueueType", "IsPoison");
 
             BulkEnqueueStrategy = _options.Value.UseBulkEnqueueStrategy
                 ? BulkEnqueueStrategy.Enabled(_options.Value.BulkEnqueueThreshold)

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using NuGet.Insights.StorageNoOpRetry;
+
 namespace NuGet.Insights
 {
     public static class TestOutputHelperExtensions
@@ -29,9 +31,12 @@ namespace NuGet.Insights
             return output.GetLoggerFactory().CreateLogger<T>();
         }
 
-        internal static bool ShouldIgnoreMetricLog(LoggerTelemetryClient.MetricKey key)
+        public static bool ShouldIgnoreMetricLog(LoggerTelemetryClient.MetricKey key)
         {
-            return key.MetricId.Contains(QueryLoopMetrics.MetricIdSubstring, StringComparison.Ordinal);
+            return key.MetricId == MetricNames.MessageProcessorDurationMs
+                || key.MetricId == MetricNames.BatchMessageProcessorDurationMs
+                || key.MetricId.StartsWith(TableClientWithRetryContext.MetricIdPrefix, StringComparison.Ordinal)
+                || key.MetricId.Contains(QueryLoopMetrics.MetricIdSubstring, StringComparison.Ordinal);
         }
 
         internal static LoggerTelemetryClient GetTelemetryClient(this ITestOutputHelper output)

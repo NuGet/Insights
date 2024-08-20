@@ -12,15 +12,17 @@ namespace NuGet.Insights.StorageNoOpRetry
     public class TableServiceClientWithRetryContext
     {
         private readonly TableServiceClient _client;
+        private readonly ITelemetryClient _telemetryClient;
 
-        public TableServiceClientWithRetryContext(TableServiceClient client)
+        public TableServiceClientWithRetryContext(TableServiceClient client, ITelemetryClient telemetryClient)
         {
             _client = client;
+            _telemetryClient = telemetryClient;
         }
 
         public TableClientWithRetryContext GetTableClient(string tableName)
         {
-            return new TableClientWithRetryContext(_client.GetTableClient(tableName));
+            return new TableClientWithRetryContext(_client.GetTableClient(tableName), _telemetryClient);
         }
 
         public AsyncPageable<TableItem> QueryAsync(string? filter = null, int? maxPerPage = null, CancellationToken cancellationToken = default)

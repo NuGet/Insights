@@ -11,6 +11,7 @@ namespace NuGet.Insights
             // Arrange
             var serviceClientFactory = new ServiceClientFactory(
                 Options.Create(new NuGetInsightsSettings().WithTestStorageSettings()),
+                TelemetryClient,
                 Output.GetLoggerFactory());
             var blobClient = await serviceClientFactory.GetBlobServiceClientAsync();
             var container = blobClient.GetBlobContainerClient($"{StoragePrefix}1b1");

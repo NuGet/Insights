@@ -1063,26 +1063,31 @@ namespace NuGet.Insights.ReferenceTracking
             OwnerType = PartitionKeyPrefix + OwnerTypeSuffix;
             SubjectType = PartitionKeyPrefix + SubjectTypeSuffix;
 
+            var loggerFactory = Output.GetLoggerFactory();
+            var telemetryClient = output.GetTelemetryClient();
+
             ServiceClientFactoryA = new TestServiceClientFactory(
                 () => new LoggingHandler(output.GetLogger<LoggingHandler>()),
                 _fixture.HttpClientHandler,
                 _fixture.Options.Object,
-                Output.GetLoggerFactory());
+                telemetryClient,
+                loggerFactory);
 
             ServiceClientFactoryB = new TestServiceClientFactory(
                 () => new LoggingHandler(output.GetLogger<LoggingHandler>()),
                 _fixture.HttpClientHandler,
                 _fixture.Options.Object,
-                Output.GetLoggerFactory());
+                telemetryClient,
+                loggerFactory);
 
             WideEntityServiceA = new WideEntityService(
                 ServiceClientFactoryA,
-                output.GetTelemetryClient(),
+                telemetryClient,
                 _fixture.Options.Object);
 
             WideEntityServiceB = new WideEntityService(
                 ServiceClientFactoryB,
-                output.GetTelemetryClient(),
+                telemetryClient,
                 _fixture.Options.Object);
 
             TargetA = new ReferenceTracker(
@@ -1136,7 +1141,7 @@ namespace NuGet.Insights.ReferenceTracking
 
             public ServiceClientFactory GetServiceClientFactory(ILoggerFactory loggerFactory)
             {
-                return new ServiceClientFactory(Options.Object, loggerFactory);
+                return new ServiceClientFactory(Options.Object, loggerFactory.GetLoggerTelemetryClient(), loggerFactory);
             }
 
             public async Task DisposeAsync()

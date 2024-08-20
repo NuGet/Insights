@@ -8,6 +8,10 @@ namespace NuGet.Insights
     /// </summary>
     public static class MetricNames
     {
+        public const string MessageProcessedCount = "MessageProcessedCount";
+        public const string BatchMessageProcessorDurationMs = "BatchMessageProcessorDurationMs";
+        public const string MessageProcessorDurationMs = "MessageProcessorDurationMs";
+
         public const string CatalogScanUpdate = "CatalogScan.Update";
 
         public const string WorkflowStateTransition = "Workflow.StateTransition";

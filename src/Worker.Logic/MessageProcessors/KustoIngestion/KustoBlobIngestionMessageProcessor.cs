@@ -208,7 +208,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             TableClientWithRetryContext statusTable;
             if (tableUrl.Query is not null && tableUrl.Query.Contains("sig=", StringComparison.Ordinal))
             {
-                statusTable = new TableClientWithRetryContext(new TableClient(tableUrl));
+                statusTable = new TableClientWithRetryContext(new TableClient(tableUrl), _telemetryClient);
             }
             else
             {

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Runtime.CompilerServices;
 using Azure;
 using Azure.Data.Tables;
 using Azure.Data.Tables.Models;
@@ -12,24 +13,50 @@ namespace NuGet.Insights.StorageNoOpRetry
 {
     public class TableClientWithRetryContext
     {
-        private readonly TableClient _client;
+        public const string MetricIdPrefix = "TableClient.";
 
-        public TableClientWithRetryContext(TableClient client)
+        private readonly TableClient _client;
+        private readonly ITelemetryClient _telemetryClient;
+        private readonly IMetric _operationCount;
+        private readonly IMetric _entityChangeCount;
+        private readonly IMetric _entityBatchActionTypeCount;
+
+        public TableClientWithRetryContext(TableClient client, ITelemetryClient telemetryClient)
         {
             _client = client;
+            _telemetryClient = telemetryClient;
+
+            _operationCount = _telemetryClient.GetMetric(MetricIdPrefix + "OperationCount", "TableName", "OperationName");
+            _entityChangeCount = _telemetryClient.GetMetric(MetricIdPrefix + "EntityChangeCount", "TableName", "OperationName");
+            _entityBatchActionTypeCount = _telemetryClient.GetMetric(MetricIdPrefix + "BatchActionTypeCount", "TableName", "ActionType");
         }
 
         public Uri Uri => _client.Uri;
 
         public string Name => _client.Name;
 
+        private void TrackOperation([CallerMemberName] string? operationName = null)
+        {
+            _operationCount.TrackValue(1, Name, operationName);
+        }
+
+        private void TrackEntityChange(int entityCount, [CallerMemberName] string? operationName = null)
+        {
+            TrackOperation(operationName);
+            _entityChangeCount.TrackValue(entityCount, Name, operationName);
+        }
+
         public Task<Response<TableItem>> CreateIfNotExistsAsync(CancellationToken cancellationToken = default)
         {
+            TrackOperation();
+
             return _client.CreateIfNotExistsAsync(cancellationToken);
         }
 
         public Task<Response> DeleteAsync(CancellationToken cancellationToken = default)
         {
+            TrackOperation();
+
             return _client.DeleteAsync(cancellationToken);
         }
 
@@ -39,6 +66,8 @@ namespace NuGet.Insights.StorageNoOpRetry
             IEnumerable<string>? select = null,
             CancellationToken cancellationToken = default) where T : class, ITableEntity
         {
+            TrackOperation();
+
             return _client.QueryAsync<T>(filter, maxPerPage, select, cancellationToken);
         }
 
@@ -48,6 +77,8 @@ namespace NuGet.Insights.StorageNoOpRetry
             IEnumerable<string>? select = null,
             CancellationToken cancellationToken = default) where T : class, ITableEntity
         {
+            TrackOperation();
+
             return _client.QueryAsync(filter, maxPerPage, select, cancellationToken);
         }
 
@@ -57,6 +88,8 @@ namespace NuGet.Insights.StorageNoOpRetry
             ETag ifMatch = default,
             CancellationToken cancellationToken = default)
         {
+            TrackEntityChange(entityCount: 1);
+
             return _client.DeleteEntityAsync(partitionKey, rowKey, ifMatch, cancellationToken);
         }
 
@@ -66,6 +99,8 @@ namespace NuGet.Insights.StorageNoOpRetry
             IEnumerable<string>? select = null,
             CancellationToken cancellationToken = default) where T : class, ITableEntity
         {
+            TrackOperation();
+
             return _client.GetEntityAsync<T>(partitionKey, rowKey, select, cancellationToken);
         }
 
@@ -74,6 +109,8 @@ namespace NuGet.Insights.StorageNoOpRetry
             TableUpdateMode mode = TableUpdateMode.Merge,
             CancellationToken cancellationToken = default) where T : ITableEntity
         {
+            TrackEntityChange(entityCount: 1);
+
             return await ExecuteWithClientRequestIdAsync(
                 entity,
                 () => _client.UpsertEntityAsync(entity, mode, cancellationToken));
@@ -86,6 +123,8 @@ namespace NuGet.Insights.StorageNoOpRetry
             string clientRequestIdColumn = nameof(ITableEntityWithClientRequestId.ClientRequestId),
             CancellationToken cancellationToken = default) where T : ITableEntity
         {
+            TrackEntityChange(entityCount: 1);
+
             return await ExecuteWithEntityRetryContextAsync(
                 entity,
                 clientRequestIdColumn,
@@ -115,6 +154,8 @@ namespace NuGet.Insights.StorageNoOpRetry
             string clientRequestIdColumn = nameof(ITableEntityWithClientRequestId.ClientRequestId),
             CancellationToken cancellationToken = default) where T : ITableEntity
         {
+            TrackEntityChange(entityCount: 1);
+
             return await ExecuteWithEntityRetryContextAsync(
                 entity,
                 clientRequestIdColumn,
@@ -129,10 +170,13 @@ namespace NuGet.Insights.StorageNoOpRetry
             var clientRequestId = Guid.NewGuid();
             var trackedEntities = new List<ITableEntityWithClientRequestId>();
             var transactionActionList = transactionActions.ToList();
+            TrackEntityChange(entityCount: transactionActionList.Count);
 
             for (var i = 0; i < transactionActionList.Count; i++)
             {
                 var action = transactionActionList[i];
+                _entityBatchActionTypeCount.TrackValue(1, Name, action.ActionType.ToString());
+
                 if (action.ActionType != TableTransactionActionType.Delete
                     && action.Entity is ITableEntityWithClientRequestId entityWithClientRequestId)
                 {

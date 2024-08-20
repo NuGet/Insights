@@ -7,15 +7,15 @@ namespace NuGet.Insights.Worker
 {
     public class GenericMessageProcessor : IGenericMessageProcessor
     {
-        public const string MessageProcessedCountMetricId = "MessageProcessedCount";
-        public const string BatchMessageProcessorDurationMsMetricId = "BatchMessageProcessorDurationMs";
-        public const string MessageProcessorDurationMsMetricId = "MessageProcessorDurationMs";
-
         private readonly SchemaSerializer _serializer;
         private readonly IServiceProvider _serviceProvider;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IRawMessageEnqueuer _messageEnqueuer;
         private readonly ILogger<GenericMessageProcessor> _logger;
+
+        private readonly IMetric _messageProcessedCount;
+        private readonly IMetric _batchMessageProcessorDurationMs;
+        private readonly IMetric _messageProcessorDurationMs;
 
         public GenericMessageProcessor(
             SchemaSerializer serializer,
@@ -29,6 +29,13 @@ namespace NuGet.Insights.Worker
             _telemetryClient = telemetryClient;
             _messageEnqueuer = messageEnqueuer;
             _logger = logger;
+
+            _messageProcessedCount = _telemetryClient
+                .GetMetric(MetricNames.MessageProcessedCount, "Status", "SchemaName", "IsBatch");
+            _batchMessageProcessorDurationMs = _telemetryClient
+                .GetMetric(MetricNames.BatchMessageProcessorDurationMs, "Status", "SchemaName");
+            _messageProcessorDurationMs = _telemetryClient
+                .GetMetric(MetricNames.MessageProcessorDurationMs, "Status", "SchemaName", "QueueType");
         }
 
         public async Task ProcessSingleAsync(QueueType queue, ReadOnlyMemory<byte> message, long dequeueCount)
@@ -52,7 +59,7 @@ namespace NuGet.Insights.Worker
                 schemaName,
                 schameVersion,
                 data.GetType(),
-                new[] { data },
+                [data],
                 dequeueCount,
                 throwOnException: true);
 
@@ -157,7 +164,7 @@ namespace NuGet.Insights.Worker
             if (batchProcessor != null)
             {
                 var readOnlyListMessageType = typeof(IReadOnlyList<>).MakeGenericType(messageType);
-                var processAsyncMethod = batchProcessorType.GetMethod(nameof(IBatchMessageProcessor<object>.ProcessAsync), new Type[] { readOnlyListMessageType, typeof(int) });
+                var processAsyncMethod = batchProcessorType.GetMethod(nameof(IBatchMessageProcessor<object>.ProcessAsync), [readOnlyListMessageType, typeof(int)]);
 
                 // Make IReadOnlyList<T> instead of IReadOnlyList<object>.
                 var stronglyTypedMessages = MakeListOfT(messageType, messages);
@@ -167,7 +174,7 @@ namespace NuGet.Insights.Worker
                 var status = "Exception";
                 try
                 {
-                    var task = (Task)processAsyncMethod.Invoke(batchProcessor, new object[] { stronglyTypedMessages, dequeueCount });
+                    var task = (Task)processAsyncMethod.Invoke(batchProcessor, [stronglyTypedMessages, dequeueCount]);
                     await task;
                     var result = MakeGenericResult(messageType, task);
 
@@ -204,7 +211,7 @@ namespace NuGet.Insights.Worker
                         $"schema version {schemaVersion} is not supported.");
                 }
 
-                var processAsyncMethod = processorType.GetMethod(nameof(IMessageProcessor<object>.ProcessAsync), new Type[] { messageType, typeof(int) });
+                var processAsyncMethod = processorType.GetMethod(nameof(IMessageProcessor<object>.ProcessAsync), [messageType, typeof(int)]);
 
                 // Execute the single message processor, for each message.
                 var failed = new List<object>();
@@ -214,7 +221,7 @@ namespace NuGet.Insights.Worker
                     var success = false;
                     try
                     {
-                        await (Task)processAsyncMethod.Invoke(processor, new object[] { message, dequeueCount });
+                        await (Task)processAsyncMethod.Invoke(processor, [message, dequeueCount]);
                         success = true;
                     }
                     catch (Exception ex) when (!throwOnException)
@@ -246,21 +253,15 @@ namespace NuGet.Insights.Worker
 
         private void EmitMetrics(bool isBatch, QueueType? queue, string schemaName, Stopwatch stopwatch, string status, int messageCount)
         {
-            _telemetryClient
-                .GetMetric(MessageProcessedCountMetricId, "Status", "SchemaName", "IsBatch")
-                .TrackValue(messageCount, status, schemaName, isBatch ? "true" : "false");
+            _messageProcessedCount.TrackValue(messageCount, status, schemaName, isBatch ? "true" : "false");
 
             if (isBatch)
             {
-                _telemetryClient
-                    .GetMetric(BatchMessageProcessorDurationMsMetricId, "Status", "SchemaName")
-                    .TrackValue(stopwatch.Elapsed.TotalMilliseconds, status, schemaName);
+                _batchMessageProcessorDurationMs.TrackValue(stopwatch.Elapsed.TotalMilliseconds, status, schemaName);
             }
             else
             {
-                _telemetryClient
-                    .GetMetric(MessageProcessorDurationMsMetricId, "Status", "SchemaName", "QueueType")
-                    .TrackValue(stopwatch.Elapsed.TotalMilliseconds, status, schemaName, queue.Value.ToString());
+                _messageProcessorDurationMs.TrackValue(stopwatch.Elapsed.TotalMilliseconds, status, schemaName, queue.Value.ToString());
             }
         }
 
@@ -302,10 +303,10 @@ namespace NuGet.Insights.Worker
         {
             var listType = typeof(List<>).MakeGenericType(type);
             var list = Activator.CreateInstance(listType);
-            var addMethod = listType.GetMethod(nameof(List<object>.Add), new Type[] { type });
+            var addMethod = listType.GetMethod(nameof(List<object>.Add), [type]);
             foreach (var item in items)
             {
-                addMethod.Invoke(list, new object[] { item });
+                addMethod.Invoke(list, [item]);
             }
 
             return list;

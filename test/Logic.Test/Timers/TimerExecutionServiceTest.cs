@@ -442,9 +442,9 @@ namespace NuGet.Insights
                     loggerFactory.CreateLogger<AutoRenewingStorageLeaseService>());
             }
 
-            public ServiceClientFactory GetServiceClientFactory(ILoggerFactory logger)
+            public ServiceClientFactory GetServiceClientFactory(ILoggerFactory loggerFactory)
             {
-                return new ServiceClientFactory(Options.Object, logger);
+                return new ServiceClientFactory(Options.Object, loggerFactory.GetLoggerTelemetryClient(), loggerFactory);
             }
 
             public async Task DisposeAsync()

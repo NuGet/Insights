@@ -38,7 +38,12 @@ namespace NuGet.Insights
         {
             AssertDimensionCount(1);
             MetricValues.Enqueue((metricValue, [dimension1Value]));
-            _logger.LogInformation("Metric emitted: {MetricId} {Dimension1Name} = {MetricValue}", _metricId, dimension1Value, metricValue);
+            _logger.LogInformation(
+                "Metric emitted: {MetricId} ({Dimension1Name}, {Dimension1Value}) = {MetricValue}",
+                _metricId,
+                _dimensionNames[0],
+                dimension1Value,
+                metricValue);
             return true;
         }
 
@@ -46,7 +51,14 @@ namespace NuGet.Insights
         {
             AssertDimensionCount(2);
             MetricValues.Enqueue((metricValue, [dimension1Value, dimension2Value]));
-            _logger.LogInformation("Metric emitted: {MetricId} {Dimension1Name} {Dimension2Name} = {MetricValue}", _metricId, dimension1Value, dimension2Value, metricValue);
+            _logger.LogInformation(
+                "Metric emitted: {MetricId} ({Dimension1Name}, {Dimension1Value}) ({Dimension2Name}, {Dimension2Value}) = {MetricValue}",
+                _metricId,
+                _dimensionNames[0],
+                dimension1Value,
+                _dimensionNames[1],
+                dimension2Value,
+                metricValue);
             return true;
         }
 
@@ -54,7 +66,16 @@ namespace NuGet.Insights
         {
             AssertDimensionCount(3);
             MetricValues.Enqueue((metricValue, [dimension1Value, dimension2Value, dimension3Value]));
-            _logger.LogInformation("Metric emitted: {MetricId} {Dimension1Name} {Dimension2Name} {Dimension3Name} = {MetricValue}", _metricId, dimension1Value, dimension2Value, dimension3Value, metricValue);
+            _logger.LogInformation(
+                "Metric emitted: {MetricId} ({Dimension1Name}, {Dimension1Value}) ({Dimension2Name}, {Dimension2Value}) ({Dimension3Name}, {Dimension3Value}) = {MetricValue}",
+                _metricId,
+                _dimensionNames[0],
+                dimension1Value,
+                _dimensionNames[1],
+                dimension2Value,
+                _dimensionNames[2],
+                dimension3Value,
+                metricValue);
             return true;
         }
 
@@ -62,7 +83,18 @@ namespace NuGet.Insights
         {
             AssertDimensionCount(4);
             MetricValues.Enqueue((metricValue, [dimension1Value, dimension2Value, dimension3Value, dimension4Value]));
-            _logger.LogInformation("Metric emitted: {MetricId} {Dimension1Name} {Dimension2Name} {Dimension3Name} {Dimension4Name} = {MetricValue}", _metricId, dimension1Value, dimension2Value, dimension3Value, dimension4Value, metricValue);
+            _logger.LogInformation(
+                "Metric emitted: {MetricId} ({Dimension1Name}, {Dimension1Value}) ({Dimension2Name}, {Dimension2Value}) ({Dimension3Name}, {Dimension3Value}) ({Dimension4Name}, {Dimension4Value}) = {MetricValue}",
+                _metricId,
+                _dimensionNames[0],
+                dimension1Value,
+                _dimensionNames[1],
+                dimension2Value,
+                _dimensionNames[2],
+                dimension3Value,
+                _dimensionNames[3],
+                dimension4Value,
+                metricValue);
             return true;
         }
     }

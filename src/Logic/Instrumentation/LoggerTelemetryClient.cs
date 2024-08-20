@@ -8,11 +8,6 @@ namespace NuGet.Insights
         private readonly Func<MetricKey, bool> _shouldIgnore;
         private readonly ILogger<LoggerTelemetryClient> _logger;
 
-        public LoggerTelemetryClient(ILogger<LoggerTelemetryClient> logger)
-            : this(_ => false, logger)
-        {
-        }
-
         public LoggerTelemetryClient(Func<MetricKey, bool> shouldIgnore, ILogger<LoggerTelemetryClient> logger)
         {
             _shouldIgnore = shouldIgnore;

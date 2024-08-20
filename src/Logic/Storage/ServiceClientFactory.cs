@@ -34,22 +34,26 @@ namespace NuGet.Insights
         private ServiceClients? _serviceClients;
         private readonly Func<HttpClient>? _httpClientFactory;
         private readonly IOptions<NuGetInsightsSettings> _options;
+        private readonly ITelemetryClient _telemetryClient;
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger<ServiceClientFactory> _logger;
 
         public ServiceClientFactory(
             IOptions<NuGetInsightsSettings> options,
-            ILoggerFactory loggerFactory) : this(httpClientFactory: null, options, loggerFactory)
+            ITelemetryClient telemetryClient,
+            ILoggerFactory loggerFactory) : this(httpClientFactory: null, options, telemetryClient, loggerFactory)
         {
         }
 
         public ServiceClientFactory(
             Func<HttpClient>? httpClientFactory,
             IOptions<NuGetInsightsSettings> options,
+            ITelemetryClient telemetryClient,
             ILoggerFactory loggerFactory)
         {
             _httpClientFactory = httpClientFactory;
             _options = options;
+            _telemetryClient = telemetryClient;
             _loggerFactory = loggerFactory;
             _logger = loggerFactory.CreateLogger<ServiceClientFactory>();
         }
@@ -364,7 +368,7 @@ namespace NuGet.Insights
                 blobClientOptions,
                 queue,
                 table,
-                new TableServiceClientWithRetryContext(table));
+                new TableServiceClientWithRetryContext(table, _telemetryClient));
         }
 
         protected virtual HttpPipelineTransport? GetHttpPipelineTransport()

@@ -443,6 +443,7 @@ namespace NuGet.Insights.TablePrefixScan
 
                     var serviceClientFactory = new ServiceClientFactory(
                         options.Object,
+                        loggerFactory.Object.GetLoggerTelemetryClient(),
                         loggerFactory.Object);
 
                     var client = await serviceClientFactory.GetTableServiceClientAsync();

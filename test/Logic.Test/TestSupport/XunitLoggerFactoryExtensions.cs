@@ -14,5 +14,12 @@ namespace NuGet.Insights
             loggerFactory.AddProvider(new XunitLoggerProvider(output));
             return loggerFactory;
         }
+
+        public static LoggerTelemetryClient GetLoggerTelemetryClient(this ILoggerFactory loggerFactory)
+        {
+            return new LoggerTelemetryClient(
+                TestOutputHelperExtensions.ShouldIgnoreMetricLog,
+                loggerFactory.CreateLogger<LoggerTelemetryClient>());
+        }
     }
 }

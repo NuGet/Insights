@@ -7,9 +7,8 @@ namespace NuGet.Insights.Worker
     {
         public static bool ShouldIgnoreMetricLog(LoggerTelemetryClient.MetricKey key)
         {
-            return key.MetricId.Contains(QueryLoopMetrics.MetricIdSubstring, StringComparison.Ordinal)
-                || key.MetricId == GenericMessageProcessor.MessageProcessorDurationMsMetricId
-                || key.MetricId == GenericMessageProcessor.BatchMessageProcessorDurationMsMetricId;
+            return Insights.TestOutputHelperExtensions.ShouldIgnoreMetricLog(key)
+                || key.MetricId.StartsWith(QueueStorageEnqueuer.MetricIdPrefix, StringComparison.Ordinal);
         }
 
         public static LoggerTelemetryClient GetTelemetryClient(this ITestOutputHelper output)
