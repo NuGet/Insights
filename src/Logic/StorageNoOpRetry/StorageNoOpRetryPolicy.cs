@@ -122,9 +122,9 @@ namespace NuGet.Insights.StorageNoOpRetry
         {
             _logger.LogTransientWarning(
                 "Storage no-op retry policy is for an entity in table '{Table}' with partition key '{PartitionKey}' and row key '{RowKey}'.",
+                context.Client.Name,
                 context.Entity.PartitionKey,
-                context.Entity.RowKey,
-                context.Client.Name);
+                context.Entity.RowKey);
 
             if (shouldRetry)
             {
