@@ -147,7 +147,7 @@ process {
     }
     
     Write-Status "Using the following deployment parameters:"
-    ConvertTo-Json $parameters -Depth 100 | Out-Default
+    ConvertTo-Json $parameters -Depth 100 | Format-Json | Out-Default
     
     Approve-SubscriptionId $resourceSettings.SubscriptionId
     

@@ -111,12 +111,6 @@ class ResourceSettings {
     [string]$ExpandQueueName
     
     [ValidateNotNullOrEmpty()]
-    [TimeSpan]$RegenerationPeriod
-    
-    [ValidateNotNullOrEmpty()]
-    [bool]$AutoRegenerateStorageKey
-    
-    [ValidateNotNullOrEmpty()]
     [string]$DeploymentNamePrefix
     
     [ValidateNotNullOrEmpty()]
@@ -250,7 +244,6 @@ class ResourceSettings {
         # Static settings
         $this.LocalDeploymentContainerName = "localdeployment"
         $this.SpotWorkerDeploymentContainerName = "spotworkerdeployment"
-        $this.RegenerationPeriod = New-TimeSpan -Days 14
 
         $isNuGetPackageExplorerToCsvEnabled = "NuGetPackageExplorerToCsv" -notin $this.WorkerConfig["NuGetInsights"].DisabledDrivers
         $isConsumptionPlan = $this.WorkerSku -eq "Y1"
@@ -342,16 +335,6 @@ class ResourceSettings {
                     };
                 };
             })
-
-        if ($isConsumptionPlan) {            
-            # Since Consumption plan requires WEBSITE_CONTENTAZUREFILECONNECTIONSTRING and this does not support SAS-based
-            # connection strings, don't auto-regenerate in this case. We would need to regularly update a connection string based
-            # on the active storage access key, which isn't worth the effort for this approach that is less secure anyway.
-            $this.AutoRegenerateStorageKey = $false
-        }
-        else {
-            $this.AutoRegenerateStorageKey = $true
-        }
 
         # It's okay to leave this as a default since it is generated at deployment time by default.
         $defaults.Remove("SpotWorkerAdminPassword")
@@ -685,7 +668,7 @@ function New-ParameterFile($Parameters, $PathReferences, $FilePath) {
         New-Item $dirPath -ItemType Directory | Out-Null
     }
 
-    $deploymentParameters | ConvertTo-Json -Depth 100 | Out-File $FilePath -Encoding UTF8
+    $deploymentParameters | ConvertTo-Json -Depth 100 | Format-Json | Out-File $FilePath -Encoding UTF8
 }
 
 function Get-OrderedHashtable {
@@ -913,7 +896,45 @@ function Get-AzCurrentUser() {
     return $currentUser
 }
 
-function Add-AzRoleAssignmentWithRetry($currentUser, [string]$resourceGroupName, [string]$roleDefinitionName, [scriptblock]$testAccess, $requiredSuccesses = 12) {
+function Invoke-WithRetryOnForbidden([scriptblock]$action, $requiredSuccesses = 0) {
+    $maxRetries = 30
+    $attempt = 0
+    $successes = 0
+    $output = $null
+    while ($true) {
+        try {
+            $attempt++
+            $output = & $action
+            $successes++
+            if ($successes -le $requiredSuccesses) {
+                Write-Warning "Attempt $($attempt) - Succeeded, but checking again in 5 seconds to allow for propagation."
+                Start-Sleep 5
+                continue
+            }
+            break
+        }
+        catch {
+            $successes = 0
+            if ($attempt -lt $maxRetries -and (
+                    $_.Exception.Status -eq 403 -or
+                    $_.Exception.Response.StatusCode -eq 403 -or
+                    $_.Exception.InnerException.Response.StatusCode -eq 403 -or 
+                    $_.Exception.RequestInformation.HttpStatusCode -eq 403)) {
+                Write-Warning "Attempt $($attempt) - HTTP 403 Forbidden. Trying again in 10 seconds."
+                Start-Sleep 10
+                continue
+            }
+            else {
+                Write-Warning "No access. Have you checked the network firewall settings on the resource?"
+                throw
+            }
+        }
+    }
+
+    return $output
+}
+
+function Add-AzRoleAssignmentWithRetry($currentUser, [string]$resourceGroupName, [string]$roleDefinitionName, [scriptblock]$testAccess, $requiredSuccesses = 0) {
     Write-Status "Adding $roleDefinitionName role assignment for '$($currentUser.userPrincipalName)' (object ID $($currentUser.id))..."
 
     $existingRoleAssignment = Get-AzRoleAssignment `
@@ -928,34 +949,7 @@ function Add-AzRoleAssignmentWithRetry($currentUser, [string]$resourceGroupName,
             -RoleDefinitionName $roleDefinitionName | Out-Null
     }
 
-    $maxRetries = 30
-    $attempt = 0
-    $successes = 0
-    while ($true) {
-        try {
-            $attempt++
-            & $testAccess
-            $successes++
-            if ($successes -le $requiredSuccesses) {
-                Write-Warning "Attempt $($attempt) - Succeeded, but checking again in 5 seconds to allow for propagation."
-                Start-Sleep 5
-                continue
-            }
-            break
-        }
-        catch {
-            $successes = 0
-            if ($attempt -lt $maxRetries -and ($_.Exception.Status -eq 403 -or $_.Exception.Response.StatusCode -eq 403 -or $_.Exception.InnerException.Response.StatusCode -eq 403)) {
-                Write-Warning "Attempt $($attempt) - HTTP 403 Forbidden. Trying again in 10 seconds."
-                Start-Sleep 10
-                continue
-            }
-            else {
-                Write-Warning "No access. Have you checked the network firewall settings on the resource?"
-                throw
-            }
-        }
-    }
+    Invoke-WithRetryOnForbidden $testAccess $requiredSuccesses
 }
 
 function Remove-AzRoleAssignmentWithRetry($currentUser, [string]$resourceGroupName, [string]$roleDefinitionName, [switch]$AllowMissing) {

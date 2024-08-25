@@ -111,7 +111,7 @@ catch {
             Write-Host ""
             Write-Host "PATCH https://graph.microsoft.com/v1.0/applications/$ObjectId"
             Write-Host ""
-            Write-Host ($appServicePatch | ConvertTo-Json -Depth 100)
+            Write-Host ($appServicePatch | ConvertTo-Json -Depth 100 | Format-Json)
             Write-Host ""
             throw
         }

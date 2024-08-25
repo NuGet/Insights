@@ -85,7 +85,7 @@ process {
             New-Item $dirPath -ItemType Directory | Out-Null
         }
     
-        $serviceModel | ConvertTo-Json -Depth 100 | Out-File $serviceModelPath -Encoding UTF8
+        $serviceModel | ConvertTo-Json -Depth 100 | Format-Json | Out-File $serviceModelPath -Encoding UTF8
     }
     
     function New-RolloutSpecFile($resourceSettings) {
@@ -121,7 +121,7 @@ process {
             New-Item $dirPath -ItemType Directory | Out-Null
         }
     
-        $rolloutSpec | ConvertTo-Json -Depth 100 | Out-File $rolloutSpecPath -Encoding UTF8
+        $rolloutSpec | ConvertTo-Json -Depth 100 | Format-Json | Out-File $rolloutSpecPath -Encoding UTF8
     }
     
     function New-Bicep($name) {
@@ -208,7 +208,7 @@ process {
     
     # Compile the Bicep templates to raw ARM JSON.
     New-Bicep "main"
-    New-Bicep "storage-and-kv"
+    New-Bicep "storage"
     
     $bin = Join-Path $ev2 "bin"
     New-Item $bin -ItemType Directory | Out-Null

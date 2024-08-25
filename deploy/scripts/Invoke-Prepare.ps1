@@ -22,28 +22,19 @@ New-AzResourceGroup `
     -Force `
     -ErrorAction Stop | Out-Null
 
-# Deploy the storage account, Key Vault, and deployment container.
-Write-Status "Ensuring the storage account, Key Vault, and base containers exist..."
+# Deploy the storage account and base containers.
+Write-Status "Ensuring the storage account and base containers exist..."
 New-Deployment `
     -ResourceGroupName $ResourceSettings.ResourceGroupName `
     -DeploymentDir $DeploymentDir `
     -DeploymentLabel $DeploymentLabel `
-    -DeploymentName "storage-and-kv" `
-    -BicepPath "../bicep/storage-and-kv.bicep" `
+    -DeploymentName "storage" `
+    -BicepPath "../bicep/storage.bicep" `
     -Parameters @{
     location           = $ResourceSettings.Location;
     storageAccountName = $ResourceSettings.StorageAccountName;
-    keyVaultName       = $ResourceSettings.KeyVaultName;
     leaseContainerName = $ResourceSettings.LeaseContainerName
 } | Out-Default
-
-# Manage the storage account in Key Vault
-. (Join-Path $PSScriptRoot "Set-KeyVaultManagedStorage.ps1") `
-    -ResourceGroupName $ResourceSettings.ResourceGroupName `
-    -KeyVaultName $ResourceSettings.KeyVaultName `
-    -StorageAccountName $ResourceSettings.StorageAccountName `
-    -AutoRegenerateKey:$ResourceSettings.AutoRegenerateKey `
-    -RegenerationPeriod $ResourceSettings.RegenerationPeriod
 
 # Initialize the AAD app, if necessary
 if (!$ResourceSettings.WebsiteAadAppClientId) {

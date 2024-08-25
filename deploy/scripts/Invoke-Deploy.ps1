@@ -70,27 +70,39 @@ Add-AzRoleAssignmentWithRetry $currentUser $ResourceSettings.ResourceGroupName "
     if (!$container) {
         New-AzStorageContainer `
             -Context $storageContext `
-            -Name $Resourcesettings.LocalDeploymentContainerName | Out-Null 
+            -Name $Resourcesettings.LocalDeploymentContainerName `
+            -ErrorAction Stop | Out-Null 
     }
 }
 
 function New-DeploymentFile ($Path, $BlobName) {
     Write-Status "Uploading to '$BlobName'..."
 
-    Set-AzStorageBlobContent `
-        -Context $storageContext `
-        -Container $ResourceSettings.LocalDeploymentContainerName `
-        -File $Path `
-        -Blob $BlobName | Out-Null
+    return Invoke-WithRetryOnForbidden {
+        Set-AzStorageBlobContent `
+            -Context $storageContext `
+            -Container $ResourceSettings.LocalDeploymentContainerName `
+            -File $Path `
+            -Blob $BlobName `
+            -Force `
+            -ErrorAction Stop | Out-Null
+    
+        $sasUrl = New-AzStorageBlobSASToken `
+            -Container $ResourceSettings.LocalDeploymentContainerName `
+            -Blob $BlobName `
+            -Permission r `
+            -Protocol HttpsOnly `
+            -Context $storageContext `
+            -ExpiryTime (Get-Date).AddHours(6) `
+            -FullUri `
+            -WarningAction Ignore `
+            -ErrorAction Stop
 
-    return New-AzStorageBlobSASToken `
-        -Container $ResourceSettings.LocalDeploymentContainerName `
-        -Blob $BlobName `
-        -Permission r `
-        -Protocol HttpsOnly `
-        -Context $storageContext `
-        -ExpiryTime (Get-Date).AddHours(6) `
-        -FullUri
+        # make sure the SAS URL works (handle RBAC propagation delay)
+        Invoke-WebRequest -Method HEAD $sasUrl -ErrorAction Stop | Out-Null
+
+        return $sasUrl
+    }
 }
 
 $spotWorkerUploadScriptPath = Join-Path $PSScriptRoot "Set-SpotWorkerDeploymentFiles.ps1"
@@ -138,7 +150,7 @@ New-Deployment `
     -BicepPath "../bicep/main.bicep" `
     -Parameters $mainParameters
 
-Remove-AzRoleAssignmentWithRetry $currentUser $ResourceSettings.ResourceGroupName "Storage Blob Data Contributor"
+Remove-AzRoleAssignmentWithRetry $currentUser $ResourceSettings.ResourceGroupName "Storage Blob Data Contributor" -AllowMissing
 
 if (!$SkipPrepare) {
     # Warm up the workers, since initial deployment appears to leave them in a hibernation state.

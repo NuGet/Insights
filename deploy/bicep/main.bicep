@@ -88,28 +88,30 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-var sharedConfig = {
-  APPLICATIONINSIGHTS_CONNECTION_STRING: appInsights.properties.ConnectionString
-  ApplicationInsightsAgent_EXTENSION_VERSION: '~2'
-  NuGetInsights__DeploymentLabel: deploymentLabel
-  NuGetInsights__UserManagedIdentityClientId: userManagedIdentity.properties.clientId
-  NUGET_INSIGHTS_ALLOW_ICU: 'true'
-}
+// Storage
+var storageLongName = '${deployment().name}-storage'
+var storageName = length(storageLongName) > 64 ? '${guid(deployment().name)}-storage' : storageLongName
 
-// Storage and Key Vault
-var storageAndKvLongName = '${deployment().name}-storage-and-kv'
-var storageAndKvName = length(storageAndKvLongName) > 64
-  ? '${guid(deployment().name)}-storage-and-kv'
-  : storageAndKvLongName
-
-module storageAndKv './storage-and-kv.bicep' = {
-  name: storageAndKvName
+module storage './storage.bicep' = {
+  name: storageName
   params: {
     storageAccountName: storageAccountName
-    keyVaultName: keyVaultName
     leaseContainerName: leaseContainerName
     location: location
     allowSharedKeyAccess: useSpotWorkers || workerIsConsumptionPlan
+  }
+}
+
+// KeyVault
+var kvDeploymentLongName = '${deployment().name}-kv'
+var kvDeploymentName = length(kvDeploymentLongName) > 64 ? '${guid(deployment().name)}-kv' : kvDeploymentLongName
+
+module keyVault './key-vault.bicep' = {
+  name: kvDeploymentName
+  params: {
+    keyVaultName: keyVaultName
+    location: location
+    workspaceId: logAnalyticsWorkspace.id
   }
 }
 
@@ -127,7 +129,8 @@ module permissions './permissions.bicep' = {
     userManagedIdentityName: userManagedIdentityName
   }
   dependsOn: [
-    storageAndKv
+    storage
+    keyVault
     userManagedIdentity
   ]
 }
@@ -173,6 +176,14 @@ module storageNetworkAcls './storage-network-acls.bicep' = {
       vnets.outputs.spotWorkerSubnetIds
     )
   }
+}
+
+var sharedConfig = {
+  APPLICATIONINSIGHTS_CONNECTION_STRING: appInsights.properties.ConnectionString
+  ApplicationInsightsAgent_EXTENSION_VERSION: '~2'
+  NuGetInsights__DeploymentLabel: deploymentLabel
+  NuGetInsights__UserManagedIdentityClientId: userManagedIdentity.properties.clientId
+  NUGET_INSIGHTS_ALLOW_ICU: 'true'
 }
 
 // Website
@@ -352,11 +363,10 @@ module spotWorkers './spot-workers.bicep' = if (useSpotWorkers) {
 var disableSakLongName = '${deployment().name}-disable-sak'
 var disableSakName = length(disableSakLongName) > 64 ? '${guid(deployment().name)}-disable-sak' : disableSakLongName
 
-module disableSak './storage-and-kv.bicep' = if (useSpotWorkers && !workerIsConsumptionPlan) {
+module disableSak './storage.bicep' = if (useSpotWorkers && !workerIsConsumptionPlan) {
   name: disableSakName
   params: {
     storageAccountName: storageAccountName
-    keyVaultName: keyVaultName
     leaseContainerName: leaseContainerName
     location: location
     allowSharedKeyAccess: false
