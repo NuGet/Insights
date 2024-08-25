@@ -4,6 +4,12 @@ param (
     [string]$StampName,
 
     [Parameter(Mandatory = $false)]
+    [string]$WorkQueueName,
+
+    [Parameter(Mandatory = $false)]
+    [string]$ExpandQueueName,
+
+    [Parameter(Mandatory = $false)]
     [string]$LogLevel = "Information",
 
     [Parameter(Mandatory = $false)]
@@ -50,9 +56,13 @@ process {
 
     if (!$Undo) {
         $runtimeIdentifier = Get-DefaultRuntimeIdentifier $null $false
+        $baselineResourceSettings = Get-ResourceSettings $ConfigName $StampName $runtimeIdentifier
+
         $resourceSettings = Get-ResourceSettings $ConfigName $StampName $runtimeIdentifier (@{
                 Deployment  = @{
-                    WorkerLogLevel = $LogLevel;
+                    WorkerLogLevel  = $LogLevel;
+                    WorkQueueName   = if ($WorkQueueName) { $WorkQueueName } else { $baselineResourceSettings.WorkQueueName };
+                    ExpandQueueName = if ($ExpandQueueName) { $ExpandQueueName } else { $baselineResourceSettings.ExpandQueueName };
                 };
                 AppSettings = @{
                     Website = @{
@@ -74,7 +84,26 @@ process {
         $websiteConfig | Out-File $websiteConfigPath -Encoding utf8
         
         # worker config
-        $flatWorkerConfig = $ResourceSettings.WorkerConfig | ConvertTo-FlatConfig
+        $singleQueueMessageConfig = @{}
+        if ($SingleQueueMessage) {
+            $singleQueueMessageConfig = @{
+                extensions = @{
+                    queues = @{
+                        batchSize         = 1;
+                        newBatchThreshold = 0;
+                    };
+                };
+            }
+        }
+
+        $workerConfig = $ResourceSettings.WorkerConfig
+        if ($SingleQueueMessage) {
+            $workerConfig = Merge-Hashtable $workerConfig (@{
+                    AzureFunctionsJobHost = $singleQueueMessageConfig;
+                })
+            Write-Host ($workerConfig | ConvertTo-Json -Depth 100 | Format-Json)
+        }
+        $flatWorkerConfig = $workerConfig | ConvertTo-FlatConfig
         $workerConfig = (@{
                 IsEncrypted = $false;
                 Values      = $flatWorkerConfig;
@@ -85,14 +114,7 @@ process {
         # worker host.json
         if ($SingleQueueMessage) {
             $workerHostConfig = Get-Content $workerHostPath -Raw | ConvertFrom-Json | ConvertTo-Hashtable
-            $workerHostConfig = Merge-Hashtable $workerHostConfig (@{
-                    extensions = @{
-                        queues = @{
-                            batchSize         = 1;
-                            newBatchThreshold = 0;
-                        }
-                    }
-                }) | Get-OrderedHashtable | ConvertTo-Json -Depth 100 | Format-Json
+            $workerHostConfig = Merge-Hashtable $workerHostConfig $singleQueueMessageConfig | Get-OrderedHashtable | ConvertTo-Json -Depth 100 | Format-Json
             Write-Status "Writing worker host.json to $workerHostPath"
             $workerHostConfig | Out-File $workerHostPath -Encoding utf8
         }

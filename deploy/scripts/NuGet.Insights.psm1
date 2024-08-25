@@ -269,12 +269,22 @@ class ResourceSettings {
             # Reduce the storage queue trigger batch size when NuGetPackageExplorerToCsv is enabled. We do this to
             # reduce the parallelism in the worker process so that we can easily control the number of total parallel
             # queue messages are being processed and therefore are using the HOME file share.
-            if ($null -eq $this.WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize) {
+            if ($null -eq $this.WorkerConfig.AzureFunctionsJobHost.extensions.queues.batchSize) {
                 if ($isPremiumPlan -or $this.UseSpotWorkers) {
-                    $this.WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize = 12
+                    $batchSize = 12
                 }
                 else {
-                    $this.WorkerConfig.AzureFunctionsJobHost__extensions__queues__batchSize = 2
+                    $batchSize = 2
+                }
+
+                $this.WorkerConfig = Merge-Hashtable $this.WorkerConfig @{
+                    AzureFunctionsJobHost = @{
+                        extensions = @{
+                            queues = @{
+                                batchSize = $batchSize
+                            }
+                        }
+                    }
                 }
             }
         }
