@@ -1,12 +1,12 @@
 {
   "IsEncrypted": false,
   "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
     "NUGET_INSIGHTS_ALLOW_ICU": "true",
-    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "QueueTriggerConnection": "UseDevelopmentStorage=true",
+    "NuGetInsights__ExpandQueueName": "expand",
     "NuGetInsights__StorageConnectionString": "UseDevelopmentStorage=true",
     "NuGetInsights__WorkQueueName": "work",
-    "NuGetInsights__ExpandQueueName": "expand"
+    "QueueTriggerConnection": "UseDevelopmentStorage=true"
   }
 }

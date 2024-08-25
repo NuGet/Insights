@@ -1,6 +1,7 @@
 param storageAccountName string
 param location string
 param subnetIds array
+param denyTraffic bool
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-04-01' = {
   name: storageAccountName
@@ -12,7 +13,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-04-01' = {
   properties: {
     networkAcls: {
       // Kusto ingestion needs manual setup of a private endpoint to this storage account.
-      defaultAction: 'Deny'
+      defaultAction: denyTraffic ? 'Deny' : 'Allow'
       bypass: 'AzureServices'
       virtualNetworkRules: [
         for subnetId in subnetIds: {

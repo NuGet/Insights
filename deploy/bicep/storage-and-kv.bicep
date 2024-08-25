@@ -21,7 +21,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-04-01' = {
     minimumTlsVersion: 'TLS1_2'
     supportsHttpsTrafficOnly: true
     allowBlobPublicAccess: false
-    defaultToOAuthAuthentication: true
+    defaultToOAuthAuthentication: !allowSharedKeyAccess
     allowSharedKeyAccess: allowSharedKeyAccess
   }
 }

@@ -59,8 +59,7 @@ if (!$matchingStorage) {
         -AccountName $StorageAccountName `
         -ActiveKeyName key1 `
         -AccountResourceId $storageAccount.Id `
-        -ErrorAction Stop `
-        @parameters | Out-Default
+        -ErrorAction Stop | Out-Default
 }
 
 Remove-AzRoleAssignmentWithRetry $currentUser $ResourceGroupName "Key Vault Administrator"

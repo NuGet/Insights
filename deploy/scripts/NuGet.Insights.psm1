@@ -105,6 +105,12 @@ class ResourceSettings {
     [string]$LeaseContainerName
     
     [ValidateNotNullOrEmpty()]
+    [string]$WorkQueueName
+    
+    [ValidateNotNullOrEmpty()]
+    [string]$ExpandQueueName
+    
+    [ValidateNotNullOrEmpty()]
     [TimeSpan]$RegenerationPeriod
     
     [ValidateNotNullOrEmpty()]
@@ -203,6 +209,9 @@ class ResourceSettings {
         Set-OrDefault WorkerLogLevel "Warning"
         Set-OrDefault ResourceGroupName "NuGet.Insights-$StampName"
         Set-OrDefault StorageAccountName "nugin$($StampName.Replace('-', '').ToLowerInvariant())"
+        Set-OrDefault LeaseContainerName "leases"
+        Set-OrDefault WorkQueueName "work"
+        Set-OrDefault ExpandQueueName "expand"
         Set-OrDefault StorageEndpointSuffix "core.windows.net"
         Set-OrDefault KeyVaultName "nugin$($StampName.Replace('-', '').ToLowerInvariant())"
         Set-OrDefault DeploymentNamePrefix "NuGetInsights-$StampName-Deployment-"
@@ -241,7 +250,6 @@ class ResourceSettings {
         # Static settings
         $this.LocalDeploymentContainerName = "localdeployment"
         $this.SpotWorkerDeploymentContainerName = "spotworkerdeployment"
-        $this.LeaseContainerName = "leases"
         $this.RegenerationPeriod = New-TimeSpan -Days 14
 
         $isNuGetPackageExplorerToCsvEnabled = "NuGetPackageExplorerToCsv" -notin $this.WorkerConfig["NuGetInsights"].DisabledDrivers
@@ -278,16 +286,63 @@ class ResourceSettings {
             }
         }
 
-        # Since Azure Functions isolated SDK does not support an INameResolver, we have to explicitly have the queue
-        # names used by Azure Functions triggers.
-        # Blocker: https://github.com/Azure/azure-functions-dotnet-worker/issues/393
-        if ($null -eq $this.WorkerConfig["NuGetInsights"].WorkQueueName) {
-            $this.WorkerConfig["NuGetInsights"].WorkQueueName = "work"
+        function Add-SharedAppSettings($settings) {
+            Merge-Hashtable $settings (@{
+                    # Promote config used during the deploment to the matching app config.
+                    NuGetInsights = @{
+                        StorageAccountName = $this.StorageAccountName;
+                        LeaseContainerName = $this.LeaseContainerName;
+                    
+                        # Since Azure Functions isolated SDK does not support an INameResolver, we have to explicitly have the queue
+                        # names used by Azure Functions triggers.
+                        # Blocker: https://github.com/Azure/azure-functions-dotnet-worker/issues/393
+                        WorkQueueName      = $this.WorkQueueName;
+                        ExpandQueueName    = $this.ExpandQueueName;
+                    };
+                })
         }
-        if ($null -eq $this.WorkerConfig["NuGetInsights"].ExpandQueueName) {
-            $this.WorkerConfig["NuGetInsights"].ExpandQueueName = "expand"
-        }
-        
+
+        $this.WebsiteConfig = Add-SharedAppSettings $this.WebsiteConfig
+        $this.WebsiteConfig = Merge-Hashtable $this.WebsiteConfig (@{
+                AzureAd = @{
+                    Instance = "https://login.microsoftonline.com/";
+                    ClientId = $this.WebsiteAadAppClientId;
+                    TenantId = "common";
+                }
+            })
+
+        $this.WorkerConfig = Add-SharedAppSettings $this.WorkerConfig
+        $this.WorkerConfig = Merge-Hashtable $this.WorkerConfig (@{
+                FUNCTIONS_WORKER_RUNTIME_VERSION = "8.0";
+                FUNCTIONS_WORKER_RUNTIME         = "dotnet-isolated";
+                AzureFunctionsWebHost            = @{
+                    hostId = $this.WorkerHostId;
+                };
+                AzureWebJobsStorage              = @{
+                    accountName = $this.StorageAccountName;
+                };
+                QueueTriggerConnection           = @{
+                    accountName = $this.StorageAccountName;
+                };
+                AzureFunctionsJobHost            = @{
+                    logging = @{
+                        LogLevel = @{
+                            Default = $this.WorkerLogLevel;
+                        };
+                    };
+                };
+                logging                          = @{
+                    ApplicationInsights = @{
+                        LogLevel = @{
+                            Default = $this.WorkerLogLevel;
+                        };
+                    };
+                    LogLevel            = @{
+                        Default = $this.WorkerLogLevel;
+                    };
+                };
+            })
+
         if ($isConsumptionPlan) {            
             # Since Consumption plan requires WEBSITE_CONTENTAZUREFILECONNECTIONSTRING and this does not support SAS-based
             # connection strings, don't auto-regenerate in this case. We would need to regularly update a connection string based
@@ -402,7 +457,7 @@ function ConvertTo-FlatConfig {
                 }
             }
             else {
-                $output[$prefix] = $current
+                $output[$prefix] = "$current"
             }
         }
 
@@ -412,33 +467,23 @@ function ConvertTo-FlatConfig {
     }
 }
 
-function ConvertTo-NameValuePairs {
-    [CmdletBinding()]
-    param (
-        [Parameter(ValueFromPipeline)]
-        $InputObject
-    )
-
-    process {
-        $output = @()
-        foreach ($key in $InputObject.Keys | Sort-Object) {
-            $output += [ordered]@{ name = $key; value = $InputObject.$key }
-        }
-        $output
-    }
-}
-
 function Get-ConfigPath($ConfigName) {
     return [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../config/$ConfigName.json"))
 }
 
-function Get-ResourceSettings($ConfigName, $StampName, $RuntimeIdentifier) {
+function Get-ResourceSettings($ConfigName, $StampName, $RuntimeIdentifier, $ConfigOverride) {
     $configPath = Get-ConfigPath $ConfigName
     Write-Status "Using config path: $configPath"
     $StampName = if (!$StampName) { $ConfigName } else { $StampName }
     Write-Status "Using stamp name: $StampName"
 
-    function Get-Config() { Get-Content $configPath | ConvertFrom-Json | ConvertTo-Hashtable }
+    function Get-Config() {
+        $output = Get-Content $configPath | ConvertFrom-Json | ConvertTo-Hashtable
+        if ($ConfigOverride) {
+            $output = Merge-Hashtable $output $ConfigOverride
+        }
+        return $output
+    }
     function Get-AppConfig() { @{ "NuGetInsights" = @{} } }
 
     # Prepare the website config
@@ -462,42 +507,41 @@ function Get-ResourceSettings($ConfigName, $StampName, $RuntimeIdentifier) {
 }
 
 function New-WorkerStandaloneEnv($ResourceSettings) {
-    $config = $ResourceSettings.WorkerConfig | ConvertTo-FlatConfig
+    $config = Merge-Hashtable $ResourceSettings.WorkerConfig (@{
+            APPLICATIONINSIGHTS_CONNECTION_STRING   = "PLACEHOLDER";
+            ASPNETCORE_URLS                         = "PLACEHOLDER";
+            ASPNETCORE_SUPPRESSSTATUSMESSAGES       = $true;
+            AzureFunctionsJobHost                   = @{
+                logging = @{
+                    Console = @{
+                        IsEnabled = $false;
+                    };
+                };
+            };
+            "AzureWebJobs.MetricsFunction.Disabled" = $true;
+            "AzureWebJobs.TimerFunction.Disabled"   = $true;
+            AzureWebJobsFeatureFlags                = "EnableWorkerIndexing";
+            AzureWebJobsScriptRoot                  = "PLACEHOLDER"
+            AzureWebJobsStorage                     = @{ 
+                credential = "managedidentity";
+                clientId   = "PLACEHOLDER";
+            };
+            DOTNET_gcServer                         = "1";
+            NUGET_INSIGHTS_ALLOW_ICU                = $true;
+            NuGetInsights                           = @{
+                DeploymentLabel             = "PLACEHOLDER";
+                UserManagedIdentityClientId = "PLACEHOLDER";
+            };
+            QueueTriggerConnection                  = @{
+                credential = "managedidentity";
+                clientId   = "PLACEHOLDER";
+            };
+            WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED  = "1";
+            WEBSITE_HOSTNAME                        = "PLACEHOLDER";
+            WEBSITE_SITE_NAME                       = "PLACEHOLDER";
+        })
 
-    # These set up the Azure Functions job host or match with the normal Azure Functions worker settings.
-    $config["ASPNETCORE_SUPPRESSSTATUSMESSAGES"] = "true";
-    $config["AzureFunctionsJobHost__logging__Console__IsEnabled"] = "false";
-    $config["AzureFunctionsJobHost__logging__LogLevel__Default"] = $ResourceSettings.WorkerLogLevel;
-    $config["AzureFunctionsWebHost__hostId"] = $ResourceSettings.WorkerHostId;
-    $config["AzureWebJobs.MetricsFunction.Disabled"] = "true";
-    $config["AzureWebJobs.TimerFunction.Disabled"] = "true";
-    $config["AzureWebJobsFeatureFlags"] = "EnableWorkerIndexing";
-    $config["AzureWebJobsStorage__accountName"] = $ResourceSettings.StorageAccountName;
-    $config["AzureWebJobsStorage__credential"] = "managedidentity";
-    $config["DOTNET_gcServer"] = "1";
-    $config["FUNCTIONS_WORKER_RUNTIME_VERSION"] = "8.0";
-    $config["FUNCTIONS_WORKER_RUNTIME"] = "dotnet-isolated";
-    $config["logging__ApplicationInsights__LogLevel__Default"] = $ResourceSettings.WorkerLogLevel;
-    $config["logging__LogLevel__Default"] = $ResourceSettings.WorkerLogLevel;
-    $config["NUGET_INSIGHTS_ALLOW_ICU"] = "true";
-    $config["NuGetInsights__LeaseContainerName"] = $ResourceSettings.LeaseContainerName;
-    $config["NuGetInsights__StorageAccountName"] = $ResourceSettings.StorageAccountName;
-    $config["QueueTriggerConnection__credential"] = "managedidentity";
-    $config["QueueTriggerConnection__queueServiceUri"] = "https://$($ResourceSettings.StorageAccountName).queue.$($ResourceSettings.StorageEndpointSuffix)/";
-    $config["WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED"] = "1";
-
-    # These are overridden by Install-WorkerStandalone.ps1. 
-    $config["APPLICATIONINSIGHTS_CONNECTION_STRING"] = "PLACEHOLDER";
-    $config["ASPNETCORE_URLS"] = "PLACEHOLDER";
-    $config["AzureWebJobsScriptRoot"] = "PLACEHOLDER";
-    $config["AzureWebJobsStorage__clientId"] = "PLACEHOLDER";
-    $config["NuGetInsights__DeploymentLabel"] = "PLACEHOLDER";
-    $config["NuGetInsights__UserManagedIdentityClientId"] = "PLACEHOLDER";
-    $config["QueueTriggerConnection__clientId"] = "PLACEHOLDER";
-    $config["WEBSITE_HOSTNAME"] = "PLACEHOLDER";
-    $config["WEBSITE_SITE_NAME"] = "PLACEHOLDER";
-
-    return $config
+    return $config | ConvertTo-FlatConfig
 }
 
 function Out-EnvFile() {
@@ -547,6 +591,18 @@ function New-MainParameters(
         throw "Unexpected runtime identifier '$($ResourceSettings.RuntimeIdentifier)' for deployment. Only 'win-x64' and 'linux-64' are supported. macOS app services are not supported by Azure."
     }
 
+    # The website AAD client ID is set dynamically sometimes, based on app name. Ensure it makes it into the config.
+    if (!$ResourceSettings.WebsiteAadAppClientId) {
+        throw "A website AAD client ID is required for generating deployment parameters."
+    }
+    else {
+        $ResourceSettings.WebsiteConfig = Merge-Hashtable $ResourceSettings.WebsiteConfig (@{
+                AzureAd = @{
+                    ClientId = $ResourceSettings.WebsiteAadAppClientId;
+                }
+            })
+    }
+
     $parameters = @{
         actionGroupName           = $ResourceSettings.ActionGroupName;
         actionGroupShortName      = $ResourceSettings.ActionGroupShortName;
@@ -563,17 +619,14 @@ function New-MainParameters(
         deploymentNamePrefix      = $ResourceSettings.DeploymentNamePrefix;
         useSpotWorkers            = $ResourceSettings.UseSpotWorkers;
         userManagedIdentityName   = $ResourceSettings.UserManagedIdentityName;
-        websiteAadClientId        = $ResourceSettings.WebsiteAadAppClientId;
-        websiteConfig             = @($ResourceSettings.WebsiteConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
+        websiteConfig             = $ResourceSettings.WebsiteConfig | ConvertTo-FlatConfig | Get-OrderedHashtable;
         websiteIsLinux            = $isDeploymentLinux;
         websiteName               = $ResourceSettings.WebsiteName;
         websiteZipUrl             = $websiteZipUrl;
         websiteLocation           = $ResourceSettings.WebsiteLocation;
         workerAutoscaleNamePrefix = $ResourceSettings.WorkerAutoscaleNamePrefix;
-        workerConfig              = @($ResourceSettings.WorkerConfig | ConvertTo-FlatConfig | ConvertTo-NameValuePairs);
+        workerConfig              = $ResourceSettings.WorkerConfig | ConvertTo-FlatConfig | Get-OrderedHashtable;
         workerCountPerPlan        = $ResourceSettings.WorkerCountPerPlan;
-        workerHostId              = $ResourceSettings.WorkerHostId;
-        workerLogLevel            = $ResourceSettings.WorkerLogLevel;
         workerMaxInstances        = $ResourceSettings.WorkerMaxInstances;
         workerMinInstances        = $ResourceSettings.WorkerMinInstances;
         workerNamePrefix          = $ResourceSettings.WorkerNamePrefix;
@@ -633,6 +686,109 @@ function New-ParameterFile($Parameters, $PathReferences, $FilePath) {
     }
 
     $deploymentParameters | ConvertTo-Json -Depth 100 | Out-File $FilePath -Encoding UTF8
+}
+
+function Get-OrderedHashtable {
+    $output = [ordered]@{}
+    foreach ($hashtable in ($Input + $Args)) {
+        if ($hashtable -is [Hashtable]) {
+            foreach ($key in $hashtable.Keys | Sort-Object) {
+                if ($hashtable.$key -is [Hashtable]) {
+                    $output.$key = Get-OrderedHashtable $hashtable.$key
+                }
+                else {
+                    $output.$key = $hashtable.$key
+                }
+            }
+        }
+    }
+    return $output
+}
+
+# Source: https://stackoverflow.com/a/71664664
+function Format-Json {
+    <#
+    .SYNOPSIS
+        Prettifies JSON output.
+        Version January 3rd 2024
+        Fixes:
+            - empty [] or {} or in-line arrays as per https://stackoverflow.com/a/71664664/9898643
+              by Widlov (https://stackoverflow.com/users/1716283/widlov)
+            - Unicode Apostrophs \u0027 as written by ConvertTo-Json are replaced with regular single quotes "'"
+            - multiline empty [] or {} are converted into inline arrays or objects
+    .DESCRIPTION
+        Reformats a JSON string so the output looks better than what ConvertTo-Json outputs.
+    .PARAMETER Json
+        Required: [string] The JSON text to prettify.
+    .PARAMETER Minify
+        Optional: Returns the json string compressed.
+    .PARAMETER Indentation
+        Optional: The number of spaces (1..1024) to use for indentation. Defaults to 2.
+    .PARAMETER AsArray
+        Optional: If set, the output will be in the form of a string array, otherwise a single string is output.
+    .EXAMPLE
+        $json | ConvertTo-Json | Format-Json -Indentation 4
+    .OUTPUTS
+        System.String or System.String[] (the latter when parameter AsArray is set)
+    #>
+    [CmdletBinding(DefaultParameterSetName = 'Prettify')]
+    Param(
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
+        [string]$Json,
+
+        [Parameter(ParameterSetName = 'Minify')]
+        [switch]$Minify,
+
+        [Parameter(ParameterSetName = 'Prettify')]
+        [ValidateRange(1, 1024)]
+        [int]$Indentation = 2,
+
+        [Parameter(ParameterSetName = 'Prettify')]
+        [switch]$AsArray
+    )
+
+    if ($PSCmdlet.ParameterSetName -eq 'Minify') {
+        return ($Json | ConvertFrom-Json) | ConvertTo-Json -Depth 100 -Compress
+    }
+
+    # If the input JSON text has been created with ConvertTo-Json -Compress
+    # then we first need to reconvert it without compression
+    if ($Json -notmatch '\r?\n') {
+        $Json = ($Json | ConvertFrom-Json) | ConvertTo-Json -Depth 100
+    }
+
+    $indent = 0
+    $regexUnlessQuoted = '(?=([^"]*"[^"]*")*[^"]*$)'
+
+    $result = ($Json -split '\r?\n' | ForEach-Object {
+            # If the line contains a ] or } character, 
+            # we need to decrement the indentation level unless:
+            #   - it is inside quotes, AND
+            #   - it does not contain a [ or {
+            if (($_ -match "[}\]]$regexUnlessQuoted") -and ($_ -notmatch "[\{\[]$regexUnlessQuoted")) {
+                $indent = [Math]::Max($indent - $Indentation, 0)
+            }
+
+            # Replace all colon-space combinations by ": " unless it is inside quotes.
+            $line = (' ' * $indent) + ($_.TrimStart() -replace ":\s+$regexUnlessQuoted", ': ')
+
+            # If the line contains a [ or { character, 
+            # we need to increment the indentation level unless:
+            #   - it is inside quotes, AND
+            #   - it does not contain a ] or }
+            if (($_ -match "[\{\[]$regexUnlessQuoted") -and ($_ -notmatch "[}\]]$regexUnlessQuoted")) {
+                $indent += $Indentation
+            }
+
+            # ConvertTo-Json returns all single-quote characters as Unicode Apostrophs \u0027
+            # see: https://stackoverflow.com/a/29312389/9898643
+            $line -replace '\\u0027', "'"
+
+            # join the array with newlines and convert multiline empty [] or {} into inline arrays or objects
+        }) -join [Environment]::NewLine -replace '(\[)\s+(\])', '$1$2' -replace '(\{)\s+(\})', '$1$2'
+
+    if ($AsArray) { return , [string[]]($result -split '\r?\n') }
+    $result
 }
 
 function Get-Bicep([switch]$DoNotThrow) {
@@ -793,7 +949,8 @@ function Add-AzRoleAssignmentWithRetry($currentUser, [string]$resourceGroupName,
                 Write-Warning "Attempt $($attempt) - HTTP 403 Forbidden. Trying again in 10 seconds."
                 Start-Sleep 10
                 continue
-            } else {
+            }
+            else {
                 Write-Warning "No access. Have you checked the network firewall settings on the resource?"
                 throw
             }

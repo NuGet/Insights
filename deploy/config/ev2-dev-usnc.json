@@ -24,6 +24,9 @@
     "KeyVaultName": "ev2-dev-usnc-insights",
     "ResourceGroupName": "ev2-dev-usnc-insights",
     "StorageAccountName": "ev2devusncinsights",
+    "LeaseContainerName": "leases",
+    "WorkQueueName": "work",
+    "ExpandQueueName": "expand",
     "StorageEndpointSuffix": "core.windows.net",
     "WebsiteAadAppName": "ev2-dev-insights",
     "WebsiteAadAppClientId": "00000000-0000-0000-0000-000000000000",
@@ -36,7 +39,18 @@
     "WorkerHostId": "ev2-dev-usnc-insights",
     "UserManagedIdentityName": "ev2-dev-usnc-insights-worker",
     "DeploymentNamePrefix": "ev2-dev-usnc-insights-deployment-",
-    "UseSpotWorkers": false
+    "UseSpotWorkers": true,
+    "SpotWorkerAdminUsername": "ev2",
+    "SpotWorkerSpecs": [
+      {
+        "NamePrefix": "ev2-dev-usnc-spot-worker-",
+        "Location": "North Central US",
+        "Sku": "Standard_D2as_v4",
+        "MinInstances": 1,
+        "MaxInstances": 11,
+        "AddLoadBalancer": false
+      }
+    ]
   },
   "AppSettings": {
     "Shared": {

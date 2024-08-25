@@ -19,8 +19,7 @@ param websiteIsLinux bool
 param websiteName string
 @secure()
 param websiteZipUrl string
-param websiteAadClientId string
-param websiteConfig array
+param websiteConfig object
 param websiteLocation string
 
 param workerPlanNamePrefix string
@@ -29,7 +28,7 @@ param workerPlanLocations array
 param workerPlanCount int
 @minValue(1)
 param workerCountPerPlan int
-param workerSku string = 'Y1'
+param workerSku string
 param workerIsLinux bool
 param workerAutoscaleNamePrefix string
 param workerMinInstances int
@@ -37,9 +36,7 @@ param workerMaxInstances int
 param workerNamePrefix string
 @secure()
 param workerZipUrl string
-param workerHostId string
-param workerLogLevel string = 'Warning'
-param workerConfig array
+param workerConfig object
 
 param deploymentNamePrefix string
 
@@ -91,32 +88,13 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-var sharedConfig = [
-  {
-    name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-    value: appInsights.properties.ConnectionString
-  }
-  {
-    name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
-    value: '~2'
-  }
-  {
-    name: 'NuGetInsights__DeploymentLabel'
-    value: deploymentLabel
-  }
-  {
-    name: 'NuGetInsights__LeaseContainerName'
-    value: leaseContainerName
-  }
-  {
-    name: 'NuGetInsights__StorageAccountName'
-    value: storageAccountName
-  }
-  {
-    name: 'NuGetInsights__UserManagedIdentityClientId'
-    value: userManagedIdentity.properties.clientId
-  }
-]
+var sharedConfig = {
+  APPLICATIONINSIGHTS_CONNECTION_STRING: appInsights.properties.ConnectionString
+  ApplicationInsightsAgent_EXTENSION_VERSION: '~2'
+  NuGetInsights__DeploymentLabel: deploymentLabel
+  NuGetInsights__UserManagedIdentityClientId: userManagedIdentity.properties.clientId
+  NUGET_INSIGHTS_ALLOW_ICU: 'true'
+}
 
 // Storage and Key Vault
 var storageAndKvLongName = '${deployment().name}-storage-and-kv'
@@ -131,7 +109,7 @@ module storageAndKv './storage-and-kv.bicep' = {
     keyVaultName: keyVaultName
     leaseContainerName: leaseContainerName
     location: location
-    allowSharedKeyAccess: useSpotWorkers
+    allowSharedKeyAccess: useSpotWorkers || workerIsConsumptionPlan
   }
 }
 
@@ -187,6 +165,7 @@ module storageNetworkAcls './storage-network-acls.bicep' = {
   params: {
     storageAccountName: storageAccountName
     location: location
+    denyTraffic: !workerIsConsumptionPlan
     subnetIds: concat(
       [vnets.outputs.websiteSubnetId],
       vnets.outputs.workerSubnetIds,
@@ -202,6 +181,21 @@ var websiteDeploymentName = length(websiteDeploymentLongName) > 64
   ? '${guid(deployment().name)}-website'
   : websiteDeploymentLongName
 
+// I've see weird deployment timeouts or "Central directory corrupt" errors when using ZipDeploy on Linux.
+var websiteRunFromZipUrl = websiteIsLinux
+
+var finalWebsiteConfig = union(
+  websiteConfig,
+  sharedConfig,
+  {
+    AzureAd__ClientCredentials__0__ManagedIdentityClientId: userManagedIdentity.properties.clientId
+    // See: https://github.com/projectkudu/kudu/wiki/Configurable-settings#ensure-update-site-and-update-siteconfig-to-take-effect-synchronously 
+    WEBSITE_ENABLE_SYNC_UPDATE_SITE: '1'
+    WEBSITE_RUN_FROM_PACKAGE: websiteRunFromZipUrl ? split(websiteZipUrl, '?')[0] : '1'
+  },
+  websiteRunFromZipUrl ? { WEBSITE_RUN_FROM_PACKAGE_BLOB_MI_RESOURCE_ID: userManagedIdentity.id } : {}
+)
+
 module website './website.bicep' = {
   name: websiteDeploymentName
   params: {
@@ -210,10 +204,10 @@ module website './website.bicep' = {
     planId: websitePlanId
     planName: websitePlanName
     isLinux: websiteIsLinux
+    runFromZipUrl: websiteRunFromZipUrl
     name: websiteName
     zipUrl: websiteZipUrl
-    aadClientId: websiteAadClientId
-    config: concat(sharedConfig, websiteConfig)
+    config: finalWebsiteConfig
     subnetId: vnets.outputs.websiteSubnetId
   }
   dependsOn: [
@@ -250,23 +244,49 @@ var workersDeploymentName = length(workersDeploymentLongName) > 64
   ? '${guid(deployment().name)}-workers'
   : workersDeploymentLongName
 
-var disabledFunctionConfig = useSpotWorkers
-  ? [
-      {
-        name: 'AzureWebJobs.ExpandQueueFunction.Disabled'
-        value: 'true'
+resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' existing = {
+  name: storageAccountName
+}
+
+var sakConnectionString = 'AccountName=${storageAccountName};AccountKey=${storageAccount.listkeys().keys[0].value};DefaultEndpointsProtocol=https;EndpointSuffix=${environment().suffixes.storage}'
+var workerIsConsumptionPlan = workerSku == 'Y1'
+
+// See: https://learn.microsoft.com/en-us/azure/azure-functions/run-functions-from-deployment-package#using-website_run_from_package--url
+// Also, I've see weird deployment timeouts or "Central directory corrupt" errors when using ZipDeploy on Linux.
+var workerRunFromZipUrl = workerIsLinux
+
+var finalWorkerConfig = union(
+  workerConfig,
+  sharedConfig,
+  useSpotWorkers
+    ? {
+        'AzureWebJobs.ExpandQueueFunction.Disabled': 'true'
+        'AzureWebJobs.WorkQueueFunction.Disabled': 'true'
       }
-      {
-        name: 'AzureWebJobs.WorkQueueFunction.Disabled'
-        value: 'true'
+    : {},
+  workerIsConsumptionPlan
+    ? {
+        WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: sakConnectionString
       }
-    ]
-  : []
+    : {},
+  {
+    AzureWebJobsStorage__credential: 'managedidentity'
+    AzureWebJobsStorage__clientId: userManagedIdentity.properties.clientId
+    FUNCTIONS_EXTENSION_VERSION: '~4'
+    WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED: '1'
+    SCM_DO_BUILD_DURING_DEPLOYMENT: 'false'
+    QueueTriggerConnection__credential: 'managedidentity'
+    QueueTriggerConnection__clientId: userManagedIdentity.properties.clientId
+    // See: https://github.com/projectkudu/kudu/wiki/Configurable-settings#ensure-update-site-and-update-siteconfig-to-take-effect-synchronously 
+    WEBSITE_ENABLE_SYNC_UPDATE_SITE: '1'
+    WEBSITE_RUN_FROM_PACKAGE: workerRunFromZipUrl ? split(workerZipUrl, '?')[0] : '1'
+  },
+  workerRunFromZipUrl ? { WEBSITE_RUN_FROM_PACKAGE_BLOB_MI_RESOURCE_ID: userManagedIdentity.id } : {}
+)
 
 module workers './function-workers.bicep' = {
   name: workersDeploymentName
   params: {
-    storageAccountName: storageAccountName
     userManagedIdentityName: userManagedIdentityName
     planNamePrefix: workerPlanNamePrefix
     planLocations: workerPlanLocations
@@ -279,10 +299,10 @@ module workers './function-workers.bicep' = {
     maxInstances: workerMaxInstances
     namePrefix: workerNamePrefix
     zipUrl: workerZipUrl
-    hostId: workerHostId
-    logLevel: workerLogLevel
-    config: concat(disabledFunctionConfig, sharedConfig, workerConfig)
+    config: finalWorkerConfig
     subnetIds: vnets.outputs.workerSubnetIds
+    runFromZipUrl: workerRunFromZipUrl
+    isConsumptionPlan: workerIsConsumptionPlan
   }
   dependsOn: [
     permissions
@@ -332,7 +352,7 @@ module spotWorkers './spot-workers.bicep' = if (useSpotWorkers) {
 var disableSakLongName = '${deployment().name}-disable-sak'
 var disableSakName = length(disableSakLongName) > 64 ? '${guid(deployment().name)}-disable-sak' : disableSakLongName
 
-module disableSak './storage-and-kv.bicep' = if (useSpotWorkers) {
+module disableSak './storage-and-kv.bicep' = if (useSpotWorkers && !workerIsConsumptionPlan) {
   name: disableSakName
   params: {
     storageAccountName: storageAccountName

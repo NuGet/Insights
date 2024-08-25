@@ -1,4 +1,3 @@
-param storageAccountName string
 param userManagedIdentityName string
 
 param planNamePrefix string
@@ -9,6 +8,8 @@ param planCount int
 param countPerPlan int
 param sku string
 param isLinux bool
+param runFromZipUrl bool
+param isConsumptionPlan bool
 
 param autoscaleNamePrefix string
 param minInstances int
@@ -17,9 +18,7 @@ param maxInstances int
 param namePrefix string
 @secure()
 param zipUrl string
-param hostId string
-param logLevel string
-param config array
+param config object
 param subnetIds array
 
 var workerCount = planCount * countPerPlan
@@ -35,7 +34,6 @@ module workers './function-worker.bicep' = [
   for index in range(0, workerCount): {
     name: '${workersDeploymentName}${index}'
     params: {
-      storageAccountName: storageAccountName
       userManagedIdentityName: userManagedIdentityName
       location: planLocations[(index / countPerPlan) % length(planLocations)]
       planName: '${planNamePrefix}${index / countPerPlan}'
@@ -46,10 +44,10 @@ module workers './function-worker.bicep' = [
       maxInstances: maxInstances
       name: '${namePrefix}${index}'
       zipUrl: zipUrl
-      hostId: hostId
-      logLevel: logLevel
       config: config
       subnetId: subnetIds[index]
+      runFromZipUrl: runFromZipUrl
+      isConsumptionPlan: isConsumptionPlan
     }
   }
 ]
