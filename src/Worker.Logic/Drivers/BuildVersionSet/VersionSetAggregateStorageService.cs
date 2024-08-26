@@ -37,7 +37,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
         private static IEnumerable<CatalogLeafBatchData> Deserialize(IReadOnlyList<WideEntity> entities)
         {
-            var options = NuGetInsightsMessagePack.OptionsWithStringIntern;
+            var options = NuGetInsightsMessagePack.Options;
             foreach (var entity in entities)
             {
                 using var stream = entity.GetStream();

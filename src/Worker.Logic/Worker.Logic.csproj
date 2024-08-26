@@ -20,6 +20,7 @@
     <PackageReference Include="Magick.NET-Q16-AnyCPU" />
     <PackageReference Include="Microsoft.Azure.Kusto.Ingest" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" />
+    <PackageReference Include="Microsoft.NET.StringTools" />
     <PackageReference Include="Sylvan.Data.Csv" />
   </ItemGroup>
   <ItemGroup>

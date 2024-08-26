@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Buffers;
+using Microsoft.NET.StringTools;
 using Sylvan.Data.Csv;
 
 namespace NuGet.Insights.Worker
@@ -56,6 +57,7 @@ namespace NuGet.Insights.Worker
                 using var csvReader = CsvDataReader.Create(reader, buffer, new CsvDataReaderOptions
                 {
                     HasHeaders = false,
+                    StringFactory = StringFactory,
                 });
 
                 var factory = Activator.CreateInstance<T>();
@@ -82,6 +84,18 @@ namespace NuGet.Insights.Worker
             finally
             {
                 pool.Return(buffer);
+            }
+        }
+
+        private static string StringFactory(char[] buffer, int offset, int length)
+        {
+            if (length < 2048)
+            {
+                return Strings.WeakIntern(new ReadOnlySpan<char>(buffer, offset, length));
+            }
+            else
+            {
+                return new string(buffer, offset, length);
             }
         }
     }

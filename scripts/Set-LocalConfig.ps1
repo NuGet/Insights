@@ -51,6 +51,7 @@ process {
 
     $websiteConfigPath = Resolve-Path (Join-Path $PSScriptRoot "../src/Website/appsettings.Development.json")
     $workerConfigPath = Resolve-Path (Join-Path $PSScriptRoot "../src/Worker/local.settings.json")
+    $toolConfigPath = Join-Path $env:USERPROFILE "NuGet.Insights.Settings.json"
     $workerHostPath = Resolve-Path (Join-Path $PSScriptRoot "../src/Worker/host.json")
     $AddCurrentUserToStoragePath = Resolve-Path (Join-Path $PSScriptRoot "Add-CurrentUserToStorage.ps1")
 
@@ -101,8 +102,11 @@ process {
             $workerConfig = Merge-Hashtable $workerConfig (@{
                     AzureFunctionsJobHost = $singleQueueMessageConfig;
                 })
-            Write-Host ($workerConfig | ConvertTo-Json -Depth 100 | Format-Json)
         }
+
+        Write-Status "Writing tool config to $toolConfigPath"
+        $workerConfig | Get-OrderedHashtable | ConvertTo-Json -Depth 100 | Format-Json | Out-File $toolConfigPath -Encoding utf8
+
         $flatWorkerConfig = $workerConfig | ConvertTo-FlatConfig
         $workerConfig = (@{
                 IsEncrypted = $false;

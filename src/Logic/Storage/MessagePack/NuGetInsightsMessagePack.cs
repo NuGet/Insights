@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Ben.Collections.Specialized;
 using MessagePack;
 using MessagePack.Formatters;
 using MessagePack.Resolvers;
@@ -10,29 +9,22 @@ namespace NuGet.Insights
 {
     public static class NuGetInsightsMessagePack
     {
-        public static MessagePackSerializerOptions Options { get; private set; } = GetOptions(withStringIntern: false);
-        public static MessagePackSerializerOptions OptionsWithStringIntern => GetOptions(withStringIntern: true);
+        public static MessagePackSerializerOptions Options { get; private set; } = GetOptions();
 
-        private static MessagePackSerializerOptions GetOptions(bool withStringIntern)
+        private static MessagePackSerializerOptions GetOptions()
         {
             var options = MessagePackSerializerOptions
                 .Standard
                 .WithResolver(CompositeResolver.Create(
-                    new IMessagePackFormatter[]
-                    {
-                    },
-                    new IFormatterResolver[]
-                    {
+                    [
+                        new StringInterningFormatter(),
+                    ],
+                    [
                         CsvRecordFormatterResolver.Instance,
-                        withStringIntern ? NuGetInsightsFormatterResolver.WithStringIntern : NuGetInsightsFormatterResolver.WithoutStringIntern,
+                        NuGetInsightsFormatterResolver.Instance,
                         StandardResolver.Instance
-                    }))
+                    ]))
                 .WithCompression(MessagePackCompression.Lz4Block);
-
-            if (withStringIntern)
-            {
-                options = new NuGetInsightsMessagePackSerializerOptions(options) { InternPool = new InternPool() };
-            }
 
             return options;
         }
