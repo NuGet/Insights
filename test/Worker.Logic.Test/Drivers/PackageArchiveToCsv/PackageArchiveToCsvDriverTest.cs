@@ -31,9 +31,9 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var record = Assert.Single(output.Value.Records1);
             Assert.Equal(ArchiveResultType.Deleted, record.ResultType);
-            var entry = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var entry = Assert.Single(output.Value.Records2);
             Assert.Equal(ArchiveResultType.Deleted, entry.ResultType);
         }
 
@@ -54,8 +54,8 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            Assert.Empty(Assert.Single(output.Value.Sets1).Records);
-            Assert.Empty(Assert.Single(output.Value.Sets2).Records);
+            Assert.Empty(output.Value.Records1);
+            Assert.Empty(output.Value.Records2);
             Assert.True(TelemetryClient.Metrics.TryGetValue(
                 new("PackageWideEntityService.GetExistingAsync.Outcome", "Type", "ForceUpdate", "TimestampComparison", "UseExisting"),
                 out var metric));
@@ -79,7 +79,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var archive = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var archive = Assert.Single(output.Value.Records1);
             Assert.Equal(ArchiveResultType.Available, archive.ResultType);
             Assert.Equal(22399, archive.Size);
             Assert.Equal(22381, archive.OffsetAfterEndOfCentralDirectory);
@@ -94,8 +94,8 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal("Un5Uw7RzNNFRXRGb4+6+ZB6zAU1+rSJi1UdjwEm+Dos=", archive.SHA256);
             Assert.Equal("0j3nBhz6LgdRGkWED8U9UYpbK06J0adJdmdatPjsDtVrk6TvALANKEBD77uDUs67eIjpa3Bfs9QO/wuVWMrwLw==", archive.SHA512);
 
-            Assert.Equal(6, Assert.Single(output.Value.Sets2).Records.Count);
-            var entries = Assert.Single(output.Value.Sets2).Records;
+            Assert.Equal(6, output.Value.Records2.Count);
+            var entries = output.Value.Records2;
 
             Assert.Equal(0, entries[0].SequenceNumber);
             Assert.Equal("_rels/.rels", entries[0].Path);
@@ -199,7 +199,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var archive = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var archive = Assert.Single(output.Value.Records1);
             Assert.Equal(ArchiveResultType.Available, archive.ResultType);
             Assert.Equal("51Dz2WBmpNVUFi/7p9ymEA==", archive.HeaderMD5);
             Assert.Equal("iIj773J+QLTUU7ni5dRqCRgz9z5GuHLYfDV0K89f3R32BBW9OjDjwV6kS0gd3o8hvLtcgDynnh6cNjImqJqkVg==", archive.HeaderSHA512);
@@ -224,7 +224,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var archive = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var archive = Assert.Single(output.Value.Records1);
             Assert.Equal(ArchiveResultType.Available, archive.ResultType);
             Assert.Equal(69294, archive.Size);
             Assert.Equal(69276, archive.OffsetAfterEndOfCentralDirectory);
@@ -237,8 +237,8 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal("KI1WXvnF/Xe9cKTdDjzm0vd5h9bmM+3KinuWlsF/X+c=", archive.SHA256);
             Assert.Equal("MUBW1eAqbVex8q0bnCxZ0npzJtiKCMW5OHWKCBYtScmyJ+iTVP9Pv6R9JnnF0UY+PspIkDPNXqo4pxQi/HV+yw==", archive.SHA512);
 
-            Assert.Equal(11, Assert.Single(output.Value.Sets2).Records.Count);
-            var entries = Assert.Single(output.Value.Sets2).Records;
+            Assert.Equal(11, output.Value.Records2.Count);
+            var entries = output.Value.Records2;
 
             Assert.Equal(6, entries[6].SequenceNumber);
             Assert.Equal("packageIcon.png", entries[6].Path);

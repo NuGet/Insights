@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker.ReferenceTracking
 {
-    public partial class TestSubjectRecord : ICsvRecord
+    public partial record TestSubjectRecord : ICsvRecord, IAggregatedCsvRecord<TestSubjectRecord>
     {
         [KustoPartitionKey]
         public string BucketKey { get; set; }
@@ -11,5 +11,32 @@ namespace NuGet.Insights.Worker.ReferenceTracking
         public string Id { get; set; }
 
         public bool IsOrphan { get; set; }
+
+        public static List<TestSubjectRecord> Prune(List<TestSubjectRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
+        {
+            return records
+                .GroupBy(x => x.Id)
+                .Select(g => g.First())
+                .Where(x => !isFinalPrune || !x.IsOrphan)
+                .Distinct()
+                .Order()
+                .ToList();
+        }
+
+        public int CompareTo(TestSubjectRecord other)
+        {
+            var c = string.CompareOrdinal(BucketKey, other.BucketKey);
+            if (c != 0)
+            {
+                return c;
+            }
+
+            return string.CompareOrdinal(Id, other.Id);
+        }
+
+        public string GetBucketKey()
+        {
+            return BucketKey;
+        }
     }
 }

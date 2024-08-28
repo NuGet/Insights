@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 {
-    public partial record PackageAssembly : PackageRecord, ICsvRecord
+    public partial record PackageAssembly : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageAssembly>
     {
         public PackageAssembly()
         {
@@ -57,5 +57,26 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         public int? CustomAttributesTotalDataLength { get; set; }
 
         public int? SequenceNumber { get; set; }
+
+        public static List<PackageAssembly> Prune(List<PackageAssembly> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
+        {
+            return Prune(records, isFinalPrune);
+        }
+
+        public int CompareTo(PackageAssembly other)
+        {
+            var c = base.CompareTo(other);
+            if (c != 0)
+            {
+                return c;
+            }
+
+            return Comparer<int?>.Default.Compare(SequenceNumber, other.SequenceNumber);
+        }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

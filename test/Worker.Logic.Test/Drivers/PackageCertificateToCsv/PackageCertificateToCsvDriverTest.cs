@@ -31,7 +31,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             var output = await Target.ProcessLeavesAsync(new[] { leaf });
 
             var certificate = Assert.Single(
-                output.Result.Sets2.SelectMany(x => x.Records),
+                output.Result.Records2,
                 x => x.Fingerprint == "b_945ACnDBEBHNhZd8RZ-1r5aj3wVAgg0PS4YHh15Y8");
             Assert.Equal(
                 "[{" +
@@ -89,7 +89,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             var output = await Target.ProcessLeavesAsync(new[] { leaf });
 
             var certificate = Assert.Single(
-                output.Result.Sets2.SelectMany(x => x.Records),
+                output.Result.Records2,
                 x => x.Fingerprint == "x2apvvLUBxyGOjGqSSDoE7LRmGCMt7fP4hFDuDbfCeo");
             Assert.Equal(
                 "[{" +
@@ -128,8 +128,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
             var record = output
                 .Result
-                .Sets2
-                .SelectMany(x => x.Records)
+                .Records2
                 .Single(x => x.Fingerprint == "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4");
             Assert.Equal(X509ChainStatusFlags.NotTimeValid, record.CodeSigningStatusFlags);
             Assert.Equal(EndCertificateStatus.Invalid, record.CodeSigningStatus);
@@ -152,8 +151,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
             var record = output
                 .Result
-                .Sets2
-                .SelectMany(x => x.Records)
+                .Records2
                 .Single(x => x.Fingerprint == "h9f-OjnpjgG78Lrw7n8NF3V6AxXhmRdVrhIhqjlCstg");
             Assert.Equal(X509ChainStatusFlags.NotTimeValid | X509ChainStatusFlags.Revoked, record.CodeSigningStatusFlags);
             Assert.Equal(EndCertificateStatus.Invalid, record.CodeSigningStatus);
@@ -176,8 +174,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
             var record = output
                 .Result
-                .Sets2
-                .SelectMany(x => x.Records)
+                .Records2
                 .Single(x => x.Fingerprint == "7_ZekD9usdyf5KCnVvV-2QoJeampaEDneSpymAkASlY");
             Assert.Equal(X509ChainStatusFlags.NotTimeValid, record.TimestampingStatusFlags);
             Assert.Equal(EndCertificateStatus.Invalid, record.TimestampingStatus);
@@ -198,9 +195,8 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
             var output = await Target.ProcessLeavesAsync(new[] { leaf });
 
-            Assert.DoesNotContain(output.Result.Sets1.SelectMany(x => x.Records), x => x.RelationshipTypes.HasFlag(CertificateRelationshipTypes.IsAuthorTimestampedBy));
-            Assert.Single(output.Result.Sets1
-                .SelectMany(x => x.Records)
+            Assert.DoesNotContain(output.Result.Records1, x => x.RelationshipTypes.HasFlag(CertificateRelationshipTypes.IsAuthorTimestampedBy));
+            Assert.Single(output.Result.Records1
                 .Where(x => x.RelationshipTypes.HasFlag(CertificateRelationshipTypes.IsRepositoryTimestampedBy)));
         }
 
@@ -219,11 +215,9 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             var output = await Target.ProcessLeavesAsync(new[] { leaf });
 
             // .NET Runtime 6.0.0 fails to read this. 6.0.5 succeeds.
-            Assert.Single(output.Result.Sets1
-                .SelectMany(x => x.Records)
+            Assert.Single(output.Result.Records1
                 .Where(x => x.RelationshipTypes.HasFlag(CertificateRelationshipTypes.IsAuthorTimestampedBy)));
-            Assert.Single(output.Result.Sets1
-                .SelectMany(x => x.Records)
+            Assert.Single(output.Result.Records1
                 .Where(x => x.RelationshipTypes.HasFlag(CertificateRelationshipTypes.IsRepositoryTimestampedBy)));
         }
 
@@ -241,7 +235,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
             var output = await Target.ProcessLeavesAsync(new[] { leaf });
 
-            var certificates = output.Result.Sets2.SelectMany(x => x.Records).ToList();
+            var certificates = output.Result.Records2;
             Assert.NotEmpty(certificates);
             var certificate = Assert.Single(certificates, x => x.FingerprintSHA256Hex == "FB32E016FD317DB68C0B2B5B6E33231EE932B4B21E27F32B51654A483A10ADFB");
             Assert.NotNull(certificate.Policies);
@@ -271,8 +265,9 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
             Assert.Empty(output.Failed);
             Assert.Empty(output.TryAgainLater);
-            var pc = Assert.Single(output.Result.Sets1).Records;
-            var justInChain = pc
+            var justInChain = output
+                .Result
+                .Records1
                 .Where(x => x.RelationshipTypes == CertificateRelationshipTypes.AuthorTimestampingChainContains)
                 .OrderBy(x => x.Fingerprint, StringComparer.Ordinal)
                 .ToList();

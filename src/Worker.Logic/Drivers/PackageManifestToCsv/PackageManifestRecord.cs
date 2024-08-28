@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker.PackageManifestToCsv
 {
-    public partial record PackageManifestRecord : PackageRecord, ICsvRecord
+    public partial record PackageManifestRecord : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageManifestRecord>
     {
         public PackageManifestRecord()
         {
@@ -77,5 +77,20 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
 
         [KustoType("dynamic")]
         public string SplitTags { get; set; }
+
+        public static List<PackageManifestRecord> Prune(List<PackageManifestRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
+        {
+            return Prune(records, isFinalPrune);
+        }
+
+        public int CompareTo(PackageManifestRecord other)
+        {
+            return base.CompareTo(other);
+        }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

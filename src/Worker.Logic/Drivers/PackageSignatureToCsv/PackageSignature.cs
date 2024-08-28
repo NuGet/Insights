@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Common;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace NuGet.Insights.Worker.PackageSignatureToCsv
 {
-    public partial record PackageSignature : PackageRecord, ICsvRecord
+    public partial record PackageSignature : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageSignature>
     {
         public PackageSignature()
         {
@@ -62,5 +63,20 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
 
         [KustoType("dynamic")]
         public string PackageOwners { get; set; }
+
+        public static List<PackageSignature> Prune(List<PackageSignature> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
+        {
+            return Prune(records, isFinalPrune);
+        }
+
+        public int CompareTo(PackageSignature other)
+        {
+            return base.CompareTo(other);
+        }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

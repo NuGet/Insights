@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Buffers;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.WebUtilities;
 
@@ -35,9 +36,14 @@ namespace NuGet.Insights
 
         public const string EmulatorConnectionString = "UseDevelopmentStorage=true";
 
-        public static readonly IList<string> MinSelectColumns = new[] { PartitionKey, RowKey };
+        public static readonly IList<string> MinSelectColumns = [PartitionKey, RowKey];
 
         public static int GetBucket(int bucketCount, string bucketKey)
+        {
+            return GetBucket(bucketCount, bucketKey, ReadOnlySpan<byte>.Empty);
+        }
+
+        public static int GetBucket(int bucketCount, string bucketKey, ReadOnlySpan<byte> suffix)
         {
             if (!BitConverter.IsLittleEndian)
             {
@@ -45,10 +51,35 @@ namespace NuGet.Insights
             }
 
             int bucket;
-            using (var algorithm = SHA256.Create())
+
+            var maxBytes = bucketKey.Length * 4 + suffix.Length; // UTF-8 worst case
+            const int maxStackBytes = 256;
+            var usePool = maxBytes > maxStackBytes;
+            var pool = ArrayPool<byte>.Shared;
+            byte[] poolBuffer = usePool ? pool.Rent(maxBytes) : null;
+            Span<byte> buffer = usePool ? poolBuffer : stackalloc byte[maxStackBytes];
+            try
             {
-                var hash = algorithm.ComputeHash(Encoding.UTF8.GetBytes(bucketKey));
+                var bytesWritten = Encoding.UTF8.GetBytes(bucketKey, buffer);
+                if (suffix.Length > 0)
+                {
+                    suffix.CopyTo(buffer.Slice(bytesWritten, suffix.Length));
+                }
+
+                Span<byte> hash = stackalloc byte[SHA256.HashSizeInBytes];
+                if (!SHA256.TryHashData(buffer.Slice(0, bytesWritten + suffix.Length), hash, out var hashBytesWritten))
+                {
+                    throw new InvalidOperationException("Could not compute the bucket.");
+                }
+
                 bucket = (int)(BitConverter.ToUInt64(hash) % (ulong)bucketCount);
+            }
+            finally
+            {
+                if (usePool)
+                {
+                    pool.Return(poolBuffer);
+                }
             }
 
             return bucket;

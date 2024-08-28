@@ -22,6 +22,8 @@ using NuGet.Insights.Worker.LoadPackageVersion;
 using NuGet.Insights.Worker.LoadSymbolPackageArchive;
 #if ENABLE_CRYPTOAPI
 using NuGet.Insights.Worker.PackageCertificateToCsv;
+using NuGet.Insights.Worker.PackageVersionToCsv;
+
 #endif
 using NuGet.Insights.Worker.ReferenceTracking;
 using NuGet.Insights.Worker.TableCopy;
@@ -322,7 +324,7 @@ namespace NuGet.Insights.Worker
 
                 // Add the generic CSV storage
                 var recordType = serviceType.GenericTypeArguments.Single();
-                var getContainerName = serviceType.GetProperty(nameof(ICsvResultStorage<ICsvRecord>.ResultContainerName));
+                var getContainerName = serviceType.GetProperty(nameof(ICsvResultStorage<PackageVersionRecord>.ResultContainerName));
                 serviceCollection.AddTransient<ICsvRecordStorage>(x =>
                 {
                     var storage = x.GetRequiredService(serviceType);
@@ -406,7 +408,7 @@ namespace NuGet.Insights.Worker
 
         public static void AddCleanupOrphanRecordsService<TService, TRecord>(this IServiceCollection serviceCollection)
             where TService : class, ICleanupOrphanRecordsAdapter<TRecord>
-            where TRecord : ICsvRecord
+            where TRecord : IAggregatedCsvRecord<TRecord>
         {
             var implementationType = typeof(TService);
             var dataType = typeof(TRecord);

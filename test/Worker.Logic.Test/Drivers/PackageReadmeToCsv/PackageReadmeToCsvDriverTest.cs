@@ -29,7 +29,7 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
 
             // Assert
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageReadmeResultType.None, record.ResultType);
             Assert.Null(record.Content);
         }
@@ -79,7 +79,7 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
 
             // Assert
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageReadmeResultType.Legacy, record.ResultType);
             Assert.Equal(content, record.Content);
         }
@@ -102,7 +102,7 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
 
             // Assert
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageReadmeResultType.Embedded, record.ResultType);
             Assert.StartsWith("# TorSharp", record.Content, StringComparison.Ordinal);
         }

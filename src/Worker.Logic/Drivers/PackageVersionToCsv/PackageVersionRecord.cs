@@ -5,7 +5,7 @@ using NuGet.Insights.Worker.LoadPackageVersion;
 
 namespace NuGet.Insights.Worker.PackageVersionToCsv
 {
-    public partial record PackageVersionRecord : PackageRecord, ICsvRecord
+    public partial record PackageVersionRecord : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageVersionRecord>
     {
         public PackageVersionRecord()
         {
@@ -77,5 +77,20 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
 
         public DateTimeOffset? Published { get; set; }
         public DateTimeOffset? LastEdited { get; set; }
+
+        public static List<PackageVersionRecord> Prune(List<PackageVersionRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
+        {
+            return Prune(records, isFinalPrune);
+        }
+
+        public int CompareTo(PackageVersionRecord other)
+        {
+            return base.CompareTo(other);
+        }
+
+        public string GetBucketKey()
+        {
+            return LowerId;
+        }
     }
 }

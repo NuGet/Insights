@@ -49,13 +49,13 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             return Task.CompletedTask;
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageCompatibility>>> ProcessLeafAsync(CatalogLeafScan leafScan)
+        public async Task<DriverResult<IReadOnlyList<PackageCompatibility>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             var records = await ProcessLeafInternalAsync(leafScan);
-            return DriverResult.Success(new CsvRecordSet<PackageCompatibility>(PackageRecord.GetBucketKey(leafScan), records));
+            return DriverResult.Success(records);
         }
 
-        private async Task<List<PackageCompatibility>> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
+        private async Task<IReadOnlyList<PackageCompatibility>> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
@@ -74,14 +74,14 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 if (zipDirectory == null)
                 {
                     // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted record.
-                    return new List<PackageCompatibility>();
+                    return [];
                 }
 
                 var result = await _packageManifestService.GetBytesAndNuspecReaderAsync(item);
                 if (result == null)
                 {
                     // Ignore packages where the .nuspec is missing. A subsequent scan will produce a deleted record.
-                    return new List<PackageCompatibility>();
+                    return [];
                 }
 
                 var escapedFiles = zipDirectory
@@ -189,7 +189,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 output.HasAgnostic = hasAgnostic;
                 output.BrokenFrameworks = KustoDynamicSerializer.Serialize(brokenFrameworks.OrderBy(x => x, StringComparer.Ordinal).ToList());
 
-                return new List<PackageCompatibility> { output };
+                return [output];
             }
         }
 
@@ -252,11 +252,6 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             }
 
             return KustoDynamicSerializer.Serialize(roundTripShortFolderNames);
-        }
-
-        public List<PackageCompatibility> Prune(List<PackageCompatibility> records, bool isFinalPrune)
-        {
-            return PackageRecord.Prune(records, isFinalPrune);
         }
     }
 }

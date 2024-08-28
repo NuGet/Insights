@@ -7,7 +7,7 @@ namespace NuGet.Insights.Worker
     {
         /// <summary>
         /// Whether or not the <see cref="ICatalogLeafToCsvDriver{T}.ProcessLeafAsync(CatalogLeafScan)"/> or
-        /// <see cref="ICatalogLeafToCsvBatchDriver{T}.ProcessLeavesAsync(System.Collections.Generic.IReadOnlyList{CatalogLeafScan})"/>
+        /// <see cref="ICatalogLeafToCsvBatchDriver{T}.ProcessLeavesAsync(IReadOnlyList{CatalogLeafScan})"/>
         /// should only be called once per package ID in the catalog scan. Returning <c>true</c> means you expect to
         /// process latest data once per package ID. Returning <c>false</c> means you expect to process the latest data
         /// once per package ID and version.
@@ -25,19 +25,19 @@ namespace NuGet.Insights.Worker
         Task DestroyAsync();
     }
 
-    public interface ICatalogLeafToCsvDriver<T> : ICatalogLeafToCsvDriver where T : class, ICsvRecord
+    public interface ICatalogLeafToCsvDriver<T> : ICatalogLeafToCsvDriver where T : class, IAggregatedCsvRecord<T>
     {
         /// <summary>
         /// Process each catalog leaf scan and return CSV rows to accumulate in Azure Blob storage.
         /// </summary>
         /// <param name="leafScan">The catalog leaf scan to process.</param>
         /// <returns>The result, either try again later or a list of records that will be written to CSV.</returns>
-        Task<DriverResult<CsvRecordSet<T>>> ProcessLeafAsync(CatalogLeafScan leafScan);
+        Task<DriverResult<IReadOnlyList<T>>> ProcessLeafAsync(CatalogLeafScan leafScan);
     }
 
     public interface ICatalogLeafToCsvDriver<T1, T2> : ICatalogLeafToCsvDriver
-        where T1 : class, ICsvRecord
-        where T2 : class, ICsvRecord
+        where T1 : class, IAggregatedCsvRecord<T1>
+        where T2 : class, IAggregatedCsvRecord<T2>
     {
         /// <summary>
         /// Process each catalog leaf scan and return CSV rows to accumulate in Azure Blob storage.
@@ -48,9 +48,9 @@ namespace NuGet.Insights.Worker
     }
 
     public interface ICatalogLeafToCsvDriver<T1, T2, T3> : ICatalogLeafToCsvDriver
-        where T1 : class, ICsvRecord
-        where T2 : class, ICsvRecord
-        where T3 : class, ICsvRecord
+        where T1 : class, IAggregatedCsvRecord<T1>
+        where T2 : class, IAggregatedCsvRecord<T2>
+        where T3 : class, IAggregatedCsvRecord<T3>
     {
         /// <summary>
         /// Process each catalog leaf scan and return CSV rows to accumulate in Azure Blob storage.

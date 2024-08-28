@@ -5,7 +5,7 @@ namespace NuGet.Insights.Worker
 {
     public interface ICsvTemporaryStorage
     {
-        Task AppendAsync<T>(string storageSuffix, IReadOnlyList<ICsvRecordSet<T>> sets) where T : class, ICsvRecord;
+        Task AppendAsync<T>(string storageSuffix, IReadOnlyList<T> records) where T : class, IAggregatedCsvRecord;
         Task FinalizeAsync(string storageSuffix);
         Task InitializeAsync(string storageSuffix);
         Task<bool> IsAggregateCompleteAsync(string aggregatePartitionKeyPrefix, string storageSuffix);

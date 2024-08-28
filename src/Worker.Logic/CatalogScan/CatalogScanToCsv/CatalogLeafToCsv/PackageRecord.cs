@@ -27,7 +27,7 @@ namespace NuGet.Insights.Worker
             var parsedVersion = NuGetVersion.Parse(version);
             Version = parsedVersion.ToNormalizedString();
             LowerId = id.ToLowerInvariant();
-            Identity = GetIdentity(LowerId, parsedVersion);
+            Identity = GetIdentity(LowerId, Version);
             CatalogCommitTimestamp = catalogCommitTimestamp;
             Created = created;
         }
@@ -48,7 +48,7 @@ namespace NuGet.Insights.Worker
         public DateTimeOffset CatalogCommitTimestamp { get; set; }
         public DateTimeOffset? Created { get; set; }
 
-        public static List<T> Prune<T>(List<T> records, bool isFinalPrune) where T : PackageRecord, IEquatable<T>
+        public static List<T> Prune<T>(List<T> records, bool isFinalPrune) where T : PackageRecord, IEquatable<T>, IComparable<T>
         {
             var pruned = records
                 .GroupBy(x => x, PackageRecordIdVersionComparer.Instance) // Group by unique package version
@@ -58,9 +58,8 @@ namespace NuGet.Insights.Worker
                     .ThenByDescending(x => x.First().ScanTimestamp ?? DateTimeOffset.MinValue)
                     .First())
                 .SelectMany(g => g)
-                .OrderBy(x => x.Id, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(x => x.Version, StringComparer.OrdinalIgnoreCase)
                 .Distinct()
+                .Order()
                 .ToList();
 
             if (isFinalPrune)
@@ -75,19 +74,39 @@ namespace NuGet.Insights.Worker
             return pruned;
         }
 
-        public static string GetBucketKey(ICatalogLeafItem item)
+        public int CompareTo(PackageRecord other)
         {
-            return GetIdentity(item);
+            return CompareTo(LowerId, Identity, other.LowerId, other.Identity);
         }
 
-        public static string GetIdentity(ICatalogLeafItem item)
+        public static int CompareTo(string lowerIdA, string identityA, string lowerIdB, string identityB)
         {
-            return GetIdentity(item.PackageId, item.ParsePackageVersion());
+            var c = string.CompareOrdinal(lowerIdA, lowerIdB);
+            if (c != 0)
+            {
+                return c;
+            }
+
+            var startIndex = lowerIdA.Length + 1;
+            var length = (identityA.Length - startIndex) + 1;
+            return string.CompareOrdinal(identityA, startIndex, identityB, startIndex, length);
         }
 
-        public static string GetIdentity(string id, NuGetVersion version)
+        public static string GetIdentity(string lowerId, string normalizedVersion)
         {
-            return $"{id.ToLowerInvariant()}/{version.ToNormalizedString().ToLowerInvariant()}";
+#if DEBUG
+            if (lowerId != lowerId.ToLowerInvariant())
+            {
+                throw new ArgumentException("The lower ID must be lowercase.", nameof(lowerId));
+            }
+
+            if (normalizedVersion != NuGetVersion.Parse(normalizedVersion).ToNormalizedString())
+            {
+                throw new ArgumentException("The version must be normalized.", nameof(normalizedVersion));
+            }
+#endif
+
+            return $"{lowerId}/{normalizedVersion.ToLowerInvariant()}";
         }
     }
 }

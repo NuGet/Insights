@@ -17,14 +17,5 @@ namespace NuGet.Insights.Worker.ReferenceTracking
         }
 
         public string ResultContainerName => _test.ResultContainerName;
-
-        public List<TestSubjectRecord> Prune(List<TestSubjectRecord> records, bool isFinalPrune)
-        {
-            return records
-                .GroupBy(x => x.Id)
-                .Select(g => g.First())
-                .Where(x => !isFinalPrune || !x.IsOrphan)
-                .ToList();
-        }
     }
 }

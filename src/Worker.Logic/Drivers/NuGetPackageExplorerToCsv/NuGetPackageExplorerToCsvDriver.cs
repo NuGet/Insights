@@ -53,10 +53,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
         public async Task<DriverResult<CsvRecordSets<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             (var record, var files) = await ProcessLeafInternalAsync(leafScan);
-            var bucketKey = PackageRecord.GetBucketKey(leafScan);
             return DriverResult.Success(new CsvRecordSets<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>(
-                new CsvRecordSet<NuGetPackageExplorerRecord>(bucketKey, record != null ? new[] { record } : Array.Empty<NuGetPackageExplorerRecord>()),
-                new CsvRecordSet<NuGetPackageExplorerFile>(bucketKey, files ?? Array.Empty<NuGetPackageExplorerFile>())));
+                record != null ? [record] : [],
+                files ?? []));
         }
 
         private async Task<(NuGetPackageExplorerRecord, IReadOnlyList<NuGetPackageExplorerFile>)> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
@@ -69,7 +68,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                 var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
                 return (
                     new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf),
-                    new[] { new NuGetPackageExplorerFile(scanId, scanTimestamp, leaf) }
+                    [new NuGetPackageExplorerFile(scanId, scanTimestamp, leaf)]
                 );
             }
             else
@@ -305,16 +304,6 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                 new NuGetPackageExplorerRecord(scanId, scanTimestamp, leaf) { ResultType = type },
                 new[] { new NuGetPackageExplorerFile(scanId, scanTimestamp, leaf) { ResultType = type } }
             );
-        }
-
-        public List<NuGetPackageExplorerRecord> Prune(List<NuGetPackageExplorerRecord> records, bool isFinalPrune)
-        {
-            return PackageRecord.Prune(records, isFinalPrune);
-        }
-
-        public List<NuGetPackageExplorerFile> Prune(List<NuGetPackageExplorerFile> records, bool isFinalPrune)
-        {
-            return PackageRecord.Prune(records, isFinalPrune);
         }
     }
 }

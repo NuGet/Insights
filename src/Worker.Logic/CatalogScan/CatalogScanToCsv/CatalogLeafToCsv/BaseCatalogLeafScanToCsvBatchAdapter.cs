@@ -15,7 +15,7 @@ namespace NuGet.Insights.Worker
         {
         }
 
-        protected abstract Task<BatchMessageProcessorResult<IReadOnlyList<IReadOnlyList<ICsvRecordSet<ICsvRecord>>>, CatalogLeafScan>>
+        protected abstract Task<BatchMessageProcessorResult<IReadOnlyList<IReadOnlyList<IAggregatedCsvRecord>>, CatalogLeafScan>>
             ProcessLeafAsync(IReadOnlyList<CatalogLeafScan> leafScans);
 
         public async Task<BatchMessageProcessorResult<CatalogLeafScan>> ProcessLeavesAsync(IReadOnlyList<CatalogLeafScan> leafScans)

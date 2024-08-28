@@ -7,7 +7,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
 {
     public class PackageIconToCsvDriver : ICatalogLeafToCsvDriver<PackageIcon>, ICsvResultStorage<PackageIcon>
     {
-        private static readonly IReadOnlyList<string> IgnoredAttributes = new[] { "date:create", "date:modify", "signature" };
+        private static readonly IReadOnlyList<string> IgnoredAttributes = ["date:create", "date:modify", "signature"];
 
         private readonly CatalogClient _catalogClient;
         private readonly FlatContainerClient _flatContainerClient;
@@ -39,18 +39,18 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             return Task.CompletedTask;
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageIcon>>> ProcessLeafAsync(CatalogLeafScan leafScan)
+        public async Task<DriverResult<IReadOnlyList<PackageIcon>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             (var resultType, var records) = await ProcessLeafInternalAsync(leafScan);
             if (resultType == TempStreamResultType.SemaphoreNotAvailable)
             {
-                return DriverResult.TryAgainLater<CsvRecordSet<PackageIcon>>();
+                return DriverResult.TryAgainLater<IReadOnlyList<PackageIcon>>();
             }
 
-            return DriverResult.Success(new CsvRecordSet<PackageIcon>(PackageRecord.GetBucketKey(leafScan), records));
+            return DriverResult.Success(records);
         }
 
-        public async Task<(TempStreamResultType, List<PackageIcon>)> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
+        public async Task<(TempStreamResultType, IReadOnlyList<PackageIcon>)> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
@@ -60,7 +60,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
                 var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
                 return (
                     TempStreamResultType.Success,
-                    new List<PackageIcon> { new PackageIcon(scanId, scanTimestamp, leaf) }
+                    [new PackageIcon(scanId, scanTimestamp, leaf)]
                 );
             }
             else
@@ -76,7 +76,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
                 {
                     return (
                         TempStreamResultType.Success,
-                        new List<PackageIcon> { new PackageIcon(scanId, scanTimestamp, leaf) { ResultType = PackageIconResultType.NoIcon } }
+                        [new PackageIcon(scanId, scanTimestamp, leaf) { ResultType = PackageIconResultType.NoIcon }]
                     );
                 }
 
@@ -156,7 +156,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
                         output.ResultType = PackageIconResultType.Error;
                     }
 
-                    return (TempStreamResultType.Success, new List<PackageIcon> { output });
+                    return (TempStreamResultType.Success, [output]);
                 }
             }
         }
@@ -179,11 +179,6 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
 
             result.Stream.Position = 0;
             return (false, new MagickImageCollection(result.Stream, format));
-        }
-
-        public List<PackageIcon> Prune(List<PackageIcon> records, bool isFinalPrune)
-        {
-            return PackageRecord.Prune(records, isFinalPrune);
         }
     }
 }

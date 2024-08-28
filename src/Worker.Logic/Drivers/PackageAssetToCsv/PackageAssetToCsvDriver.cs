@@ -36,11 +36,6 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
         public string ResultContainerName => _options.Value.PackageAssetContainerName;
         public bool SingleMessagePerId => false;
 
-        public List<PackageAsset> Prune(List<PackageAsset> records, bool isFinalPrune)
-        {
-            return PackageRecord.Prune(records, isFinalPrune);
-        }
-
         public async Task InitializeAsync()
         {
             await _packageFileService.InitializeAsync();
@@ -51,13 +46,13 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             return Task.CompletedTask;
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageAsset>>> ProcessLeafAsync(CatalogLeafScan leafScan)
+        public async Task<DriverResult<IReadOnlyList<PackageAsset>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             var records = await ProcessLeafInternalAsync(leafScan);
-            return DriverResult.Success(new CsvRecordSet<PackageAsset>(PackageRecord.GetBucketKey(leafScan), records));
+            return DriverResult.Success(records);
         }
 
-        private async Task<List<PackageAsset>> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
+        private async Task<IReadOnlyList<PackageAsset>> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
@@ -65,7 +60,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             if (leafScan.LeafType == CatalogLeafType.PackageDelete)
             {
                 var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
-                return new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf) };
+                return [new PackageAsset(scanId, scanTimestamp, leaf)];
             }
             else
             {
@@ -75,7 +70,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
                 if (zipDirectory == null)
                 {
                     // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted asset record.
-                    return new List<PackageAsset>();
+                    return [];
                 }
 
                 var files = zipDirectory
@@ -161,7 +156,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             if (assets.Count == 0)
             {
-                return new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf, PackageAssetResultType.NoAssets) };
+                return [new PackageAsset(scanId, scanTimestamp, leaf, PackageAssetResultType.NoAssets)];
             }
 
             return assets;
@@ -183,7 +178,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
         private List<PackageAsset> GetErrorResult(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf, Exception ex, string message)
         {
             _logger.LogWarning(ex, message, leaf.PackageId, leaf.PackageVersion);
-            return new List<PackageAsset> { new PackageAsset(scanId, scanTimestamp, leaf, PackageAssetResultType.Error) };
+            return [new PackageAsset(scanId, scanTimestamp, leaf, PackageAssetResultType.Error)];
         }
 
         private static bool IsInvalidDueMissingPortableProfile(FrameworkException ex)

@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker.CatalogDataToCsv
 {
-    public partial record PackageDeprecationRecord : PackageRecord, ICsvRecord
+    public partial record PackageDeprecationRecord : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageDeprecationRecord>
     {
         public PackageDeprecationRecord()
         {
@@ -26,5 +26,20 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
 
         public string AlternatePackageId { get; set; }
         public string AlternateVersionRange { get; set; }
+
+        public static List<PackageDeprecationRecord> Prune(List<PackageDeprecationRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
+        {
+            return Prune(records, isFinalPrune);
+        }
+
+        public int CompareTo(PackageDeprecationRecord other)
+        {
+            return base.CompareTo(other);
+        }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

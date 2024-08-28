@@ -26,11 +26,6 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         public string ResultContainerName => _options.Value.PackageManifestContainerName;
         public bool SingleMessagePerId => false;
 
-        public List<PackageManifestRecord> Prune(List<PackageManifestRecord> records, bool isFinalPrune)
-        {
-            return PackageRecord.Prune(records, isFinalPrune);
-        }
-
         public async Task InitializeAsync()
         {
             await _packageManifestService.InitializeAsync();
@@ -41,13 +36,13 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             return Task.CompletedTask;
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageManifestRecord>>> ProcessLeafAsync(CatalogLeafScan leafScan)
+        public async Task<DriverResult<IReadOnlyList<PackageManifestRecord>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             var records = await ProcessLeafInternalAsync(leafScan);
-            return DriverResult.Success(new CsvRecordSet<PackageManifestRecord>(PackageRecord.GetBucketKey(leafScan), records));
+            return DriverResult.Success(records);
         }
 
-        private async Task<List<PackageManifestRecord>> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
+        private async Task<IReadOnlyList<PackageManifestRecord>> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
@@ -55,7 +50,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             if (leafScan.LeafType == CatalogLeafType.PackageDelete)
             {
                 var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
-                return new List<PackageManifestRecord> { new PackageManifestRecord(scanId, scanTimestamp, leaf) };
+                return [new PackageManifestRecord(scanId, scanTimestamp, leaf)];
             }
             else
             {
@@ -68,7 +63,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
                     return new List<PackageManifestRecord>();
                 }
 
-                return new List<PackageManifestRecord> { GetRecord(scanId, scanTimestamp, leaf, result.Value.NuspecReader, result.Value.ManifestLength) };
+                return [GetRecord(scanId, scanTimestamp, leaf, result.Value.NuspecReader, result.Value.ManifestLength)];
             }
         }
 
@@ -118,7 +113,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
 
         private static void SplitTags(PackageManifestRecord record)
         {
-            var splitTags = string.IsNullOrWhiteSpace(record.Tags) ? Array.Empty<string>() : Utils.SplitTags(record.Tags);
+            var splitTags = string.IsNullOrWhiteSpace(record.Tags) ? [] : Utils.SplitTags(record.Tags);
             record.SplitTags = KustoDynamicSerializer.Serialize(splitTags);
         }
 

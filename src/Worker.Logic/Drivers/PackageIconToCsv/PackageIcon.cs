@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker.PackageIconToCsv
 {
-    public partial record PackageIcon : PackageRecord, ICsvRecord
+    public partial record PackageIcon : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageIcon>
     {
         public PackageIcon()
         {
@@ -43,5 +43,20 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
 
         [KustoType("dynamic")]
         public string FrameAttributeNames { get; set; }
+
+        public static List<PackageIcon> Prune(List<PackageIcon> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
+        {
+            return Prune(records, isFinalPrune);
+        }
+
+        public int CompareTo(PackageIcon other)
+        {
+            return base.CompareTo(other);
+        }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

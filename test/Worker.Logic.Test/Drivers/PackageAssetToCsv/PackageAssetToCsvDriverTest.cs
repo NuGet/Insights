@@ -25,7 +25,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             var output = await Target.ProcessLeafAsync(leaf);
 
-            var patternSets = output.Value.Records.Select(x => x.PatternSet);
+            var patternSets = output.Value.Select(x => x.PatternSet);
             Assert.Contains(PatternSetType.RuntimeAssemblies, patternSets);
             Assert.Contains(PatternSetType.CompileLibAssemblies, patternSets);
             Assert.Contains(PatternSetType.CompileRefAssemblies, patternSets);
@@ -45,7 +45,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             var output = await Target.ProcessLeafAsync(leaf);
 
-            var patternSets = output.Value.Records.Select(x => x.PatternSet).Distinct();
+            var patternSets = output.Value.Select(x => x.PatternSet).Distinct();
             Assert.Contains(PatternSetType.ContentFiles, patternSets);
         }
 
@@ -63,7 +63,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             var output = await Target.ProcessLeafAsync(leaf);
 
-            var patternSets = output.Value.Records.Select(x => x.PatternSet).Distinct();
+            var patternSets = output.Value.Select(x => x.PatternSet).Distinct();
             Assert.Contains(PatternSetType.EmbedAssemblies, patternSets);
         }
 
@@ -81,7 +81,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             var output = await Target.ProcessLeafAsync(leaf);
 
-            var patternSets = output.Value.Records.Select(x => x.PatternSet).Distinct();
+            var patternSets = output.Value.Select(x => x.PatternSet).Distinct();
             Assert.Contains(PatternSetType.MSBuildFiles, patternSets);
         }
 
@@ -99,7 +99,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             var output = await Target.ProcessLeafAsync(leaf);
 
-            var patternSets = output.Value.Records.Select(x => x.PatternSet).Distinct();
+            var patternSets = output.Value.Select(x => x.PatternSet).Distinct();
             Assert.Contains(PatternSetType.MSBuildMultiTargetingFiles, patternSets);
         }
 
@@ -117,7 +117,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             var output = await Target.ProcessLeafAsync(leaf);
 
-            var patternSets = output.Value.Records.Select(x => x.PatternSet).Distinct();
+            var patternSets = output.Value.Select(x => x.PatternSet).Distinct();
             Assert.Contains(PatternSetType.MSBuildTransitiveFiles, patternSets);
         }
 
@@ -135,7 +135,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             var output = await Target.ProcessLeafAsync(leaf);
 
-            var patternSets = output.Value.Records.Select(x => x.PatternSet).Distinct();
+            var patternSets = output.Value.Select(x => x.PatternSet).Distinct();
             Assert.Contains(PatternSetType.NativeLibraries, patternSets);
         }
 
@@ -153,7 +153,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             var output = await Target.ProcessLeafAsync(leaf);
 
-            var patternSets = output.Value.Records.Select(x => x.PatternSet).Distinct();
+            var patternSets = output.Value.Select(x => x.PatternSet).Distinct();
             Assert.Contains(PatternSetType.ResourceAssemblies, patternSets);
         }
 
@@ -171,7 +171,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             var output = await Target.ProcessLeafAsync(leaf);
 
-            var patternSets = output.Value.Records.Select(x => x.PatternSet).Distinct();
+            var patternSets = output.Value.Select(x => x.PatternSet).Distinct();
             Assert.Contains(PatternSetType.ToolsAssemblies, patternSets);
         }
     }

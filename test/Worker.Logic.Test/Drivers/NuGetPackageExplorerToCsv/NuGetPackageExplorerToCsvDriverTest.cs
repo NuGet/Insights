@@ -34,7 +34,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var file = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var file = Assert.Single(output.Value.Records2);
             Assert.Equal(
                 "{" +
                 "\"compiler-version\":\"3.11.0-4.21403.6\\u002Bae1fff344d46976624e68ae17164e0607ab68b10\"," +
@@ -66,7 +66,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var file = Assert.Single(Assert.Single(output.Value.Sets2).Records.Where(x => x.Extension == ".dll"));
+            var file = Assert.Single(output.Value.Records2.Where(x => x.Extension == ".dll"));
             Assert.Equal(
                 "[{" +
                 "\"Example\":\"https://raw.githubusercontent.com/aspnet/Extensions/9bc79b2f25a3724376d7af19617c33749a30ea3a/src/Options/Options/src/OptionsServiceCollectionExtensions.cs\"," +
@@ -94,10 +94,10 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var record = Assert.Single(output.Value.Records1);
             Assert.Equal(NuGetPackageExplorerResultType.NothingToValidate, record.ResultType);
             Assert.Equal(SymbolValidationResult.NothingToValidate, record.SourceLinkResult);
-            var file = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var file = Assert.Single(output.Value.Records2);
             Assert.Equal(NuGetPackageExplorerResultType.NothingToValidate, file.ResultType);
             Assert.Null(file.Path);
         }
@@ -117,9 +117,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var record = Assert.Single(output.Value.Records1);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            var file = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var file = Assert.Single(output.Value.Records2);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
@@ -138,9 +138,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var record = Assert.Single(output.Value.Records1);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            var file = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var file = Assert.Single(output.Value.Records2);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
@@ -159,9 +159,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var record = Assert.Single(output.Value.Records1);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            var file = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var file = Assert.Single(output.Value.Records2);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
@@ -180,9 +180,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var record = Assert.Single(output.Value.Records1);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            var file = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var file = Assert.Single(output.Value.Records2);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
@@ -201,9 +201,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var record = Assert.Single(output.Value.Records1);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            var file = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var file = Assert.Single(output.Value.Records2);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
@@ -222,9 +222,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var record = Assert.Single(output.Value.Records1);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            var file = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var file = Assert.Single(output.Value.Records2);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
@@ -243,9 +243,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var record = Assert.Single(output.Value.Records1);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            var file = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var file = Assert.Single(output.Value.Records2);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
@@ -264,9 +264,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var record = Assert.Single(output.Value.Records1);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            var file = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var file = Assert.Single(output.Value.Records2);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
@@ -285,9 +285,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var record = Assert.Single(output.Value.Records1);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            var file = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var file = Assert.Single(output.Value.Records2);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
@@ -306,9 +306,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var record = Assert.Single(output.Value.Records1);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            var file = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var file = Assert.Single(output.Value.Records2);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
@@ -327,9 +327,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var record = Assert.Single(output.Value.Records1);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            var file = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var file = Assert.Single(output.Value.Records2);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
@@ -348,9 +348,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var record = Assert.Single(output.Value.Records1);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            var file = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var file = Assert.Single(output.Value.Records2);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
@@ -369,9 +369,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var record = Assert.Single(output.Value.Records1);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            var file = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var file = Assert.Single(output.Value.Records2);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
@@ -390,9 +390,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var record = Assert.Single(output.Value.Records1);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            var file = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var file = Assert.Single(output.Value.Records2);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
@@ -411,9 +411,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var record = Assert.Single(output.Value.Records1);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            var file = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var file = Assert.Single(output.Value.Records2);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
@@ -432,9 +432,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var record = Assert.Single(output.Value.Records1);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            var file = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var file = Assert.Single(output.Value.Records2);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
@@ -453,9 +453,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var record = Assert.Single(output.Value.Records1);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            var file = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var file = Assert.Single(output.Value.Records2);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
 
@@ -477,9 +477,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var record = Assert.Single(output.Value.Records1);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, record.ResultType);
-            var file = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var file = Assert.Single(output.Value.Records2);
             Assert.Equal(NuGetPackageExplorerResultType.InvalidMetadata, file.ResultType);
         }
     }

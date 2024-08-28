@@ -15,7 +15,7 @@ namespace NuGet.Insights.Worker
         {
         }
 
-        protected abstract Task<(DriverResult, IReadOnlyList<ICsvRecordSet<ICsvRecord>>)> ProcessLeafInternalAsync(CatalogLeafScan leafScan);
+        protected abstract Task<(DriverResult, IReadOnlyList<IReadOnlyList<IAggregatedCsvRecord>>)> ProcessLeafInternalAsync(CatalogLeafScan leafScan);
 
         public async Task<DriverResult> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
@@ -27,7 +27,7 @@ namespace NuGet.Insights.Worker
 
             for (var setIndex = 0; setIndex < _storage.Count; setIndex++)
             {
-                await _storage[setIndex].AppendAsync(leafScan.StorageSuffix, new[] { sets[setIndex] });
+                await _storage[setIndex].AppendAsync(leafScan.StorageSuffix, sets[setIndex]);
             }
 
             return result;

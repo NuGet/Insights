@@ -45,11 +45,6 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         public string ResultContainerName => _options.Value.PackageAssemblyContainerName;
         public bool SingleMessagePerId => false;
 
-        public List<PackageAssembly> Prune(List<PackageAssembly> records, bool isFinalPrune)
-        {
-            return PackageRecord.Prune(records, isFinalPrune);
-        }
-
         public async Task InitializeAsync()
         {
             await _packageFileService.InitializeAsync();
@@ -60,7 +55,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             return Task.CompletedTask;
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageAssembly>>> ProcessLeafAsync(CatalogLeafScan leafScan)
+        public async Task<DriverResult<IReadOnlyList<PackageAssembly>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
@@ -69,7 +64,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             {
                 var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
-                return MakeResults(leafScan, new List<PackageAssembly> { new PackageAssembly(scanId, scanTimestamp, leaf) });
+                return MakeResults([new PackageAssembly(scanId, scanTimestamp, leaf)]);
             }
             else
             {
@@ -78,7 +73,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 var zipDirectory = await _packageFileService.GetZipDirectoryAsync(leafScan.ToPackageIdentityCommit());
                 if (zipDirectory == null)
                 {
-                    return MakeEmptyResults(leaf);
+                    return MakeEmptyResults();
                 }
 
                 if (!zipDirectory.Entries.Any(e => FileExtensions.Contains(Path.GetExtension(e.GetName()))))
@@ -98,7 +93,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
                 if (result is null)
                 {
-                    return MakeEmptyResults(leafScan);
+                    return MakeEmptyResults();
                 }
 
                 using (result.Value.Body)
@@ -106,7 +101,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
                     if (result.Value.Body.Type == TempStreamResultType.SemaphoreNotAvailable)
                     {
-                        return DriverResult.TryAgainLater<CsvRecordSet<PackageAssembly>>();
+                        return DriverResult.TryAgainLater<IReadOnlyList<PackageAssembly>>();
                     }
 
                     using var zipArchive = new ZipArchive(result.Value.Body.Stream);
@@ -127,31 +122,31 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                         var assemblyResult = await AnalyzeAsync(scanId, scanTimestamp, leaf, sequenceNumber, entry);
                         if (assemblyResult.Type == DriverResultType.TryAgainLater)
                         {
-                            return DriverResult.TryAgainLater<CsvRecordSet<PackageAssembly>>();
+                            return DriverResult.TryAgainLater<IReadOnlyList<PackageAssembly>>();
                         }
 
                         assemblies.Add(assemblyResult.Value);
                     }
 
-                    return MakeResults(leafScan, assemblies);
+                    return MakeResults(assemblies);
                 }
             }
         }
 
-        private static DriverResult<CsvRecordSet<PackageAssembly>> MakeResults(ICatalogLeafItem item, List<PackageAssembly> records)
+        private static DriverResult<IReadOnlyList<PackageAssembly>> MakeResults(IReadOnlyList<PackageAssembly> records)
         {
-            return DriverResult.Success(new CsvRecordSet<PackageAssembly>(PackageRecord.GetBucketKey(item), records));
+            return DriverResult.Success(records);
         }
 
-        private static DriverResult<CsvRecordSet<PackageAssembly>> MakeEmptyResults(ICatalogLeafItem item)
+        private static DriverResult<IReadOnlyList<PackageAssembly>> MakeEmptyResults()
         {
             // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted asset record.
-            return MakeResults(item, new List<PackageAssembly>());
+            return MakeResults([]);
         }
 
-        private static DriverResult<CsvRecordSet<PackageAssembly>> MakeNoAssemblies(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf)
+        private static DriverResult<IReadOnlyList<PackageAssembly>> MakeNoAssemblies(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf)
         {
-            return MakeResults(leaf, new List<PackageAssembly> { new PackageAssembly(scanId, scanTimestamp, leaf, PackageAssemblyResultType.NoAssemblies) });
+            return MakeResults([new PackageAssembly(scanId, scanTimestamp, leaf, PackageAssemblyResultType.NoAssemblies)]);
         }
 
         private async Task<DriverResult<PackageAssembly>> AnalyzeAsync(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf, int sequenceNumber, ZipArchiveEntry entry)
@@ -188,7 +183,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 try
                 {
                     tempStreamResult = await _tempStreamService.CopyToTempStreamAsync(
-                        entry.Open,
+                        () => Task.FromResult(entry.Open()),
                         TempStreamWriter.GetTempFileNameFactory(
                             assembly.Id,
                             assembly.Version,

@@ -5,16 +5,16 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 {
     public enum PatternSetType
     {
-        CompileLibAssemblies,
+        RuntimeAssemblies = 1,
         CompileRefAssemblies,
-        ContentFiles,
-        EmbedAssemblies,
-        MSBuildFiles,
-        MSBuildMultiTargetingFiles,
-        MSBuildTransitiveFiles,
+        CompileLibAssemblies,
         NativeLibraries,
         ResourceAssemblies,
-        RuntimeAssemblies,
+        MSBuildFiles,
+        MSBuildMultiTargetingFiles,
+        ContentFiles,
         ToolsAssemblies,
+        EmbedAssemblies,
+        MSBuildTransitiveFiles,
     }
 }

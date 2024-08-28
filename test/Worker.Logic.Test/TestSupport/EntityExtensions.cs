@@ -5,6 +5,13 @@ namespace NuGet.Insights.Worker
 {
     public static class EntityExtensions
     {
+        public static T InitializeFromIdVersion<T>(this T record) where T : PackageRecord
+        {
+            record.LowerId = record.Id.ToLowerInvariant();
+            record.Identity = PackageRecord.GetIdentity(record.LowerId, record.Version);
+            return record;
+        }
+
         public static CatalogIndexScan SetDefaults(this CatalogIndexScan scan)
         {
             if (scan.Min < StorageUtility.MinTimestamp)

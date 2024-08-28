@@ -25,36 +25,36 @@ namespace NuGet.Insights.Worker
             _logger = logger;
         }
 
-        public IReadOnlyList<ICsvTemporaryStorage> Create<T>(ICsvResultStorage<T> storage) where T : class, ICsvRecord
+        public IReadOnlyList<ICsvTemporaryStorage> Create<T>(ICsvResultStorage<T> storage) where T : class, IAggregatedCsvRecord<T>
         {
-            return new[]
-            {
+            return
+            [
                 new CatalogScanToCsvStorage<T>(storage.ResultContainerName, 0, this)
-            };
+            ];
         }
 
         public IReadOnlyList<ICsvTemporaryStorage> Create<T1, T2>(ICsvResultStorage<T1> storage1, ICsvResultStorage<T2> storage2)
-            where T1 : class, ICsvRecord
-            where T2 : class, ICsvRecord
+            where T1 : class, IAggregatedCsvRecord<T1>
+            where T2 : class, IAggregatedCsvRecord<T2>
         {
-            return new ICsvTemporaryStorage[]
-            {
+            return
+            [
                 new CatalogScanToCsvStorage<T1>(storage1.ResultContainerName, 0, this),
                 new CatalogScanToCsvStorage<T2>(storage2.ResultContainerName, 1, this),
-            };
+            ];
         }
 
         public IReadOnlyList<ICsvTemporaryStorage> Create<T1, T2, T3>(ICsvResultStorage<T1> storage1, ICsvResultStorage<T2> storage2, ICsvResultStorage<T3> storage3)
-            where T1 : class, ICsvRecord
-            where T2 : class, ICsvRecord
-            where T3 : class, ICsvRecord
+            where T1 : class, IAggregatedCsvRecord<T1>
+            where T2 : class, IAggregatedCsvRecord<T2>
+            where T3 : class, IAggregatedCsvRecord<T3>
         {
-            return new ICsvTemporaryStorage[]
-            {
+            return
+            [
                 new CatalogScanToCsvStorage<T1>(storage1.ResultContainerName, 0, this),
                 new CatalogScanToCsvStorage<T2>(storage2.ResultContainerName, 1, this),
                 new CatalogScanToCsvStorage<T3>(storage3.ResultContainerName, 2, this),
-            };
+            ];
         }
 
         public async Task InitializeAsync(string storageSuffix)
@@ -67,7 +67,7 @@ namespace NuGet.Insights.Worker
             await _taskStateStorageService.DeleteTableAsync(storageSuffix);
         }
 
-        private class CatalogScanToCsvStorage<T> : ICsvTemporaryStorage where T : class, ICsvRecord
+        private class CatalogScanToCsvStorage<T> : ICsvTemporaryStorage where T : class, IAggregatedCsvRecord<T>
         {
             private readonly string _resultsContainerName;
             private readonly int _setIndex;
@@ -81,7 +81,6 @@ namespace NuGet.Insights.Worker
                 _resultsContainerName = resultsContainerName;
                 _setIndex = setIndex;
                 _parent = parent;
-
             }
 
             public async Task InitializeAsync(string storageSuffix)
@@ -89,12 +88,24 @@ namespace NuGet.Insights.Worker
                 await _parent._storageService.InitializeAsync(GetTableName(storageSuffix), _resultsContainerName);
             }
 
-            public async Task AppendAsync<TRecord>(string storageSuffix, IReadOnlyList<ICsvRecordSet<TRecord>> sets) where TRecord : class, ICsvRecord
+            public async Task AppendAsync<TRecord>(string storageSuffix, IReadOnlyList<TRecord> records) where TRecord : class, IAggregatedCsvRecord
             {
+                var typedRecords = new List<T>(records.Count);
+                foreach (var record in records)
+                {
+                    // validate type
+                    if (record is not T typedRecord)
+                    {
+                        throw new InvalidOperationException($"A record was found with the wrong type. Expected: {typeof(T).FullName}. Actual: {record.GetType().FullName}.");
+                    }
+
+                    typedRecords.Add(typedRecord);
+                }
+
                 await _parent._storageService.AppendAsync(
                     GetTableName(storageSuffix),
                     _parent._options.Value.AppendResultStorageBucketCount,
-                    sets);
+                    typedRecords);
             }
 
             public async Task StartAggregateAsync(string aggregatePartitionKeyPrefix, string storageSuffix)

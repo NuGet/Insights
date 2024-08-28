@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker.PackageReadmeToCsv
 {
-    public partial record PackageReadme : PackageRecord, ICsvRecord
+    public partial record PackageReadme : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageReadme>
     {
         public PackageReadme()
         {
@@ -27,5 +27,20 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
         public DateTimeOffset? LastModified { get; set; }
         public string SHA256 { get; set; }
         public string Content { get; set; }
+
+        public static List<PackageReadme> Prune(List<PackageReadme> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
+        {
+            return Prune(records, isFinalPrune);
+        }
+
+        public int CompareTo(PackageReadme other)
+        {
+            return base.CompareTo(other);
+        }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

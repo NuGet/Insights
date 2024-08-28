@@ -5,13 +5,13 @@ using NuGet.Insights.ReferenceTracking;
 
 namespace NuGet.Insights.Worker.ReferenceTracking
 {
-    public interface ICleanupOrphanRecordsAdapter<T> where T : ICsvRecord
+    public interface ICleanupOrphanRecordsAdapter<T> where T : IAggregatedCsvRecord<T>
     {
         string OwnerToSubjectTableName { get; }
         string SubjectToOwnerTableName { get; }
         string OperationName { get; }
         string OwnerType { get; }
         string SubjectType { get; }
-        IReadOnlyList<ICsvRecordSet<T>> MapToOrphanRecords(IReadOnlyList<SubjectReference> subjects);
+        IReadOnlyList<T> MapToOrphanRecords(IReadOnlyList<SubjectReference> subjects);
     }
 }

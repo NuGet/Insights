@@ -32,16 +32,6 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         string ICsvResultStorage<PackageArchiveEntry>.ResultContainerName => _options.Value.PackageArchiveEntryContainerName;
         public bool SingleMessagePerId => false;
 
-        public List<PackageArchiveRecord> Prune(List<PackageArchiveRecord> records, bool isFinalPrune)
-        {
-            return PackageRecord.Prune(records, isFinalPrune);
-        }
-
-        public List<PackageArchiveEntry> Prune(List<PackageArchiveEntry> records, bool isFinalPrune)
-        {
-            return PackageRecord.Prune(records, isFinalPrune);
-        }
-
         public async Task InitializeAsync()
         {
             await _packageFileService.InitializeAsync();
@@ -56,10 +46,9 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         public async Task<DriverResult<CsvRecordSets<PackageArchiveRecord, PackageArchiveEntry>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             (var archive, var entries) = await ProcessLeafInternalAsync(leafScan);
-            var bucketKey = PackageRecord.GetBucketKey(leafScan);
             return DriverResult.Success(new CsvRecordSets<PackageArchiveRecord, PackageArchiveEntry>(
-                new CsvRecordSet<PackageArchiveRecord>(bucketKey, archive != null ? [archive] : Array.Empty<PackageArchiveRecord>()),
-                new CsvRecordSet<PackageArchiveEntry>(bucketKey, entries ?? Array.Empty<PackageArchiveEntry>())));
+                archive != null ? [archive] : [],
+                entries ?? []));
         }
 
         private async Task<(PackageArchiveRecord, IReadOnlyList<PackageArchiveEntry>)> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
@@ -72,7 +61,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
                 var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
                 return (
                     new PackageArchiveRecord(scanId, scanTimestamp, leaf),
-                    new[] { new PackageArchiveEntry(scanId, scanTimestamp, leaf) }
+                    [new PackageArchiveEntry(scanId, scanTimestamp, leaf)]
                 );
             }
             else

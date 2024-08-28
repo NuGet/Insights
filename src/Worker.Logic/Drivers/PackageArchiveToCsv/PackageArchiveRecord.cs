@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker.PackageArchiveToCsv
 {
-    public partial record PackageArchiveRecord : ArchiveRecord, ICsvRecord
+    public partial record PackageArchiveRecord : ArchiveRecord, ICsvRecord, IAggregatedCsvRecord<PackageArchiveRecord>
     {
         public PackageArchiveRecord()
         {
@@ -25,5 +25,20 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         public string SHA1 { get; set; }
         public string SHA256 { get; set; }
         public string SHA512 { get; set; }
+
+        public static List<PackageArchiveRecord> Prune(List<PackageArchiveRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
+        {
+            return Prune(records, isFinalPrune);
+        }
+
+        public int CompareTo(PackageArchiveRecord other)
+        {
+            return base.CompareTo(other);
+        }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

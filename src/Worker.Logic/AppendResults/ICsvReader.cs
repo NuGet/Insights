@@ -7,5 +7,6 @@ namespace NuGet.Insights.Worker
     {
         string GetHeader<T>() where T : ICsvRecord;
         CsvReaderResult<T> GetRecords<T>(TextReader reader, int bufferSize) where T : ICsvRecord;
+        IEnumerable<T> GetRecordsEnumerable<T>(TextReader reader, int bufferSize) where T : ICsvRecord;
     }
 }

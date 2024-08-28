@@ -29,7 +29,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(
                 "[" +
                 "\"BusinessRow\"," +
@@ -60,7 +60,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(
                 "{" +
                 "\"AssemblyCopyright\":[{\"0\":\"Copyright \\u00A9 Nicholas Blumhardt 2013\"}]," +
@@ -90,7 +90,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageAssemblyResultType.ValidAssembly, record.ResultType);
             Assert.True(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.PublicKeyToken_Security));
             Assert.True(record.HasPublicKey);
@@ -114,7 +114,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageAssemblyResultType.ValidAssembly, record.ResultType);
             Assert.Equal("zh-CN", record.Culture);
         }
@@ -134,7 +134,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageAssemblyResultType.ValidAssembly, record.ResultType);
             var customAttributes = JsonSerializer.Deserialize<JsonElement>(record.CustomAttributes);
             Assert.True(customAttributes.TryGetProperty("ReferenceAssembly", out var _));
@@ -155,7 +155,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageAssemblyResultType.ValidAssembly, record.ResultType);
             var customAttributes = JsonSerializer.Deserialize<JsonElement>(record.CustomAttributes);
             var debuggingModes = (DebuggableAttribute.DebuggingModes)customAttributes.GetProperty("Debuggable")[0].GetProperty("0").GetInt32();
@@ -177,8 +177,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            Assert.Equal(5, output.Value.Records.Count);
-            var record = output.Value.Records[0];
+            Assert.Equal(5, output.Value.Count);
+            var record = output.Value[0];
             Assert.Equal("lib/NET48/Kentico.Content.Web.Mvc.dll", record.Path);
             Assert.Contains("RegisterPageBuilderLocalizationResource", record.CustomAttributesFailedDecode, StringComparison.Ordinal);
         }
@@ -198,8 +198,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            Assert.Equal(20, output.Value.Records.Count);
-            var record = output.Value.Records[4];
+            Assert.Equal(20, output.Value.Count);
+            var record = output.Value[4];
             Assert.Equal("ref/net452/mscorlib.dll", record.Path);
             Assert.True(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.CustomAttributes_BrokenMethodDefinitionName));
         }
@@ -219,7 +219,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageAssemblyResultType.ValidAssembly, record.ResultType);
             var customAttributes = JsonSerializer.Deserialize<JsonElement>(record.CustomAttributes);
             var debuggingModes = (DebuggableAttribute.DebuggingModes)customAttributes.GetProperty("Debuggable")[0].GetProperty("0").GetInt32();
@@ -241,8 +241,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            Assert.Equal(43, output.Value.Records.Count);
-            var record = output.Value.Records[0];
+            Assert.Equal(43, output.Value.Count);
+            var record = output.Value[0];
             Assert.Equal("Development Utility/Aspose.PDF.dll", record.Path);
             Assert.Equal("[\"SecurityRules\"]", record.CustomAttributesFailedDecode);
         }
@@ -262,8 +262,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            Assert.Equal(7, output.Value.Records.Count);
-            var record = output.Value.Records[1];
+            Assert.Equal(7, output.Value.Count);
+            var record = output.Value[1];
             Assert.Equal("lib/netstandard1.4/Realm.Sync.dll", record.Path);
             Assert.True(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.CustomAttributes_DuplicateArgumentName));
         }
@@ -283,8 +283,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            Assert.Equal(4, output.Value.Records.Count);
-            var record = output.Value.Records[0];
+            Assert.Equal(4, output.Value.Count);
+            var record = output.Value[0];
             Assert.Equal("lib/net35/GemBox.Document.dll", record.Path);
             var customAttributes = JsonSerializer.Deserialize<JsonElement>(record.CustomAttributes);
             Assert.Equal("StandardFonts/", customAttributes.GetProperty("\u0002   ")[0].GetProperty("0").GetString());
@@ -306,8 +306,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            Assert.Equal(7, output.Value.Records.Count);
-            var record = output.Value.Records[3];
+            Assert.Equal(7, output.Value.Count);
+            var record = output.Value[3];
             Assert.Equal("ref/netstandard1.0/System.Runtime.dll", record.Path);
             var customAttributes = JsonSerializer.Deserialize<JsonElement>(record.CustomAttributes);
             Assert.Equal(
@@ -331,8 +331,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            Assert.Equal(8, output.Value.Records.Count);
-            var record = output.Value.Records[1];
+            Assert.Equal(8, output.Value.Count);
+            var record = output.Value[1];
             Assert.Equal("lib/net4/CodeContracts/QuickGraph.Contracts.dll", record.Path);
             var customAttributes = JsonSerializer.Deserialize<JsonElement>(record.CustomAttributes);
             Assert.Equal(
@@ -356,8 +356,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            Assert.Equal(6, output.Value.Records.Count);
-            var record = output.Value.Records[1];
+            Assert.Equal(6, output.Value.Count);
+            var record = output.Value[1];
             Assert.Equal("bin/Debug/SockLibNG.dll", record.Path);
             Assert.Equal(
                 "[" +
@@ -394,7 +394,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = output.Value.Records[0];
+            var record = output.Value[0];
             Assert.Equal(PackageAssemblyResultType.ValidAssembly, record.ResultType);
             var customAttributes = JsonSerializer.Deserialize<JsonElement>(record.CustomAttributes);
             Assert.Equal(2, customAttributes.GetProperty("InternalsVisibleTo").GetArrayLength());
@@ -417,7 +417,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageAssemblyResultType.ValidAssembly, record.ResultType);
             Assert.True(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.Name_CultureNotFoundException));
             Assert.Equal("EnyuTryNuget", record.Culture);
@@ -442,8 +442,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            Assert.Equal(2, output.Value.Records.Count);
-            var record = output.Value.Records[1];
+            Assert.Equal(2, output.Value.Count);
+            var record = output.Value[1];
             Assert.Equal("lib/net451/getAddress,Azure.4.5.1.dll", record.Path);
             Assert.Equal(PackageAssemblyResultType.ValidAssembly, record.ResultType);
             Assert.False(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.Name_FileLoadException));
@@ -466,7 +466,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            Assert.All(output.Value.Records, x => Assert.Equal(PackageAssemblyResultType.InvalidZipEntry, x.ResultType));
+            Assert.All(output.Value, x => Assert.Equal(PackageAssemblyResultType.InvalidZipEntry, x.ResultType));
         }
 
         [Fact]
@@ -523,7 +523,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal("lib/net7.0/Democrite.Framework.Node.dll", record.Path);
             var customAttributes = JsonSerializer.Deserialize<JsonElement>(record.CustomAttributes);
             Assert.True(customAttributes.TryGetProperty("(unprocessed type specification)", out var values));

@@ -6,7 +6,7 @@ using NuGet.Services.Validation;
 
 namespace NuGet.Insights.Worker.PackageCertificateToCsv
 {
-    public partial record CertificateRecord : ICsvRecord
+    public partial record CertificateRecord : ICsvRecord, IAggregatedCsvRecord<CertificateRecord>
     {
         public CertificateRecord()
         {
@@ -123,5 +123,118 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
         [KustoType("dynamic")]
         public string Policies { get; set; }
+
+        public static List<CertificateRecord> Prune(List<CertificateRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
+        {
+            var pruned = records
+                .GroupBy(x => x.Fingerprint) // Group by SHA-256 fingerprint
+                .Where(g => !isFinalPrune || g.All(x => x.ResultType != PackageCertificateResultType.Deleted))
+                .Select(g =>
+                {
+                    // Prefer the most recent results (scan timestamp).
+                    var items = g.OrderByDescending(x => x.ScanTimestamp ?? DateTimeOffset.MinValue).ToList();
+
+                    var aggregate = items.First();
+                    foreach (var x in items.Skip(1))
+                    {
+                        // Take the newest code signing and timestamping results
+                        if (x.CodeSigningCommitTimestamp.GetValueOrDefault() > aggregate.CodeSigningCommitTimestamp.GetValueOrDefault())
+                        {
+                            aggregate.CodeSigningCommitTimestamp = x.CodeSigningCommitTimestamp;
+                            aggregate.CodeSigningRevocationTime = x.CodeSigningRevocationTime;
+                            aggregate.CodeSigningStatus = x.CodeSigningStatus;
+                            aggregate.CodeSigningStatusFlags = x.CodeSigningStatusFlags;
+                            aggregate.CodeSigningStatusUpdateTime = x.CodeSigningStatusUpdateTime;
+                        }
+
+                        if (x.TimestampingCommitTimestamp.GetValueOrDefault() > aggregate.TimestampingCommitTimestamp.GetValueOrDefault())
+                        {
+                            aggregate.TimestampingCommitTimestamp = x.TimestampingCommitTimestamp;
+                            aggregate.TimestampingRevocationTime = x.TimestampingRevocationTime;
+                            aggregate.TimestampingStatus = x.TimestampingStatus;
+                            aggregate.TimestampingStatusFlags = x.TimestampingStatusFlags;
+                            aggregate.TimestampingStatusUpdateTime = x.TimestampingStatusUpdateTime;
+                        }
+
+                        // These properties are immutable. They exist in the certificate metadata.
+                        GuardChange(x.FingerprintSHA256Hex, x.FingerprintSHA256Hex, aggregate.FingerprintSHA256Hex, nameof(FingerprintSHA256Hex));
+                        GuardChange(x.FingerprintSHA256Hex, x.FingerprintSHA1Hex, aggregate.FingerprintSHA1Hex, nameof(FingerprintSHA1Hex));
+                        GuardChange(x.FingerprintSHA256Hex, x.Subject, aggregate.Subject, nameof(Subject));
+                        GuardChange(x.FingerprintSHA256Hex, x.Issuer, aggregate.Issuer, nameof(Issuer));
+                        GuardChange(x.FingerprintSHA256Hex, x.NotBefore, aggregate.NotBefore, nameof(NotBefore));
+                        GuardChange(x.FingerprintSHA256Hex, x.NotAfter, aggregate.NotAfter, nameof(NotAfter));
+                        GuardChange(x.FingerprintSHA256Hex, x.SerialNumber, aggregate.SerialNumber, nameof(SerialNumber));
+                        GuardChange(x.FingerprintSHA256Hex, x.SignatureAlgorithmOid, aggregate.SignatureAlgorithmOid, nameof(SignatureAlgorithmOid));
+                        GuardChange(x.FingerprintSHA256Hex, x.Version, aggregate.Version, nameof(Version));
+                        GuardChange(x.FingerprintSHA256Hex, x.Extensions, aggregate.Extensions, nameof(Extensions));
+                        GuardChange(x.FingerprintSHA256Hex, x.PublicKeyOid, aggregate.PublicKeyOid, nameof(PublicKeyOid));
+                        GuardChange(x.FingerprintSHA256Hex, x.RawDataLength, aggregate.RawDataLength, nameof(RawDataLength));
+                        GuardChange(x.FingerprintSHA256Hex, x.RawData, aggregate.RawData, nameof(RawData));
+
+                        // These properties can change. Most of the time they're the same but chains are not guaranteed to be unique.
+                        GuardChange(x.FingerprintSHA256Hex, x.IssuerFingerprint, aggregate.IssuerFingerprint, nameof(IssuerFingerprint), logger);
+                        GuardChange(x.FingerprintSHA256Hex, x.RootFingerprint, aggregate.RootFingerprint, nameof(RootFingerprint), logger);
+                        GuardChange(x.FingerprintSHA256Hex, x.ChainLength, aggregate.ChainLength, nameof(ChainLength), logger);
+                    }
+
+                    return aggregate;
+                })
+                .Order()
+                .ToList();
+
+            foreach (var record in pruned)
+            {
+                if (!options.Value.RecordCertificateStatus)
+                {
+                    record.CodeSigningStatus = null;
+                    record.CodeSigningStatusFlags = null;
+                    record.CodeSigningStatusUpdateTime = null;
+                    record.TimestampingStatus = null;
+                    record.TimestampingStatusFlags = null;
+                    record.TimestampingStatusUpdateTime = null;
+                }
+
+                record.ScanId = null;
+                record.ScanTimestamp = null;
+            }
+
+            return pruned;
+        }
+
+        private static void GuardChange(string fingerprint, string a, string b, string propertyName, ILogger logger = null)
+        {
+            // Coalesce to empty string since the CSV reader can't differentiate an empty string and a null string.
+            GuardChange<string>(fingerprint, a ?? string.Empty, b ?? string.Empty, propertyName, logger);
+        }
+
+        private static void GuardChange<T>(string fingerprint, T a, T b, string propertyName, ILogger logger = null)
+        {
+            if (!Equals(a, b))
+            {
+                if (logger is not null)
+                {
+                    logger.LogWarning(
+                        "The {PropertyName} property on the certificate record {FingerprintSHA256} changed from {Before} to {After}.",
+                        propertyName,
+                        fingerprint,
+                        a,
+                        b);
+                }
+                else
+                {
+                    throw new InvalidOperationException($"The {propertyName} property on the certificate record {fingerprint} changed from {a} to {b}.");
+                }
+            }
+        }
+
+        public int CompareTo(CertificateRecord other)
+        {
+            return string.CompareOrdinal(Fingerprint, other.Fingerprint);
+        }
+
+        public string GetBucketKey()
+        {
+            return Fingerprint;
+        }
     }
 }

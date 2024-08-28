@@ -29,9 +29,9 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            Assert.Equal(3, output.Value.Records.Count(x => x.FileExtension == ".dll"));
-            Assert.All(output.Value.Records.Where(x => x.FileExtension == ".dll"), x => Assert.Equal(FileHashResultType.InvalidZipEntry, x.ResultType));
-            Assert.All(output.Value.Records.Where(x => x.FileExtension != ".dll"), x => Assert.Equal(FileHashResultType.Available, x.ResultType));
+            Assert.Equal(3, output.Value.Count(x => x.FileExtension == ".dll"));
+            Assert.All(output.Value.Where(x => x.FileExtension == ".dll"), x => Assert.Equal(FileHashResultType.InvalidZipEntry, x.ResultType));
+            Assert.All(output.Value.Where(x => x.FileExtension != ".dll"), x => Assert.Equal(FileHashResultType.Available, x.ResultType));
         }
 
         [Fact]

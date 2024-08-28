@@ -27,7 +27,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Sets3.SelectMany(x => x.Records));
+            var record = Assert.Single(output.Value.Records3);
             Assert.Equal(
                 "{\"alternatePackage\":{" +
                     "\"id\":\"Microsoft.AspNetCore.OData\"," +
@@ -53,7 +53,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Sets3.SelectMany(x => x.Records));
+            var record = Assert.Single(output.Value.Records3);
             Assert.Equal(
                 "[{" +
                     "\"@id\":\"https://api.nuget.org/v3/catalog0/data/2020.07.21.05.06.09/system.security.cryptography.xml.4.4.0.json#vulnerability/GitHub/705\"," +

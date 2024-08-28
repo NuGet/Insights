@@ -9,7 +9,7 @@ using System.IO.Compression;
 namespace NuGet.Insights.Worker
 {
     public abstract class ZipArchiveEntryHashToCsvDriver<T> : ICatalogLeafToCsvDriver<T>, ICsvResultStorage<T>
-        where T : FileRecord, ICsvRecord, IEquatable<T>
+        where T : FileRecord, IAggregatedCsvRecord<T>
     {
         private readonly CatalogClient _catalogClient;
         private readonly FileDownloader _fileDownloader;
@@ -44,7 +44,7 @@ namespace NuGet.Insights.Worker
         protected abstract Task<string?> GetZipUrlAsync(CatalogLeafScan leafScan);
         protected abstract Task InternalInitializeAsync();
 
-        public async Task<DriverResult<CsvRecordSet<T>>> ProcessLeafAsync(CatalogLeafScan leafScan)
+        public async Task<DriverResult<IReadOnlyList<T>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
@@ -56,7 +56,7 @@ namespace NuGet.Insights.Worker
                 // We must clear the data related to deleted ZIP archives.
                 await _hashService.SetHashesAsync(leafScan.ToPackageIdentityCommit(), headers: null, hashes: null);
 
-                return MakeResults(leafScan, new List<T> { NewDeleteRecord(scanId, scanTimestamp, leaf) });
+                return MakeResults([NewDeleteRecord(scanId, scanTimestamp, leaf)]);
             }
             else
             {
@@ -66,7 +66,7 @@ namespace NuGet.Insights.Worker
                 if (hashes is not null)
                 {
                     // The data is already up to date. No-op.
-                    return MakeEmptyResults(leafScan);
+                    return MakeEmptyResults();
                 }
 
                 var url = await GetZipUrlAsync(leafScan);
@@ -93,7 +93,7 @@ namespace NuGet.Insights.Worker
                 {
                     if (result.Value.Body.Type == TempStreamResultType.SemaphoreNotAvailable)
                     {
-                        return DriverResult.TryAgainLater<CsvRecordSet<T>>();
+                        return DriverResult.TryAgainLater<IReadOnlyList<T>>();
                     }
 
                     // We have downloaded the full ZIP archive here so we can capture the calculated hashes.
@@ -136,12 +136,12 @@ namespace NuGet.Insights.Worker
                         pool.Return(buffer);
                     }
 
-                    return MakeResults(leafScan, records);
+                    return MakeResults(records);
                 }
             }
         }
 
-        private async Task<DriverResult<CsvRecordSet<T>>> HandleEmptyResultAsync(
+        private async Task<DriverResult<IReadOnlyList<T>>> HandleEmptyResultAsync(
             CatalogLeafScan leafScan,
             Guid scanId,
             DateTimeOffset scanTimestamp,
@@ -152,13 +152,13 @@ namespace NuGet.Insights.Worker
 
             if (UrlNotFoundIsDeleted)
             {
-                return MakeEmptyResults(leafScan);
+                return MakeEmptyResults();
             }
             else
             {
                 var record = NewDetailsRecord(scanId, scanTimestamp, leaf);
                 record.ResultType = FileHashResultType.DoesNotExist;
-                return MakeResults(leafScan, [record]);
+                return MakeResults([record]);
             }
         }
 
@@ -200,19 +200,14 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        private static DriverResult<CsvRecordSet<T>> MakeResults(ICatalogLeafItem item, List<T> records)
+        private static DriverResult<IReadOnlyList<T>> MakeResults(IReadOnlyList<T> records)
         {
-            return DriverResult.Success(new CsvRecordSet<T>(PackageRecord.GetBucketKey(item), records));
+            return DriverResult.Success(records);
         }
 
-        private static DriverResult<CsvRecordSet<T>> MakeEmptyResults(ICatalogLeafItem item)
+        private static DriverResult<IReadOnlyList<T>> MakeEmptyResults()
         {
-            return MakeResults(item, new List<T>());
-        }
-
-        public List<T> Prune(List<T> records, bool isFinalPrune)
-        {
-            return PackageRecord.Prune(records, isFinalPrune);
+            return MakeResults([]);
         }
 
         public async Task DestroyAsync()

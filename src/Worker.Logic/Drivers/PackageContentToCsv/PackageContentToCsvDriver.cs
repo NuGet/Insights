@@ -62,7 +62,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             return Task.CompletedTask;
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageContent>>> ProcessLeafAsync(CatalogLeafScan leafScan)
+        public async Task<DriverResult<IReadOnlyList<PackageContent>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;
@@ -71,7 +71,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             {
                 var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
-                return MakeResults(leafScan, new List<PackageContent> { new PackageContent(scanId, scanTimestamp, leaf) });
+                return MakeResults([new PackageContent(scanId, scanTimestamp, leaf)]);
             }
             else
             {
@@ -80,7 +80,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
                 var zipDirectory = await _packageFileService.GetZipDirectoryAsync(leafScan.ToPackageIdentityCommit());
                 if (zipDirectory == null)
                 {
-                    return MakeEmptyResults(leaf);
+                    return MakeEmptyResults();
                 }
 
                 if (!zipDirectory.Entries.Any(e => GetExtensionAndOrder(e.GetName()).Order.HasValue))
@@ -100,14 +100,14 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
 
                 if (result is null)
                 {
-                    return MakeEmptyResults(leaf);
+                    return MakeEmptyResults();
                 }
 
                 using (result.Value.Body)
                 {
                     if (result.Value.Body.Type == TempStreamResultType.SemaphoreNotAvailable)
                     {
-                        return DriverResult.TryAgainLater<CsvRecordSet<PackageContent>>();
+                        return DriverResult.TryAgainLater<IReadOnlyList<PackageContent>>();
                     }
 
                     using var zipArchive = new ZipArchive(result.Value.Body.Stream);
@@ -215,7 +215,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
                         }
                     }
 
-                    return MakeResults(leafScan, records);
+                    return MakeResults(records);
                 }
             }
         }
@@ -247,25 +247,20 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             return (extension, order);
         }
 
-        private static DriverResult<CsvRecordSet<PackageContent>> MakeNoContentResults(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf)
+        private static DriverResult<IReadOnlyList<PackageContent>> MakeNoContentResults(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf)
         {
-            return MakeResults(leaf, new List<PackageContent> { new PackageContent(scanId, scanTimestamp, leaf, PackageContentResultType.NoContent) });
+            return MakeResults([new PackageContent(scanId, scanTimestamp, leaf, PackageContentResultType.NoContent)]);
         }
 
-        private static DriverResult<CsvRecordSet<PackageContent>> MakeEmptyResults(PackageDetailsCatalogLeaf leaf)
+        private static DriverResult<IReadOnlyList<PackageContent>> MakeEmptyResults()
         {
             // Ignore packages where the .nupkg is missing. A subsequent scan will produce a deleted record.
-            return MakeResults(leaf, new List<PackageContent>());
+            return MakeResults([]);
         }
 
-        private static DriverResult<CsvRecordSet<PackageContent>> MakeResults(ICatalogLeafItem item, List<PackageContent> records)
+        private static DriverResult<IReadOnlyList<PackageContent>> MakeResults(IReadOnlyList<PackageContent> records)
         {
-            return DriverResult.Success(new CsvRecordSet<PackageContent>(PackageRecord.GetBucketKey(item), records));
-        }
-
-        public List<PackageContent> Prune(List<PackageContent> records, bool isFinalPrune)
-        {
-            return PackageRecord.Prune(records, isFinalPrune);
+            return DriverResult.Success(records);
         }
     }
 }

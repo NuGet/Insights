@@ -5,7 +5,7 @@ using NuGetPe.AssemblyMetadata;
 
 namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
 {
-    public partial record NuGetPackageExplorerFile : PackageRecord, ICsvRecord
+    public partial record NuGetPackageExplorerFile : PackageRecord, ICsvRecord, IAggregatedCsvRecord<NuGetPackageExplorerFile>
     {
         public NuGetPackageExplorerFile()
         {
@@ -39,5 +39,26 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
         public string SourceUrlRepoInfo { get; set; }
 
         public PdbType? PdbType { get; set; }
+
+        public static List<NuGetPackageExplorerFile> Prune(List<NuGetPackageExplorerFile> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
+        {
+            return Prune(records, isFinalPrune);
+        }
+
+        public int CompareTo(NuGetPackageExplorerFile other)
+        {
+            var c = base.CompareTo(other);
+            if (c != 0)
+            {
+                return c;
+            }
+
+            return string.CompareOrdinal(Path, other.Path);
+        }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

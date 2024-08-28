@@ -20,15 +20,10 @@ namespace NuGet.Insights.Worker.ReferenceTracking
         public string OwnerToSubjectTableName => _test.OwnerToSubjectTableName;
         public string SubjectToOwnerTableName => _test.SubjectToOwnerTableName;
 
-        public IReadOnlyList<ICsvRecordSet<TestSubjectRecord>> MapToOrphanRecords(IReadOnlyList<SubjectReference> subjects)
+        public IReadOnlyList<TestSubjectRecord> MapToOrphanRecords(IReadOnlyList<SubjectReference> subjects)
         {
             return subjects
-                .GroupBy(subject => subject.PartitionKey)
-                .Select(group => new CsvRecordSet<TestSubjectRecord>(
-                    group.Key,
-                    group
-                        .Select(subject => new TestSubjectRecord { BucketKey = group.Key, Id = subject.RowKey, IsOrphan = true })
-                        .ToList()))
+                .Select(subject => new TestSubjectRecord { BucketKey = subject.PartitionKey, Id = subject.RowKey, IsOrphan = true })
                 .ToList();
         }
     }

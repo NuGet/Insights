@@ -28,7 +28,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(
                 "[{" +
                 "\"Minimum\":\"net\"," +
@@ -69,7 +69,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageCompatibilityResultType.Available, record.ResultType);
             Assert.False(record.HasError);
             Assert.False(record.DoesNotRoundTrip);
@@ -98,7 +98,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageCompatibilityResultType.Available, record.ResultType);
             Assert.False(record.HasError);
             Assert.False(record.DoesNotRoundTrip);
@@ -127,7 +127,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageCompatibilityResultType.Available, record.ResultType);
             Assert.True(record.HasError);
             Assert.False(record.HasAny);
@@ -156,7 +156,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageCompatibilityResultType.Available, record.ResultType);
             Assert.False(record.HasError);
             Assert.False(record.HasAny);
@@ -185,7 +185,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageCompatibilityResultType.Available, record.ResultType);
             Assert.False(record.HasError);
             Assert.True(record.DoesNotRoundTrip);
@@ -214,7 +214,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageCompatibilityResultType.Available, record.ResultType);
             Assert.False(record.HasError);
             Assert.True(record.DoesNotRoundTrip);
@@ -243,7 +243,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageCompatibilityResultType.Available, record.ResultType);
             Assert.False(record.HasError);
             Assert.True(record.DoesNotRoundTrip);

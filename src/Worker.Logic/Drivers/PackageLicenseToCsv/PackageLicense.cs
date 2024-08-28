@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker.PackageLicenseToCsv
 {
-    public partial record PackageLicense : PackageRecord, ICsvRecord
+    public partial record PackageLicense : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageLicense>
     {
         public PackageLicense()
         {
@@ -42,5 +42,20 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
         public long? FileSize { get; set; }
         public string FileSHA256 { get; set; }
         public string FileContent { get; set; }
+
+        public static List<PackageLicense> Prune(List<PackageLicense> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
+        {
+            return Prune(records, isFinalPrune);
+        }
+
+        public int CompareTo(PackageLicense other)
+        {
+            return base.CompareTo(other);
+        }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

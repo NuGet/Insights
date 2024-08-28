@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker.PackageContentToCsv
 {
-    public partial record PackageContent : PackageRecord, ICsvRecord
+    public partial record PackageContent : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageContent>
     {
         public PackageContent()
         {
@@ -32,5 +32,26 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
         public string SHA256 { get; set; }
         public string Content { get; set; }
         public bool? DuplicateContent { get; set; }
+
+        public static List<PackageContent> Prune(List<PackageContent> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
+        {
+            return Prune(records, isFinalPrune);
+        }
+
+        public int CompareTo(PackageContent other)
+        {
+            var c = base.CompareTo(other);
+            if (c != 0)
+            {
+                return c;
+            }
+
+            return Comparer<int?>.Default.Compare(SequenceNumber, other.SequenceNumber);
+        }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

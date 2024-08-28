@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker.PackageAssetToCsv
 {
-    public partial record PackageAsset : PackageRecord, ICsvRecord
+    public partial record PackageAsset : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageAsset>
     {
         public PackageAsset()
         {
@@ -44,5 +44,32 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
         public string FrameworkProfile { get; set; }
         public string PlatformName { get; set; }
         public string PlatformVersion { get; set; }
+
+        public static List<PackageAsset> Prune(List<PackageAsset> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
+        {
+            return Prune(records, isFinalPrune);
+        }
+
+        public int CompareTo(PackageAsset other)
+        {
+            var c = base.CompareTo(other);
+            if (c != 0)
+            {
+                return c;
+            }
+
+            c = Comparer<PatternSetType?>.Default.Compare(PatternSet, other.PatternSet);
+            if (c != 0)
+            {
+                return c;
+            }
+
+            return string.CompareOrdinal(Path, other.Path);
+        }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

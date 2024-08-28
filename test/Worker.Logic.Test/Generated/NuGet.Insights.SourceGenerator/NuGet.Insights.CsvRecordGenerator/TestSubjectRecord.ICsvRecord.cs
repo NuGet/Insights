@@ -44,7 +44,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
     ']'
 
     */
-    partial class TestSubjectRecord
+    partial record TestSubjectRecord
     {
         public int FieldCount => 3;
 

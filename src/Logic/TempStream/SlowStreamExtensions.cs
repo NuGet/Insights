@@ -31,9 +31,18 @@ namespace NuGet.Insights
                     var bytesRead = await ReadForDurationAsync(src, buffer, bufferSize, TimeSpan.FromSeconds(5));
 
                     copiedBytes += bytesRead;
-                    var percent = 1.0 * copiedBytes / length;
-                    var logLevel = bytesRead == 0 || (int)(percent * 100) != (int)(previousPercent * 100) ? LogLevel.Information : LogLevel.Debug;
-                    logger.Log(logLevel, "Read {BufferBytes} bytes ({CopiedBytes} of {TotalBytes}, {Percent:P2}).", bytesRead, copiedBytes, length, percent);
+
+                    double percent = default;
+                    LogLevel logLevel = default;
+                    if (length >= 0)
+                    {
+                        percent = 1.0 * copiedBytes / length;
+                        logLevel = bytesRead == 0 || (int)(percent * 10) != (int)(previousPercent * 10) ? LogLevel.Information : LogLevel.None;
+                        if (logLevel != LogLevel.None)
+                        {
+                            logger.Log(logLevel, "Read {BufferBytes} bytes ({CopiedBytes} of {TotalBytes}, {Percent:P2}).", bytesRead, copiedBytes, length, percent);
+                        }
+                    }
 
                     if (bytesRead == 0)
                     {
@@ -44,8 +53,15 @@ namespace NuGet.Insights
                     hashAlgorithm.TransformBlock(buffer, 0, bytesRead);
 
                     await dest.WriteAsync(buffer, 0, bytesRead);
-                    logger.Log(logLevel, "Wrote {BufferBytes} bytes ({CopiedBytes} of {TotalBytes}, {Percent:P2}).", bytesRead, copiedBytes, length, percent);
-                    previousPercent = percent;
+
+                    if (length >= 0)
+                    {
+                        if (logLevel != LogLevel.None)
+                        {
+                            logger.Log(logLevel, "Wrote {BufferBytes} bytes ({CopiedBytes} of {TotalBytes}, {Percent:P2}).", bytesRead, copiedBytes, length, percent);
+                        }
+                        previousPercent = percent;
+                    }
                 }
 
                 if (copiedBytes < dest.Length)

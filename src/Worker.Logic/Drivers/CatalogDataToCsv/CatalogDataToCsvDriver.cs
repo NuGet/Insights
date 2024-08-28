@@ -41,11 +41,10 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             CatalogLeafScan leafScan)
         {
             (var deprecation, var vulnerabilities, var leafRecord) = await ProcessLeafInternalAsync(leafScan);
-            var bucketKey = PackageRecord.GetBucketKey(leafScan);
             return DriverResult.Success(new CsvRecordSets<PackageDeprecationRecord, PackageVulnerabilityRecord, CatalogLeafItemRecord>(
-                new CsvRecordSet<PackageDeprecationRecord>(bucketKey, new[] { deprecation }),
-                new CsvRecordSet<PackageVulnerabilityRecord>(bucketKey, vulnerabilities),
-                new CsvRecordSet<CatalogLeafItemRecord>(bucketKey, new[] { leafRecord })));
+                [deprecation],
+                vulnerabilities,
+                [leafRecord]));
         }
 
         private async Task<(PackageDeprecationRecord, IReadOnlyList<PackageVulnerabilityRecord>, CatalogLeafItemRecord)> ProcessLeafInternalAsync(
@@ -125,25 +124,6 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             }
 
             return output;
-        }
-
-        public List<PackageDeprecationRecord> Prune(List<PackageDeprecationRecord> records, bool isFinalPrune)
-        {
-            return PackageRecord.Prune(records, isFinalPrune);
-        }
-
-        public List<PackageVulnerabilityRecord> Prune(List<PackageVulnerabilityRecord> records, bool isFinalPrune)
-        {
-            return PackageRecord.Prune(records, isFinalPrune);
-        }
-
-        public List<CatalogLeafItemRecord> Prune(List<CatalogLeafItemRecord> records, bool isFinalPrune)
-        {
-            return records
-                .Distinct()
-                .OrderBy(x => x.CommitTimestamp)
-                .ThenBy(x => x.Identity, StringComparer.OrdinalIgnoreCase)
-                .ToList();
         }
     }
 }

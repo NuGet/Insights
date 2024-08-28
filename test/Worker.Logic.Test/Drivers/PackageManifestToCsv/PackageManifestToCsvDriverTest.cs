@@ -89,7 +89,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageManifestRecordResultType.Error, record.ResultType);
             Assert.Null(record.ContentFiles);
             Assert.True(record.ContentFilesHasFormatException);
@@ -110,7 +110,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageManifestRecordResultType.Error, record.ResultType);
             Assert.Null(record.DependencyGroups);
             Assert.True(record.DependencyGroupsHasMissingId);
@@ -131,7 +131,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(
                 JsonSerializer.Serialize(new[]
@@ -160,7 +160,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(
                 JsonSerializer.Serialize(new[]
@@ -205,7 +205,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(
                 JsonSerializer.Serialize(new
@@ -233,7 +233,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(JsonSerializer.Serialize(new[]
             {
@@ -289,7 +289,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(JsonSerializer.Serialize(new[]
             {
@@ -321,7 +321,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(JsonSerializer.Serialize(new[]
             {
@@ -351,7 +351,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(JsonSerializer.Serialize(new
             {
@@ -377,7 +377,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageManifestRecordResultType.Available, record.ResultType);
             Assert.Equal(JsonSerializer.Serialize(new[]
             {

@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker.ReferenceTracking
 {
-    public class CleanupOrphanRecordsTimer<T> : ICleanupOrphanRecordsTimer, ITimer where T : ICsvRecord
+    public class CleanupOrphanRecordsTimer<T> : ICleanupOrphanRecordsTimer, ITimer where T : IAggregatedCsvRecord<T>
     {
         private readonly ICleanupOrphanRecordsService<T> _service;
         private readonly ICleanupOrphanRecordsAdapter<T> _adapter;

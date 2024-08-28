@@ -5,7 +5,7 @@ using NuGet.Packaging;
 
 namespace NuGet.Insights.Worker.CatalogDataToCsv
 {
-    public partial record CatalogLeafItemRecord : ICsvRecord
+    public partial record CatalogLeafItemRecord : ICsvRecord, IAggregatedCsvRecord<CatalogLeafItemRecord>
     {
         public CatalogLeafItemRecord()
         {
@@ -91,5 +91,29 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
 
         [KustoType("dynamic")]
         public string SignaturePackageEntry { get; set; }
+
+        public static List<CatalogLeafItemRecord> Prune(List<CatalogLeafItemRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
+        {
+            return records
+                .Distinct()
+                .Order()
+                .ToList();
+        }
+
+        public int CompareTo(CatalogLeafItemRecord other)
+        {
+            var c = PackageRecord.CompareTo(LowerId, Identity, other.LowerId, other.Identity);
+            if (c != 0)
+            {
+                return c;
+            }
+
+            return CommitTimestamp.CompareTo(other.CommitTimestamp);
+        }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

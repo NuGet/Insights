@@ -31,9 +31,9 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var record = Assert.Single(output.Value.Records1);
             Assert.Equal(ArchiveResultType.Deleted, record.ResultType);
-            var entry = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var entry = Assert.Single(output.Value.Records2);
             Assert.Equal(ArchiveResultType.Deleted, entry.ResultType);
         }
 
@@ -53,9 +53,9 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var record = Assert.Single(output.Value.Records1);
             Assert.Equal(ArchiveResultType.DoesNotExist, record.ResultType);
-            var entry = Assert.Single(Assert.Single(output.Value.Sets2).Records);
+            var entry = Assert.Single(output.Value.Records2);
             Assert.Equal(ArchiveResultType.DoesNotExist, entry.ResultType);
             Assert.True(TelemetryClient.Metrics.TryGetValue(
                 new("FileDownloader.GetZipDirectoryReaderAsync.NotFound", "PackageId", "PackageVersion", "ArtifactFileType", "DownloadMode"),
@@ -80,7 +80,7 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var archive = Assert.Single(Assert.Single(output.Value.Sets1).Records);
+            var archive = Assert.Single(output.Value.Records1);
             Assert.Equal(ArchiveResultType.Available, archive.ResultType);
             Assert.Equal(35657, archive.Size);
             Assert.Null(archive.HeaderMD5);
@@ -91,8 +91,8 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             Assert.Equal(6, archive.EntryCount);
             Assert.Empty(archive.Comment);
 
-            Assert.Equal(6, Assert.Single(output.Value.Sets2).Records.Count);
-            var entries = Assert.Single(output.Value.Sets2).Records;
+            Assert.Equal(6, output.Value.Records2.Count);
+            var entries = output.Value.Records2;
 
             Assert.Equal(0, entries[0].SequenceNumber);
             Assert.Equal("_rels/.rels", entries[0].Path);

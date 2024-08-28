@@ -20,6 +20,7 @@ namespace NuGet.Insights.Worker
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly WideEntityService _wideEntityService;
         private readonly ICsvReader _csvReader;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<AppendResultStorageService> _logger;
 
@@ -27,12 +28,14 @@ namespace NuGet.Insights.Worker
             ServiceClientFactory serviceClientFactory,
             WideEntityService wideEntityService,
             ICsvReader csvReader,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ITelemetryClient telemetryClient,
             ILogger<AppendResultStorageService> logger)
         {
             _serviceClientFactory = serviceClientFactory;
             _wideEntityService = wideEntityService;
             _csvReader = csvReader;
+            _options = options;
             _telemetryClient = telemetryClient;
             _logger = logger;
         }
@@ -48,25 +51,26 @@ namespace NuGet.Insights.Worker
             await _wideEntityService.DeleteTableAsync(srcTable);
         }
 
-        public async Task AppendAsync(string srcTable, int bucketCount, IEnumerable<ICsvRecordSet<ICsvRecord>> sets)
+        public async Task AppendAsync<T>(string srcTable, int bucketCount, IEnumerable<T> records) where T : IAggregatedCsvRecord<T>
         {
-            var bucketGroups = sets
-                .SelectMany(x => x.Records.Select(y => (x.BucketKey, Record: y)))
-                .GroupBy(x => StorageUtility.GetBucket(bucketCount, x.BucketKey), x => x.Record);
+            var bucketGroups = records
+                .GroupBy(x => x.GetBucketKey())
+                .SelectMany(g => g.Select(x => (Bucket: StorageUtility.GetBucket(bucketCount, g.Key), Record: x)))
+                .GroupBy(g => g.Bucket, g => g.Record);
 
             foreach (var group in bucketGroups)
             {
-                var records = group.ToList();
-                foreach (var record in records)
+                var groupRecords = group.ToList();
+                foreach (var record in groupRecords)
                 {
                     record.SetEmptyStrings();
                 }
 
-                await AppendAsync(srcTable, group.Key, records);
+                await AppendAsync(srcTable, group.Key, groupRecords);
             }
         }
 
-        private async Task AppendAsync(string srcTable, int bucket, IReadOnlyList<ICsvRecord> records)
+        private async Task AppendAsync<T>(string srcTable, int bucket, IReadOnlyList<T> records) where T : IAggregatedCsvRecord<T>
         {
             // Append the data.
             await AppendToTableAsync(bucket, srcTable, records);
@@ -149,8 +153,7 @@ namespace NuGet.Insights.Worker
             string srcTable,
             string destContainer,
             int bucket,
-            bool force,
-            Prune<T> prune) where T : ICsvRecord
+            bool force) where T : IAggregatedCsvRecord<T>
         {
             var appendRecords = new List<T>();
             const int PruneEveryNEntity = 500;
@@ -183,7 +186,7 @@ namespace NuGet.Insights.Worker
                     {
                         var initialCount = appendRecords.Count;
                         pruneRecordCountMetric.TrackValue(appendRecords.Count, destContainer, recordType, "false");
-                        appendRecords = prune(appendRecords, isFinalPrune: false);
+                        appendRecords = T.Prune(appendRecords, isFinalPrune: false, _options, _logger);
                         pruneRecordDeltaMetric.TrackValue(appendRecords.Count - initialCount, destContainer, recordType, "false");
                     }
                 }
@@ -198,7 +201,7 @@ namespace NuGet.Insights.Worker
 
             GetPruneEntityCountMetric().TrackValue(entityCount, destContainer, recordType);
 
-            await CompactAsync(appendRecords, destContainer, recordType, bucket, prune);
+            await MergeAndUploadAsync(appendRecords, destContainer, recordType, bucket);
 
             GetCompactDurationMsMetric().TrackValue(stopwatch.Elapsed.TotalMilliseconds, destContainer, recordType);
         }
@@ -283,12 +286,11 @@ namespace NuGet.Insights.Worker
                 "RecordType");
         }
 
-        private async Task CompactAsync<T>(
+        private async Task MergeAndUploadAsync<T>(
             List<T> records,
             string destContainer,
             string recordType,
-            int bucket,
-            Prune<T> prune) where T : ICsvRecord
+            int bucket) where T : IAggregatedCsvRecord<T>
         {
             var compactBlob = await GetCompactBlobAsync(destContainer, bucket);
 
@@ -310,7 +312,7 @@ namespace NuGet.Insights.Worker
             {
                 var initialCount = records.Count;
                 GetPruneRecordCountMetric().TrackValue(records.Count, destContainer, recordType, "true");
-                records = prune(records, isFinalPrune: true);
+                records = T.Prune(records, isFinalPrune: true, _options, _logger);
                 GetPruneRecordDeltaMetric().TrackValue(records.Count - initialCount, destContainer, recordType, "true");
             }
 
@@ -431,17 +433,17 @@ namespace NuGet.Insights.Worker
             return (await GetContainerAsync(destContainer)).GetBlockBlobClient($"{CompactPrefix}{bucket}.csv.gz");
         }
 
-        private static byte[] Serialize<T>(IReadOnlyList<T> records) where T : ICsvRecord
+        private static byte[] Serialize<T>(IEnumerable<T> records) where T : ICsvRecord
         {
             return MessagePackSerializer.Serialize(records, NuGetInsightsMessagePack.Options);
         }
 
-        private static IReadOnlyList<T> Deserialize<T>(Stream stream) where T : ICsvRecord
+        private static List<T> Deserialize<T>(Stream stream) where T : ICsvRecord
         {
             return MessagePackSerializer.Deserialize<List<T>>(stream, NuGetInsightsMessagePack.Options);
         }
 
-        private MemoryStream SerializeRecords<T>(IReadOnlyList<T> records, bool writeHeader, bool gzip, out long uncompressedLength) where T : ICsvRecord
+        private MemoryStream SerializeRecords<T>(IEnumerable<T> records, bool writeHeader, bool gzip, out long uncompressedLength) where T : ICsvRecord
         {
             var memoryStream = new MemoryStream();
             if (gzip)
@@ -462,9 +464,15 @@ namespace NuGet.Insights.Worker
             return memoryStream;
         }
 
-        private void SerializeRecords<T>(IReadOnlyList<T> records, Stream destination, bool writeHeader) where T : ICsvRecord
+        private void SerializeRecords<T>(IEnumerable<T> records, Stream destination, bool writeHeader) where T : ICsvRecord
         {
-            using var streamWriter = new StreamWriter(destination, new UTF8Encoding(false), bufferSize: 1024, leaveOpen: true)
+            using StreamWriter streamWriter = GetStreamWriter<T>(destination, writeHeader);
+            SerializeRecords(records, streamWriter);
+        }
+
+        private StreamWriter GetStreamWriter<T>(Stream destination, bool writeHeader) where T : ICsvRecord
+        {
+            var streamWriter = new StreamWriter(destination, new UTF8Encoding(false), bufferSize: 1024, leaveOpen: true)
             {
                 NewLine = "\n",
             };
@@ -474,10 +482,10 @@ namespace NuGet.Insights.Worker
                 streamWriter.WriteLine(_csvReader.GetHeader<T>());
             }
 
-            SerializeRecords(records, streamWriter);
+            return streamWriter;
         }
 
-        private static void SerializeRecords<T>(IReadOnlyList<T> records, TextWriter streamWriter) where T : ICsvRecord
+        private static void SerializeRecords<T>(IEnumerable<T> records, TextWriter streamWriter) where T : ICsvRecord
         {
             foreach (var record in records)
             {

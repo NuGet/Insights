@@ -37,29 +37,40 @@ namespace NuGet.Insights.Worker
             });
         }
 
+        public IEnumerable<T> GetRecordsEnumerable<T>(TextReader reader, int bufferSize) where T : ICsvRecord
+        {
+            ValidateHeader<T>(reader);
+
+            var pool = ArrayPool<char>.Shared;
+            var buffer = pool.Rent(bufferSize);
+            try
+            {
+                using var csvReader = GetCsvDataReader(reader, buffer);
+                var factory = Activator.CreateInstance<T>();
+
+                while (csvReader.Read())
+                {
+                    var i = 0;
+                    var record = (T)factory.ReadNew(() => csvReader.GetString(i++));
+                    yield return record;
+                }
+            }
+            finally
+            {
+                pool.Return(buffer);
+            }
+        }
+
         public CsvReaderResult<T> GetRecords<T>(TextReader reader, int bufferSize) where T : ICsvRecord
         {
-            var actualHeader = reader.ReadLine();
-            var expectedHeader = GetHeader<T>();
-            if (actualHeader != expectedHeader)
-            {
-                throw new InvalidOperationException(
-                    "The header in the blob doesn't match the header for the readers being added." + Environment.NewLine +
-                    "Expected: " + expectedHeader + Environment.NewLine +
-                    "Actual: " + actualHeader);
-            }
+            ValidateHeader<T>(reader);
 
             var allRecords = new List<T>();
             var pool = ArrayPool<char>.Shared;
             var buffer = pool.Rent(bufferSize);
             try
             {
-                using var csvReader = CsvDataReader.Create(reader, buffer, new CsvDataReaderOptions
-                {
-                    HasHeaders = false,
-                    StringFactory = StringFactory,
-                });
-
+                using var csvReader = GetCsvDataReader(reader, buffer);
                 var factory = Activator.CreateInstance<T>();
 
                 while (csvReader.Read())
@@ -85,6 +96,28 @@ namespace NuGet.Insights.Worker
             {
                 pool.Return(buffer);
             }
+        }
+
+        private void ValidateHeader<T>(TextReader reader) where T : ICsvRecord
+        {
+            var actualHeader = reader.ReadLine();
+            var expectedHeader = GetHeader<T>();
+            if (actualHeader != expectedHeader)
+            {
+                throw new InvalidOperationException(
+                    "The header in the blob doesn't match the header for the readers being added." + Environment.NewLine +
+                    "Expected: " + expectedHeader + Environment.NewLine +
+                    "Actual: " + actualHeader);
+            }
+        }
+
+        private static CsvDataReader GetCsvDataReader(TextReader reader, char[] buffer)
+        {
+            return CsvDataReader.Create(reader, buffer, new CsvDataReaderOptions
+            {
+                HasHeaders = false,
+                StringFactory = StringFactory,
+            });
         }
 
         private static string StringFactory(char[] buffer, int offset, int length)

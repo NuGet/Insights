@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker.PackageCertificateToCsv
 {
-    public partial record PackageCertificateRecord : PackageRecord, ICsvRecord
+    public partial record PackageCertificateRecord : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageCertificateRecord>
     {
         public PackageCertificateRecord()
         {
@@ -29,5 +29,26 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         public string Fingerprint { get; set; }
 
         public CertificateRelationshipTypes RelationshipTypes { get; set; }
+
+        public static List<PackageCertificateRecord> Prune(List<PackageCertificateRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
+        {
+            return Prune(records, isFinalPrune);
+        }
+
+        public int CompareTo(PackageCertificateRecord other)
+        {
+            var c = base.CompareTo(other);
+            if (c != 0)
+            {
+                return c;
+            }
+
+            return string.CompareOrdinal(Fingerprint, other.Fingerprint);
+        }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

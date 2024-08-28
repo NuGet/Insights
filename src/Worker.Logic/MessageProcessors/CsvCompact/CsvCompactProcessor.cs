@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker
 {
-    public class CsvCompactorProcessor<T> : IMessageProcessor<CsvCompactMessage<T>> where T : ICsvRecord
+    public class CsvCompactorProcessor<T> : IMessageProcessor<CsvCompactMessage<T>> where T : IAggregatedCsvRecord<T>
     {
         private readonly AppendResultStorageService _storageService;
         private readonly TaskStateStorageService _taskStateStorageService;
@@ -44,8 +44,7 @@ namespace NuGet.Insights.Worker
                 message.SourceTable,
                 _storage.ResultContainerName,
                 message.Bucket,
-                force: message.Force,
-                _storage.Prune);
+                force: message.Force);
 
             if (taskState != null)
             {

@@ -28,7 +28,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageLicenseResultType.File, record.ResultType);
             Assert.Equal("https://aka.ms/deprecateLicenseUrl", record.Url);
             Assert.Null(record.Expression);
@@ -59,7 +59,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageLicenseResultType.Expression, record.ResultType);
             Assert.Equal("https://licenses.nuget.org/(Apache-2.0%20OR%20MS-PL)%20AND%20MIT%20AND%20BSD-3-Clause", record.Url);
             Assert.Equal("(Apache-2.0 OR MS-PL) AND MIT AND BSD-3-Clause", record.Expression);
@@ -125,7 +125,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageLicenseResultType.Expression, record.ResultType);
             Assert.Equal("https://licenses.nuget.org/BSD-2-Clause-FreeBSD", record.Url);
             Assert.Equal("BSD-2-Clause-FreeBSD", record.Expression);
@@ -156,7 +156,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageLicenseResultType.Expression, record.ResultType);
             Assert.Equal("https://licenses.nuget.org/MIT", record.Url);
             Assert.Equal("MIT", record.Expression);
@@ -187,7 +187,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageLicenseResultType.Expression, record.ResultType);
             Assert.Equal("https://licenses.nuget.org/Apache-2.0%20WITH%20LLVM-exception", record.Url);
             Assert.Equal("Apache-2.0 WITH LLVM-exception", record.Expression);
@@ -229,7 +229,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageLicenseResultType.Url, record.ResultType);
             Assert.Equal("http://go.microsoft.com/fwlink/?LinkId=329770", record.Url);
             Assert.Null(record.Expression);
@@ -260,7 +260,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageLicenseResultType.None, record.ResultType);
             Assert.Null(record.Url);
             Assert.Null(record.Expression);

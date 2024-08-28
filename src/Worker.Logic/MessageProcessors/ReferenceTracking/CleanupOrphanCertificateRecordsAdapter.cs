@@ -21,11 +21,10 @@ namespace NuGet.Insights.Worker.ReferenceTracking
         public string OwnerToSubjectTableName => _options.Value.PackageToCertificateTableName;
         public string SubjectToOwnerTableName => _options.Value.CertificateToPackageTableName;
 
-        public IReadOnlyList<ICsvRecordSet<CertificateRecord>> MapToOrphanRecords(IReadOnlyList<SubjectReference> subjects)
+        public IReadOnlyList<CertificateRecord> MapToOrphanRecords(IReadOnlyList<SubjectReference> subjects)
         {
             return subjects
                 .Select(x => new CertificateRecord { Fingerprint = x.PartitionKey, ResultType = PackageCertificateResultType.Deleted })
-                .Select(x => new CsvRecordSet<CertificateRecord>(x.Fingerprint, new[] { x }))
                 .ToList();
         }
     }

@@ -25,11 +25,6 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
         public string ResultContainerName => _options.Value.PackageSignatureContainerName;
         public bool SingleMessagePerId => false;
 
-        public List<PackageSignature> Prune(List<PackageSignature> records, bool isFinalPrune)
-        {
-            return PackageRecord.Prune(records, isFinalPrune);
-        }
-
         public async Task InitializeAsync()
         {
             await _packageFileService.InitializeAsync();
@@ -39,13 +34,13 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
             return Task.CompletedTask;
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageSignature>>> ProcessLeafAsync(CatalogLeafScan leafScan)
+        public async Task<DriverResult<IReadOnlyList<PackageSignature>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             var records = await ProcessLeafInternalAsync(leafScan);
-            return DriverResult.Success(new CsvRecordSet<PackageSignature>(PackageRecord.GetBucketKey(leafScan), records));
+            return DriverResult.Success(records);
         }
 
-        private async Task<List<PackageSignature>> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
+        private async Task<IReadOnlyList<PackageSignature>> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;

@@ -26,11 +26,6 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
         public string ResultContainerName => _options.Value.PackageLicenseContainerName;
         public bool SingleMessagePerId => false;
 
-        public List<PackageLicense> Prune(List<PackageLicense> records, bool isFinalPrune)
-        {
-            return PackageRecord.Prune(records, isFinalPrune);
-        }
-
         public Task InitializeAsync()
         {
             return Task.CompletedTask;
@@ -41,18 +36,18 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             return Task.CompletedTask;
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageLicense>>> ProcessLeafAsync(CatalogLeafScan leafScan)
+        public async Task<DriverResult<IReadOnlyList<PackageLicense>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             (var resultType, var records) = await ProcessLeafInternalAsync(leafScan);
             if (resultType == TempStreamResultType.SemaphoreNotAvailable)
             {
-                return DriverResult.TryAgainLater<CsvRecordSet<PackageLicense>>();
+                return DriverResult.TryAgainLater<IReadOnlyList<PackageLicense>>();
             }
 
-            return DriverResult.Success(new CsvRecordSet<PackageLicense>(PackageRecord.GetBucketKey(leafScan), records));
+            return DriverResult.Success(records);
         }
 
-        private async Task<(TempStreamResultType, List<PackageLicense>)> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
+        private async Task<(TempStreamResultType, IReadOnlyList<PackageLicense>)> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;

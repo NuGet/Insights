@@ -28,7 +28,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var records = output.Value.Records;
+            var records = output.Value;
             Assert.Equal(3, records.Count);
             Assert.All(records, r => Assert.Equal(PackageContentResultType.AllLoaded, r.ResultType));
             Assert.All(records, r => Assert.Equal(".txt", r.FileExtension));
@@ -75,7 +75,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var records = output.Value.Records;
+            var records = output.Value;
             Assert.Equal(3, records.Count);
             Assert.All(records, r => Assert.Equal(PackageContentResultType.PartiallyLoaded, r.ResultType));
             Assert.All(records, r => Assert.Equal(".txt", r.FileExtension));
@@ -134,7 +134,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var records = output.Value.Records;
+            var records = output.Value;
             Assert.Equal(3, records.Count);
             Assert.All(records, r => Assert.Equal(PackageContentResultType.PartiallyLoaded, r.ResultType));
             Assert.All(records, r => Assert.Equal(".txt", r.FileExtension));
@@ -184,7 +184,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var records = output.Value.Records;
+            var records = output.Value;
             Assert.Equal(3, records.Count);
             Assert.All(records, r => Assert.Equal(PackageContentResultType.PartiallyLoaded, r.ResultType));
             Assert.All(records, r => Assert.Equal(".txt", r.FileExtension));
@@ -235,7 +235,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var records = output.Value.Records;
+            var records = output.Value;
             Assert.Equal(3, records.Count);
             Assert.All(records, r => Assert.Equal(PackageContentResultType.PartiallyLoaded, r.ResultType));
             Assert.All(records, r => Assert.Equal(".txt", r.FileExtension));
@@ -286,7 +286,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var records = output.Value.Records;
+            var records = output.Value;
             Assert.Equal(3, records.Count);
             Assert.All(records, r => Assert.Equal(PackageContentResultType.PartiallyLoaded, r.ResultType));
             Assert.All(records, r => Assert.Equal(".txt", r.FileExtension));
@@ -337,7 +337,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var records = output.Value.Records;
+            var records = output.Value;
             Assert.Equal(3, records.Count);
             Assert.All(records, r => Assert.Equal(PackageContentResultType.PartiallyLoaded, r.ResultType));
             Assert.All(records, r => Assert.Equal(".txt", r.FileExtension));
@@ -388,7 +388,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var records = output.Value.Records;
+            var records = output.Value;
             Assert.Equal(3, records.Count);
             Assert.All(records, r => Assert.Equal(PackageContentResultType.PartiallyLoaded, r.ResultType));
             Assert.All(records, r => Assert.Equal(".txt", r.FileExtension));
@@ -439,7 +439,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var records = output.Value.Records;
+            var records = output.Value;
             Assert.Equal(3, records.Count);
             Assert.All(records, r => Assert.Equal(PackageContentResultType.PartiallyLoaded, r.ResultType));
             Assert.All(records, r => Assert.Equal(".txt", r.FileExtension));
@@ -489,7 +489,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var records = output.Value.Records;
+            var records = output.Value;
             Assert.Equal(3, records.Count);
             Assert.All(records, r => Assert.Equal(PackageContentResultType.PartiallyLoaded, r.ResultType));
             Assert.All(records, r => Assert.Equal(".txt", r.FileExtension));
@@ -538,7 +538,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var records = output.Value.Records;
+            var records = output.Value;
             Assert.Single(records);
             Assert.All(records, r => Assert.Equal(PackageContentResultType.AllLoaded, r.ResultType));
             Assert.All(records, r => Assert.Equal(".txt", r.FileExtension));
@@ -570,7 +570,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var records = output.Value.Records;
+            var records = output.Value;
             Assert.Single(records);
             Assert.All(records, r => Assert.Equal(PackageContentResultType.AllLoaded, r.ResultType));
             Assert.All(records, r => Assert.Equal("cense", r.FileExtension));
@@ -600,7 +600,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var records = output.Value.Records;
+            var records = output.Value;
             Assert.Single(records);
             Assert.All(records, r => Assert.Equal(PackageContentResultType.AllLoaded, r.ResultType));
             Assert.All(records, r => Assert.Equal(".txt", r.FileExtension));

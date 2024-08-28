@@ -184,7 +184,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             await AppendResultStorageService.AppendAsync(
                 Options.Value.CsvRecordTableName,
                 Options.Value.AppendResultStorageBucketCount,
-                subjectRecords.Select(x => new CsvRecordSet<TestSubjectRecord>(x.BucketKey, new[] { x })).ToList());
+                subjectRecords);
             var buckets = await AppendResultStorageService.GetAppendedBucketsAsync(Options.Value.CsvRecordTableName);
             foreach (var bucket in buckets)
             {
@@ -192,8 +192,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
                     Options.Value.CsvRecordTableName,
                     CsvResultStorage.ResultContainerName,
                     bucket,
-                    force: false,
-                    CsvResultStorage.Prune);
+                    force: false);
             }
             await AppendResultStorageService.DeleteAsync(Options.Value.CsvRecordTableName);
         }

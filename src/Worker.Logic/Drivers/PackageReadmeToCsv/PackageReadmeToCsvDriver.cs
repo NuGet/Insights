@@ -25,11 +25,6 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
         public string ResultContainerName => _options.Value.PackageReadmeContainerName;
         public bool SingleMessagePerId => false;
 
-        public List<PackageReadme> Prune(List<PackageReadme> records, bool isFinalPrune)
-        {
-            return PackageRecord.Prune(records, isFinalPrune);
-        }
-
         public async Task InitializeAsync()
         {
             await _packageReadmeService.InitializeAsync();
@@ -40,13 +35,13 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
             return Task.CompletedTask;
         }
 
-        public async Task<DriverResult<CsvRecordSet<PackageReadme>>> ProcessLeafAsync(CatalogLeafScan leafScan)
+        public async Task<DriverResult<IReadOnlyList<PackageReadme>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             var records = await ProcessLeafInternalAsync(leafScan);
-            return DriverResult.Success(new CsvRecordSet<PackageReadme>(PackageRecord.GetBucketKey(leafScan), records));
+            return DriverResult.Success(records);
         }
 
-        private async Task<List<PackageReadme>> ProcessLeafInternalAsync(CatalogLeafScan leafItem)
+        private async Task<IReadOnlyList<PackageReadme>> ProcessLeafInternalAsync(CatalogLeafScan leafItem)
         {
             var scanId = Guid.NewGuid();
             var scanTimestamp = DateTimeOffset.UtcNow;

@@ -5,19 +5,19 @@ using System.Collections;
 
 namespace NuGet.Insights.Worker
 {
-    public class CsvRecordSets : IReadOnlyList<IReadOnlyList<ICsvRecordSet<ICsvRecord>>>
+    public class CsvRecordSets : IReadOnlyList<IReadOnlyList<IAggregatedCsvRecord>>
     {
-        private readonly IReadOnlyList<IReadOnlyList<ICsvRecordSet<ICsvRecord>>> _sets;
+        private readonly IReadOnlyList<IReadOnlyList<IAggregatedCsvRecord>> _sets;
 
-        public CsvRecordSets(params IReadOnlyList<ICsvRecordSet<ICsvRecord>>[] sets)
+        public CsvRecordSets(params IReadOnlyList<IAggregatedCsvRecord>[] sets)
         {
             _sets = sets;
         }
 
-        public IReadOnlyList<ICsvRecordSet<ICsvRecord>> this[int index] => _sets[index];
+        public IReadOnlyList<IAggregatedCsvRecord> this[int index] => _sets[index];
         public int Count => _sets.Count;
 
-        public IEnumerator<IReadOnlyList<ICsvRecordSet<ICsvRecord>>> GetEnumerator()
+        public IEnumerator<IReadOnlyList<IAggregatedCsvRecord>> GetEnumerator()
         {
             return _sets.GetEnumerator();
         }
@@ -28,62 +28,34 @@ namespace NuGet.Insights.Worker
         }
     }
 
-    public class CsvRecordSets<T> : CsvRecordSets where T : class, ICsvRecord
-    {
-        public CsvRecordSets(CsvRecordSet<T> set1) : base(new[] { set1 })
-        {
-            Sets1 = new[] { set1 };
-        }
-
-        public CsvRecordSets(IReadOnlyList<CsvRecordSet<T>> sets1) : base(sets1)
-        {
-            Sets1 = sets1;
-        }
-
-        public IReadOnlyList<CsvRecordSet<T>> Sets1 { get; }
-    }
-
     public class CsvRecordSets<T1, T2> : CsvRecordSets
-         where T1 : class, ICsvRecord
-         where T2 : class, ICsvRecord
+         where T1 : class, IAggregatedCsvRecord<T1>
+         where T2 : class, IAggregatedCsvRecord<T2>
     {
-        public CsvRecordSets(CsvRecordSet<T1> set1, CsvRecordSet<T2> set2) : base(new[] { set1 }, new[] { set2 })
+        public CsvRecordSets(IReadOnlyList<T1> set1, IReadOnlyList<T2> set2) : base(set1, set2)
         {
-            Sets1 = new[] { set1 };
-            Sets2 = new[] { set2 };
+            Records1 = set1;
+            Records2 = set2;
         }
 
-        public CsvRecordSets(IReadOnlyList<CsvRecordSet<T1>> sets1, IReadOnlyList<CsvRecordSet<T2>> sets2) : base(sets1, sets2)
-        {
-            Sets1 = sets1;
-            Sets2 = sets2;
-        }
-
-        public IReadOnlyList<CsvRecordSet<T1>> Sets1 { get; }
-        public IReadOnlyList<CsvRecordSet<T2>> Sets2 { get; }
+        public IReadOnlyList<T1> Records1 { get; }
+        public IReadOnlyList<T2> Records2 { get; }
     }
 
     public class CsvRecordSets<T1, T2, T3> : CsvRecordSets
-         where T1 : class, ICsvRecord
-         where T2 : class, ICsvRecord
-         where T3 : class, ICsvRecord
+         where T1 : class, IAggregatedCsvRecord<T1>
+         where T2 : class, IAggregatedCsvRecord<T2>
+         where T3 : class, IAggregatedCsvRecord<T3>
     {
-        public CsvRecordSets(CsvRecordSet<T1> set1, CsvRecordSet<T2> set2, CsvRecordSet<T3> set3) : base(new[] { set1 }, new[] { set2 }, new[] { set3 })
+        public CsvRecordSets(IReadOnlyList<T1> set1, IReadOnlyList<T2> set2, IReadOnlyList<T3> set3) : base(set1, set2, set3)
         {
-            Sets1 = new[] { set1 };
-            Sets2 = new[] { set2 };
-            Sets3 = new[] { set3 };
+            Records1 = set1;
+            Records2 = set2;
+            Records3 = set3;
         }
 
-        public CsvRecordSets(IReadOnlyList<CsvRecordSet<T1>> sets1, IReadOnlyList<CsvRecordSet<T2>> sets2, IReadOnlyList<CsvRecordSet<T3>> sets3) : base(sets1, sets2, sets3)
-        {
-            Sets1 = sets1;
-            Sets2 = sets2;
-            Sets3 = sets3;
-        }
-
-        public IReadOnlyList<CsvRecordSet<T1>> Sets1 { get; }
-        public IReadOnlyList<CsvRecordSet<T2>> Sets2 { get; }
-        public IReadOnlyList<CsvRecordSet<T3>> Sets3 { get; }
+        public IReadOnlyList<T1> Records1 { get; }
+        public IReadOnlyList<T2> Records2 { get; }
+        public IReadOnlyList<T3> Records3 { get; }
     }
 }

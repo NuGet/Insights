@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
 {
-    public partial record SymbolPackageFileRecord : FileRecord, ICsvRecord
+    public partial record SymbolPackageFileRecord : FileRecord, ICsvRecord, IAggregatedCsvRecord<SymbolPackageFileRecord>
     {
         public SymbolPackageFileRecord()
         {
@@ -15,6 +15,27 @@ namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
 
         public SymbolPackageFileRecord(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf) : base(scanId, scanTimestamp, leaf)
         {
+        }
+
+        public static List<SymbolPackageFileRecord> Prune(List<SymbolPackageFileRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
+        {
+            return Prune(records, isFinalPrune);
+        }
+
+        public int CompareTo(SymbolPackageFileRecord other)
+        {
+            var c = base.CompareTo(other);
+            if (c != 0)
+            {
+                return c;
+            }
+
+            return Comparer<int?>.Default.Compare(SequenceNumber, other.SequenceNumber);
+        }
+
+        public string GetBucketKey()
+        {
+            return Identity;
         }
     }
 }

@@ -5,7 +5,7 @@ using NuGetPe;
 
 namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
 {
-    public partial record NuGetPackageExplorerRecord : PackageRecord, ICsvRecord
+    public partial record NuGetPackageExplorerRecord : PackageRecord, ICsvRecord, IAggregatedCsvRecord<NuGetPackageExplorerRecord>
     {
         public NuGetPackageExplorerRecord()
         {
@@ -29,5 +29,20 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
         public DeterministicResult? DeterministicResult { get; set; }
         public HasCompilerFlagsResult? CompilerFlagsResult { get; set; }
         public bool? IsSignedByAuthor { get; set; }
+
+        public static List<NuGetPackageExplorerRecord> Prune(List<NuGetPackageExplorerRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
+        {
+            return Prune(records, isFinalPrune);
+        }
+
+        public int CompareTo(NuGetPackageExplorerRecord other)
+        {
+            return base.CompareTo(other);
+        }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

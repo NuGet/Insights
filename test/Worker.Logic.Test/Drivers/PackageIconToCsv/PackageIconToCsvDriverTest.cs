@@ -28,7 +28,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal("[{\"Height\":512,\"Width\":512}]", record.FrameDimensions);
         }
 
@@ -47,7 +47,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageIconResultType.Available, record.ResultType);
             Assert.Equal("Gif", record.HeaderFormat);
             Assert.Equal(35, record.FrameCount);
@@ -74,7 +74,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageIconResultType.Available, record.ResultType);
             Assert.Equal("Gif", record.HeaderFormat);
             Assert.Equal(60, record.FrameCount);
@@ -101,7 +101,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageIconResultType.Available, record.ResultType);
             Assert.Equal("Gif", record.HeaderFormat);
             Assert.Equal(1, record.FrameCount);
@@ -128,7 +128,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageIconResultType.Available, record.ResultType);
             Assert.Equal("Gif", record.HeaderFormat);
             Assert.Equal(1, record.FrameCount);
@@ -155,7 +155,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageIconResultType.Available, record.ResultType);
             Assert.Equal("Png", record.HeaderFormat);
             Assert.Equal(1, record.FrameCount);
@@ -182,7 +182,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageIconResultType.Available, record.ResultType);
             Assert.Equal("image/svg+xml", record.ContentType);
             Assert.Equal("Svg", record.HeaderFormat);
@@ -210,7 +210,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageIconResultType.Available, record.ResultType);
             Assert.Equal("Jpeg", record.HeaderFormat);
             Assert.Equal(1, record.FrameCount);
@@ -237,7 +237,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageIconResultType.Available, record.ResultType);
             Assert.Equal("Ico", record.HeaderFormat);
             Assert.Equal(1, record.FrameCount);
@@ -264,7 +264,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageIconResultType.Available, record.ResultType);
             Assert.Equal("Ico", record.HeaderFormat);
             Assert.Equal(1, record.FrameCount);
@@ -291,7 +291,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageIconResultType.Available, record.ResultType);
             Assert.Equal("Ico", record.HeaderFormat);
             Assert.Equal(4, record.FrameCount);
@@ -319,7 +319,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageIconResultType.Available, record.ResultType);
             Assert.Equal("Ico", record.HeaderFormat);
             Assert.Equal(4, record.FrameCount);
@@ -347,7 +347,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageIconResultType.Available, record.ResultType);
             Assert.Equal("Ico", record.HeaderFormat);
             Assert.Equal(6, record.FrameCount);
@@ -376,7 +376,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageIconResultType.Available, record.ResultType);
             Assert.Equal("Gif87", record.HeaderFormat);
             Assert.Equal(17, record.FrameCount);
@@ -418,7 +418,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             var output = await Target.ProcessLeafAsync(leaf);
 
             Assert.Equal(DriverResultType.Success, output.Type);
-            var record = Assert.Single(output.Value.Records);
+            var record = Assert.Single(output.Value);
             Assert.Equal(PackageIconResultType.Available, record.ResultType);
             Assert.Equal("Gif87", record.HeaderFormat);
             Assert.Equal(1, record.FrameCount);

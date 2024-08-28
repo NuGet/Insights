@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 {
-    public partial record PackageCompatibility : PackageRecord, ICsvRecord
+    public partial record PackageCompatibility : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageCompatibility>
     {
         public PackageCompatibility()
         {
@@ -46,5 +46,20 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 
         [KustoType("dynamic")]
         public string NuGetGalleryBadges { get; set; }
+
+        public static List<PackageCompatibility> Prune(List<PackageCompatibility> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
+        {
+            return Prune(records, isFinalPrune);
+        }
+
+        public int CompareTo(PackageCompatibility other)
+        {
+            return base.CompareTo(other);
+        }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

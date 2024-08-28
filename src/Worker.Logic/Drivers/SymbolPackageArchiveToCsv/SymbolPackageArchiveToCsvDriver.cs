@@ -32,16 +32,6 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
         string ICsvResultStorage<SymbolPackageArchiveEntry>.ResultContainerName => _options.Value.SymbolPackageArchiveEntryContainerName;
         public bool SingleMessagePerId => false;
 
-        public List<SymbolPackageArchiveRecord> Prune(List<SymbolPackageArchiveRecord> records, bool isFinalPrune)
-        {
-            return PackageRecord.Prune(records, isFinalPrune);
-        }
-
-        public List<SymbolPackageArchiveEntry> Prune(List<SymbolPackageArchiveEntry> records, bool isFinalPrune)
-        {
-            return PackageRecord.Prune(records, isFinalPrune);
-        }
-
         public async Task InitializeAsync()
         {
             await _symbolPackageFileService.InitializeAsync();
@@ -56,10 +46,9 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
         public async Task<DriverResult<CsvRecordSets<SymbolPackageArchiveRecord, SymbolPackageArchiveEntry>>> ProcessLeafAsync(CatalogLeafScan leafScan)
         {
             (var archive, var entries) = await ProcessLeafInternalAsync(leafScan);
-            var bucketKey = PackageRecord.GetBucketKey(leafScan);
             return DriverResult.Success(new CsvRecordSets<SymbolPackageArchiveRecord, SymbolPackageArchiveEntry>(
-                new CsvRecordSet<SymbolPackageArchiveRecord>(bucketKey, archive != null ? [archive] : Array.Empty<SymbolPackageArchiveRecord>()),
-                new CsvRecordSet<SymbolPackageArchiveEntry>(bucketKey, entries ?? Array.Empty<SymbolPackageArchiveEntry>())));
+                archive != null ? [archive] : [],
+                entries ?? []));
         }
 
         private async Task<(SymbolPackageArchiveRecord, IReadOnlyList<SymbolPackageArchiveEntry>)> ProcessLeafInternalAsync(CatalogLeafScan leafScan)
@@ -72,7 +61,7 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
                 var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
                 return (
                     new SymbolPackageArchiveRecord(scanId, scanTimestamp, leaf),
-                    new[] { new SymbolPackageArchiveEntry(scanId, scanTimestamp, leaf) }
+                    [new SymbolPackageArchiveEntry(scanId, scanTimestamp, leaf)]
                 );
             }
             else
@@ -152,15 +141,7 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
         {
             return (
                 new SymbolPackageArchiveRecord(scanId, scanTimestamp, leaf) { ResultType = ArchiveResultType.DoesNotExist },
-                new[] { new SymbolPackageArchiveEntry(scanId, scanTimestamp, leaf) { ResultType = ArchiveResultType.DoesNotExist } }
-            );
-        }
-
-        private static (SymbolPackageArchiveRecord, IReadOnlyList<SymbolPackageArchiveEntry>) MakeEmpty()
-        {
-            return (
-                null,
-                Array.Empty<SymbolPackageArchiveEntry>()
+                [new SymbolPackageArchiveEntry(scanId, scanTimestamp, leaf) { ResultType = ArchiveResultType.DoesNotExist }]
             );
         }
     }
