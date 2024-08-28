@@ -6,7 +6,7 @@ namespace NuGet.Insights.Worker
     public class CsvCompactMessage<T> where T : ICsvRecord
     {
         [JsonPropertyName("s")]
-        public string SourceContainer { get; set; }
+        public string SourceTable { get; set; }
 
         [JsonPropertyName("b")]
         public int Bucket { get; set; }

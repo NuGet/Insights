@@ -111,7 +111,7 @@ namespace NuGet.Insights.Worker
                 var messages = buckets
                     .Select(b => new CsvCompactMessage<T>
                     {
-                        SourceContainer = GetTableName(storageSuffix),
+                        SourceTable = GetTableName(storageSuffix),
                         Bucket = b,
                         TaskStateKey = new TaskStateKey(
                             storageSuffix,

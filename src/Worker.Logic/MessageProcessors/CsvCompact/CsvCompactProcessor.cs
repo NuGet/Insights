@@ -41,7 +41,7 @@ namespace NuGet.Insights.Worker
             }
 
             await _storageService.CompactAsync<T>(
-                message.SourceContainer,
+                message.SourceTable,
                 _storage.ResultContainerName,
                 message.Bucket,
                 force: message.Force,
