@@ -116,9 +116,17 @@ namespace NuGet.Insights.Worker.Workflow
                 countMetric.TrackValue(blobs.Count, containerName);
                 foreach (var blob in blobs)
                 {
-                    recordCountMetric.TrackValue(blob.RecordCount, containerName);
+                    if (blob.RecordCount.HasValue)
+                    {
+                        recordCountMetric.TrackValue(blob.RecordCount.Value, containerName);
+                    }
+
                     compressedSizeMetric.TrackValue(blob.CompressedSizeBytes, containerName);
-                    uncompressedSizeMetric.TrackValue(blob.RawSizeBytes, containerName);
+
+                    if (blob.RawSizeBytes.HasValue)
+                    {
+                        uncompressedSizeMetric.TrackValue(blob.RawSizeBytes.Value, containerName);
+                    }
                 }
             }
         }

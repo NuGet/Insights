@@ -266,9 +266,11 @@ namespace NuGet.Insights.Worker
             // Step 1: determine if "big mode" should be used, based on the existing CSV
             var compactBlob = await GetCompactBlobClientAsync(destContainer, bucket);
             var existingBlob = await GetCsvRecordBlobAsync(compactBlob);
-            if (existingBlob is not null && existingBlob.RecordCount > _options.Value.AppendResultBigModeRecordThreshold)
+            if (existingBlob is not null
+                && existingBlob.RecordCount.HasValue
+                && existingBlob.RecordCount.Value > _options.Value.AppendResultBigModeRecordThreshold)
             {
-                var subdivisions = (int)Math.Max(2, Math.Round(1.0 * existingBlob.RecordCount / _options.Value.AppendResultBigModeSubdivisionSize));
+                var subdivisions = (int)Math.Max(2, Math.Round(1.0 * existingBlob.RecordCount.Value / _options.Value.AppendResultBigModeSubdivisionSize));
                 _logger.LogInformation(
                     "Switching to big mode with {Subdivisions} subdivisions, based on existing record count of {RecordCount}.",
                     subdivisions,

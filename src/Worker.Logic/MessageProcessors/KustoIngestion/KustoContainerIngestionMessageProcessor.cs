@@ -100,6 +100,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                         IngestionId = container.IngestionId,
                         StorageSuffix = container.StorageSuffix,
                         RawSizeBytes = blob.RawSizeBytes,
+                        RecordCount = blob.RecordCount,
                         SourceId = Guid.NewGuid(),
                         State = KustoBlobIngestionState.Created,
                     });

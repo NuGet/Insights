@@ -36,17 +36,28 @@ namespace NuGet.Insights.Worker
                 containerName,
                 name,
                 compressedSizeBytes,
-                long.Parse(metadata[StorageUtility.RawSizeBytesMetadata], CultureInfo.InvariantCulture),
-                long.Parse(metadata[StorageUtility.RecordCountMetadata], CultureInfo.InvariantCulture))
+                GetLongOrNull(metadata, StorageUtility.RawSizeBytesMetadata),
+                GetLongOrNull(metadata, StorageUtility.RecordCountMetadata))
         {
+        }
+
+        private static long? GetLongOrNull(IDictionary<string, string> metadata, string key)
+        {
+            if (metadata.TryGetValue(key, out var unparsedValue)
+                && long.TryParse(unparsedValue, CultureInfo.InvariantCulture, out var value))
+            {
+                return value;
+            }
+
+            return null;
         }
 
         public CsvRecordBlob(
             string containerName,
             string name,
             long compressedSizeBytes,
-            long rawSizeBytes,
-            long recordCount)
+            long? rawSizeBytes,
+            long? recordCount)
         {
             ContainerName = containerName;
             Name = name;
@@ -58,7 +69,7 @@ namespace NuGet.Insights.Worker
         public string ContainerName { get; }
         public string Name { get; }
         public long CompressedSizeBytes { get; }
-        public long RawSizeBytes { get; }
-        public long RecordCount { get; }
+        public long? RawSizeBytes { get; }
+        public long? RecordCount { get; }
     }
 }

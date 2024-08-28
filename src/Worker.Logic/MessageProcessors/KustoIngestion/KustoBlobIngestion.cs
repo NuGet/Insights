@@ -36,7 +36,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public string IngestionId { get; set; }
         public string StorageSuffix { get; set; }
         public KustoBlobIngestionState State { get; set; }
-        public long RawSizeBytes { get; set; }
+        public long? RawSizeBytes { get; set; }
+        public long? RecordCount { get; set; }
         public string StatusUrl { get; set; }
         public Guid SourceId { get; set; }
     }
