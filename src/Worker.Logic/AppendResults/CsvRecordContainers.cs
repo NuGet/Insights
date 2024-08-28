@@ -80,12 +80,7 @@ namespace NuGet.Insights.Worker
                     .GetBlobsAsync(prefix: storage.BlobNamePrefix, traits: BlobTraits.Metadata)
                     .ToListAsync();
                 return blobs
-                    .Select(x => new CsvRecordBlob(
-                        containerName,
-                        x.Name,
-                        x.Properties.ContentLength.Value,
-                        long.Parse(x.Metadata[StorageUtility.RawSizeBytesMetadata], CultureInfo.InvariantCulture),
-                        long.Parse(x.Metadata[StorageUtility.RecordCountMetadata], CultureInfo.InvariantCulture)))
+                    .Select(x => new CsvRecordBlob(containerName, x))
                     .ToList();
             }
             catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)

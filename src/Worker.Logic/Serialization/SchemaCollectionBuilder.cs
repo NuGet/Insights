@@ -74,7 +74,7 @@ namespace NuGet.Insights.Worker
             new SchemaV1<CsvCompactMessage<PackageIcon>>("cc.pi2c"),
             new SchemaV1<CsvCompactMessage<PackageCompatibility>>("cc.pc2c"),
             new SchemaV1<CsvCompactMessage<PackageContent>>("cc.pco2c"),
-            
+
 #if ENABLE_CRYPTOAPI
             new SchemaV1<CsvCompactMessage<CertificateRecord>>("cc.r2c"),
             new SchemaV1<CsvCompactMessage<PackageCertificateRecord>>("cc.pr2c"),

@@ -60,6 +60,51 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             await AssertOutputAsync(PackageAssetToCsvDir, Step1, 2);
         }
 
+        [Fact]
+        public async Task PackageAssetToCsv_WithBigModeAppendService()
+        {
+            // Arrange
+            ConfigureWorkerSettings = x =>
+            {
+                x.AppendResultBigModeRecordThreshold = 0;
+            };
+
+            var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z", CultureInfo.InvariantCulture);
+            var max2 = DateTimeOffset.Parse("2020-11-27T19:36:50.4909042Z", CultureInfo.InvariantCulture);
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
+            await SetCursorAsync(min0);
+
+            // Act
+            await UpdateAsync(max1);
+
+            // Assert
+            await AssertOutputAsync(PackageAssetToCsvDir, Step1, 0);
+            await AssertOutputAsync(PackageAssetToCsvDir, Step1, 1);
+            await AssertOutputAsync(PackageAssetToCsvDir, Step1, 2);
+            TelemetryClient.Metrics.TryGetValue(new("AppendResultStorageService.CompactAsync.BigMode.Switch", "DestContainer", "RecordType", "Reason"), out var metric);
+            Assert.NotNull(metric);
+            Assert.All(metric.MetricValues, x => Assert.Equal(Options.Value.PackageAssetContainerName, x.DimensionValues[0]));
+            Assert.All(metric.MetricValues, x => Assert.Equal("PackageAsset", x.DimensionValues[1]));
+            Assert.All(metric.MetricValues, x => Assert.Equal("EstimatedRecordCount", x.DimensionValues[2]));
+            TelemetryClient.Metrics.Clear();
+
+            // Act
+            await UpdateAsync(max2);
+
+            // Assert
+            await AssertOutputAsync(PackageAssetToCsvDir, Step2, 0);
+            await AssertOutputAsync(PackageAssetToCsvDir, Step1, 1); // This file is unchanged.
+            await AssertOutputAsync(PackageAssetToCsvDir, Step2, 2);
+            TelemetryClient.Metrics.TryGetValue(new("AppendResultStorageService.CompactAsync.BigMode.Switch", "DestContainer", "RecordType", "Reason"), out metric);
+            Assert.NotNull(metric);
+            Assert.All(metric.MetricValues, x => Assert.Equal(Options.Value.PackageAssetContainerName, x.DimensionValues[0]));
+            Assert.All(metric.MetricValues, x => Assert.Equal("PackageAsset", x.DimensionValues[1]));
+            Assert.All(metric.MetricValues, x => Assert.Equal("ExistingRecordCount", x.DimensionValues[2]));
+        }
+
         [Theory]
         [InlineData("00:01:00", true, false)]
         [InlineData("00:01:00", false, false)]

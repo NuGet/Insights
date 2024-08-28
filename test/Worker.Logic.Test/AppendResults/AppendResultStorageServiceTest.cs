@@ -1,6 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.IO.Compression;
+using System.IO.Hashing;
+using Azure.Storage.Blobs.Models;
 using NuGet.Insights.Worker.CatalogDataToCsv;
 
 namespace NuGet.Insights.Worker
@@ -41,7 +44,27 @@ namespace NuGet.Insights.Worker
             var metric = TelemetryClient.Metrics[new("AppendResultStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
             var value = Assert.Single(metric.MetricValues);
             Assert.Equal(1, value.MetricValue);
-            Assert.Equal<string[]>([DestContainer, typeof(PackageDeprecationRecord).FullName], value.DimensionValues);
+            Assert.Equal<string[]>([DestContainer, typeof(PackageDeprecationRecord).Name], value.DimensionValues);
+        }
+
+        [Fact]
+        public async Task TracksSwitchToBigMode()
+        {
+            // Arrange
+            ConfigureWorkerSettings = x => x.AppendResultBigModeRecordThreshold = 0;
+            await Target.InitializeAsync(SrcTable, DestContainer);
+
+            await Target.AppendAsync(SrcTable, BucketCount, RecordsA);
+            await Target.AppendAsync(SrcTable, BucketCount, RecordsB);
+
+            // Act
+            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket, force: false);
+
+            // Assert
+            var metric = TelemetryClient.Metrics[new("AppendResultStorageService.CompactAsync.BigMode.Switch", "DestContainer", "RecordType", "Reason")];
+            var value = Assert.Single(metric.MetricValues);
+            Assert.Equal(1, value.MetricValue);
+            Assert.Equal<string[]>([DestContainer, typeof(PackageDeprecationRecord).Name, "EstimatedRecordCount"], value.DimensionValues);
         }
 
         [Fact]
@@ -108,6 +131,68 @@ namespace NuGet.Insights.Worker
             Assert.Equal(0, values[1].MetricValue);
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ProducesValidGzipFile(bool bigMode)
+        {
+            // Arrange
+            var random = new Random(Seed: 0);
+            ConfigureWorkerSettings = x => x.AppendResultBigModeRecordThreshold = bigMode ? 0 : int.MaxValue;
+            await Target.InitializeAsync(SrcTable, DestContainer);
+
+            // Step 1: append two sets of records
+            // Act
+            await Target.AppendAsync(SrcTable, BucketCount, RecordsA);
+            await Target.AppendAsync(SrcTable, BucketCount, RecordsB);
+            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket, force: false);
+
+            // Assert
+            await ValidateGzippedFormatAsync(DestContainer, Bucket);
+
+            // Step 2: duplicate records
+            // Act
+            await Target.AppendAsync(SrcTable, BucketCount, RecordsB);
+            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket, force: false);
+
+            // Assert
+            await ValidateGzippedFormatAsync(DestContainer, Bucket);
+
+            // Step 3: larger records
+            // Act
+            foreach (var record in RecordsA.Concat(RecordsB))
+            {
+                record.ScanTimestamp = new DateTimeOffset(2024, 8, 30, 11, 23, 0, TimeSpan.Zero);
+                var buffer = new byte[5000];
+                random.NextBytes(buffer);
+                record.Message = buffer.ToBase64();
+            }
+
+            await Target.AppendAsync(SrcTable, BucketCount, RecordsA);
+            await Target.AppendAsync(SrcTable, BucketCount, RecordsB);
+            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket, force: false);
+
+            // Assert
+            await ValidateGzippedFormatAsync(DestContainer, Bucket);
+
+            // Step 4: smaller records
+            // Act
+            foreach (var record in RecordsA.Concat(RecordsB))
+            {
+                record.ScanTimestamp = new DateTimeOffset(2024, 8, 31, 11, 23, 0, TimeSpan.Zero);
+                var buffer = new byte[10];
+                random.NextBytes(buffer);
+                record.Message = buffer.ToBase64();
+            }
+
+            await Target.AppendAsync(SrcTable, BucketCount, RecordsA);
+            await Target.AppendAsync(SrcTable, BucketCount, RecordsB);
+            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket, force: false);
+
+            // Assert
+            await ValidateGzippedFormatAsync(DestContainer, Bucket);
+        }
+
         public AppendResultStorageService Target => Host.Services.GetRequiredService<AppendResultStorageService>();
 
         public string SrcTable { get; }
@@ -126,6 +211,52 @@ namespace NuGet.Insights.Worker
 
             RecordsA = [new PackageDeprecationRecord { Id = "Newtonsoft.Json", Version = "9.0.1", ResultType = PackageDeprecationResultType.NotDeprecated }.InitializeFromIdVersion()];
             RecordsB = [new PackageDeprecationRecord { Id = "Newtonsoft.Json", Version = "10.0.1", ResultType = PackageDeprecationResultType.NotDeprecated }.InitializeFromIdVersion()];
+        }
+
+        private async Task ValidateGzippedFormatAsync(string destContainer, int bucket)
+        {
+            var client = await Target.GetCompactBlobClientAsync(destContainer, bucket);
+            BlobDownloadResult result = await client.DownloadContentAsync();
+
+            var compressedBytes = result.Content.ToArray();
+            var decompressedSystem = DecompressGzipUsingSystem(compressedBytes);
+            var decompressedSharpCompress = DecompressGzipUsingSharpCompress(compressedBytes);
+
+            Assert.Equal(decompressedSystem, decompressedSharpCompress);
+        }
+
+        private byte[] DecompressGzipUsingSharpCompress(byte[] compressedBytes)
+        {
+            using var compressedStream = new MemoryStream(compressedBytes);
+            using var decompressStream = new MemoryStream();
+
+            // We need to use a more strict gzip implementation.
+            // The System.IO.Compression implementation is not strict.
+            // See: https://github.com/dotnet/runtime/issues/47563
+            // This was fixed, but then reverted in the .NET 7 timeframe.
+            // See: https://github.com/dotnet/runtime/issues/72726
+            using var gzipStream = new SharpCompress.Compressors.Deflate.GZipStream(compressedStream, SharpCompress.Compressors.CompressionMode.Decompress);
+            gzipStream.CopyTo(decompressStream);
+            var crc32 = gzipStream.Crc32;
+            gzipStream.Dispose();
+
+            var decompressed = decompressStream.ToArray();
+            Assert.Equal(BitConverter.ToInt32(Crc32.Hash(decompressed)), gzipStream.Crc32);
+
+            return decompressed;
+        }
+
+        private byte[] DecompressGzipUsingSystem(byte[] compressedBytes)
+        {
+            using var compressedStream = new MemoryStream(compressedBytes);
+            using var decompressStream = new MemoryStream();
+
+            // We need to use a more strict gzip implementation.
+            using var gzipStream = new GZipStream(compressedStream, CompressionMode.Decompress);
+            gzipStream.CopyTo(decompressStream);
+            gzipStream.Dispose();
+
+            return decompressStream.ToArray();
         }
     }
 }
