@@ -64,6 +64,10 @@ namespace NuGet.Insights
             // Protect against unintentional disposal
             pipeline = new NoDisposeHandler { InnerHandler = pipeline };
 
+            // Emit basic telemetry
+            var telemetryClient = serviceProvider.GetRequiredService<ITelemetryClient>();
+            pipeline = new TelemetryHttpHandler(telemetryClient) { InnerHandler = pipeline };
+
             // Enable a hook in the HTTP pipeline
             var factory = serviceProvider.GetService<INuGetInsightsHttpMessageHandlerFactory>();
             if (factory != null)
@@ -74,10 +78,10 @@ namespace NuGet.Insights
             }
 
             // Optionally enable logging
-            var logger = serviceProvider.GetRequiredService<ILogger<LoggingHandler>>();
+            var logger = serviceProvider.GetRequiredService<ILogger<LoggingHttpHandler>>();
             if (enableLogging && (logger.IsEnabled(LogLevel.Warning) || logger.IsEnabled(LogLevel.Information)))
             {
-                var handler = new LoggingHandler(logger) { InnerHandler = pipeline };
+                var handler = new LoggingHttpHandler(logger) { InnerHandler = pipeline };
                 pipeline = handler;
             }
 
@@ -156,7 +160,8 @@ namespace NuGet.Insights
 
             serviceCollection.AddSingleton(x =>
             {
-                var httpClient = GetHttpClient(x, enableLogging: true, HttpHandlerFlavor.NoDecompressing);
+                var isDebugLogEnabled = x.GetRequiredService<ILogger<ServiceClientFactory>>().IsEnabled(LogLevel.Debug);
+                var httpClient = GetHttpClient(x, enableLogging: isDebugLogEnabled, HttpHandlerFlavor.NoDecompressing);
                 return new ServiceClientFactory(
                     () => httpClient,
                     x.GetRequiredService<IOptions<NuGetInsightsSettings>>(),

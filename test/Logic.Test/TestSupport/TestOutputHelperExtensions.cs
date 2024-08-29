@@ -36,6 +36,7 @@ namespace NuGet.Insights
             return key.MetricId == MetricNames.MessageProcessorDurationMs
                 || key.MetricId == MetricNames.BatchMessageProcessorDurationMs
                 || key.MetricId.StartsWith(TableClientWithRetryContext.MetricIdPrefix, StringComparison.Ordinal)
+                || key.MetricId.StartsWith(TelemetryHttpHandler.MetricIdPrefix, StringComparison.Ordinal)
                 || key.MetricId.Contains(QueryLoopMetrics.MetricIdSubstring, StringComparison.Ordinal);
         }
 

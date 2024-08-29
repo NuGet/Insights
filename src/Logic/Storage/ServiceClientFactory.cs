@@ -373,13 +373,8 @@ namespace NuGet.Insights
 
         protected virtual HttpPipelineTransport? GetHttpPipelineTransport()
         {
-            if (_logger.IsEnabled(LogLevel.Debug))
-            {
-                var httpClient = _httpClientFactory?.Invoke();
-                return httpClient != null ? new HttpClientTransport(httpClient) : null;
-            }
-
-            return null;
+            var httpClient = _httpClientFactory?.Invoke();
+            return httpClient != null ? new HttpClientTransport(httpClient) : null;
         }
 
         private record ServiceClients(

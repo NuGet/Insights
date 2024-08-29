@@ -1067,14 +1067,14 @@ namespace NuGet.Insights.ReferenceTracking
             var telemetryClient = output.GetTelemetryClient();
 
             ServiceClientFactoryA = new TestServiceClientFactory(
-                () => new LoggingHandler(output.GetLogger<LoggingHandler>()),
+                () => new LoggingHttpHandler(output.GetLogger<LoggingHttpHandler>()),
                 _fixture.HttpClientHandler,
                 _fixture.Options.Object,
                 telemetryClient,
                 loggerFactory);
 
             ServiceClientFactoryB = new TestServiceClientFactory(
-                () => new LoggingHandler(output.GetLogger<LoggingHandler>()),
+                () => new LoggingHttpHandler(output.GetLogger<LoggingHttpHandler>()),
                 _fixture.HttpClientHandler,
                 _fixture.Options.Object,
                 telemetryClient,

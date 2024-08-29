@@ -8,7 +8,7 @@ namespace NuGet.Insights
     public class TestServiceClientFactory : ServiceClientFactory
     {
         public TestServiceClientFactory(
-            Func<LoggingHandler> loggingHandlerFactory,
+            Func<LoggingHttpHandler> loggingHandlerFactory,
             HttpClientHandler httpClientHandler,
             IOptions<NuGetInsightsSettings> options,
             ITelemetryClient telemetryClient,
@@ -18,7 +18,7 @@ namespace NuGet.Insights
             HttpClientHandler = httpClientHandler;
         }
 
-        public Func<LoggingHandler> LoggingHandlerFactory { get; }
+        public Func<LoggingHttpHandler> LoggingHandlerFactory { get; }
         public HttpClientHandler HttpClientHandler { get; }
         public TestHttpMessageHandlerFactory HandlerFactory { get; } = new TestHttpMessageHandlerFactory();
 

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>NuGet.Insights.Worker.Logic</AssemblyName>
     <RootNamespace>NuGet.Insights.Worker</RootNamespace>
@@ -20,7 +20,6 @@
     <PackageReference Include="Magick.NET-Q16-AnyCPU" />
     <PackageReference Include="Microsoft.Azure.Kusto.Ingest" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" />
-    <PackageReference Include="Microsoft.NET.StringTools" />
     <PackageReference Include="Sylvan.Data.Csv" />
   </ItemGroup>
   <ItemGroup>

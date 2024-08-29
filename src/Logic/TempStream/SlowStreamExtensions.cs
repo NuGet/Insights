@@ -37,8 +37,11 @@ namespace NuGet.Insights
                     if (length >= 0)
                     {
                         percent = 1.0 * copiedBytes / length;
-                        logLevel = bytesRead == 0 || (int)(percent * 100) != (int)(previousPercent * 100) ? LogLevel.Information : LogLevel.Debug;
-                        logger.Log(logLevel, "Read {BufferBytes} bytes ({CopiedBytes} of {TotalBytes}, {Percent:P2}).", bytesRead, copiedBytes, length, percent);
+                        logLevel = (bytesRead == 0 && previousPercent != 1.0) || (int)(percent * 100) != (int)(previousPercent * 100) ? LogLevel.Information : LogLevel.None;
+                        if (logLevel != LogLevel.None)
+                        {
+                            logger.Log(logLevel, "Read {BufferBytes} bytes ({CopiedBytes} of {TotalBytes}, {Percent:P2}).", bytesRead, copiedBytes, length, percent);
+                        }
                     }
 
                     if (bytesRead == 0)
@@ -53,7 +56,10 @@ namespace NuGet.Insights
 
                     if (length >= 0)
                     {
-                        logger.Log(logLevel, "Wrote {BufferBytes} bytes ({CopiedBytes} of {TotalBytes}, {Percent:P2}).", bytesRead, copiedBytes, length, percent);
+                        if (logLevel != LogLevel.None)
+                        {
+                            logger.Log(logLevel, "Wrote {BufferBytes} bytes ({CopiedBytes} of {TotalBytes}, {Percent:P2}).", bytesRead, copiedBytes, length, percent);
+                        }
                         previousPercent = percent;
                     }
                 }
@@ -100,7 +106,7 @@ namespace NuGet.Insights
                     if (length >= 0)
                     {
                         percent = 1.0 * copiedBytes / length;
-                        logLevel = bytesRead == 0 || (int)(percent * 10) != (int)(previousPercent * 10) ? LogLevel.Information : LogLevel.None;
+                        logLevel = (bytesRead == 0 && previousPercent != 1.0) || (int)(percent * 100) != (int)(previousPercent * 100) ? LogLevel.Information : LogLevel.None;
                         if (logLevel != LogLevel.None)
                         {
                             logger.Log(logLevel, "Read {BufferBytes} bytes ({CopiedBytes} of {TotalBytes}, {Percent:P2}).", bytesRead, copiedBytes, length, percent);

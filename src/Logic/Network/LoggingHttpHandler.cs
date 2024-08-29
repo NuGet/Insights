@@ -7,11 +7,11 @@ using NuGet.Common;
 
 namespace NuGet.Insights
 {
-    public class LoggingHandler : DelegatingHandler
+    public class LoggingHttpHandler : DelegatingHandler
     {
-        private readonly ILogger<LoggingHandler> _logger;
+        private readonly ILogger<LoggingHttpHandler> _logger;
 
-        public LoggingHandler(ILogger<LoggingHandler> logger)
+        public LoggingHttpHandler(ILogger<LoggingHttpHandler> logger)
         {
             _logger = logger;
         }

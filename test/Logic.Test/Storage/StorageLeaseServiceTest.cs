@@ -352,7 +352,7 @@ namespace NuGet.Insights
                 Options.Setup(x => x.Value).Returns(() => Settings);
                 HttpClientHandler = new HttpClientHandler();
                 ServiceClientFactory = new TestServiceClientFactory(
-                    () => new LoggingHandler(output.GetLogger<LoggingHandler>()),
+                    () => new LoggingHttpHandler(output.GetLogger<LoggingHttpHandler>()),
                     HttpClientHandler,
                     Options.Object,
                     output.GetTelemetryClient(),
