@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Extensions.Caching.Memory;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -192,7 +193,13 @@ namespace NuGet.Insights
                     return Task.FromResult<HttpHandlerResource>(resource);
                 },
                 NullThrottle.Instance);
-            ServiceIndexCache = new ServiceIndexCache(Options.Object);
+            ServiceIndexCache = new ServiceIndexCache(
+                HttpSource,
+                new MemoryCache(
+                    Microsoft.Extensions.Options.Options.Create(new MemoryCacheOptions()),
+                    Output.GetLoggerFactory()),
+                Options.Object,
+                Output.GetLogger<ServiceIndexCache>());
             Target = new CatalogClient(
                 HttpSource,
                 ServiceIndexCache,

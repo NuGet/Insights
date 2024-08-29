@@ -95,7 +95,8 @@ namespace NuGet.Insights
             Assert.Equal(CommitTimestamps.Count, timestamps.Count);
             Assert.Equal(CommitTimestamps, timestamps);
             HttpMessageHandlerFactory.LogResponses(Output);
-            Assert.Equal(4, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.Host == "api.nuget.org"));
+            Assert.Equal(5, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.Host == "api.nuget.org"));
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == "https://api.nuget.org/v3/index.json"));
             Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == IndexUrl));
             Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page0Url));
             Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page1Url));
@@ -120,7 +121,8 @@ namespace NuGet.Insights
             Assert.Equal(CommitTimestamps.Count, timestamps.Count);
             Assert.Equal(CommitTimestamps, timestamps);
             HttpMessageHandlerFactory.LogResponses(Output);
-            Assert.Equal(4, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.Host == "api.nuget.org"));
+            Assert.Equal(5, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.Host == "api.nuget.org"));
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == "https://api.nuget.org/v3/index.json"));
             Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == IndexUrl));
             Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page0Url));
             Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page1Url));

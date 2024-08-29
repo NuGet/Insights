@@ -5,7 +5,8 @@ namespace NuGet.Insights
 {
     public class CatalogCommitTimestampProviderTest : BaseLogicIntegrationTest
     {
-        private const string IndexUrl = "https://api.nuget.org/v3/catalog0/index.json";
+        private const string ServiceIndexUrl = "https://api.nuget.org/v3/index.json";
+        private const string CatalogIndexUrl = "https://api.nuget.org/v3/catalog0/index.json";
         private const string Page0Url = "https://example.com/catalog/page0.json";
         private const string Page1Url = "https://example.com/catalog/page1.json";
         private const string Page2Url = "https://example.com/catalog/page2.json";
@@ -60,12 +61,14 @@ namespace NuGet.Insights
                 }
             };
 
-            HttpMessageHandlerFactory.OnSendAsync = (r, b, t) =>
+            HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
             {
                 string json;
                 switch (r.RequestUri.AbsoluteUri)
                 {
-                    case IndexUrl:
+                    case ServiceIndexUrl:
+                        return await b(r, t);
+                    case CatalogIndexUrl:
                         json = JsonSerializer.Serialize(Index, HttpSourceExtensions.JsonSerializerOptions);
                         break;
                     case Page0Url:
@@ -82,11 +85,11 @@ namespace NuGet.Insights
                         break;
                 }
 
-                return Task.FromResult(new HttpResponseMessage(json == null ? HttpStatusCode.NotFound : HttpStatusCode.OK)
+                return new HttpResponseMessage(json == null ? HttpStatusCode.NotFound : HttpStatusCode.OK)
                 {
                     RequestMessage = r,
                     Content = new StringContent(json ?? string.Empty)
-                });
+                };
             };
         }
 
@@ -105,8 +108,9 @@ namespace NuGet.Insights
 
             // Assert
             Assert.Null(min);
-            var request = Assert.Single(HttpMessageHandlerFactory.SuccessRequests);
-            Assert.Equal(IndexUrl, request.RequestUri.AbsoluteUri);
+            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count());
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == ServiceIndexUrl));
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == CatalogIndexUrl));
         }
 
         [Fact]
@@ -117,8 +121,9 @@ namespace NuGet.Insights
 
             // Assert
             Assert.Null(min);
-            var request = Assert.Single(HttpMessageHandlerFactory.SuccessRequests);
-            Assert.Equal(IndexUrl, request.RequestUri.AbsoluteUri);
+            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count());
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == ServiceIndexUrl));
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == CatalogIndexUrl));
         }
 
         [Fact]
@@ -129,8 +134,9 @@ namespace NuGet.Insights
 
             // Assert
             Assert.Equal(TS1, min);
-            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count());
-            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == IndexUrl));
+            Assert.Equal(3, HttpMessageHandlerFactory.SuccessRequests.Count());
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == ServiceIndexUrl));
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == CatalogIndexUrl));
             Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page0Url));
         }
 
@@ -149,8 +155,9 @@ namespace NuGet.Insights
 
             // Assert
             Assert.Equal(TS2, min);
-            Assert.Equal(4, HttpMessageHandlerFactory.SuccessRequests.Count());
-            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == IndexUrl));
+            Assert.Equal(5, HttpMessageHandlerFactory.SuccessRequests.Count());
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == ServiceIndexUrl));
+            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == CatalogIndexUrl));
             Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page0Url));
             Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page1Url));
         }
@@ -173,8 +180,9 @@ namespace NuGet.Insights
 
             // Assert
             Assert.Equal(TS6, min);
-            Assert.Equal(4, HttpMessageHandlerFactory.SuccessRequests.Count());
-            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == IndexUrl));
+            Assert.Equal(5, HttpMessageHandlerFactory.SuccessRequests.Count());
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == ServiceIndexUrl));
+            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == CatalogIndexUrl));
             Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page0Url));
             Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page2Url));
         }
@@ -196,8 +204,9 @@ namespace NuGet.Insights
 
             // Assert
             Assert.Equal(TS2, min);
-            Assert.Equal(4, HttpMessageHandlerFactory.SuccessRequests.Count());
-            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == IndexUrl));
+            Assert.Equal(5, HttpMessageHandlerFactory.SuccessRequests.Count());
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == ServiceIndexUrl));
+            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == CatalogIndexUrl));
             Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page0Url));
         }
 
@@ -212,8 +221,9 @@ namespace NuGet.Insights
 
             // Assert
             Assert.Null(min);
-            Assert.Equal(3, HttpMessageHandlerFactory.SuccessRequests.Count());
-            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == IndexUrl));
+            Assert.Equal(4, HttpMessageHandlerFactory.SuccessRequests.Count());
+            Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == ServiceIndexUrl));
+            Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == CatalogIndexUrl));
             Assert.Equal(1, HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsoluteUri == Page0Url));
         }
 
