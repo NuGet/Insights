@@ -40,7 +40,7 @@
     }
 
     var now = DateTimeOffset.UtcNow;
-    var lastRunRounded = new DateTimeOffset(now.Ticks - (now.Ticks % Model.Frequency.Ticks), TimeSpan.Zero);
+    var nextRunRounded = new DateTimeOffset((now.Ticks - (now.Ticks % Model.Frequency.Ticks)) + Model.Frequency.Ticks, TimeSpan.Zero);
 
     string nextRun;
     string nextRunBasedOn;
@@ -141,14 +141,16 @@
 
             <div class="form-group mr-1">
                 <label class="sr-only" for="@Model.Name-next-run">Next run</label>
-                <input type="text" class="form-control" name="nextRun" id="@Model.Name-next-run" value="@lastRunRounded.ToZuluMinutes()">
+                <input type="text" class="form-control" name="nextRun" id="@Model.Name-next-run" value="@nextRunRounded.ToZuluMinutes()">
             </div>
             <button type="submit" class="btn btn-info mr-1" name="setNextRun"
-                    value="true">Set next run</button>
+                    value="true">
+                Set next run <span class="next-run-delta"></span>
+            </button>
 
             @if (!Model.IsEnabledInConfig)
             {
-                <b>⚠️ This timer is disabled due to missing configuration.</b>
+                <b class="small font-weight-bold">⚠️ This timer is disabled due to configuration.</b>
             }
         </form>
     </div>
