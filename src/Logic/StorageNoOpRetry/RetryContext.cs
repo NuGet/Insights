@@ -5,7 +5,7 @@
 
 namespace NuGet.Insights.StorageNoOpRetry
 {
-    public class RetryContext
+    public abstract class RetryContext
     {
         public RetryContext(Guid clientRequestId)
         {

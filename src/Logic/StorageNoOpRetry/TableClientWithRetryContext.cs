@@ -111,7 +111,7 @@ namespace NuGet.Insights.StorageNoOpRetry
         {
             TrackEntityChange(entityCount: 1);
 
-            return await ExecuteWithClientRequestIdAsync(
+            return await ExecuteWithDefaultRetryContextAsync(
                 entity,
                 () => _client.UpsertEntityAsync(entity, mode, cancellationToken));
         }
@@ -209,7 +209,7 @@ namespace NuGet.Insights.StorageNoOpRetry
             return _client.GenerateSasUri(permissions, expiresOn);
         }
 
-        private async Task<Response> ExecuteWithClientRequestIdAsync<T>(
+        private async Task<Response> ExecuteWithDefaultRetryContextAsync<T>(
             T entity,
             Func<Task<Response>> executeAsync)
             where T : ITableEntity
@@ -218,7 +218,7 @@ namespace NuGet.Insights.StorageNoOpRetry
             {
                 var clientRequestId = Guid.NewGuid();
                 entityWithClientRequestId.ClientRequestId = clientRequestId;
-                var tableContext = new RetryContext(clientRequestId);
+                var tableContext = new DefaultRetryContext(clientRequestId);
                 using (StorageNoOpRetryPolicy.CreateScope(tableContext))
                 {
                     return await executeAsync();

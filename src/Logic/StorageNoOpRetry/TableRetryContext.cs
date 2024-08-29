@@ -5,7 +5,7 @@
 
 namespace NuGet.Insights.StorageNoOpRetry
 {
-    public class TableRetryContext : RetryContext
+    public abstract class TableRetryContext : RetryContext
     {
         public TableRetryContext(
             Guid clientRequestId,

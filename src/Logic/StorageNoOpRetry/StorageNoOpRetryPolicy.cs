@@ -97,6 +97,11 @@ namespace NuGet.Insights.StorageNoOpRetry
                 && TryGetContext(message, out RetryContext? context)
                 && context.Attempts >= 2)
             {
+                if (context is DefaultRetryContext)
+                {
+                    return shouldRetry;
+                }
+
                 _logger.LogTransientWarning(
                     "Storage no-op retry policy has begun. Attempts: {Attempts}. Client request ID: {ClientRequestId}.",
                     context.Attempts,
@@ -194,7 +199,7 @@ namespace NuGet.Insights.StorageNoOpRetry
 
             try
             {
-                using (CreateScope(new RetryContext(context)))
+                using (CreateScope(new DefaultRetryContext(context)))
                 {
                     return await context.Client.GetEntityAsync<TableEntity>(
                         partitionKey,
@@ -331,7 +336,7 @@ namespace NuGet.Insights.StorageNoOpRetry
                     x => new[] { StorageUtility.RowKey, x });
 
                 Page<TableEntity> page;
-                using (CreateScope(new RetryContext(context)))
+                using (CreateScope(new DefaultRetryContext(context)))
                 {
                     page = await context
                         .Client
