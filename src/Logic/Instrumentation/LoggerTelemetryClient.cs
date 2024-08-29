@@ -61,7 +61,7 @@ namespace NuGet.Insights
         public IDisposable StartOperation(string operationName)
         {
             Operations.Enqueue(operationName);
-            return _logger.BeginScope(new { operationName });
+            return _logger.BeginScope(new { Scope_OperationName = operationName });
         }
 
         public ConcurrentQueue<(string MetricId, double MetricValue, IDictionary<string, string> MetricProperties)> MetricValues { get; } = new();

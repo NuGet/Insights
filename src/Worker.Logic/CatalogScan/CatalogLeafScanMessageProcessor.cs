@@ -55,6 +55,8 @@ namespace NuGet.Insights.Worker
 
                 foreach ((var driverType, var toProcess) in driverTypeToProcess)
                 {
+                    using var loggerScope = _logger.BeginScope(new { Scope_CatalogLeafScanDriverType = driverType, Scope_CatalogLeafScanCount = toProcess.Count });
+
                     var batchDriver = _driverFactory.CreateBatchDriverOrNull(driverType);
 
                     EmitCountMetric(countMetric, driverType, toProcess.Select(x => x.Scan));

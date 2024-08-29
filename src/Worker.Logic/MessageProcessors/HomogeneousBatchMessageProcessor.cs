@@ -18,14 +18,13 @@ namespace NuGet.Insights.Worker
 
         public async Task ProcessAsync(HomogeneousBatchMessage batch, long dequeueCount)
         {
-            using (_logger.BeginScope("Processing homogeneous batch message with {Scope_Count} messages", batch.Messages.Count))
-            {
-                await _messageProcessor.ProcessBatchAsync(
-                    batch.SchemaName,
-                    batch.SchemaVersion,
-                    batch.Messages,
-                    dequeueCount);
-            }
+            using var loggerScope = _logger.BeginScope(new { Scope_HomogeneousBatchSchemaName = batch.SchemaName, Scope_HomogeneousBatchCount = batch.Messages.Count });
+
+            await _messageProcessor.ProcessBatchAsync(
+                batch.SchemaName,
+                batch.SchemaVersion,
+                batch.Messages,
+                dequeueCount);
         }
     }
 }
