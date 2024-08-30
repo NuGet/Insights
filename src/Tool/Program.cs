@@ -203,16 +203,9 @@ namespace NuGet.Insights.Tool
             IServiceCollection serviceCollection,
             string localDirectory = null)
         {
-            var userProfile = Environment.GetEnvironmentVariable("USERPROFILE") ?? Directory.GetCurrentDirectory();
-            var userProfilePath = Path.Combine(userProfile, "NuGet.Insights.Settings.json");
-
-            var localPath = Path.Combine(
-                localDirectory ?? typeof(ServiceCollectionExtensions).Assembly.Location,
-                "NuGet.Insights.Settings.json");
-
             var configurationBuilder = new ConfigurationBuilder()
-                .AddJsonFile(userProfilePath, optional: true, reloadOnChange: false)
-                .AddJsonFile(localPath, optional: true, reloadOnChange: false);
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: false);
 
             var configuration = configurationBuilder.Build();
 
