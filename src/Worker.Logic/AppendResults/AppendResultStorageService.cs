@@ -213,6 +213,12 @@ namespace NuGet.Insights.Worker
         private async Task AppendToTableAsync<T>(int bucket, string srcTable, IReadOnlyList<T> records) where T : ICsvRecord
         {
             var bytes = Serialize(records);
+            if (bytes.Length > WideEntityService.MaxTotalDataSize)
+            {
+                await SplitThenAppendToTableAsync(bucket, srcTable, records, bytes);
+                return;
+            }
+
             try
             {
                 var attempt = 0;
@@ -243,15 +249,20 @@ namespace NuGet.Insights.Worker
                 && ((ex.Status == (int)HttpStatusCode.RequestEntityTooLarge && ex.ErrorCode == "RequestBodyTooLarge")
                     || (ex.Status == (int)HttpStatusCode.BadRequest && ex.ErrorCode == "EntityTooLarge")))
             {
-                var recordName = typeof(T).Name;
-                _tooLargeRecordCount.TrackValue(records.Count, recordName);
-                _tooLargeSizeInBytes.TrackValue(bytes.Length, recordName);
-
-                var firstHalf = records.Take(records.Count / 2).ToList();
-                var secondHalf = records.Skip(firstHalf.Count).ToList();
-                await AppendToTableAsync(bucket, srcTable, firstHalf);
-                await AppendToTableAsync(bucket, srcTable, secondHalf);
+                await SplitThenAppendToTableAsync(bucket, srcTable, records, bytes);
             }
+        }
+
+        private async Task SplitThenAppendToTableAsync<T>(int bucket, string srcTable, IReadOnlyList<T> records, byte[] bytes) where T : ICsvRecord
+        {
+            var recordName = typeof(T).Name;
+            _tooLargeRecordCount.TrackValue(records.Count, recordName);
+            _tooLargeSizeInBytes.TrackValue(bytes.Length, recordName);
+
+            var firstHalf = records.Take(records.Count / 2).ToList();
+            var secondHalf = records.Skip(firstHalf.Count).ToList();
+            await AppendToTableAsync(bucket, srcTable, firstHalf);
+            await AppendToTableAsync(bucket, srcTable, secondHalf);
         }
 
         public async Task CompactAsync<T>(
