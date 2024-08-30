@@ -7,6 +7,24 @@ namespace NuGet.Insights.Worker
     {
         [Theory]
         [MemberData(nameof(StartabledDriverTypesData))]
+        public void StartableDriverTypes_TopologicalOrder_ReturnsAllDependenciesBeforeType(CatalogScanDriverType type)
+        {
+            var beforeTypes = CatalogScanDriverMetadata.StartableDriverTypes.TakeWhile(x => x != type).ToList();
+            var dependencies = CatalogScanDriverMetadata.GetDependencies(type);
+            Assert.All(dependencies, x => Assert.Contains(x, beforeTypes));
+        }
+
+        [Theory]
+        [MemberData(nameof(StartabledDriverTypesData))]
+        public void StartableDriverTypes_TopologicalOrder_ReturnsAllDependentsAfterType(CatalogScanDriverType type)
+        {
+            var afterTypes = CatalogScanDriverMetadata.StartableDriverTypes.SkipWhile(x => x != type).Skip(1).ToList();
+            var dependents = CatalogScanDriverMetadata.GetDependents(type);
+            Assert.All(dependents, x => Assert.Contains(x, afterTypes));
+        }
+
+        [Theory]
+        [MemberData(nameof(StartabledDriverTypesData))]
         public void GetOnlyLatestLeavesSupport_SupportsAllDriverTypes(CatalogScanDriverType type)
         {
             CatalogScanDriverMetadata.GetOnlyLatestLeavesSupport(type);

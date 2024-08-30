@@ -138,7 +138,7 @@ namespace NuGet.Insights.Worker
             Assert.All(indexScans, x => Assert.Equal(CatalogIndexScanState.Complete, x.State));
             Assert.Equal(
                 CatalogScanDriverMetadata.StartableDriverTypes.ToArray(),
-                indexScans.Where(x => x.BucketRanges is null && x.ScanId != initialLBP.ScanId).Select(x => x.DriverType).Distinct().Order().ToArray());
+                CatalogScanDriverMetadata.SortByTopologicalOrder(indexScans.Where(x => x.BucketRanges is null && x.ScanId != initialLBP.ScanId).Select(x => x.DriverType).Distinct(), x => x).ToArray());
             Assert.Equal(
                 TimedReprocessService.GetReprocessBatches().SelectMany(b => b).Order().ToArray(),
                 indexScans.Where(x => x.BucketRanges is not null).Select(x => x.DriverType).Distinct().Order().ToArray());

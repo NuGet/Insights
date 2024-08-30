@@ -593,7 +593,7 @@ namespace NuGet.Insights.Worker
 
                 Assert.Equal(
                     CatalogScanDriverMetadata.StartableDriverTypes,
-                    finished.Keys.Order().ToArray());
+                    CatalogScanDriverMetadata.SortByTopologicalOrder(finished.Keys, x => x).ToArray());
                 Assert.All(finished.Values, x => Assert.Equal(CursorValue, x.Scan.Max));
             }
 

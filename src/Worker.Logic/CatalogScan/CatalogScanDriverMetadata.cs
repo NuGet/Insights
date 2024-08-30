@@ -188,7 +188,7 @@ namespace NuGet.Insights.Worker
                 BucketRangeSupport: false,
                 UpdatedOutsideOfCatalog: UpdatesOutsideOfCatalog(type),
                 DefaultMin: CatalogClient.NuGetOrgMinDeleted,
-                Dependencies: Array.Empty<CatalogScanDriverType>());
+                Dependencies: []);
         }
 
         /// <summary>
@@ -204,17 +204,16 @@ namespace NuGet.Insights.Worker
                 BucketRangeSupport: true,
                 UpdatedOutsideOfCatalog: UpdatesOutsideOfCatalog(type),
                 DefaultMin: CatalogClient.NuGetOrgMinDeleted,
-                Dependencies: Array.Empty<CatalogScanDriverType>());
+                Dependencies: []);
         }
 
         private static readonly FrozenSet<CatalogScanDriverType> ValidDriverTypes = Enum
             .GetValues(typeof(CatalogScanDriverType))
             .Cast<CatalogScanDriverType>()
-            .Except(new[]
-            {
+            .Except([
                 CatalogScanDriverType.Internal_FindLatestCatalogLeafScan,
                 CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId,
-            })
+            ])
             .ToFrozenSet();
 
         private static readonly FrozenDictionary<CatalogScanDriverType, DriverMetadata> TypeToMetadata = AllMetadata
@@ -223,14 +222,74 @@ namespace NuGet.Insights.Worker
         private static readonly FrozenDictionary<CatalogScanDriverType, IReadOnlyList<CatalogScanDriverType>> TypeToDependents = AllMetadata
             .SelectMany(x => x.Dependencies.Select(y => new { Dependent = x.Type, Dependency = y }))
             .GroupBy(x => x.Dependency, x => x.Dependent)
-            .Select(x => new { Dependency = x.Key, Dependents = x.Order().ToList() })
-            .Concat(ValidDriverTypes.Select(x => new { Dependency = x, Dependents = new List<CatalogScanDriverType>() }))
+            .Select(x => new { Dependency = x.Key, Dependents = (IReadOnlyList<CatalogScanDriverType>)x.Order().ToList() })
+            .Concat(ValidDriverTypes.Select(x => new { Dependency = x, Dependents = (IReadOnlyList<CatalogScanDriverType>)[] }))
             .GroupBy(x => x.Dependency, x => x.Dependents)
             .ToFrozenDictionary(x => x.Key, x => (IReadOnlyList<CatalogScanDriverType>)x.SelectMany(y => y).Order().ToList());
 
-        public static IReadOnlyList<CatalogScanDriverType> StartableDriverTypes { get; } = ValidDriverTypes
-            .Order()
+        private static FrozenDictionary<CatalogScanDriverType, (int Depth, int FinalOrder)> TopologicalOrder { get; } = GetTopologicalOrder();
+
+        public static IReadOnlyList<CatalogScanDriverType> StartableDriverTypes { get; } = TopologicalOrder
+            .OrderBy(x => x.Value.FinalOrder)
+            .Select(x => x.Key)
             .ToList();
+
+        public static IOrderedEnumerable<T> SortByTopologicalOrder<T>(IEnumerable<T> source, Func<T, CatalogScanDriverType> getDriverType)
+        {
+            return source.OrderBy(x =>
+            {
+                if (TopologicalOrder.TryGetValue(getDriverType(x), out var pair))
+                {
+                    return pair.FinalOrder;
+                }
+
+                return int.MaxValue;
+            });
+        }
+
+        private static FrozenDictionary<CatalogScanDriverType, (int Depth, int FinalOrder)> GetTopologicalOrder()
+        {
+            var added = new HashSet<CatalogScanDriverType>();
+            var remaining = ValidDriverTypes.ToDictionary(x => x, x => GetDependencies(x).ToHashSet());
+            var driverTypeToDepth = new Dictionary<CatalogScanDriverType, int>();
+            var depth = 0;
+
+            while (remaining.Count > 0)
+            {
+                var isCovered = remaining
+                    .Where(pair => pair.Value.Count == 0 || added.IsSupersetOf(pair.Value))
+                    .Select(pair => pair.Key)
+                    .ToList();
+
+                if (isCovered.Count == 0)
+                {
+                    throw new InvalidOperationException("Unable to find topological sort. Missing dependencies.");
+                }
+
+                foreach (var driverType in isCovered)
+                {
+                    remaining.Remove(driverType);
+                    added.Add(driverType);
+                    driverTypeToDepth.Add(driverType, depth);
+                }
+
+                depth++;
+            }
+
+            var finalOrder = ValidDriverTypes
+                .OrderBy(x => driverTypeToDepth[x])
+                .ThenBy(x => x.ToString(), StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var lookup = new Dictionary<CatalogScanDriverType, (int Depth, int FinalOrder)>();
+            for (var i = 0; i < finalOrder.Count; i++)
+            {
+                var driverType = finalOrder[i];
+                lookup.Add(driverType, (driverTypeToDepth[driverType], i));
+            }
+
+            return lookup.ToFrozenDictionary();
+        }
 
         private static readonly FrozenDictionary<CatalogScanDriverType, IReadOnlyList<CatalogScanDriverType>> TypeToTransitiveClosures = StartableDriverTypes
             .ToFrozenDictionary(x => x, driverType =>

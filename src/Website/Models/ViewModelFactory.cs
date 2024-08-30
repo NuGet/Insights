@@ -84,7 +84,7 @@ namespace NuGet.Insights.Website
             // Build the catalog scan (driver) view models
             var catalogCommitTimestamp = await catalogCommitTimestampTask;
             var catalogScans = new List<CatalogScanViewModel>();
-            foreach ((var driverType, var latestScans) in catalogScansTask.Result.OrderBy(x => x.Key))
+            foreach ((var driverType, var latestScans) in CatalogScanDriverMetadata.SortByTopologicalOrder(catalogScansTask.Result, x => x.Key))
             {
                 var cursor = cursorsTask.Result[driverType];
                 var nextCommitTimestampForCursor = await _catalogCommitTimestampProvider.GetNextAsync(cursor.Value);
