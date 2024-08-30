@@ -42,7 +42,7 @@ namespace NuGet.Insights.Worker
         {
             var deserializedMessage = _serializer.Deserialize(message);
 
-            using var loggerScope = _logger.BeginScope(new { Scope_SchemaName = deserializedMessage.SchemaName, Scope_DequeueCount = dequeueCount });
+            using var loggerScope = _logger.BeginScope("Queue message: {Scope_SchemaName} ({Scope_DequeueCount} dequeues)", deserializedMessage.SchemaName, dequeueCount);
 
             await ProcessSingleMessageAsync(
                 isBatch: false,

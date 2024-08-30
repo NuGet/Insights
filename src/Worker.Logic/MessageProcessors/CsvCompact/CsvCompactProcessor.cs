@@ -40,6 +40,8 @@ namespace NuGet.Insights.Worker
                 return;
             }
 
+            using var loggerScope = _logger.BeginScope("CSV compact: {Scope_CsvCompactContainer} {Scope_CsvCompactBucket}", _storage.ResultContainerName, message.Bucket);
+
             await _storageService.CompactAsync<T>(
                 message.SourceTable,
                 _storage.ResultContainerName,

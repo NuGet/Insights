@@ -37,6 +37,8 @@ namespace NuGet.Insights.Worker
                 return;
             }
 
+            using var loggerScope = _logger.BeginScope("Catalog page scan: {Scope_CatalogPageScanDriverType}", scan.DriverType);
+
             var driver = _driverFactory.Create(scan.DriverType);
 
             var result = await driver.ProcessPageAsync(scan);

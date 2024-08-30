@@ -67,6 +67,8 @@ namespace NuGet.Insights.Worker
                 return;
             }
 
+            using var loggerScope = _logger.BeginScope("Catalog index scan: {Scope_CatalogIndexScanDriverType}", scan.DriverType);
+
             if (scan.State.IsTerminal())
             {
                 return;
