@@ -157,7 +157,7 @@ namespace NuGet.Insights.Worker
             else
             {
                 var record = NewDetailsRecord(scanId, scanTimestamp, leaf);
-                record.ResultType = FileHashResultType.DoesNotExist;
+                record.ResultType = FileRecordResultType.DoesNotExist;
                 return MakeResults([record]);
             }
         }
@@ -195,7 +195,7 @@ namespace NuGet.Insights.Worker
             }
             catch (InvalidDataException ex)
             {
-                record.ResultType = FileHashResultType.InvalidZipEntry;
+                record.ResultType = FileRecordResultType.InvalidZipEntry;
                 _logger.LogInformation(ex, "{FileType} ZIP archive for {Id} {Version} has an invalid ZIP entry: {Path}", FileType, record.Id, record.Version, record.Path);
             }
         }

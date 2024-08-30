@@ -221,7 +221,7 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
                 Version = getNextField(),
                 CatalogCommitTimestamp = CsvUtility.ParseDateTimeOffset(getNextField()),
                 Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
-                ResultType = Enum.Parse<NuGet.Insights.Worker.FileHashResultType>(getNextField()),
+                ResultType = Enum.Parse<NuGet.Insights.Worker.FileRecordResultType>(getNextField()),
                 SequenceNumber = CsvUtility.ParseNullable(getNextField(), int.Parse),
                 Path = getNextField(),
                 FileName = getNextField(),

@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker
 {
-    public enum FileHashResultType
+    public enum FileRecordResultType
     {
         Available,
         Deleted,
@@ -20,16 +20,16 @@ namespace NuGet.Insights.Worker
         public FileRecord(Guid scanId, DateTimeOffset scanTimestamp, PackageDeleteCatalogLeaf leaf)
             : base(scanId, scanTimestamp, leaf)
         {
-            ResultType = FileHashResultType.Deleted;
+            ResultType = FileRecordResultType.Deleted;
         }
 
         public FileRecord(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf)
             : base(scanId, scanTimestamp, leaf)
         {
-            ResultType = FileHashResultType.Available;
+            ResultType = FileRecordResultType.Available;
         }
 
-        public FileHashResultType ResultType { get; set; }
+        public FileRecordResultType ResultType { get; set; }
 
         public int? SequenceNumber { get; set; }
 
