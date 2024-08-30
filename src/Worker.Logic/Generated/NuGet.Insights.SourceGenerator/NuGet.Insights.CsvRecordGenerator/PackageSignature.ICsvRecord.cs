@@ -348,7 +348,7 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
                 CatalogCommitTimestamp = CsvUtility.ParseDateTimeOffset(getNextField()),
                 Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 ResultType = Enum.Parse<PackageSignatureResultType>(getNextField()),
-                HashAlgorithm = Enum.Parse<NuGet.Common.HashAlgorithmName>(getNextField()),
+                HashAlgorithm = CsvUtility.ParseNullable(getNextField(), Enum.Parse<NuGet.Common.HashAlgorithmName>),
                 HashValue = getNextField(),
                 AuthorSHA1 = getNextField(),
                 AuthorSHA256 = getNextField(),
@@ -363,7 +363,7 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
                 AuthorTimestampNotAfter = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 AuthorTimestampIssuer = getNextField(),
                 AuthorTimestampValue = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
-                AuthorTimestampHasASN1Error = bool.Parse(getNextField()),
+                AuthorTimestampHasASN1Error = CsvUtility.ParseNullable(getNextField(), bool.Parse),
                 RepositorySHA1 = getNextField(),
                 RepositorySHA256 = getNextField(),
                 RepositorySubject = getNextField(),
@@ -377,7 +377,7 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
                 RepositoryTimestampNotAfter = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 RepositoryTimestampIssuer = getNextField(),
                 RepositoryTimestampValue = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
-                RepositoryTimestampHasASN1Error = bool.Parse(getNextField()),
+                RepositoryTimestampHasASN1Error = CsvUtility.ParseNullable(getNextField(), bool.Parse),
                 PackageOwners = getNextField(),
             };
         }

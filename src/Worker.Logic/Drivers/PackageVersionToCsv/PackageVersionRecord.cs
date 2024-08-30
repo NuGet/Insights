@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.ComponentModel.DataAnnotations;
 using NuGet.Insights.Worker.LoadPackageVersion;
 
 namespace NuGet.Insights.Worker.PackageVersionToCsv
@@ -49,30 +50,51 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
             LastEdited = entity.LastEdited;
         }
 
+        [Required]
         public PackageVersionResultType ResultType { get; set; }
 
         public string OriginalVersion { get; set; }
         public string FullVersion { get; set; }
 
+        [Required]
         public int Major { get; set; }
+
+        [Required]
         public int Minor { get; set; }
+
+        [Required]
         public int Patch { get; set; }
+
+        [Required]
         public int Revision { get; set; }
+
         public string Release { get; set; }
 
         [KustoType("dynamic")]
         public string ReleaseLabels { get; set; }
 
         public string Metadata { get; set; }
+
+        [Required]
         public bool IsPrerelease { get; set; }
+
         public bool? IsListed { get; set; }
         public bool? IsSemVer2 { get; set; }
         public SemVerType? SemVerType { get; set; }
 
+        [Required]
         public int SemVerOrder { get; set; }
+
+        [Required]
         public bool IsLatest { get; set; }
+
+        [Required]
         public bool IsLatestStable { get; set; }
+
+        [Required]
         public bool IsLatestSemVer2 { get; set; }
+
+        [Required]
         public bool IsLatestStableSemVer2 { get; set; }
 
         public DateTimeOffset? Published { get; set; }

@@ -148,6 +148,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             try
             {
                 record.ContentFiles = KustoDynamicSerializer.Serialize(nuspecReader.GetContentFiles().ToList());
+                record.ContentFilesHasFormatException = false;
             }
             catch (PackagingException ex) when (ex.Message.Contains("The nuspec contains an invalid entry", StringComparison.Ordinal))
             {
@@ -161,6 +162,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             try
             {
                 record.DependencyGroups = KustoDynamicSerializer.Serialize(nuspecReader.GetDependencyGroups().ToList());
+                record.DependencyGroupsHasMissingId = false;
             }
             catch (ArgumentException ex) when (ex.Message.Contains("The argument cannot be null or empty.", StringComparison.Ordinal) && ex.ParamName == "id")
             {

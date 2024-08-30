@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.ComponentModel.DataAnnotations;
+
 namespace NuGet.Insights.Worker.PackageManifestToCsv
 {
     public partial record PackageManifestRecord : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageManifestRecord>
@@ -21,16 +23,17 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             ResultType = PackageManifestRecordResultType.Available;
         }
 
+        [Required]
         public PackageManifestRecordResultType ResultType { get; set; }
 
-        public int Size { get; set; }
+        public int? Size { get; set; }
 
         public string OriginalId { get; set; }
         public string OriginalVersion { get; set; }
 
         public string MinClientVersion { get; set; }
-        public bool DevelopmentDependency { get; set; }
-        public bool IsServiceable { get; set; }
+        public bool? DevelopmentDependency { get; set; }
+        public bool? IsServiceable { get; set; }
 
         public string Authors { get; set; }
         public string Copyright { get; set; }
@@ -43,7 +46,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         public string ProjectUrl { get; set; }
         public string Readme { get; set; }
         public string ReleaseNotes { get; set; }
-        public bool RequireLicenseAcceptance { get; set; }
+        public bool? RequireLicenseAcceptance { get; set; }
         public string Summary { get; set; }
         public string Tags { get; set; }
         public string Title { get; set; }
@@ -72,8 +75,8 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         [KustoType("dynamic")]
         public string FrameworkRefGroups { get; set; }
 
-        public bool ContentFilesHasFormatException { get; set; }
-        public bool DependencyGroupsHasMissingId { get; set; }
+        public bool? ContentFilesHasFormatException { get; set; }
+        public bool? DependencyGroupsHasMissingId { get; set; }
 
         [KustoType("dynamic")]
         public string SplitTags { get; set; }

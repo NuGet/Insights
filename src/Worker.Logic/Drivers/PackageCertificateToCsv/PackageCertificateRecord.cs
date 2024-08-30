@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.ComponentModel.DataAnnotations;
+
 namespace NuGet.Insights.Worker.PackageCertificateToCsv
 {
     public partial record PackageCertificateRecord : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageCertificateRecord>
@@ -21,6 +23,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             ResultType = PackageCertificateResultType.Available;
         }
 
+        [Required]
         public PackageCertificateResultType ResultType { get; set; }
 
         /// <summary>
@@ -28,7 +31,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         /// </summary>
         public string Fingerprint { get; set; }
 
-        public CertificateRelationshipTypes RelationshipTypes { get; set; }
+        public CertificateRelationshipTypes? RelationshipTypes { get; set; }
 
         public static List<PackageCertificateRecord> Prune(List<PackageCertificateRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {

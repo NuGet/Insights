@@ -52,6 +52,14 @@ namespace NuGet.Insights
             return false;
         }
 
+        public static bool IsRequired(PropertyVisitorContext context, IPropertySymbol symbol)
+        {
+            var attributeData = symbol
+                .GetAttributes()
+                .SingleOrDefault(x => x.AttributeClass.Equals(context.RequiredAttribute, SymbolEqualityComparer.Default));
+            return attributeData is not null;
+        }
+
         private const string KustoIgnoreAttributeName = "KustoIgnoreAttribute";
 
         public static bool IsIgnoredInKusto(IPropertySymbol symbol)

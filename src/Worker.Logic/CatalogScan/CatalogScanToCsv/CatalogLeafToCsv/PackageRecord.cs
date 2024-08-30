@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.ComponentModel.DataAnnotations;
+
 namespace NuGet.Insights.Worker
 {
     public record PackageRecord
@@ -45,7 +47,10 @@ namespace NuGet.Insights.Worker
 
         public string Id { get; set; }
         public string Version { get; set; }
+
+        [Required]
         public DateTimeOffset CatalogCommitTimestamp { get; set; }
+
         public DateTimeOffset? Created { get; set; }
 
         public static List<T> Prune<T>(List<T> records, bool isFinalPrune) where T : PackageRecord, IEquatable<T>, IComparable<T>

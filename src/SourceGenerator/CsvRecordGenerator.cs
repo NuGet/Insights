@@ -14,7 +14,7 @@ namespace NuGet.Insights
     public class CsvRecordGenerator : ISourceGenerator
     {
         internal const string Category = "NuGet.Insights.SourceGenerator";
-        private const string InterfaceNamePrefix = "ICsvRecord";
+        private const string InterfaceNameSuffix = "ICsvRecord";
         private const string FullInterfaceName = "NuGet.Insights.ICsvRecord";
         private const string FullKustoTypeAttributeName = "NuGet.Insights.KustoTypeAttribute";
         private const string NoKustoDDLAttributeName = "NuGet.Insights.NoKustoDDLAttribute";
@@ -145,7 +145,7 @@ namespace NuGet.Insights
             // to exist in NuGet.Insights.Worker.Logic and in no other project.
             var isTestAssembly = context.Compilation.AssemblyName.EndsWith(".Test", StringComparison.Ordinal);
 
-            // System.Diagnostics.Debugger.Launch();
+            // Debugger.Launch();
 
             var nullable = context.Compilation.GetTypeByMetadataName("System.Nullable`1");
             var interfaceType = context.Compilation.GetTypeByMetadataName(FullInterfaceName);
@@ -153,8 +153,8 @@ namespace NuGet.Insights
             {
                 context.ReportDiagnostic(Diagnostic.Create(
                     new DiagnosticDescriptor(
-                        id: "EXP0001",
-                        title: $"{InterfaceNamePrefix} interface could not be found",
+                        id: DiagnosticIds.MissingICsvRecordInterface,
+                        title: $"{InterfaceNameSuffix} interface could not be found",
                         messageFormat: $"The {FullInterfaceName} interface could not be found.",
                         Category,
                         DiagnosticSeverity.Error,
@@ -167,7 +167,7 @@ namespace NuGet.Insights
             {
                 context.ReportDiagnostic(Diagnostic.Create(
                     new DiagnosticDescriptor(
-                        id: "EXP0006",
+                        id: DiagnosticIds.MissingKustoTypeAttribute,
                         title: $"{FullKustoTypeAttributeName.Split('.').Last()} type could not be found",
                         messageFormat: $"The {FullKustoTypeAttributeName} type could not be found.",
                         Category,
@@ -181,7 +181,7 @@ namespace NuGet.Insights
             {
                 context.ReportDiagnostic(Diagnostic.Create(
                     new DiagnosticDescriptor(
-                        id: "EXP0007",
+                        id: DiagnosticIds.MissingNoKustoDDLAttribute,
                         title: $"{NoKustoDDLAttributeName.Split('.').Last()} type could not be found",
                         messageFormat: $"The {NoKustoDDLAttributeName} type could not be found.",
                         Category,
@@ -190,10 +190,7 @@ namespace NuGet.Insights
                     Location.None));
             }
 
-            var propertyVisitorContext = new PropertyVisitorContext(
-                context,
-                nullable,
-                kustoTypeAttributeType);
+            var requiredAttributeType = context.Compilation.GetTypeByMetadataName("System.ComponentModel.DataAnnotations.RequiredAttribute");
 
             var infos = receiver
                 .CandidateClasses
@@ -221,13 +218,13 @@ namespace NuGet.Insights
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
                         new DiagnosticDescriptor(
-                            id: "EXP0002",
-                            title: $"{InterfaceNamePrefix} implementor is not partial",
-                            messageFormat: $"The type {{0}} implements {InterfaceNamePrefix} but is not declared as partial.",
+                            id: DiagnosticIds.CsvRecordNotMarkedAsPartial,
+                            title: $"{InterfaceNameSuffix} implementor is not partial",
+                            messageFormat: $"The type {{0}} implements {InterfaceNameSuffix} but is not declared as partial.",
                             Category,
                             DiagnosticSeverity.Error,
                             isEnabledByDefault: true),
-                        Location.Create(info.Candidate.SyntaxTree, info.Candidate.Span),
+                        info.Candidate.GetLocation(),
                         info.Identifier.Text));
                     continue;
                 }
@@ -246,6 +243,7 @@ namespace NuGet.Insights
                 var kustoTableConstantBuilder = new KustoTableBuilder(indent: 4);
                 var kustoPartitioningPolicyConstantBuilder = new KustoPartitioningPolicyBuilder(indent: 0, escapeQuotes: true);
                 var kustoMappingConstantBuilder = new KustoMappingBuilder(indent: 4, escapeQuotes: true);
+                var validatePropertyNullability = new ValidatePropertyNullability();
 
                 var visitors = new IPropertyVisitor[]
                 {
@@ -261,6 +259,7 @@ namespace NuGet.Insights
                     kustoTableConstantBuilder,
                     kustoPartitioningPolicyConstantBuilder,
                     kustoMappingConstantBuilder,
+                    validatePropertyNullability,
                 };
 
                 var sortedProperties = new List<IPropertySymbol>();
@@ -277,6 +276,15 @@ namespace NuGet.Insights
 
                 sortedProperties.Reverse();
                 var propertyNames = sortedProperties.Select(x => x.Name).ToImmutableHashSet();
+
+                var propertyVisitorContext = new PropertyVisitorContext(
+                    context,
+                    info.Candidate.SyntaxTree,
+                    info.Candidate,
+                    hasNoDDLAttribute,
+                    nullable,
+                    kustoTypeAttributeType,
+                    requiredAttributeType);
 
                 foreach (var propertySymbol in sortedProperties)
                 {
@@ -313,7 +321,7 @@ namespace NuGet.Insights
                 kustoTableName = kustoTableName.Pluralize();
 
                 context.AddSource(
-                    $"{typeName}.{InterfaceNamePrefix}.cs",
+                    $"{typeName}.{InterfaceNameSuffix}.cs",
                     SourceText.From(
                         string.Format(
                             CsvRecordTemplate,
@@ -399,7 +407,7 @@ namespace NuGet.Insights
                     .Select(x => x.Type)
                     .OfType<SimpleNameSyntax>()
                     .Select(x => x.Identifier.Text)
-                    .Any(x => x.IndexOf(InterfaceNamePrefix, StringComparison.OrdinalIgnoreCase) > -1) ?? false;
+                    .Any(x => x.IndexOf(InterfaceNameSuffix, StringComparison.OrdinalIgnoreCase) > -1) ?? false;
             }
         }
     }

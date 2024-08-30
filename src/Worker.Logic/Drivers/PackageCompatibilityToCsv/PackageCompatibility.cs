@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.ComponentModel.DataAnnotations;
+
 namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 {
     public partial record PackageCompatibility : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageCompatibility>
@@ -19,12 +21,14 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             ResultType = PackageCompatibilityResultType.Available;
         }
 
+        [Required]
         public PackageCompatibilityResultType ResultType { get; set; }
-        public bool HasError { get; set; }
-        public bool DoesNotRoundTrip { get; set; }
-        public bool HasAny { get; set; }
-        public bool HasUnsupported { get; set; }
-        public bool HasAgnostic { get; set; }
+
+        public bool? HasError { get; set; }
+        public bool? DoesNotRoundTrip { get; set; }
+        public bool? HasAny { get; set; }
+        public bool? HasUnsupported { get; set; }
+        public bool? HasAgnostic { get; set; }
 
         [KustoType("dynamic")]
         public string BrokenFrameworks { get; set; }

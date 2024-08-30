@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.ComponentModel.DataAnnotations;
+
 namespace NuGet.Insights.Worker.CatalogDataToCsv
 {
     public partial record PackageDeprecationRecord : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageDeprecationRecord>
@@ -18,7 +20,9 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         {
         }
 
+        [Required]
         public PackageDeprecationResultType ResultType { get; set; }
+
         public string Message { get; set; }
 
         [KustoType("dynamic")]

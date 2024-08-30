@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.ComponentModel.DataAnnotations;
+
 namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 {
     public partial record PackageAssembly : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageAssembly>
@@ -21,6 +23,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             ResultType = resultType;
         }
 
+        [Required]
         public PackageAssemblyResultType ResultType { get; set; }
 
         public string Path { get; set; }

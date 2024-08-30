@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.ComponentModel.DataAnnotations;
+
 namespace NuGet.Insights.Worker
 {
     public enum FileRecordResultType
@@ -29,6 +31,7 @@ namespace NuGet.Insights.Worker
             ResultType = FileRecordResultType.Available;
         }
 
+        [Required]
         public FileRecordResultType ResultType { get; set; }
 
         public int? SequenceNumber { get; set; }

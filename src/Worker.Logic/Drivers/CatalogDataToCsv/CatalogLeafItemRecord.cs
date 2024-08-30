@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.ComponentModel.DataAnnotations;
 using NuGet.Packaging;
 
 namespace NuGet.Insights.Worker.CatalogDataToCsv
@@ -55,7 +56,10 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         }
 
         public string CommitId { get; set; }
+
+        [Required]
         public DateTimeOffset CommitTimestamp { get; set; }
+
         public string LowerId { get; set; }
 
         [KustoPartitionKey]
@@ -63,7 +67,10 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
 
         public string Id { get; set; }
         public string Version { get; set; }
+
+        [Required]
         public CatalogLeafType Type { get; set; }
+
         public string Url { get; set; }
 
         public string PageUrl { get; set; }

@@ -146,7 +146,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
                 Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 ResultType = Enum.Parse<PackageCertificateResultType>(getNextField()),
                 Fingerprint = getNextField(),
-                RelationshipTypes = Enum.Parse<CertificateRelationshipTypes>(getNextField()),
+                RelationshipTypes = CsvUtility.ParseNullable(getNextField(), Enum.Parse<CertificateRelationshipTypes>),
             };
         }
 

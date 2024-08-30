@@ -31,13 +31,13 @@ namespace NuGet.Insights
             {
                 context.GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(
                     new DiagnosticDescriptor(
-                        id: "EXP0005",
+                        id: DiagnosticIds.IgnoredKustoPartitioningKey,
                         title: "An attribute was marked as both a Kusto partition key and it was ignored.",
                         messageFormat: "An attribute was marked as both a Kusto partition key and it was ignored.",
                         CsvRecordGenerator.Category,
                         DiagnosticSeverity.Error,
                         isEnabledByDefault: true),
-                    Location.None));
+                    symbol.Locations.FirstOrDefault() ?? Location.None));
                 return;
             }
 
@@ -71,13 +71,13 @@ namespace NuGet.Insights
             {
                 context.GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(
                     new DiagnosticDescriptor(
-                        id: "EXP0003",
+                        id: DiagnosticIds.MultipleKustoPartioningKeys,
                         title: $"Multiple {AttributeName} attributes were defined on a single type.",
                         messageFormat: $"Multiple {AttributeName} attributes were defined on a single type.",
                         CsvRecordGenerator.Category,
                         DiagnosticSeverity.Error,
                         isEnabledByDefault: true),
-                    Location.None));
+                    symbol.Locations.FirstOrDefault() ?? Location.None));
                 return;
             }
 
@@ -103,13 +103,13 @@ namespace NuGet.Insights
             {
                 context.GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(
                     new DiagnosticDescriptor(
-                        id: "EXP0004",
+                        id: DiagnosticIds.NoKustoPartitioningKeyDefined,
                         title: $"No {AttributeName} attributes were defined on a type.",
                         messageFormat: $"No {AttributeName} attributes were defined on a type.",
                         CsvRecordGenerator.Category,
                         DiagnosticSeverity.Error,
                         isEnabledByDefault: true),
-                    Location.None));
+                    context.TypeDeclarationSyntax.GetLocation()));
                 return;
             }
         }

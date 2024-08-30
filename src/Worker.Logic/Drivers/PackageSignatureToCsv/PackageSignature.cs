@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.ComponentModel.DataAnnotations;
 using NuGet.Common;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -24,9 +25,11 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
             ResultType = PackageSignatureResultType.Available;
         }
 
+        [Required]
         public PackageSignatureResultType ResultType { get; set; }
 
-        public HashAlgorithmName HashAlgorithm { get; set; }
+        public HashAlgorithmName? HashAlgorithm { get; set; }
+
         public string HashValue { get; set; }
 
         public string AuthorSHA1 { get; set; }
@@ -43,7 +46,7 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
         public DateTimeOffset? AuthorTimestampNotAfter { get; set; }
         public string AuthorTimestampIssuer { get; set; }
         public DateTimeOffset? AuthorTimestampValue { get; set; }
-        public bool AuthorTimestampHasASN1Error { get; set; }
+        public bool? AuthorTimestampHasASN1Error { get; set; }
 
         public string RepositorySHA1 { get; set; }
         public string RepositorySHA256 { get; set; }
@@ -59,7 +62,7 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
         public DateTimeOffset? RepositoryTimestampNotAfter { get; set; }
         public string RepositoryTimestampIssuer { get; set; }
         public DateTimeOffset? RepositoryTimestampValue { get; set; }
-        public bool RepositoryTimestampHasASN1Error { get; set; }
+        public bool? RepositoryTimestampHasASN1Error { get; set; }
 
         [KustoType("dynamic")]
         public string PackageOwners { get; set; }

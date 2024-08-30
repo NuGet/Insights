@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Services.Validation;
 
@@ -82,6 +83,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         [KustoIgnore]
         public DateTimeOffset? ScanTimestamp { get; set; }
 
+        [Required]
         public PackageCertificateResultType ResultType { get; set; }
 
         /// <summary>
@@ -94,15 +96,27 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         public string FingerprintSHA1Hex { get; set; }
         public string Subject { get; set; }
         public string Issuer { get; set; }
+
+        [Required]
         public DateTimeOffset NotBefore { get; set; }
+
+        [Required]
         public DateTimeOffset NotAfter { get; set; }
+
         public string SerialNumber { get; set; }
         public string SignatureAlgorithmOid { get; set; }
+
+        [Required]
         public int Version { get; set; }
+
         [KustoType("dynamic")]
         public string Extensions { get; set; }
+
         public string PublicKeyOid { get; set; }
+
+        [Required]
         public int RawDataLength { get; set; }
+
         public string RawData { get; set; }
 
         public string IssuerFingerprint { get; set; }

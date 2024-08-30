@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.ComponentModel.DataAnnotations;
+
 namespace NuGet.Insights.Worker.PackageIconToCsv
 {
     public partial record PackageIcon : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageIcon>
@@ -19,7 +21,9 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             ResultType = PackageIconResultType.Available;
         }
 
+        [Required]
         public PackageIconResultType ResultType { get; set; }
+
         public long? FileSize { get; set; }
         public string MD5 { get; set; }
         public string SHA1 { get; set; }

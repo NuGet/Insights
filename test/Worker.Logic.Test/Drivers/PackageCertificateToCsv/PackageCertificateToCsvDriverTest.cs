@@ -195,9 +195,9 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
             var output = await Target.ProcessLeavesAsync(new[] { leaf });
 
-            Assert.DoesNotContain(output.Result.Records1, x => x.RelationshipTypes.HasFlag(CertificateRelationshipTypes.IsAuthorTimestampedBy));
+            Assert.DoesNotContain(output.Result.Records1, x => x.RelationshipTypes.Value.HasFlag(CertificateRelationshipTypes.IsAuthorTimestampedBy));
             Assert.Single(output.Result.Records1
-                .Where(x => x.RelationshipTypes.HasFlag(CertificateRelationshipTypes.IsRepositoryTimestampedBy)));
+                .Where(x => x.RelationshipTypes.Value.HasFlag(CertificateRelationshipTypes.IsRepositoryTimestampedBy)));
         }
 
         [Fact]
@@ -216,9 +216,9 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
             // .NET Runtime 6.0.0 fails to read this. 6.0.5 succeeds.
             Assert.Single(output.Result.Records1
-                .Where(x => x.RelationshipTypes.HasFlag(CertificateRelationshipTypes.IsAuthorTimestampedBy)));
+                .Where(x => x.RelationshipTypes.Value.HasFlag(CertificateRelationshipTypes.IsAuthorTimestampedBy)));
             Assert.Single(output.Result.Records1
-                .Where(x => x.RelationshipTypes.HasFlag(CertificateRelationshipTypes.IsRepositoryTimestampedBy)));
+                .Where(x => x.RelationshipTypes.Value.HasFlag(CertificateRelationshipTypes.IsRepositoryTimestampedBy)));
         }
 
         [Fact]

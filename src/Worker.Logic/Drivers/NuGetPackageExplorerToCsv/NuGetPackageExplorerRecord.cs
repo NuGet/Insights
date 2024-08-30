@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.ComponentModel.DataAnnotations;
 using NuGetPe;
 
 namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
@@ -23,6 +24,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             ResultType = NuGetPackageExplorerResultType.Available;
         }
 
+        [Required]
         public NuGetPackageExplorerResultType ResultType { get; set; }
 
         public SymbolValidationResult? SourceLinkResult { get; set; }

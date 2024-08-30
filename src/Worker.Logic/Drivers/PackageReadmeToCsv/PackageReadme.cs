@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.ComponentModel.DataAnnotations;
+
 namespace NuGet.Insights.Worker.PackageReadmeToCsv
 {
     public partial record PackageReadme : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageReadme>
@@ -21,6 +23,7 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
             ResultType = PackageReadmeResultType.None;
         }
 
+        [Required]
         public PackageReadmeResultType ResultType { get; set; }
 
         public int? Size { get; set; }
