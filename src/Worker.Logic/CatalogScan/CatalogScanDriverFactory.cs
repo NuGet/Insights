@@ -66,10 +66,48 @@ namespace NuGet.Insights.Worker
                     return _serviceProvider.GetRequiredService<LoadPackageReadmeDriver>();
                 case CatalogScanDriverType.LoadPackageVersion:
                     return _serviceProvider.GetRequiredService<LoadPackageVersionDriver>();
+
+                case CatalogScanDriverType.PackageFileToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageFileRecord>>();
+                case CatalogScanDriverType.SymbolPackageFileToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<SymbolPackageFileRecord>>();
+                case CatalogScanDriverType.PackageArchiveToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageArchiveRecord, PackageArchiveEntry>>();
+                case CatalogScanDriverType.SymbolPackageArchiveToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<SymbolPackageArchiveRecord, SymbolPackageArchiveEntry>>();
+                case CatalogScanDriverType.PackageAssemblyToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageAssembly>>();
+                case CatalogScanDriverType.PackageAssetToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageAsset>>();
+                case CatalogScanDriverType.PackageSignatureToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageSignature>>();
+                case CatalogScanDriverType.PackageManifestToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageManifestRecord>>();
+                case CatalogScanDriverType.PackageReadmeToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageReadme>>();
+                case CatalogScanDriverType.PackageLicenseToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageLicense>>();
+                case CatalogScanDriverType.PackageVersionToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageVersionRecord>>();
+                case CatalogScanDriverType.PackageCompatibilityToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageCompatibility>>();
+                case CatalogScanDriverType.PackageIconToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageIcon>>();
+                case CatalogScanDriverType.CatalogDataToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageDeprecationRecord, PackageVulnerabilityRecord, CatalogLeafItemRecord>>();
+                case CatalogScanDriverType.PackageContentToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageContent>>();
+
+#if ENABLE_NPE
+                case CatalogScanDriverType.NuGetPackageExplorerToCsv:
+                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>>();
+#endif
+
 #if ENABLE_CRYPTOAPI
                 case CatalogScanDriverType.PackageCertificateToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvBatchAdapter<PackageCertificateRecord, CertificateRecord>>();
 #endif
+
                 default:
                     if (_options.Value.RunAllCatalogScanDriversAsBatch)
                     {
@@ -108,40 +146,6 @@ namespace NuGet.Insights.Worker
                     return _serviceProvider.GetRequiredService<FindLatestLeafDriver<LatestPackageLeaf>>();
                 case CatalogScanDriverType.LoadBucketedPackage:
                     return _serviceProvider.GetRequiredService<FindLatestLeafDriver<BucketedPackage>>();
-                case CatalogScanDriverType.PackageFileToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageFileRecord>>();
-                case CatalogScanDriverType.SymbolPackageFileToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<SymbolPackageFileRecord>>();
-                case CatalogScanDriverType.PackageArchiveToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageArchiveRecord, PackageArchiveEntry>>();
-                case CatalogScanDriverType.SymbolPackageArchiveToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<SymbolPackageArchiveRecord, SymbolPackageArchiveEntry>>();
-                case CatalogScanDriverType.PackageAssemblyToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageAssembly>>();
-                case CatalogScanDriverType.PackageAssetToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageAsset>>();
-                case CatalogScanDriverType.PackageSignatureToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageSignature>>();
-                case CatalogScanDriverType.PackageManifestToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageManifestRecord>>();
-                case CatalogScanDriverType.PackageReadmeToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageReadme>>();
-                case CatalogScanDriverType.PackageLicenseToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageLicense>>();
-                case CatalogScanDriverType.PackageVersionToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageVersionRecord>>();
-#if ENABLE_NPE
-                case CatalogScanDriverType.NuGetPackageExplorerToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>>();
-#endif
-                case CatalogScanDriverType.PackageCompatibilityToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageCompatibility>>();
-                case CatalogScanDriverType.PackageIconToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageIcon>>();
-                case CatalogScanDriverType.CatalogDataToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageDeprecationRecord, PackageVulnerabilityRecord, CatalogLeafItemRecord>>();
-                case CatalogScanDriverType.PackageContentToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageContent>>();
                 default:
                     return null;
             }

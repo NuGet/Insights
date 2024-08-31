@@ -31,20 +31,36 @@ namespace NuGet.Insights.Worker
 
         public async Task<BatchMessageProcessorResult<CatalogLeafScan>> ProcessLeavesAsync(IReadOnlyList<CatalogLeafScan> leafScans)
         {
+            return await ProcessLeavesOneByOneAsync(leafScans, ProcessLeafAsync, _ => { }, _logger);
+        }
+
+        private async Task<(DriverResult, bool)> ProcessLeafAsync(CatalogLeafScan leafScan)
+        {
+            var result = await _inner.ProcessLeafAsync(leafScan);
+            return (result, true);
+        }
+
+        public static async Task<BatchMessageProcessorResult<CatalogLeafScan>> ProcessLeavesOneByOneAsync<T>(
+            IReadOnlyList<CatalogLeafScan> leafScans,
+            Func<CatalogLeafScan, Task<(DriverResult, T)>> processLeafAsync,
+            Action<T> handleValue,
+            ILogger logger)
+        {
             var failed = new List<CatalogLeafScan>();
             var tryAgainLater = new List<(CatalogLeafScan Scan, TimeSpan NotBefore)>();
             foreach (var leafScan in leafScans)
             {
                 try
                 {
-                    var result = await _inner.ProcessLeafAsync(leafScan);
+                    var (result, value) = await processLeafAsync(leafScan);
                     switch (result.Type)
                     {
                         case DriverResultType.TryAgainLater:
-                            _logger.LogTransientWarning("A catalog leaf scan will need to be tried again later.");
-                            tryAgainLater.Add((leafScan, TimeSpan.FromMinutes(1)));
+                            logger.LogInformation("A catalog leaf scan for driver {DriverType} and scan {ScanId} will need to be tried again later.", leafScan.DriverType, leafScan.ScanId);
+                            tryAgainLater.Add((leafScan, CatalogLeafScanMessageProcessor.TryAgainLaterDuration));
                             break;
                         case DriverResultType.Success:
+                            handleValue(value);
                             break;
                         default:
                             throw new NotImplementedException();
@@ -52,7 +68,7 @@ namespace NuGet.Insights.Worker
                 }
                 catch (Exception ex) when (leafScans.Count != 1)
                 {
-                    _logger.LogError(ex, "A catalog leaf scan failed.");
+                    logger.LogError(ex, "A catalog leaf scan for driver {DriverType} and scan {ScanId} failed.", leafScan.DriverType, leafScan.ScanId);
                     failed.Add(leafScan);
                 }
             }

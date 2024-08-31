@@ -5,32 +5,53 @@ namespace NuGet.Insights.Worker
 {
     public abstract class BaseCatalogLeafScanToCsvNonBatchAdapter : BaseCatalogLeafScanToCsvAdapter
     {
+        private readonly ILogger _logger;
+
         public BaseCatalogLeafScanToCsvNonBatchAdapter(
             CsvTemporaryStorageFactory storageFactory,
             IReadOnlyList<ICsvTemporaryStorage> storage,
             ICatalogLeafToCsvDriver driver,
             ServiceClientFactory serviceClientFactory,
-            IReadOnlyList<string> resultContainerNames)
+            IReadOnlyList<string> resultContainerNames,
+            ILogger logger)
             : base(storageFactory, storage, driver, serviceClientFactory, resultContainerNames)
         {
+            _logger = logger;
         }
 
         protected abstract Task<(DriverResult, IReadOnlyList<IReadOnlyList<IAggregatedCsvRecord>>)> ProcessLeafInternalAsync(CatalogLeafScan leafScan);
 
-        public async Task<DriverResult> ProcessLeafAsync(CatalogLeafScan leafScan)
+        public async Task<BatchMessageProcessorResult<CatalogLeafScan>> ProcessLeavesAsync(IReadOnlyList<CatalogLeafScan> leafScans)
         {
-            (var result, var sets) = await ProcessLeafInternalAsync(leafScan);
-            if (result.Type == DriverResultType.TryAgainLater)
+            var storageSuffix = leafScans
+                .Select(x => x.StorageSuffix)
+                .Distinct()
+                .Single();
+
+            var allSets = new List<List<IAggregatedCsvRecord>>();
+            for (var setIndex = 0; setIndex < _storage.Count; setIndex++)
             {
-                return result;
+                allSets.Add([]);
             }
+
+            var batchResult = await CatalogLeafScanBatchDriverAdapter.ProcessLeavesOneByOneAsync(
+                leafScans,
+                ProcessLeafInternalAsync,
+                sets =>
+                {
+                    for (var setIndex = 0; setIndex < _storage.Count; setIndex++)
+                    {
+                        allSets[setIndex].AddRange(sets[setIndex]);
+                    }
+                },
+                _logger);
 
             for (var setIndex = 0; setIndex < _storage.Count; setIndex++)
             {
-                await _storage[setIndex].AppendAsync(leafScan.StorageSuffix, sets[setIndex]);
+                await _storage[setIndex].AppendAsync(storageSuffix, allSets[setIndex]);
             }
 
-            return result;
+            return batchResult;
         }
     }
 }

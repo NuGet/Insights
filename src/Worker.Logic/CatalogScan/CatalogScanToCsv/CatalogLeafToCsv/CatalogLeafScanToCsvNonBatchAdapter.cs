@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker
 {
-    public class CatalogLeafScanToCsvNonBatchAdapter<T> : BaseCatalogLeafScanToCsvNonBatchAdapter, ICatalogLeafScanNonBatchDriver where T : class, IAggregatedCsvRecord<T>
+    public class CatalogLeafScanToCsvNonBatchAdapter<T> : BaseCatalogLeafScanToCsvNonBatchAdapter, ICatalogLeafScanBatchDriver where T : class, IAggregatedCsvRecord<T>
     {
         private readonly ICatalogLeafToCsvDriver<T> _driver;
 
@@ -11,12 +11,14 @@ namespace NuGet.Insights.Worker
             CsvTemporaryStorageFactory intermediateStorageFactory,
             ICsvResultStorage<T> resultStorage,
             ICatalogLeafToCsvDriver<T> driver,
-            ServiceClientFactory serviceClientFactory) : base(
+            ServiceClientFactory serviceClientFactory,
+            ILogger<CatalogLeafScanToCsvNonBatchAdapter<T>> logger) : base(
                 intermediateStorageFactory,
                 intermediateStorageFactory.Create(resultStorage),
                 driver,
                 serviceClientFactory,
-                [resultStorage.ResultContainerName])
+                [resultStorage.ResultContainerName],
+                logger)
         {
             _driver = driver;
         }
@@ -35,7 +37,7 @@ namespace NuGet.Insights.Worker
         }
     }
 
-    public class CatalogLeafScanToCsvNonBatchAdapter<T1, T2> : BaseCatalogLeafScanToCsvNonBatchAdapter, ICatalogLeafScanNonBatchDriver
+    public class CatalogLeafScanToCsvNonBatchAdapter<T1, T2> : BaseCatalogLeafScanToCsvNonBatchAdapter, ICatalogLeafScanBatchDriver
         where T1 : class, IAggregatedCsvRecord<T1>
         where T2 : class, IAggregatedCsvRecord<T2>
     {
@@ -46,12 +48,14 @@ namespace NuGet.Insights.Worker
             ICsvResultStorage<T1> resultStorage1,
             ICsvResultStorage<T2> resultStorage2,
             ICatalogLeafToCsvDriver<T1, T2> driver,
-            ServiceClientFactory serviceClientFactory) : base(
+            ServiceClientFactory serviceClientFactory,
+            ILogger<CatalogLeafScanToCsvNonBatchAdapter<T1, T2>> logger) : base(
                 intermediateStorageFactory,
                 intermediateStorageFactory.Create(resultStorage1, resultStorage2),
                 driver,
                 serviceClientFactory,
-                [resultStorage1.ResultContainerName, resultStorage2.ResultContainerName])
+                [resultStorage1.ResultContainerName, resultStorage2.ResultContainerName],
+                logger)
         {
             _driver = driver;
         }
@@ -70,7 +74,7 @@ namespace NuGet.Insights.Worker
         }
     }
 
-    public class CatalogLeafScanToCsvNonBatchAdapter<T1, T2, T3> : BaseCatalogLeafScanToCsvNonBatchAdapter, ICatalogLeafScanNonBatchDriver
+    public class CatalogLeafScanToCsvNonBatchAdapter<T1, T2, T3> : BaseCatalogLeafScanToCsvNonBatchAdapter, ICatalogLeafScanBatchDriver
         where T1 : class, IAggregatedCsvRecord<T1>
         where T2 : class, IAggregatedCsvRecord<T2>
         where T3 : class, IAggregatedCsvRecord<T3>
@@ -83,12 +87,14 @@ namespace NuGet.Insights.Worker
             ICsvResultStorage<T2> resultStorage2,
             ICsvResultStorage<T3> resultStorage3,
             ICatalogLeafToCsvDriver<T1, T2, T3> driver,
-            ServiceClientFactory serviceClientFactory) : base(
+            ServiceClientFactory serviceClientFactory,
+            ILogger<CatalogLeafScanToCsvNonBatchAdapter<T1, T2, T3>> logger) : base(
                 intermediateStorageFactory,
                 intermediateStorageFactory.Create(resultStorage1, resultStorage2, resultStorage3),
                 driver,
                 serviceClientFactory,
-                [resultStorage1.ResultContainerName, resultStorage2.ResultContainerName, resultStorage3.ResultContainerName])
+                [resultStorage1.ResultContainerName, resultStorage2.ResultContainerName, resultStorage3.ResultContainerName],
+                logger)
         {
             _driver = driver;
         }

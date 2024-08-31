@@ -8,7 +8,7 @@ namespace NuGet.Insights.Worker
     public class CatalogLeafScanMessageProcessor : IBatchMessageProcessor<CatalogLeafScanMessage>
     {
         private const int MaxAttempts = 10;
-        private static readonly TimeSpan TryAgainLaterDuration = TimeSpan.FromMinutes(1);
+        public static TimeSpan TryAgainLaterDuration { get; } = TimeSpan.FromMinutes(1);
 
         private readonly ICatalogScanDriverFactory _driverFactory;
         private readonly CatalogScanStorageService _storageService;
