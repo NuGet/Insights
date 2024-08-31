@@ -88,6 +88,7 @@ namespace NuGet.Insights.Worker
                 x.AppendResultStorageBucketCount = 1;
                 x.KustoConnectionString = "fake connection string";
                 x.KustoDatabaseName = "fake database name";
+                x.RecordCertificateStatus = false;
                 ConfigureWorkerSettingsInternal(x);
             };
 
