@@ -16,11 +16,11 @@ namespace NuGet.Insights.Worker
         }
 
         protected abstract Task<BatchMessageProcessorResult<IReadOnlyList<IReadOnlyList<IAggregatedCsvRecord>>, CatalogLeafScan>>
-            ProcessLeafAsync(IReadOnlyList<CatalogLeafScan> leafScans);
+            ProcessLeavesInternalAsync(IReadOnlyList<CatalogLeafScan> leafScans);
 
         public async Task<BatchMessageProcessorResult<CatalogLeafScan>> ProcessLeavesAsync(IReadOnlyList<CatalogLeafScan> leafScans)
         {
-            var batchResult = await ProcessLeafAsync(leafScans);
+            var batchResult = await ProcessLeavesInternalAsync(leafScans);
 
             var storageSuffix = leafScans
                 .Select(x => x.StorageSuffix)

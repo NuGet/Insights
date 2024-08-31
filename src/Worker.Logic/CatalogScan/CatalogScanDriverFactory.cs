@@ -32,6 +32,8 @@ using NuGet.Insights.Worker.LoadBucketedPackage;
 using NuGet.Insights.Worker.PackageFileToCsv;
 using NuGet.Insights.Worker.SymbolPackageFileToCsv;
 
+#nullable enable
+
 namespace NuGet.Insights.Worker
 {
     public class CatalogScanDriverFactory : ICatalogScanDriverFactory
@@ -47,10 +49,10 @@ namespace NuGet.Insights.Worker
 
         public ICatalogScanDriver Create(CatalogScanDriverType driverType)
         {
-            return (ICatalogScanDriver)CreateBatchDriverOrNull(driverType) ?? CreateNonBatchDriver(driverType);
+            return (ICatalogScanDriver?)CreateBatchDriverOrNull(driverType) ?? CreateNonBatchDriver(driverType);
         }
 
-        public ICatalogLeafScanBatchDriver CreateBatchDriverOrNull(CatalogScanDriverType driverType)
+        public ICatalogLeafScanBatchDriver? CreateBatchDriverOrNull(CatalogScanDriverType driverType)
         {
             switch (driverType)
             {
@@ -81,6 +83,17 @@ namespace NuGet.Insights.Worker
         }
 
         public ICatalogLeafScanNonBatchDriver CreateNonBatchDriver(CatalogScanDriverType driverType)
+        {
+            var driver = CreateNonBatchDriverOrNull(driverType);
+            if (driver is null)
+            {
+                throw new NotSupportedException($"Catalog scan driver type '{driverType}' is not supported.");
+            }
+
+            return driver;
+        }
+
+        public ICatalogLeafScanNonBatchDriver? CreateNonBatchDriverOrNull(CatalogScanDriverType driverType)
         {
             switch (driverType)
             {
@@ -130,7 +143,7 @@ namespace NuGet.Insights.Worker
                 case CatalogScanDriverType.PackageContentToCsv:
                     return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageContent>>();
                 default:
-                    throw new NotSupportedException($"Catalog scan driver type '{driverType}' is not supported.");
+                    return null;
             }
         }
 

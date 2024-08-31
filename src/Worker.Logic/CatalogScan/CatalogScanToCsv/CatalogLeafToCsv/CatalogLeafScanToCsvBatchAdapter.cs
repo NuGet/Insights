@@ -22,7 +22,7 @@ namespace NuGet.Insights.Worker
             _driver = driver;
         }
 
-        protected override async Task<BatchMessageProcessorResult<IReadOnlyList<IReadOnlyList<IAggregatedCsvRecord>>, CatalogLeafScan>> ProcessLeafAsync(IReadOnlyList<CatalogLeafScan> leafScans)
+        protected override async Task<BatchMessageProcessorResult<IReadOnlyList<IReadOnlyList<IAggregatedCsvRecord>>, CatalogLeafScan>> ProcessLeavesInternalAsync(IReadOnlyList<CatalogLeafScan> leafScans)
         {
             var result = await _driver.ProcessLeavesAsync(leafScans);
             return new BatchMessageProcessorResult<IReadOnlyList<IReadOnlyList<IAggregatedCsvRecord>>, CatalogLeafScan>(
@@ -53,7 +53,7 @@ namespace NuGet.Insights.Worker
             _driver = driver;
         }
 
-        protected override async Task<BatchMessageProcessorResult<IReadOnlyList<IReadOnlyList<IAggregatedCsvRecord>>, CatalogLeafScan>> ProcessLeafAsync(IReadOnlyList<CatalogLeafScan> leafScans)
+        protected override async Task<BatchMessageProcessorResult<IReadOnlyList<IReadOnlyList<IAggregatedCsvRecord>>, CatalogLeafScan>> ProcessLeavesInternalAsync(IReadOnlyList<CatalogLeafScan> leafScans)
         {
             var result = await _driver.ProcessLeavesAsync(leafScans);
             return new BatchMessageProcessorResult<IReadOnlyList<IReadOnlyList<IAggregatedCsvRecord>>, CatalogLeafScan>(
@@ -86,7 +86,7 @@ namespace NuGet.Insights.Worker
             _driver = driver;
         }
 
-        protected override async Task<BatchMessageProcessorResult<IReadOnlyList<IReadOnlyList<IAggregatedCsvRecord>>, CatalogLeafScan>> ProcessLeafAsync(IReadOnlyList<CatalogLeafScan> leafScans)
+        protected override async Task<BatchMessageProcessorResult<IReadOnlyList<IReadOnlyList<IAggregatedCsvRecord>>, CatalogLeafScan>> ProcessLeavesInternalAsync(IReadOnlyList<CatalogLeafScan> leafScans)
         {
             var result = await _driver.ProcessLeavesAsync(leafScans);
             return new BatchMessageProcessorResult<IReadOnlyList<IReadOnlyList<IAggregatedCsvRecord>>, CatalogLeafScan>(

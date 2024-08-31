@@ -27,20 +27,7 @@ namespace NuGet.Insights.Worker
 
             var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z", CultureInfo.InvariantCulture);
-
-            var expectedContainers = new List<(string ContainerName, Type RecordType, string DefaultTableName)>();
-            foreach (var recordType in CsvRecordContainers.RecordTypes)
-            {
-                var producer = CsvRecordContainers.GetProducer(recordType);
-                if (producer.Type == CsvRecordProducerType.CatalogScanDriver
-                    && !Options.Value.DisabledDrivers.Contains(producer.CatalogScanDriverType.Value))
-                {
-                    expectedContainers.Add((
-                        CsvRecordContainers.GetContainerName(recordType),
-                        recordType,
-                        CsvRecordContainers.GetDefaultKustoTableName(recordType)));
-                }
-            }
+            var expectedContainers = GetExpectedContainers();
 
             await CatalogScanService.InitializeAsync();
             await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);

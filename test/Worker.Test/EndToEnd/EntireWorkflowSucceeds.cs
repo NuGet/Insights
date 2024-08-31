@@ -7,7 +7,45 @@ using NuGet.Insights.Worker.Workflow;
 
 namespace NuGet.Insights.Worker
 {
-    public class EntireWorkflowSucceeds : EndToEndTest
+    public class EntireWorkflowSucceedsWithDefaultSettings : EntireWorkflowSucceeds
+    {
+        public EntireWorkflowSucceedsWithDefaultSettings(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+        {
+        }
+
+        [Fact]
+        public async Task Execute()
+        {
+            await ExecuteInternalAsync();
+        }
+    }
+
+    public class EntireWorkflowSucceedsWithHeavyDiskSettings : EntireWorkflowSucceeds
+    {
+        public EntireWorkflowSucceedsWithHeavyDiskSettings(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+        {
+        }
+
+        [Fact]
+        public async Task Execute()
+        {
+            await ExecuteInternalAsync();
+        }
+
+        protected override void ConfigureSettingsInternal(NuGetInsightsSettings x)
+        {
+            x.MaxTempMemoryStreamSize = 0;
+            x.TempDirectories[0].MaxConcurrentWriters = 1;
+        }
+
+        protected override void ConfigureWorkerSettingsInternal(NuGetInsightsWorkerSettings x)
+        {
+            x.AppendResultBigModeRecordThreshold = 0;
+            x.RunAllCatalogScanDriversAsBatch = true;
+        }
+    }
+
+    public abstract class EntireWorkflowSucceeds : EndToEndTest
     {
         public EntireWorkflowSucceeds(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
@@ -25,29 +63,37 @@ namespace NuGet.Insights.Worker
             });
         }
 
-        [Fact]
-        public async Task Execute()
+        protected virtual void ConfigureSettingsInternal(NuGetInsightsSettings x)
+        {
+        }
+
+        protected virtual void ConfigureWorkerSettingsInternal(NuGetInsightsWorkerSettings x)
+        {
+        }
+
+        protected async Task ExecuteInternalAsync()
         {
             // Arrange
             ConfigureSettings = x =>
             {
-                x.MaxTempMemoryStreamSize = 0;
-                x.TempDirectories[0].MaxConcurrentWriters = 1;
                 x.DownloadsV1Urls = new List<string> { $"http://localhost/{TestInput}/DownloadsToCsv/downloads.v1.json" };
                 x.OwnersV2Urls = new List<string> { $"http://localhost/{TestInput}/OwnersToCsv/owners.v2.json" };
                 x.VerifiedPackagesV1Urls = new List<string> { $"http://localhost/{TestInput}/VerifiedPackagesToCsv/verifiedPackages.json" };
                 x.ExcludedPackagesV1Urls = new List<string> { $"http://localhost/{TestInput}/ExcludedPackagesToCsv/excludedPackages.json" };
                 x.PopularityTransfersV1Urls = new List<string> { $"http://localhost/{TestInput}/PopularityTransfersToCsv/popularity-transfers.v1.json" };
+                ConfigureSettingsInternal(x);
             };
             ConfigureWorkerSettings = x =>
             {
                 x.AppendResultStorageBucketCount = 1;
                 x.KustoConnectionString = "fake connection string";
                 x.KustoDatabaseName = "fake database name";
+                ConfigureWorkerSettingsInternal(x);
             };
 
             var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z", CultureInfo.InvariantCulture);
+            var expectedContainers = GetExpectedContainers();
 
             HttpMessageHandlerFactory.OnSendAsync = async (req, _, _) =>
             {
@@ -144,7 +190,7 @@ namespace NuGet.Insights.Worker
                 indexScans.Where(x => x.BucketRanges is not null).Select(x => x.DriverType).Distinct().Order().ToArray());
 
             // Make sure all of the containers are have ingestions
-            foreach (var containerName in CsvRecordContainers.ContainerNames)
+            foreach (var (containerName, recordType, defaultTableName) in expectedContainers)
             {
                 MockKustoQueueIngestClient.Verify(x => x.IngestFromStorageAsync(
                     It.Is<string>(y => y.Contains(containerName)),
@@ -156,6 +202,8 @@ namespace NuGet.Insights.Worker
                 Assert.Contains(containerName, TelemetryClient.Metrics[new("CsvBlob.RecordCount", "ContainerName")].MetricValues.Select(x => x.DimensionValues[0]));
                 Assert.Contains(containerName, TelemetryClient.Metrics[new("CsvBlob.CompressedSize", "ContainerName")].MetricValues.Select(x => x.DimensionValues[0]));
                 Assert.Contains(containerName, TelemetryClient.Metrics[new("CsvBlob.UncompressedSize", "ContainerName")].MetricValues.Select(x => x.DimensionValues[0]));
+
+                await AssertCsvAsync(recordType, containerName, nameof(EntireWorkflowSucceeds), Step1, 0, $"{defaultTableName}.csv");
             }
 
             // Make sure no workflow step is running.

@@ -47,7 +47,11 @@ namespace NuGet.Insights.Worker
 
             foreach (var driverType in CatalogScanDriverMetadata.StartableDriverTypes)
             {
-                var driver = catalogScanDriverFactory.Create(driverType);
+                ICatalogScanDriver driver = catalogScanDriverFactory.CreateNonBatchDriverOrNull(driverType);
+                if (driver is null)
+                {
+                    driver = catalogScanDriverFactory.CreateBatchDriverOrNull(driverType);
+                }
                 var recordTypes = driver
                     .GetType()
                     .GenericTypeArguments
