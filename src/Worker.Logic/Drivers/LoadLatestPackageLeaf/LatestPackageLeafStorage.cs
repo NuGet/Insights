@@ -25,22 +25,19 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
 
         public TableClientWithRetryContext Table { get; }
 
-        public string GetPartitionKey(ICatalogLeafItem item)
+        public (string PartitionKey, string RowKey) GetKey(ICatalogLeafItem item)
         {
-            return LatestPackageLeaf.GetPartitionKey(item.PackageId);
-        }
-
-        public string GetRowKey(ICatalogLeafItem item)
-        {
-            return LatestPackageLeaf.GetRowKey(item.PackageVersion);
+            return (LatestPackageLeaf.GetPartitionKey(item.PackageId), LatestPackageLeaf.GetRowKey(item.PackageVersion));
         }
 
         public string CommitTimestampColumnName => nameof(LatestPackageLeaf.CommitTimestamp);
 
-        public Task<LatestPackageLeaf> MapAsync(ICatalogLeafItem item)
+        public Task<LatestPackageLeaf> MapAsync(string partitionKey, string rowKey, ICatalogLeafItem item)
         {
             return Task.FromResult(new LatestPackageLeaf(
                 item,
+                partitionKey,
+                rowKey,
                 _leafItemToRank[item],
                 _pageRank,
                 _pageUrl));

@@ -25,7 +25,9 @@ namespace NuGet.Insights.Worker
             ILatestPackageLeafStorage<T> storage,
             bool allowRetries)
         {
-            foreach (var group in items.GroupBy(storage.GetPartitionKey))
+            var itemsWithKeys = items.Select(x => new ItemWithKey(x, storage.GetKey(x))).ToList();
+
+            foreach (var group in itemsWithKeys.GroupBy(x => x.PartitionKey))
             {
                 var maxAttempts = allowRetries ? 5 : 1;
                 var attempt = 0;
@@ -54,9 +56,9 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        private async Task AddAsync(string partitionKey, IReadOnlyList<ICatalogLeafItem> items, ILatestPackageLeafStorage<T> storage)
+        private async Task AddAsync(string partitionKey, IReadOnlyList<ItemWithKey> itemsWithKeys, ILatestPackageLeafStorage<T> storage)
         {
-            (var rowKeyToItem, var rowKeyToETag) = await GetExistingsRowsAsync(partitionKey, items, storage);
+            (var rowKeyToItem, var rowKeyToETag) = await GetExistingsRowsAsync(partitionKey, itemsWithKeys, storage);
 
             // Add the row keys that remain. These are the versions that are not in Table Storage or are newer than the
             // commit timestamp in Table Storage.
@@ -77,7 +79,7 @@ namespace NuGet.Insights.Worker
 
                 var rowKey = rowKeysToUpsert[i];
                 var leaf = rowKeyToItem[rowKey];
-                var entity = await storage.MapAsync(leaf);
+                var entity = await storage.MapAsync(partitionKey, rowKey, leaf);
                 lastEntity = entity;
 
                 if (rowKeyToETag.TryGetValue(rowKey, out var etag))
@@ -99,14 +101,13 @@ namespace NuGet.Insights.Worker
 
         private async Task<(Dictionary<string, ICatalogLeafItem> RowKeyToItem, Dictionary<string, ETag> RowKeyToETag)> GetExistingsRowsAsync(
             string partitionKey,
-            IEnumerable<ICatalogLeafItem> items,
+            IEnumerable<ItemWithKey> itemsWithKeys,
             ILatestPackageLeafStorage<T> storage)
         {
             using var metrics = _telemetryClient.StartQueryLoopMetrics();
 
             // Sort items by lexicographical order, since this is what table storage does.
-            var itemList = items
-                .Select(x => new { Item = x, RowKey = storage.GetRowKey(x) })
+            var itemList = itemsWithKeys
                 .GroupBy(x => x.RowKey)
                 .Select(x => x.OrderByDescending(x => x.Item.CommitTimestamp).First())
                 .OrderBy(x => x.RowKey, StringComparer.Ordinal)
@@ -160,6 +161,14 @@ namespace NuGet.Insights.Worker
                 lastEntity.PartitionKey,
                 lastEntity.RowKey);
             await batch.SubmitBatchAsync();
+        }
+
+        private record ItemWithKey(ICatalogLeafItem Item, string PartitionKey, string RowKey)
+        {
+            public ItemWithKey(ICatalogLeafItem item, (string PartitionKey, string RowKey) key)
+                : this(item, key.PartitionKey, key.RowKey)
+            {
+            }
         }
     }
 }

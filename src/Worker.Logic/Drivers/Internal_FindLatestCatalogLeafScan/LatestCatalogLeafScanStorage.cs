@@ -20,19 +20,21 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
         public TableClientWithRetryContext Table { get; }
         public string CommitTimestampColumnName => nameof(CatalogLeafScan.CommitTimestamp);
 
-        public string GetPartitionKey(ICatalogLeafItem item)
+        public (string PartitionKey, string RowKey) GetKey(ICatalogLeafItem item)
         {
-            return CatalogLeafScan.GetPartitionKey(_indexScan.ScanId, GetPageId(item.PackageId));
+            return (CatalogLeafScan.GetPartitionKey(_indexScan.ScanId, GetPageId(item.PackageId)), GetLeafId(item.PackageVersion));
         }
 
-        public string GetRowKey(ICatalogLeafItem item)
+        public Task<CatalogLeafScan> MapAsync(string partitionKey, string rowKey, ICatalogLeafItem item)
         {
-            return GetLeafId(item.PackageVersion);
-        }
+#if DEBUG
+            if (rowKey != GetLeafId(item.PackageVersion))
+            {
+                throw new ArgumentException(nameof(rowKey));
+            }
+#endif
 
-        public Task<CatalogLeafScan> MapAsync(ICatalogLeafItem item)
-        {
-            return Task.FromResult(new CatalogLeafScan(_indexScan.StorageSuffix, _indexScan.ScanId, GetPageId(item.PackageId), GetLeafId(item.PackageVersion))
+            return Task.FromResult(new CatalogLeafScan(partitionKey, rowKey, _indexScan.StorageSuffix, _indexScan.ScanId, GetPageId(item.PackageId))
             {
                 DriverType = _indexScan.DriverType,
                 Min = _indexScan.Min,

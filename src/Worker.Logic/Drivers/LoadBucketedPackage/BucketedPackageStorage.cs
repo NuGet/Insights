@@ -17,21 +17,17 @@ namespace NuGet.Insights.Worker.LoadBucketedPackage
 
         public TableClientWithRetryContext Table { get; }
 
-        public string GetPartitionKey(ICatalogLeafItem item)
+        public (string PartitionKey, string RowKey) GetKey(ICatalogLeafItem item)
         {
-            return BucketedPackage.GetPartitionKey(item);
-        }
-
-        public string GetRowKey(ICatalogLeafItem item)
-        {
-            return BucketedPackage.GetRowKey(item);
+            var rowKey = BucketedPackage.GetRowKey(item);
+            return (BucketedPackage.GetPartitionKey(rowKey), rowKey);
         }
 
         public string CommitTimestampColumnName => nameof(BucketedPackage.CommitTimestamp);
 
-        public Task<BucketedPackage> MapAsync(ICatalogLeafItem item)
+        public Task<BucketedPackage> MapAsync(string partitionKey, string rowKey, ICatalogLeafItem item)
         {
-            return Task.FromResult(new BucketedPackage(item, _pageUrl));
+            return Task.FromResult(new BucketedPackage(partitionKey, rowKey, item, _pageUrl));
         }
     }
 }

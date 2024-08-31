@@ -12,14 +12,26 @@ namespace NuGet.Insights.Worker
         {
         }
 
-        public CatalogLeafScan(string storageSuffix, string scanId, string pageId, string leafId)
+        public CatalogLeafScan(string partitionKey, string rowKey, string storageSuffix, string scanId, string pageId)
         {
+#if DEBUG
+            if (partitionKey != GetPartitionKey(scanId, pageId))
+            {
+                throw new ArgumentException(nameof(partitionKey));
+            }
+#endif
+
             StorageSuffix = storageSuffix;
-            PartitionKey = GetPartitionKey(scanId, pageId);
-            RowKey = leafId;
+            PartitionKey = partitionKey;
+            RowKey = rowKey;
             ScanId = scanId;
             PageId = pageId;
             Created = DateTimeOffset.UtcNow;
+        }
+
+        public CatalogLeafScan(string storageSuffix, string scanId, string pageId, string leafId)
+            : this(GetPartitionKey(scanId, pageId), leafId, storageSuffix, scanId, pageId)
+        {
         }
 
         [IgnoreDataMember]

@@ -12,10 +12,22 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
         {
         }
 
-        public LatestPackageLeaf(ICatalogLeafItem item, int leafRank, int pageRank, string pageUrl)
+        public LatestPackageLeaf(ICatalogLeafItem item, string partitionKey, string rowKey, int leafRank, int pageRank, string pageUrl)
         {
-            PartitionKey = GetPartitionKey(item.PackageId);
-            RowKey = GetRowKey(item.PackageVersion);
+#if DEBUG
+            if (partitionKey != GetPartitionKey(item.PackageId))
+            {
+                throw new ArgumentException(nameof(partitionKey));
+            }
+
+            if (rowKey != GetRowKey(item.PackageVersion))
+            {
+                throw new ArgumentException(nameof(rowKey));
+            }
+#endif
+
+            PartitionKey = partitionKey;
+            RowKey = rowKey;
             Url = item.Url;
             LeafType = item.LeafType;
             CommitId = item.CommitId;

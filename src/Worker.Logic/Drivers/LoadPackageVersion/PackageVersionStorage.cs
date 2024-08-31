@@ -20,26 +20,21 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
         public TableClientWithRetryContext Table { get; }
         public string CommitTimestampColumnName => nameof(PackageVersionEntity.CommitTimestamp);
 
-        public string GetPartitionKey(ICatalogLeafItem item)
+        public (string PartitionKey, string RowKey) GetKey(ICatalogLeafItem item)
         {
-            return PackageVersionEntity.GetPartitionKey(item.PackageId);
+            return (PackageVersionEntity.GetPartitionKey(item.PackageId), PackageVersionEntity.GetRowKey(item.PackageVersion));
         }
 
-        public string GetRowKey(ICatalogLeafItem item)
-        {
-            return PackageVersionEntity.GetRowKey(item.PackageVersion);
-        }
-
-        public async Task<PackageVersionEntity> MapAsync(ICatalogLeafItem item)
+        public async Task<PackageVersionEntity> MapAsync(string partitionKey, string rowKey, ICatalogLeafItem item)
         {
             if (item.LeafType == CatalogLeafType.PackageDelete)
             {
-                return new PackageVersionEntity(item);
+                return new PackageVersionEntity(partitionKey, rowKey, item);
             }
 
             var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item);
 
-            return new PackageVersionEntity(item, leaf);
+            return new PackageVersionEntity(partitionKey, rowKey, item, leaf);
         }
     }
 }

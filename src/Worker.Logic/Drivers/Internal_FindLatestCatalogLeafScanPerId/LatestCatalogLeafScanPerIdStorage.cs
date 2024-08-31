@@ -22,19 +22,21 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId
         public TableClientWithRetryContext Table { get; }
         public string CommitTimestampColumnName => nameof(CatalogLeafScan.CommitTimestamp);
 
-        public string GetPartitionKey(ICatalogLeafItem item)
+        public (string PartitionKey, string RowKey) GetKey(ICatalogLeafItem item)
         {
-            return CatalogLeafScan.GetPartitionKey(_indexScan.ScanId, GetPageId(item.PackageId));
+            return (CatalogLeafScan.GetPartitionKey(_indexScan.ScanId, GetPageId(item.PackageId)), LeafId);
         }
 
-        public string GetRowKey(ICatalogLeafItem item)
+        public Task<CatalogLeafScanPerId> MapAsync(string partitionKey, string rowKey, ICatalogLeafItem item)
         {
-            return LeafId;
-        }
+#if DEBUG
+            if (rowKey != LeafId)
+            {
+                throw new ArgumentException(nameof(rowKey));
+            }
+#endif
 
-        public Task<CatalogLeafScanPerId> MapAsync(ICatalogLeafItem item)
-        {
-            return Task.FromResult(new CatalogLeafScanPerId(_indexScan.StorageSuffix, _indexScan.ScanId, GetPageId(item.PackageId), LeafId)
+            return Task.FromResult(new CatalogLeafScanPerId(partitionKey, rowKey, _indexScan.StorageSuffix, _indexScan.ScanId, GetPageId(item.PackageId))
             {
                 DriverType = _indexScan.DriverType,
                 Min = _indexScan.Min,

@@ -13,10 +13,22 @@ namespace NuGet.Insights.Worker.LoadBucketedPackage
         {
         }
 
-        public BucketedPackage(ICatalogLeafItem item, string pageUrl)
+        public BucketedPackage(string partitionKey, string rowKey, ICatalogLeafItem item, string pageUrl)
         {
-            PartitionKey = GetPartitionKey(item);
-            RowKey = GetRowKey(item);
+#if DEBUG
+            if (GetPartitionKey(rowKey) != partitionKey)
+            {
+                throw new ArgumentException(nameof(partitionKey));
+            }
+
+            if (GetRowKey(item) != rowKey)
+            {
+                throw new ArgumentException(nameof(rowKey));
+            }
+#endif
+
+            PartitionKey = partitionKey;
+            RowKey = rowKey;
             Url = item.Url;
             LeafType = item.LeafType;
             CommitId = item.CommitId;
@@ -60,9 +72,8 @@ namespace NuGet.Insights.Worker.LoadBucketedPackage
             return int.Parse(bucketString.Substring(1), CultureInfo.InvariantCulture);
         }
 
-        public static string GetPartitionKey(ICatalogLeafItem item)
+        public static string GetPartitionKey(string rowKey)
         {
-            var rowKey = GetRowKey(item);
             var bucket = StorageUtility.GetBucket(BucketCount, rowKey);
             return GetBucketString(bucket);
         }

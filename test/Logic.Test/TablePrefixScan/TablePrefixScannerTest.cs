@@ -454,7 +454,10 @@ namespace NuGet.Insights.TablePrefixScan
                     foreach (var group in sortedEntities.GroupBy(x => x.PartitionKey))
                     {
                         var batch = new MutableTableTransactionalBatch(table);
-                        batch.AddEntities(group);
+                        foreach (var entity in group)
+                        {
+                            batch.AddEntity(entity);
+                        }
                         await batch.SubmitBatchAsync();
                     }
                     Candidates.Add((sortedEntities, table));

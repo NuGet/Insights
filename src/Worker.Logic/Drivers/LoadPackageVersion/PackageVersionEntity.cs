@@ -12,10 +12,22 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
         {
         }
 
-        public PackageVersionEntity(ICatalogLeafItem item)
+        public PackageVersionEntity(string partitionKey, string rowKey, ICatalogLeafItem item)
         {
-            PartitionKey = GetPartitionKey(item.PackageId);
-            RowKey = GetRowKey(item.PackageVersion);
+#if DEBUG
+            if (partitionKey != GetPartitionKey(item.PackageId))
+            {
+                throw new ArgumentException(nameof(partitionKey));
+            }
+
+            if (rowKey != GetRowKey(item.PackageVersion))
+            {
+                throw new ArgumentException(nameof(rowKey));
+            }
+#endif
+
+            PartitionKey = partitionKey;
+            RowKey = rowKey;
             Url = item.Url;
             LeafType = item.LeafType;
             CommitId = item.CommitId;
@@ -25,8 +37,10 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
         }
 
         public PackageVersionEntity(
+            string partitionKey,
+            string rowKey,
             ICatalogLeafItem item,
-            PackageDetailsCatalogLeaf details) : this(item)
+            PackageDetailsCatalogLeaf details) : this(partitionKey, rowKey, item)
         {
             Created = details.Created;
             IsListed = details.IsListed();

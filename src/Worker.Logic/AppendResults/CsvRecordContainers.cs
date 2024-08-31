@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Frozen;
 using Azure;
 using Azure.Storage.Blobs.Models;
 using NuGet.Insights;
@@ -12,12 +13,12 @@ namespace NuGet.Insights.Worker
     {
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly IReadOnlyDictionary<string, ICsvRecordStorage> _containerNameToStorage;
-        private readonly IReadOnlyDictionary<Type, ICsvRecordStorage> _recordTypeToStorage;
+        private readonly FrozenDictionary<string, ICsvRecordStorage> _containerNameToStorage;
+        private readonly FrozenDictionary<Type, ICsvRecordStorage> _recordTypeToStorage;
         private readonly IReadOnlyList<string> _containerNames;
         private readonly IReadOnlyList<Type> _recordTypes;
-        private readonly IReadOnlyDictionary<Type, CsvRecordProducer> _recordTypeToProducer;
-        private readonly IReadOnlyDictionary<CatalogScanDriverType, IReadOnlyList<Type>> _driverTypeToRecordTypes;
+        private readonly FrozenDictionary<Type, CsvRecordProducer> _recordTypeToProducer;
+        private readonly FrozenDictionary<CatalogScanDriverType, IReadOnlyList<Type>> _driverTypeToRecordTypes;
 
         public CsvRecordContainers(
             IEnumerable<ICsvRecordStorage> csvResultStorage,
@@ -28,18 +29,15 @@ namespace NuGet.Insights.Worker
         {
             _options = options;
             _serviceClientFactory = serviceClientFactory;
-            _containerNameToStorage = csvResultStorage.ToDictionary(x => x.ContainerName);
-            _recordTypeToStorage = csvResultStorage.ToDictionary(x => x.RecordType);
+            _containerNameToStorage = csvResultStorage.ToDictionary(x => x.ContainerName).ToFrozenDictionary();
+            _recordTypeToStorage = csvResultStorage.ToDictionary(x => x.RecordType).ToFrozenDictionary();
             _containerNames = _containerNameToStorage.Keys.OrderBy(x => x, StringComparer.Ordinal).ToList();
             _recordTypes = _recordTypeToStorage.Keys.OrderBy(x => x.FullName, StringComparer.Ordinal).ToList();
             _recordTypeToProducer = ComputeCsvResultProducers(catalogScanDriverFactory, auxiliaryFileUpdaters);
-            _driverTypeToRecordTypes = _recordTypeToProducer
-                .Where(x => x.Value.Type == CsvRecordProducerType.CatalogScanDriver)
-                .GroupBy(x => x.Value.CatalogScanDriverType.Value)
-                .ToDictionary(x => x.Key, x => (IReadOnlyList<Type>)x.Select(y => y.Key).ToList());
+            _driverTypeToRecordTypes = ComputeDriverTypeToRecordTypes();
         }
 
-        private IReadOnlyDictionary<Type, CsvRecordProducer> ComputeCsvResultProducers(
+        private FrozenDictionary<Type, CsvRecordProducer> ComputeCsvResultProducers(
             ICatalogScanDriverFactory catalogScanDriverFactory,
             IEnumerable<IAuxiliaryFileUpdater> auxiliaryFileUpdaters)
         {
@@ -69,7 +67,16 @@ namespace NuGet.Insights.Worker
                 output.Add(updater.RecordType, new CsvRecordProducer(CsvRecordProducerType.AuxiliaryFileUpdater, CatalogScanDriverType: null));
             }
 
-            return output;
+            return output.ToFrozenDictionary();
+        }
+
+        private FrozenDictionary<CatalogScanDriverType, IReadOnlyList<Type>> ComputeDriverTypeToRecordTypes()
+        {
+            return _recordTypeToProducer
+                .Where(x => x.Value.Type == CsvRecordProducerType.CatalogScanDriver)
+                .GroupBy(x => x.Value.CatalogScanDriverType.Value)
+                .ToDictionary(x => x.Key, x => (IReadOnlyList<Type>)x.Select(y => y.Key).ToList())
+                .ToFrozenDictionary();
         }
 
         public async Task<IReadOnlyList<CsvRecordBlob>> GetBlobsAsync(string containerName)

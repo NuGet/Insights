@@ -9,8 +9,8 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId
         {
         }
 
-        public CatalogLeafScanPerId(string storageSuffix, string scanId, string pageId, string leafId)
-            : base(storageSuffix, scanId, pageId, leafId)
+        public CatalogLeafScanPerId(string partitionKey, string rowKey, string storageSuffix, string scanId, string pageId)
+            : base(partitionKey, rowKey, storageSuffix, scanId, pageId)
         {
         }
     }
