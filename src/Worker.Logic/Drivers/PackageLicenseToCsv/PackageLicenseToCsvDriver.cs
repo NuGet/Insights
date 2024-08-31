@@ -155,7 +155,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
                             );
                         }
 
-                        record.FileSize = result.Stream.Length;
+                        record.FileLength = result.Stream.Length;
                         record.FileSHA256 = result.Hash.SHA256.ToBase64();
 
                         using (var reader = new StreamReader(result.Stream))

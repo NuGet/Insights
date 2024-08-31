@@ -89,11 +89,11 @@ namespace NuGet.Insights
                 HttpMessageHandlerFactory.Clear();
 
                 // Act
-                (var directory, var size, var headers) = await Target.GetZipDirectoryFromLeafItemAsync(leafItem);
+                (var directory, var length, var headers) = await Target.GetZipDirectoryAndLengthAsync(leafItem);
 
                 // Assert
                 Assert.Equal(11, directory.Entries.Count);
-                Assert.Equal(750829, size);
+                Assert.Equal(750829, length);
                 Assert.Equal("750829", headers["Content-Length"].Single());
                 Assert.Equal("vaWuAPufkOrRT0f48FuX90NnymmB/hrLUvg+XsQUHkaht/cwpqkLYcNlUPrjiak7Uhw4uX14dcXUT/NznHHHHg==", headers["x-ms-meta-SHA512"].Single());
             }

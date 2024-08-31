@@ -87,6 +87,7 @@ namespace NuGet.Insights
                     version,
                     "icon",
                     ".tmp"),
+                IncrementalHash.CreateSHA256,
                 token);
             if (result is null)
             {
@@ -155,6 +156,7 @@ namespace NuGet.Insights
                     version,
                     "license",
                     ".txt"),
+                IncrementalHash.CreateSHA256,
                 token);
             if (result is null)
             {

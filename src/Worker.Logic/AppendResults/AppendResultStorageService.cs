@@ -610,12 +610,13 @@ namespace NuGet.Insights.Worker
 
                 var existingPath = Path.Combine(TempDir, $"{recordType}_{CompactPrefix}{bucket}_existing_{uniqueFileNamePiece}{extension}");
                 using var existingStream = GetTemporaryFileStream(existingPath);
+                using var hasher = IncrementalHash.CreateNone();
                 await existingStream.SetLengthAndWriteAsync(blobResult.Details.ContentLength);
                 await blobResult.Content.CopyToSlowAsync(
                     existingStream,
                     blobResult.Details.ContentLength,
                     TempStreamDirectory.DefaultBufferSize,
-                    IncrementalHash.CreateNone(),
+                    hasher,
                     _logger);
 
                 existingStream.Flush();

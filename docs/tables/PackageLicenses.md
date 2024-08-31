@@ -40,7 +40,7 @@ Licenses are optional so some packages have none of these types.
 | ExpressionExceptions              | array of strings | Yes, for valid expression    | Array of license exception identifiers (no duplicates)                 |
 | ExpressionNonStandardLicenses     | array of strings | Yes, for valid expression    | Array of non-standard license identifiers (no duplicates)              |
 | ExpressionHasDeprecatedIdentifier | bool             | Yes, for Expression          | Array of non-standard license identifiers (no duplicates)              |
-| FileSize                          | long             | Yes, for File                | Size of the license file in bytes                                      |
+| FileLength                        | long             | Yes, for File                | Size of the license file in bytes                                      |
 | FileSHA256                        | string           | Yes, for File                | Base64 encoded SHA-256 of the license file                             |
 | FileContent                       | string           | Yes, for File                | The full license file content                                          |
 

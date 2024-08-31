@@ -13,6 +13,8 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
         ICsvResultStorage<NuGetPackageExplorerRecord>,
         ICsvResultStorage<NuGetPackageExplorerFile>
     {
+        public const int FileBufferSize = 4 * 1024 * 1024;
+
         private readonly CatalogClient _catalogClient;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpSource _httpSource;
@@ -270,7 +272,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                     var length = response.Content.Headers.ContentLength.Value;
 
                     using (var source = await response.Content.ReadAsStreamAsync())
-                    using (var hash = IncrementalHash.CreateAll())
+                    using (var hasher = IncrementalHash.CreateNone())
                     using (var destination = new FileStream(
                         path,
                         FileMode.Create,
@@ -283,8 +285,8 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                         await source.CopyToSlowAsync(
                             destination,
                             length,
-                            bufferSize: 4 * 1024 * 1024,
-                            hashAlgorithm: hash,
+                            bufferSize: FileBufferSize,
+                            hasher: hasher,
                             logger: _logger);
                     }
 

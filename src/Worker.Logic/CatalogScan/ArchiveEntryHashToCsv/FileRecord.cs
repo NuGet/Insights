@@ -5,14 +5,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NuGet.Insights.Worker
 {
-    public enum FileRecordResultType
-    {
-        Available,
-        Deleted,
-        DoesNotExist,
-        InvalidZipEntry,
-    }
-
     public abstract record FileRecord : PackageRecord
     {
         public FileRecord()
@@ -45,12 +37,7 @@ namespace NuGet.Insights.Worker
         public long? EntryUncompressedLength { get; set; }
 
         public long? ActualUncompressedLength { get; set; }
-
-        public string MD5 { get; set; }
-        public string SHA1 { get; set; }
         public string SHA256 { get; set; }
-        public string SHA512 { get; set; }
-
-        public string First64 { get; set; }
+        public string First16Bytes { get; set; }
     }
 }

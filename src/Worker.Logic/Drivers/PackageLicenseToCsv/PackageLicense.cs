@@ -42,7 +42,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
         public string ExpressionNonStandardLicenses { get; set; }
         public bool? ExpressionHasDeprecatedIdentifier { get; set; }
 
-        public long? FileSize { get; set; }
+        public long? FileLength { get; set; }
         public string FileSHA256 { get; set; }
         public string FileContent { get; set; }
 

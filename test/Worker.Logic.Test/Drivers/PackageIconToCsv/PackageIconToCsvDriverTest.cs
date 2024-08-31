@@ -53,8 +53,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             Assert.Equal(35, record.FrameCount);
             Assert.True(record.IsOpaque);
             Assert.Equal("mymunt2Tiivy0wMfzC4t2C5tbn0v5VGJGp7V8XnUrfY=", record.Signature);
-            Assert.Equal("kWloGw9VYuRnd1iwV0y+D++cu5uGrCz7srX89eWpHtU=", record.SHA256);
-            Assert.Equal(140259, record.FileSize);
+            Assert.Equal("kWloGw9VYuRnd1iwV0y+D++cu5uGrCz7srX89eWpHtU=", record.FileSHA256);
+            Assert.Equal(140259, record.FileLength);
             Assert.Equal(761, record.Width);
             Assert.Equal(371, record.Height);
         }
@@ -80,8 +80,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             Assert.Equal(60, record.FrameCount);
             Assert.False(record.IsOpaque);
             Assert.Equal("Dc7NJQutbaEPtm/8+1h4a4zP1r4H3eZY0G0Ut1kn2TE=", record.Signature);
-            Assert.Equal("kPL0cxjYIYYgU3pLmcX8S8DY9mvH9sZcdYBd/8Z6YAA=", record.SHA256);
-            Assert.Equal(128414, record.FileSize);
+            Assert.Equal("kPL0cxjYIYYgU3pLmcX8S8DY9mvH9sZcdYBd/8Z6YAA=", record.FileSHA256);
+            Assert.Equal(128414, record.FileLength);
             Assert.Equal(64, record.Width);
             Assert.Equal(64, record.Height);
         }
@@ -107,8 +107,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             Assert.Equal(1, record.FrameCount);
             Assert.False(record.IsOpaque);
             Assert.Equal("zWy3z6wULhZD1vCEw1SCt1WQSoiBbGCBtSWmfCeyZ3k=", record.Signature);
-            Assert.Equal("BMhjIEQ2iswW89LHeMdX15mNCtpkFbKM/JODKQJeMC4=", record.SHA256);
-            Assert.Equal(1654, record.FileSize);
+            Assert.Equal("BMhjIEQ2iswW89LHeMdX15mNCtpkFbKM/JODKQJeMC4=", record.FileSHA256);
+            Assert.Equal(1654, record.FileLength);
             Assert.Equal(48, record.Width);
             Assert.Equal(48, record.Height);
         }
@@ -134,8 +134,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             Assert.Equal(1, record.FrameCount);
             Assert.True(record.IsOpaque);
             Assert.Equal("xo2jhcWYyy5Qt4qSOG1JODp9dyww/eeIoKqr4oj8Nj8=", record.Signature);
-            Assert.Equal("0nGKT4boTSLkVV0G5q/Ye4buyutUqQe/yWRjlZgQVTM=", record.SHA256);
-            Assert.Equal(8600, record.FileSize);
+            Assert.Equal("0nGKT4boTSLkVV0G5q/Ye4buyutUqQe/yWRjlZgQVTM=", record.FileSHA256);
+            Assert.Equal(8600, record.FileLength);
             Assert.Equal(381, record.Width);
             Assert.Equal(119, record.Height);
         }
@@ -161,8 +161,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             Assert.Equal(1, record.FrameCount);
             Assert.False(record.IsOpaque);
             Assert.Equal("0dyhKP4Z/+3Isln1jDn3MamK1SMEN2721KsjPl+Si5g=", record.Signature);
-            Assert.Equal("oNhVoCSr6BKWb3RmqLn7NXPEjfhijVGLjNVmIpRBkCI=", record.SHA256);
-            Assert.Equal(9327, record.FileSize);
+            Assert.Equal("oNhVoCSr6BKWb3RmqLn7NXPEjfhijVGLjNVmIpRBkCI=", record.FileSHA256);
+            Assert.Equal(9327, record.FileLength);
             Assert.Equal(100, record.Width);
             Assert.Equal(100, record.Height);
         }
@@ -189,8 +189,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             Assert.Equal(1, record.FrameCount);
             Assert.True(record.IsOpaque);
             Assert.Equal("xRnmTMxAUpX6YaWD/0lZ7qaEK3KgXPLMLKnp4cABnIs=", record.Signature);
-            Assert.Equal("craAEC3eL5Oa3Qp1t+SU4dNwPG4YF8POjnrljAqg8cE=", record.SHA256);
-            Assert.Equal(4729, record.FileSize);
+            Assert.Equal("craAEC3eL5Oa3Qp1t+SU4dNwPG4YF8POjnrljAqg8cE=", record.FileSHA256);
+            Assert.Equal(4729, record.FileLength);
             Assert.Equal(200, record.Width);
             Assert.Equal(200, record.Height);
         }
@@ -216,8 +216,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             Assert.Equal(1, record.FrameCount);
             Assert.True(record.IsOpaque);
             Assert.Equal("7Mb4bqQW2DrVTQOBeP5nCiTTlMV9W8QDIYC2mRuXQAI=", record.Signature);
-            Assert.Equal("sbJhsY1+2RtK27sbEKC9N3upB6U3TeoJp1fimRQ4HV8=", record.SHA256);
-            Assert.Equal(5380, record.FileSize);
+            Assert.Equal("sbJhsY1+2RtK27sbEKC9N3upB6U3TeoJp1fimRQ4HV8=", record.FileSHA256);
+            Assert.Equal(5380, record.FileLength);
             Assert.Equal(145, record.Width);
             Assert.Equal(145, record.Height);
         }
@@ -243,8 +243,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             Assert.Equal(1, record.FrameCount);
             Assert.False(record.IsOpaque);
             Assert.Equal("e/jvqpwaDeAnZW35slFiAKiWQDp66RsHsgYfjNhLUgY=", record.Signature);
-            Assert.Equal("d/CXoPpvQF2j4FgcQgxjHbgWz55vZ6lfy3bh+GT3qYg=", record.SHA256);
-            Assert.Equal(9662, record.FileSize);
+            Assert.Equal("d/CXoPpvQF2j4FgcQgxjHbgWz55vZ6lfy3bh+GT3qYg=", record.FileSHA256);
+            Assert.Equal(9662, record.FileLength);
             Assert.Equal(48, record.Width);
             Assert.Equal(48, record.Height);
         }
@@ -270,8 +270,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             Assert.Equal(1, record.FrameCount);
             Assert.True(record.IsOpaque);
             Assert.Equal("S7rlSNSmIqiM5aiyzFhy3I1o5x5vzP0EJLk+o6UN1as=", record.Signature);
-            Assert.Equal("hmPIhoiXa/mRU5cCBzPSIQpLB9eF7/PlsCyTnvlBsgk=", record.SHA256);
-            Assert.Equal(894, record.FileSize);
+            Assert.Equal("hmPIhoiXa/mRU5cCBzPSIQpLB9eF7/PlsCyTnvlBsgk=", record.FileSHA256);
+            Assert.Equal(894, record.FileLength);
             Assert.Equal(16, record.Width);
             Assert.Equal(16, record.Height);
         }
@@ -297,8 +297,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             Assert.Equal(4, record.FrameCount);
             Assert.False(record.IsOpaque);
             Assert.Equal("n/5mxf+iXfbK8d7sp9nkocfOb1Obf7aeOFifj+ShIUA=", record.Signature);
-            Assert.Equal("clvBdjr3NPKy7fKcPQYpNQLtOcl9MeTML0x0mXkcJl4=", record.SHA256);
-            Assert.Equal(90022, record.FileSize);
+            Assert.Equal("clvBdjr3NPKy7fKcPQYpNQLtOcl9MeTML0x0mXkcJl4=", record.FileSHA256);
+            Assert.Equal(90022, record.FileLength);
             Assert.Equal(128, record.Width);
             Assert.Equal(128, record.Height);
             Assert.Equal("[{\"Height\":128,\"Width\":128},{\"Height\":64,\"Width\":64},{\"Height\":32,\"Width\":32},{\"Height\":16,\"Width\":16}]", record.FrameDimensions);
@@ -325,8 +325,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             Assert.Equal(4, record.FrameCount);
             Assert.True(record.IsOpaque);
             Assert.Equal("8uCsQLNuMAFq0k+zNb7OegMROQUi4xR71t86T/rzKtI=", record.Signature);
-            Assert.Equal("annlRNcGe0pXJyQ19EqkB7vyNNqBrniNvlteLm8auBQ=", record.SHA256);
-            Assert.Equal(18406, record.FileSize);
+            Assert.Equal("annlRNcGe0pXJyQ19EqkB7vyNNqBrniNvlteLm8auBQ=", record.FileSHA256);
+            Assert.Equal(18406, record.FileLength);
             Assert.Equal(64, record.Width);
             Assert.Equal(64, record.Height);
             Assert.Equal("[{\"Height\":64,\"Width\":64},{\"Height\":32,\"Width\":32},{\"Height\":16,\"Width\":16}]", record.FrameDimensions);
@@ -353,8 +353,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             Assert.Equal(6, record.FrameCount);
             Assert.False(record.IsOpaque);
             Assert.Equal("WpsaubBaAFel81d8Oafx6Opo2dwOXqEUU7yEhWH3Lps=", record.Signature);
-            Assert.Equal("4w8PIYgAD/mAKoVbwqoekm0n/tGDdGVnJOc8n9jAzMM=", record.SHA256);
-            Assert.Equal(113018, record.FileSize);
+            Assert.Equal("4w8PIYgAD/mAKoVbwqoekm0n/tGDdGVnJOc8n9jAzMM=", record.FileSHA256);
+            Assert.Equal(113018, record.FileLength);
             Assert.Equal(256, record.Width);
             Assert.Equal(256, record.Height);
             Assert.Equal("[{\"Height\":256,\"Width\":256},{\"Height\":128,\"Width\":128},{\"Height\":64,\"Width\":64},{\"Height\":48,\"Width\":48},{\"Height\":32,\"Width\":32},{\"Height\":16,\"Width\":16}]", record.FrameDimensions);
@@ -382,8 +382,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             Assert.Equal(17, record.FrameCount);
             Assert.True(record.IsOpaque);
             Assert.Equal("AcRL7lyG+9mgAGGejv5/+C+oYdNv9DW/FUKJ9w5aCDI=", record.Signature);
-            Assert.Equal("QIMN9LskFW7QdP/smay4fdXqXPhgXR1UToXxDMolXdo=", record.SHA256);
-            Assert.Equal(60724, record.FileSize);
+            Assert.Equal("QIMN9LskFW7QdP/smay4fdXqXPhgXR1UToXxDMolXdo=", record.FileSHA256);
+            Assert.Equal(60724, record.FileLength);
             Assert.Equal(800, record.Width);
             Assert.Equal(450, record.Height);
             Assert.Equal(
@@ -424,8 +424,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             Assert.Equal(1, record.FrameCount);
             Assert.True(record.IsOpaque);
             Assert.Equal("wB8/mfyiv2/84708AgnpL9ti7/NidfNUuR15veM4LDo=", record.Signature);
-            Assert.Equal("nDoyCO8F4SEQ+be0kc72duZQ5Ovz02xEFCaGZrzJXYo=", record.SHA256);
-            Assert.Equal(4232, record.FileSize);
+            Assert.Equal("nDoyCO8F4SEQ+be0kc72duZQ5Ovz02xEFCaGZrzJXYo=", record.FileSHA256);
+            Assert.Equal(4232, record.FileLength);
             Assert.Equal(128, record.Width);
             Assert.Equal(128, record.Height);
         }

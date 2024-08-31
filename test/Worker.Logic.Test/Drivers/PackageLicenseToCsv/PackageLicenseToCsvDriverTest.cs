@@ -39,7 +39,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             Assert.Null(record.ExpressionExceptions);
             Assert.Null(record.ExpressionNonStandardLicenses);
             Assert.Null(record.ExpressionHasDeprecatedIdentifier);
-            Assert.Equal(1081, record.FileSize);
+            Assert.Equal(1081, record.FileLength);
             Assert.Equal("10UzT325N2HPnB/9TAPQqENhj/h/WUB3vWAppz3QzLI=", record.FileSHA256);
             Assert.StartsWith("The MIT License\n\nCopyright (c) LibGit2Sharp contributors\n\nPermission is hereby granted", record.FileContent, StringComparison.Ordinal);
         }
@@ -105,7 +105,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             Assert.Equal("[]", record.ExpressionExceptions);
             Assert.Equal("[]", record.ExpressionNonStandardLicenses);
             Assert.False(record.ExpressionHasDeprecatedIdentifier);
-            Assert.Null(record.FileSize);
+            Assert.Null(record.FileLength);
             Assert.Null(record.FileSHA256);
             Assert.Null(record.FileContent);
         }
@@ -136,7 +136,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             Assert.Null(record.ExpressionExceptions);
             Assert.Null(record.ExpressionNonStandardLicenses);
             Assert.True(record.ExpressionHasDeprecatedIdentifier);
-            Assert.Null(record.FileSize);
+            Assert.Null(record.FileLength);
             Assert.Null(record.FileSHA256);
             Assert.Null(record.FileContent);
         }
@@ -167,7 +167,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             Assert.Equal("[]", record.ExpressionExceptions);
             Assert.Equal("[]", record.ExpressionNonStandardLicenses);
             Assert.False(record.ExpressionHasDeprecatedIdentifier);
-            Assert.Null(record.FileSize);
+            Assert.Null(record.FileLength);
             Assert.Null(record.FileSHA256);
             Assert.Null(record.FileContent);
         }
@@ -209,7 +209,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             Assert.Equal("[\"LLVM-exception\"]", record.ExpressionExceptions);
             Assert.Equal("[]", record.ExpressionNonStandardLicenses);
             Assert.False(record.ExpressionHasDeprecatedIdentifier);
-            Assert.Null(record.FileSize);
+            Assert.Null(record.FileLength);
             Assert.Null(record.FileSHA256);
             Assert.Null(record.FileContent);
         }
@@ -240,7 +240,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             Assert.Null(record.ExpressionExceptions);
             Assert.Null(record.ExpressionNonStandardLicenses);
             Assert.Null(record.ExpressionHasDeprecatedIdentifier);
-            Assert.Null(record.FileSize);
+            Assert.Null(record.FileLength);
             Assert.Null(record.FileSHA256);
             Assert.Null(record.FileContent);
         }
@@ -271,7 +271,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             Assert.Null(record.ExpressionExceptions);
             Assert.Null(record.ExpressionNonStandardLicenses);
             Assert.Null(record.ExpressionHasDeprecatedIdentifier);
-            Assert.Null(record.FileSize);
+            Assert.Null(record.FileLength);
             Assert.Null(record.FileSHA256);
             Assert.Null(record.FileContent);
         }

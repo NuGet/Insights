@@ -1,4 +1,4 @@
-ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Url,Expression,File,GeneratedUrl,ExpressionParsed,ExpressionLicenses,ExpressionExceptions,ExpressionNonStandardLicenses,ExpressionHasDeprecatedIdentifier,FileSize,FileSHA256,FileContent
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Url,Expression,File,GeneratedUrl,ExpressionParsed,ExpressionLicenses,ExpressionExceptions,ExpressionNonStandardLicenses,ExpressionHasDeprecatedIdentifier,FileLength,FileSHA256,FileContent
 ,,amazonks3,amazonks3/1.5.0,AmazonKS3,1.5.0,2020-12-20T02:39:20.5757299Z,2020-12-20T02:37:10.21Z,None,,,,,,,,,,,,
 ,,lunabot.commands.public,lunabot.commands.public/1.2.0,LunaBot.Commands.Public,1.2.0,2020-12-20T03:01:57.2082154Z,2020-12-20T03:00:07.147Z,File,https://aka.ms/deprecateLicenseUrl,,LICENSE.txt,https://aka.ms/deprecateLicenseUrl,,,,,,35823,IwGE9guuL+ryRPEKi6wFPI/zOhg7zDZbTYuHbSt/SAk=,"                    GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007

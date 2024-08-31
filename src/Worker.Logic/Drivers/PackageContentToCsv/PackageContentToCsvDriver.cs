@@ -96,6 +96,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
                         leafScan.PackageVersion,
                         "content",
                         ".nupkg"),
+                    IncrementalHash.CreateNone,
                     CancellationToken.None);
 
                 if (result is null)

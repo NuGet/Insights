@@ -23,14 +23,12 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         CatalogCommitTimestamp: datetime,
         Created: datetime,
         ResultType: string,
+        SequenceNumber: int,
         Path: string,
         FileName: string,
         FileExtension: string,
         TopLevelFolder: string,
-        CompressedLength: long,
-        EntryUncompressedLength: long,
-        ActualUncompressedLength: long,
-        FileSHA256: string,
+        FileLength: long,
         EdgeCases: string,
         AssemblyName: string,
         AssemblyVersion: string,
@@ -43,8 +41,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         CustomAttributes: dynamic,
         CustomAttributesFailedDecode: dynamic,
         CustomAttributesTotalCount: int,
-        CustomAttributesTotalDataLength: int,
-        SequenceNumber: int
+        CustomAttributesTotalDataLength: int
     ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/PackageAssemblies.md", folder = "");
 
     .alter-merge table PackageAssemblies policy retention softdelete = 30d;
@@ -71,38 +68,35 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         '{"Column":"CatalogCommitTimestamp","DataType":"datetime","Properties":{"Ordinal":6}},'
         '{"Column":"Created","DataType":"datetime","Properties":{"Ordinal":7}},'
         '{"Column":"ResultType","DataType":"string","Properties":{"Ordinal":8}},'
-        '{"Column":"Path","DataType":"string","Properties":{"Ordinal":9}},'
-        '{"Column":"FileName","DataType":"string","Properties":{"Ordinal":10}},'
-        '{"Column":"FileExtension","DataType":"string","Properties":{"Ordinal":11}},'
-        '{"Column":"TopLevelFolder","DataType":"string","Properties":{"Ordinal":12}},'
-        '{"Column":"CompressedLength","DataType":"long","Properties":{"Ordinal":13}},'
-        '{"Column":"EntryUncompressedLength","DataType":"long","Properties":{"Ordinal":14}},'
-        '{"Column":"ActualUncompressedLength","DataType":"long","Properties":{"Ordinal":15}},'
-        '{"Column":"FileSHA256","DataType":"string","Properties":{"Ordinal":16}},'
-        '{"Column":"EdgeCases","DataType":"string","Properties":{"Ordinal":17}},'
-        '{"Column":"AssemblyName","DataType":"string","Properties":{"Ordinal":18}},'
-        '{"Column":"AssemblyVersion","DataType":"string","Properties":{"Ordinal":19}},'
-        '{"Column":"Culture","DataType":"string","Properties":{"Ordinal":20}},'
-        '{"Column":"PublicKeyToken","DataType":"string","Properties":{"Ordinal":21}},'
-        '{"Column":"HashAlgorithm","DataType":"string","Properties":{"Ordinal":22}},'
-        '{"Column":"HasPublicKey","DataType":"bool","Properties":{"Ordinal":23}},'
-        '{"Column":"PublicKeyLength","DataType":"int","Properties":{"Ordinal":24}},'
-        '{"Column":"PublicKeySHA1","DataType":"string","Properties":{"Ordinal":25}},'
-        '{"Column":"CustomAttributes","DataType":"dynamic","Properties":{"Ordinal":26}},'
-        '{"Column":"CustomAttributesFailedDecode","DataType":"dynamic","Properties":{"Ordinal":27}},'
-        '{"Column":"CustomAttributesTotalCount","DataType":"int","Properties":{"Ordinal":28}},'
-        '{"Column":"CustomAttributesTotalDataLength","DataType":"int","Properties":{"Ordinal":29}},'
-        '{"Column":"SequenceNumber","DataType":"int","Properties":{"Ordinal":30}}'
+        '{"Column":"SequenceNumber","DataType":"int","Properties":{"Ordinal":9}},'
+        '{"Column":"Path","DataType":"string","Properties":{"Ordinal":10}},'
+        '{"Column":"FileName","DataType":"string","Properties":{"Ordinal":11}},'
+        '{"Column":"FileExtension","DataType":"string","Properties":{"Ordinal":12}},'
+        '{"Column":"TopLevelFolder","DataType":"string","Properties":{"Ordinal":13}},'
+        '{"Column":"FileLength","DataType":"long","Properties":{"Ordinal":14}},'
+        '{"Column":"EdgeCases","DataType":"string","Properties":{"Ordinal":15}},'
+        '{"Column":"AssemblyName","DataType":"string","Properties":{"Ordinal":16}},'
+        '{"Column":"AssemblyVersion","DataType":"string","Properties":{"Ordinal":17}},'
+        '{"Column":"Culture","DataType":"string","Properties":{"Ordinal":18}},'
+        '{"Column":"PublicKeyToken","DataType":"string","Properties":{"Ordinal":19}},'
+        '{"Column":"HashAlgorithm","DataType":"string","Properties":{"Ordinal":20}},'
+        '{"Column":"HasPublicKey","DataType":"bool","Properties":{"Ordinal":21}},'
+        '{"Column":"PublicKeyLength","DataType":"int","Properties":{"Ordinal":22}},'
+        '{"Column":"PublicKeySHA1","DataType":"string","Properties":{"Ordinal":23}},'
+        '{"Column":"CustomAttributes","DataType":"dynamic","Properties":{"Ordinal":24}},'
+        '{"Column":"CustomAttributesFailedDecode","DataType":"dynamic","Properties":{"Ordinal":25}},'
+        '{"Column":"CustomAttributesTotalCount","DataType":"int","Properties":{"Ordinal":26}},'
+        '{"Column":"CustomAttributesTotalDataLength","DataType":"int","Properties":{"Ordinal":27}}'
     ']'
 
     */
     partial record PackageAssembly
     {
-        public int FieldCount => 31;
+        public int FieldCount => 28;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Path,FileName,FileExtension,TopLevelFolder,CompressedLength,EntryUncompressedLength,ActualUncompressedLength,FileSHA256,EdgeCases,AssemblyName,AssemblyVersion,Culture,PublicKeyToken,HashAlgorithm,HasPublicKey,PublicKeyLength,PublicKeySHA1,CustomAttributes,CustomAttributesFailedDecode,CustomAttributesTotalCount,CustomAttributesTotalDataLength,SequenceNumber");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,SequenceNumber,Path,FileName,FileExtension,TopLevelFolder,FileLength,EdgeCases,AssemblyName,AssemblyVersion,Culture,PublicKeyToken,HashAlgorithm,HasPublicKey,PublicKeyLength,PublicKeySHA1,CustomAttributes,CustomAttributesFailedDecode,CustomAttributesTotalCount,CustomAttributesTotalDataLength");
         }
 
         public void Write(List<string> fields)
@@ -116,14 +110,12 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             fields.Add(CsvUtility.FormatDateTimeOffset(CatalogCommitTimestamp));
             fields.Add(CsvUtility.FormatDateTimeOffset(Created));
             fields.Add(ResultType.ToString());
+            fields.Add(SequenceNumber.ToString());
             fields.Add(Path);
             fields.Add(FileName);
             fields.Add(FileExtension);
             fields.Add(TopLevelFolder);
-            fields.Add(CompressedLength.ToString());
-            fields.Add(EntryUncompressedLength.ToString());
-            fields.Add(ActualUncompressedLength.ToString());
-            fields.Add(FileSHA256);
+            fields.Add(FileLength.ToString());
             fields.Add(EdgeCases.ToString());
             fields.Add(AssemblyName);
             fields.Add(AssemblyVersion?.ToString());
@@ -137,7 +129,6 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             fields.Add(CustomAttributesFailedDecode);
             fields.Add(CustomAttributesTotalCount.ToString());
             fields.Add(CustomAttributesTotalDataLength.ToString());
-            fields.Add(SequenceNumber.ToString());
         }
 
         public void Write(TextWriter writer)
@@ -160,6 +151,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, ResultType.ToString());
             writer.Write(',');
+            writer.Write(SequenceNumber);
+            writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, Path);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, FileName);
@@ -168,13 +161,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, TopLevelFolder);
             writer.Write(',');
-            writer.Write(CompressedLength);
-            writer.Write(',');
-            writer.Write(EntryUncompressedLength);
-            writer.Write(',');
-            writer.Write(ActualUncompressedLength);
-            writer.Write(',');
-            CsvUtility.WriteWithQuotes(writer, FileSHA256);
+            writer.Write(FileLength);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, EdgeCases.ToString());
             writer.Write(',');
@@ -201,8 +188,6 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             writer.Write(CustomAttributesTotalCount);
             writer.Write(',');
             writer.Write(CustomAttributesTotalDataLength);
-            writer.Write(',');
-            writer.Write(SequenceNumber);
             writer.WriteLine();
         }
 
@@ -226,6 +211,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, ResultType.ToString());
             await writer.WriteAsync(',');
+            await writer.WriteAsync(SequenceNumber.ToString());
+            await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, Path);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, FileName);
@@ -234,13 +221,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, TopLevelFolder);
             await writer.WriteAsync(',');
-            await writer.WriteAsync(CompressedLength.ToString());
-            await writer.WriteAsync(',');
-            await writer.WriteAsync(EntryUncompressedLength.ToString());
-            await writer.WriteAsync(',');
-            await writer.WriteAsync(ActualUncompressedLength.ToString());
-            await writer.WriteAsync(',');
-            await CsvUtility.WriteWithQuotesAsync(writer, FileSHA256);
+            await writer.WriteAsync(FileLength.ToString());
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, EdgeCases.ToString());
             await writer.WriteAsync(',');
@@ -267,8 +248,6 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             await writer.WriteAsync(CustomAttributesTotalCount.ToString());
             await writer.WriteAsync(',');
             await writer.WriteAsync(CustomAttributesTotalDataLength.ToString());
-            await writer.WriteAsync(',');
-            await writer.WriteAsync(SequenceNumber.ToString());
             await writer.WriteLineAsync();
         }
 
@@ -285,14 +264,12 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 CatalogCommitTimestamp = CsvUtility.ParseDateTimeOffset(getNextField()),
                 Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 ResultType = Enum.Parse<PackageAssemblyResultType>(getNextField()),
+                SequenceNumber = CsvUtility.ParseNullable(getNextField(), int.Parse),
                 Path = getNextField(),
                 FileName = getNextField(),
                 FileExtension = getNextField(),
                 TopLevelFolder = getNextField(),
-                CompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse),
-                EntryUncompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse),
-                ActualUncompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse),
-                FileSHA256 = getNextField(),
+                FileLength = CsvUtility.ParseNullable(getNextField(), long.Parse),
                 EdgeCases = CsvUtility.ParseNullable(getNextField(), Enum.Parse<PackageAssemblyEdgeCases>),
                 AssemblyName = getNextField(),
                 AssemblyVersion = CsvUtility.ParseReference(getNextField(), System.Version.Parse),
@@ -306,7 +283,6 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 CustomAttributesFailedDecode = getNextField(),
                 CustomAttributesTotalCount = CsvUtility.ParseNullable(getNextField(), int.Parse),
                 CustomAttributesTotalDataLength = CsvUtility.ParseNullable(getNextField(), int.Parse),
-                SequenceNumber = CsvUtility.ParseNullable(getNextField(), int.Parse),
             };
         }
 
@@ -350,11 +326,6 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             if (TopLevelFolder is null)
             {
                 TopLevelFolder = string.Empty;
-            }
-
-            if (FileSHA256 is null)
-            {
-                FileSHA256 = string.Empty;
             }
 
             if (AssemblyName is null)

@@ -33,5 +33,13 @@ namespace NuGet.Insights.Worker
         public uint? OffsetOfCentralDirectory { get; set; }
         public int? EntryCount { get; set; }
         public string Comment { get; set; }
+
+        public string HeaderMD5 { get; set; }
+        public string HeaderSHA512 { get; set; }
+
+        public string MD5 { get; set; }
+        public string SHA1 { get; set; }
+        public string SHA256 { get; set; }
+        public string SHA512 { get; set; }
     }
 }

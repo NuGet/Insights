@@ -35,11 +35,8 @@ containing details on the file contents instead of just ZIP entry metadata.
 | CompressedLength         | long      | Yes, for ZIP entries | The compressed size of the file                                           |
 | EntryUncompressedLength  | long      | Yes, for ZIP entries | The uncompressed size of the file                                         |
 | ActualUncompressedLength | long      | Yes, for Available   | The uncompressed size of the file                                         |
-| MD5                      | string    | Yes, for Available   | Base64 encoded MD5 hash of the file bytes                                 |
-| SHA1                     | string    | Yes, for Available   | Base64 encoded SHA1 hash of the file bytes                                |
 | SHA256                   | string    | Yes, for Available   | Base64 encoded SHA256 hash of the file bytes                              |
-| SHA512                   | string    | Yes, for Available   | Base64 encodedSHA512 hash of the file bytes                               |
-| First64                  | string    | Yes, for Available   | Base64 encoded first 64 bytes of the file, useful for file type detection |
+| First16Bytes             | string    | Yes, for Available   | Base64 encoded first 16 bytes of the file, useful for file type detection |
 
 Records are referred to as "ZIP entries" in the table above if it does not have ResultType `Deleted` or `DoesNotExist`.
 

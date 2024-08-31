@@ -23,14 +23,12 @@ namespace NuGet.Insights
     CatalogCommitTimestamp: datetime,
     Created: datetime,
     ResultType: string,
+    SequenceNumber: int,
     Path: string,
     FileName: string,
     FileExtension: string,
     TopLevelFolder: string,
-    CompressedLength: long,
-    EntryUncompressedLength: long,
-    ActualUncompressedLength: long,
-    FileSHA256: string,
+    FileLength: long,
     EdgeCases: string,
     AssemblyName: string,
     AssemblyVersion: string,
@@ -43,8 +41,7 @@ namespace NuGet.Insights
     CustomAttributes: dynamic,
     CustomAttributesFailedDecode: dynamic,
     CustomAttributesTotalCount: int,
-    CustomAttributesTotalDataLength: int,
-    SequenceNumber: int
+    CustomAttributesTotalDataLength: int
 ) with (docstring = __DOCSTRING__, folder = __FOLDER__)",
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
@@ -58,28 +55,25 @@ namespace NuGet.Insights
     '{""Column"":""CatalogCommitTimestamp"",""DataType"":""datetime"",""Properties"":{""Ordinal"":6}},'
     '{""Column"":""Created"",""DataType"":""datetime"",""Properties"":{""Ordinal"":7}},'
     '{""Column"":""ResultType"",""DataType"":""string"",""Properties"":{""Ordinal"":8}},'
-    '{""Column"":""Path"",""DataType"":""string"",""Properties"":{""Ordinal"":9}},'
-    '{""Column"":""FileName"",""DataType"":""string"",""Properties"":{""Ordinal"":10}},'
-    '{""Column"":""FileExtension"",""DataType"":""string"",""Properties"":{""Ordinal"":11}},'
-    '{""Column"":""TopLevelFolder"",""DataType"":""string"",""Properties"":{""Ordinal"":12}},'
-    '{""Column"":""CompressedLength"",""DataType"":""long"",""Properties"":{""Ordinal"":13}},'
-    '{""Column"":""EntryUncompressedLength"",""DataType"":""long"",""Properties"":{""Ordinal"":14}},'
-    '{""Column"":""ActualUncompressedLength"",""DataType"":""long"",""Properties"":{""Ordinal"":15}},'
-    '{""Column"":""FileSHA256"",""DataType"":""string"",""Properties"":{""Ordinal"":16}},'
-    '{""Column"":""EdgeCases"",""DataType"":""string"",""Properties"":{""Ordinal"":17}},'
-    '{""Column"":""AssemblyName"",""DataType"":""string"",""Properties"":{""Ordinal"":18}},'
-    '{""Column"":""AssemblyVersion"",""DataType"":""string"",""Properties"":{""Ordinal"":19}},'
-    '{""Column"":""Culture"",""DataType"":""string"",""Properties"":{""Ordinal"":20}},'
-    '{""Column"":""PublicKeyToken"",""DataType"":""string"",""Properties"":{""Ordinal"":21}},'
-    '{""Column"":""HashAlgorithm"",""DataType"":""string"",""Properties"":{""Ordinal"":22}},'
-    '{""Column"":""HasPublicKey"",""DataType"":""bool"",""Properties"":{""Ordinal"":23}},'
-    '{""Column"":""PublicKeyLength"",""DataType"":""int"",""Properties"":{""Ordinal"":24}},'
-    '{""Column"":""PublicKeySHA1"",""DataType"":""string"",""Properties"":{""Ordinal"":25}},'
-    '{""Column"":""CustomAttributes"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":26}},'
-    '{""Column"":""CustomAttributesFailedDecode"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":27}},'
-    '{""Column"":""CustomAttributesTotalCount"",""DataType"":""int"",""Properties"":{""Ordinal"":28}},'
-    '{""Column"":""CustomAttributesTotalDataLength"",""DataType"":""int"",""Properties"":{""Ordinal"":29}},'
-    '{""Column"":""SequenceNumber"",""DataType"":""int"",""Properties"":{""Ordinal"":30}}'
+    '{""Column"":""SequenceNumber"",""DataType"":""int"",""Properties"":{""Ordinal"":9}},'
+    '{""Column"":""Path"",""DataType"":""string"",""Properties"":{""Ordinal"":10}},'
+    '{""Column"":""FileName"",""DataType"":""string"",""Properties"":{""Ordinal"":11}},'
+    '{""Column"":""FileExtension"",""DataType"":""string"",""Properties"":{""Ordinal"":12}},'
+    '{""Column"":""TopLevelFolder"",""DataType"":""string"",""Properties"":{""Ordinal"":13}},'
+    '{""Column"":""FileLength"",""DataType"":""long"",""Properties"":{""Ordinal"":14}},'
+    '{""Column"":""EdgeCases"",""DataType"":""string"",""Properties"":{""Ordinal"":15}},'
+    '{""Column"":""AssemblyName"",""DataType"":""string"",""Properties"":{""Ordinal"":16}},'
+    '{""Column"":""AssemblyVersion"",""DataType"":""string"",""Properties"":{""Ordinal"":17}},'
+    '{""Column"":""Culture"",""DataType"":""string"",""Properties"":{""Ordinal"":18}},'
+    '{""Column"":""PublicKeyToken"",""DataType"":""string"",""Properties"":{""Ordinal"":19}},'
+    '{""Column"":""HashAlgorithm"",""DataType"":""string"",""Properties"":{""Ordinal"":20}},'
+    '{""Column"":""HasPublicKey"",""DataType"":""bool"",""Properties"":{""Ordinal"":21}},'
+    '{""Column"":""PublicKeyLength"",""DataType"":""int"",""Properties"":{""Ordinal"":22}},'
+    '{""Column"":""PublicKeySHA1"",""DataType"":""string"",""Properties"":{""Ordinal"":23}},'
+    '{""Column"":""CustomAttributes"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":24}},'
+    '{""Column"":""CustomAttributesFailedDecode"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":25}},'
+    '{""Column"":""CustomAttributesTotalCount"",""DataType"":""int"",""Properties"":{""Ordinal"":26}},'
+    '{""Column"":""CustomAttributesTotalDataLength"",""DataType"":""int"",""Properties"":{""Ordinal"":27}}'
 ']'",
         };
 

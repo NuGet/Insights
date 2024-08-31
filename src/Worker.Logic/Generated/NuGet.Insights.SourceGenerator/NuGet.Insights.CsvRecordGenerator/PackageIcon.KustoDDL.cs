@@ -23,11 +23,8 @@ namespace NuGet.Insights
     CatalogCommitTimestamp: datetime,
     Created: datetime,
     ResultType: string,
-    FileSize: long,
-    MD5: string,
-    SHA1: string,
-    SHA256: string,
-    SHA512: string,
+    FileLength: long,
+    FileSHA256: string,
     ContentType: string,
     HeaderFormat: string,
     AutoDetectedFormat: bool,
@@ -52,22 +49,19 @@ namespace NuGet.Insights
     '{""Column"":""CatalogCommitTimestamp"",""DataType"":""datetime"",""Properties"":{""Ordinal"":6}},'
     '{""Column"":""Created"",""DataType"":""datetime"",""Properties"":{""Ordinal"":7}},'
     '{""Column"":""ResultType"",""DataType"":""string"",""Properties"":{""Ordinal"":8}},'
-    '{""Column"":""FileSize"",""DataType"":""long"",""Properties"":{""Ordinal"":9}},'
-    '{""Column"":""MD5"",""DataType"":""string"",""Properties"":{""Ordinal"":10}},'
-    '{""Column"":""SHA1"",""DataType"":""string"",""Properties"":{""Ordinal"":11}},'
-    '{""Column"":""SHA256"",""DataType"":""string"",""Properties"":{""Ordinal"":12}},'
-    '{""Column"":""SHA512"",""DataType"":""string"",""Properties"":{""Ordinal"":13}},'
-    '{""Column"":""ContentType"",""DataType"":""string"",""Properties"":{""Ordinal"":14}},'
-    '{""Column"":""HeaderFormat"",""DataType"":""string"",""Properties"":{""Ordinal"":15}},'
-    '{""Column"":""AutoDetectedFormat"",""DataType"":""bool"",""Properties"":{""Ordinal"":16}},'
-    '{""Column"":""Signature"",""DataType"":""string"",""Properties"":{""Ordinal"":17}},'
-    '{""Column"":""Width"",""DataType"":""int"",""Properties"":{""Ordinal"":18}},'
-    '{""Column"":""Height"",""DataType"":""int"",""Properties"":{""Ordinal"":19}},'
-    '{""Column"":""FrameCount"",""DataType"":""int"",""Properties"":{""Ordinal"":20}},'
-    '{""Column"":""IsOpaque"",""DataType"":""bool"",""Properties"":{""Ordinal"":21}},'
-    '{""Column"":""FrameFormats"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":22}},'
-    '{""Column"":""FrameDimensions"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":23}},'
-    '{""Column"":""FrameAttributeNames"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":24}}'
+    '{""Column"":""FileLength"",""DataType"":""long"",""Properties"":{""Ordinal"":9}},'
+    '{""Column"":""FileSHA256"",""DataType"":""string"",""Properties"":{""Ordinal"":10}},'
+    '{""Column"":""ContentType"",""DataType"":""string"",""Properties"":{""Ordinal"":11}},'
+    '{""Column"":""HeaderFormat"",""DataType"":""string"",""Properties"":{""Ordinal"":12}},'
+    '{""Column"":""AutoDetectedFormat"",""DataType"":""bool"",""Properties"":{""Ordinal"":13}},'
+    '{""Column"":""Signature"",""DataType"":""string"",""Properties"":{""Ordinal"":14}},'
+    '{""Column"":""Width"",""DataType"":""int"",""Properties"":{""Ordinal"":15}},'
+    '{""Column"":""Height"",""DataType"":""int"",""Properties"":{""Ordinal"":16}},'
+    '{""Column"":""FrameCount"",""DataType"":""int"",""Properties"":{""Ordinal"":17}},'
+    '{""Column"":""IsOpaque"",""DataType"":""bool"",""Properties"":{""Ordinal"":18}},'
+    '{""Column"":""FrameFormats"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":19}},'
+    '{""Column"":""FrameDimensions"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":20}},'
+    '{""Column"":""FrameAttributeNames"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":21}}'
 ']'",
         };
 

@@ -83,7 +83,7 @@ namespace NuGet.Insights
             Stream dest,
             long length,
             int bufferSize,
-            IIncrementalHash hashAlgorithm,
+            IIncrementalHash hasher,
             ILogger logger)
         {
             var pool = ArrayPool<byte>.Shared;
@@ -115,11 +115,11 @@ namespace NuGet.Insights
 
                     if (bytesRead == 0)
                     {
-                        hashAlgorithm.TransformFinalBlock();
+                        hasher.TransformFinalBlock();
                         break;
                     }
 
-                    hashAlgorithm.TransformBlock(buffer, 0, bytesRead);
+                    hasher.TransformBlock(buffer, 0, bytesRead);
 
                     await dest.WriteAsync(buffer, 0, bytesRead);
 

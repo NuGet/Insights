@@ -26,14 +26,12 @@ For simplicity, only files with the `.dll` or `.exe` file extension are analyzed
 | CatalogCommitTimestamp          | timestamp        | Yes                        | Latest catalog commit timestamp for the package                        |
 | Created                         | timestamp        | Yes, for non-Deleted       | When the package version was created                                   |
 | ResultType                      | enum             | Yes                        | Type of record (e.g. Available, Deleted)                               |
+| SequenceNumber                  | int              | Yes, for ZIP entries       | The index of this entry within the whole ZIP file                      |
 | Path                            | string           | Yes, for ZIP entries       | The relative file path within the .nupkg                               |
 | FileName                        | string           | Yes, for ZIP entries       | The file name from the Path                                            |
 | FileExtension                   | string           | Yes, for ZIP entries       | The file extension from the Path                                       |
 | TopLevelFolder                  | string           | Yes, for ZIP entries       | The first folder (i.e. directory) name from the Path                   |
-| CompressedLength                | long             | Yes, for ZIP entries       | The compressed size of the assembly                                    |
-| EntryUncompressedLength         | long             | Yes, for ZIP entries       | The uncompressed size of the assembly                                  |
-| ActualUncompressedLength        | long             | Yes, for valid ZIP entries | The uncompressed size of the assembly                                  |
-| FileSHA256                      | string           | Yes, for valid ZIP entries | The Base64 encoded SHA256 hash of the assembly file                    |
+| FileLength                      | long             | Yes, for valid ZIP entries | The uncompressed size of the assembly                                  |
 | EdgeCases                       | flags enum       | Yes, for ValidAssembly     | Edges cases or errors encountered while processing the assembly        |
 | AssemblyName                    | string           | Yes, for ValidAssembly     | The .NET assembly Name                                                 |
 | AssemblyVersion                 | string           | Yes, for ValidAssembly     | The .NET assembly version                                              |
@@ -47,7 +45,6 @@ For simplicity, only files with the `.dll` or `.exe` file extension are analyzed
 | CustomAttributesFailedDecode    | array of strings | No                         | Custom attribute names that failed to decode                           |
 | CustomAttributesTotalCount      | int              | No                         | Total number of assembly custom attributes                             |
 | CustomAttributesTotalDataLength | int              | No                         | Total size of custom attribute value blobs in bytes                    |
-| SequenceNumber                  | int              | Yes, for ZIP entries       | The index of this entry within the whole ZIP file                      |
 
 Records are referred to as "ZIP entries" in the table above if it does not have ResultType `NoAssemblies` or `Deleted`.
 

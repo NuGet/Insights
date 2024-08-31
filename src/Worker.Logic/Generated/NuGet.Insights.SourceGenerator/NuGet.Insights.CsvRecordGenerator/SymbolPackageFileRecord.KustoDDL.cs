@@ -31,11 +31,8 @@ namespace NuGet.Insights
     CompressedLength: long,
     EntryUncompressedLength: long,
     ActualUncompressedLength: long,
-    MD5: string,
-    SHA1: string,
     SHA256: string,
-    SHA512: string,
-    First64: string
+    First16Bytes: string
 ) with (docstring = __DOCSTRING__, folder = __FOLDER__)",
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
@@ -57,11 +54,8 @@ namespace NuGet.Insights
     '{""Column"":""CompressedLength"",""DataType"":""long"",""Properties"":{""Ordinal"":14}},'
     '{""Column"":""EntryUncompressedLength"",""DataType"":""long"",""Properties"":{""Ordinal"":15}},'
     '{""Column"":""ActualUncompressedLength"",""DataType"":""long"",""Properties"":{""Ordinal"":16}},'
-    '{""Column"":""MD5"",""DataType"":""string"",""Properties"":{""Ordinal"":17}},'
-    '{""Column"":""SHA1"",""DataType"":""string"",""Properties"":{""Ordinal"":18}},'
-    '{""Column"":""SHA256"",""DataType"":""string"",""Properties"":{""Ordinal"":19}},'
-    '{""Column"":""SHA512"",""DataType"":""string"",""Properties"":{""Ordinal"":20}},'
-    '{""Column"":""First64"",""DataType"":""string"",""Properties"":{""Ordinal"":21}}'
+    '{""Column"":""SHA256"",""DataType"":""string"",""Properties"":{""Ordinal"":17}},'
+    '{""Column"":""First16Bytes"",""DataType"":""string"",""Properties"":{""Ordinal"":18}}'
 ']'",
         };
 

@@ -26,11 +26,8 @@ icons and icon URL icons downloaded to NuGet.org. The processing of images is do
 | CatalogCommitTimestamp | timestamp        | Yes                  | Latest catalog commit timestamp for the package                                  |
 | Created                | timestamp        | Yes, for non-Deleted | When the package version was created                                             |
 | ResultType             | enum             | Yes                  | Type of record (e.g. Available, Deleted)                                         |
-| FileSize               | long             | Yes, for existing    | Size of the image file in bytes                                                  |
-| MD5                    | string           | Yes, for existing    | Base64 encoded MD5 hash of the image bytes                                       |
-| SHA1                   | string           | Yes, for existing    | Base64 encoded SHA1 hash of the image bytes                                      |
-| SHA256                 | string           | Yes, for existing    | Base64 encoded SHA256 hash of the image bytes                                    |
-| SHA512                 | string           | Yes, for existing    | Base64 encodedSHA512 hash of the image bytes                                     |
+| FileLength             | long             | Yes, for existing    | Size of the image file in bytes                                                  |
+| FileSHA256             | string           | Yes, for existing    | Base64 encoded SHA256 hash of the image bytes                                    |
 | ContentType            | string           | No                   | Content-Type response header on the image file, if present                       |
 | HeaderFormat           | string           | Yes, for existing    | String representing image format detected from header bytes, e.g. "Png" or "Gif" |
 | AutoDetectedFormat     | bool             | Yes, for Available   | Whether Magick.NET could automatically detect the image format from bytes        |

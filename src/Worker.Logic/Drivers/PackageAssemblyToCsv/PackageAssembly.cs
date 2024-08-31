@@ -26,16 +26,14 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         [Required]
         public PackageAssemblyResultType ResultType { get; set; }
 
+        public int? SequenceNumber { get; set; }
+
         public string Path { get; set; }
         public string FileName { get; set; }
         public string FileExtension { get; set; }
         public string TopLevelFolder { get; set; }
 
-        public long? CompressedLength { get; set; }
-        public long? EntryUncompressedLength { get; set; }
-
-        public long? ActualUncompressedLength { get; set; }
-        public string FileSHA256 { get; set; }
+        public long? FileLength { get; set; }
 
         public PackageAssemblyEdgeCases? EdgeCases { get; set; }
         public string AssemblyName { get; set; }
@@ -58,8 +56,6 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
         public int? CustomAttributesTotalCount { get; set; }
         public int? CustomAttributesTotalDataLength { get; set; }
-
-        public int? SequenceNumber { get; set; }
 
         public static List<PackageAssembly> Prune(List<PackageAssembly> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {

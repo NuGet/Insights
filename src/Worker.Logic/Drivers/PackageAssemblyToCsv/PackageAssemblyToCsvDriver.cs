@@ -89,6 +89,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                         leafScan.PackageVersion,
                         "assemblies",
                         ".nupkg"),
+                    IncrementalHash.CreateNone,
                     CancellationToken.None);
 
                 if (result is null)
@@ -159,9 +160,6 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 FileName = Path.GetFileName(entry.FullName),
                 FileExtension = Path.GetExtension(entry.FullName),
                 TopLevelFolder = PathUtility.GetTopLevelFolder(entry.FullName),
-
-                CompressedLength = entry.CompressedLength,
-                EntryUncompressedLength = entry.Length,
             };
 
             var result = await AnalyzeAsync(assembly, entry);
@@ -190,7 +188,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                             assembly.SequenceNumber?.ToString(CultureInfo.InvariantCulture),
                             assembly.FileExtension),
                         entry.Length,
-                        IncrementalHash.CreateSHA256);
+                        IncrementalHash.CreateNone);
                 }
                 catch (InvalidDataException ex)
                 {
@@ -204,8 +202,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                     return DriverResult.TryAgainLater();
                 }
 
-                assembly.ActualUncompressedLength = tempStreamResult.Stream.Length;
-                assembly.FileSHA256 = tempStreamResult.Hash.SHA256.ToBase64();
+                assembly.FileLength = tempStreamResult.Stream.Length;
 
                 using var peReader = new PEReader(tempStreamResult.Stream);
                 if (!peReader.HasMetadata)

@@ -8,7 +8,7 @@ using System.IO.Compression;
 
 namespace NuGet.Insights.Worker
 {
-    public abstract class ZipArchiveEntryHashToCsvDriver<T> : ICatalogLeafToCsvDriver<T>, ICsvResultStorage<T>
+    public abstract class FullZipArchiveEntryToCsvDriver<T> : ICatalogLeafToCsvDriver<T>, ICsvResultStorage<T>
         where T : FileRecord, IAggregatedCsvRecord<T>
     {
         private readonly CatalogClient _catalogClient;
@@ -16,7 +16,7 @@ namespace NuGet.Insights.Worker
         private readonly PackageSpecificHashService _hashService;
         private readonly ILogger _logger;
 
-        public ZipArchiveEntryHashToCsvDriver(
+        public FullZipArchiveEntryToCsvDriver(
             CatalogClient catalogClient,
             FileDownloader fileDownloader,
             PackageSpecificHashService hashService,
@@ -30,7 +30,7 @@ namespace NuGet.Insights.Worker
 
         public bool SingleMessagePerId => false;
         public abstract string ResultContainerName { get; }
-        protected abstract bool UrlNotFoundIsDeleted { get; }
+        protected abstract bool NotFoundIsDeleted { get; }
         protected abstract ArtifactFileType FileType { get; }
 
         public async Task InitializeAsync()
@@ -82,6 +82,7 @@ namespace NuGet.Insights.Worker
                         leafScan.PackageVersion,
                         "hashes",
                         FileDownloader.GetFileExtension(FileType)),
+                    IncrementalHash.CreateAll,
                     CancellationToken.None);
 
                 if (result is null)
@@ -150,7 +151,7 @@ namespace NuGet.Insights.Worker
             // We must clear the data related to deleted, or unavailable ZIP archives.
             await _hashService.SetHashesAsync(leafScan.ToPackageIdentityCommit(), headers: null, hashes: null);
 
-            if (UrlNotFoundIsDeleted)
+            if (NotFoundIsDeleted)
             {
                 return MakeEmptyResults();
             }
@@ -167,15 +168,16 @@ namespace NuGet.Insights.Worker
             try
             {
                 using var stream = entry.Open();
-                using var hasher = IncrementalHash.CreateAll();
+                using var hasher = IncrementalHash.CreateSHA256();
                 int read;
                 long totalRead = 0;
-                string? first64 = null;
+                string? firstBytes = null;
+                const int firstBytesLength = 16;
                 while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
                 {
-                    if (first64 is null)
+                    if (firstBytes is null)
                     {
-                        first64 = Convert.ToBase64String(buffer, 0, Math.Min(64, read));
+                        firstBytes = Convert.ToBase64String(buffer, 0, Math.Min(firstBytesLength, read));
                     }
 
                     hasher.TransformBlock(buffer, 0, read);
@@ -185,13 +187,8 @@ namespace NuGet.Insights.Worker
                 hasher.TransformFinalBlock();
 
                 record.ActualUncompressedLength = totalRead;
-
-                record.MD5 = Convert.ToBase64String(hasher.Output.MD5);
-                record.SHA1 = Convert.ToBase64String(hasher.Output.SHA1);
                 record.SHA256 = Convert.ToBase64String(hasher.Output.SHA256);
-                record.SHA512 = Convert.ToBase64String(hasher.Output.SHA512);
-
-                record.First64 = first64;
+                record.First16Bytes = firstBytes;
             }
             catch (InvalidDataException ex)
             {

@@ -19,14 +19,6 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
         {
         }
 
-        public string HeaderMD5 { get; set; }
-        public string HeaderSHA512 { get; set; }
-
-        public string MD5 { get; set; }
-        public string SHA1 { get; set; }
-        public string SHA256 { get; set; }
-        public string SHA512 { get; set; }
-
         public static List<SymbolPackageArchiveRecord> Prune(List<SymbolPackageArchiveRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

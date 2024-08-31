@@ -5,7 +5,7 @@
 
 namespace NuGet.Insights.Worker.PackageFileToCsv
 {
-    public class PackageFileToCsvDriver : ZipArchiveEntryHashToCsvDriver<PackageFileRecord>
+    public class PackageFileToCsvDriver : FullZipArchiveEntryToCsvDriver<PackageFileRecord>
     {
         private readonly FlatContainerClient _client;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -28,7 +28,7 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
         }
 
         public override string ResultContainerName => _options.Value.PackageFileContainerName;
-        protected override bool UrlNotFoundIsDeleted => true;
+        protected override bool NotFoundIsDeleted => true;
         protected override ArtifactFileType FileType => ArtifactFileType.Nupkg;
 
         protected override async Task<string?> GetZipUrlAsync(CatalogLeafScan leafScan)

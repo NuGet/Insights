@@ -45,7 +45,7 @@ namespace NuGet.Insights
 
         public async Task<PrimarySignature?> GetPrimarySignatureAsync(IPackageIdentityCommit leafItem)
         {
-            var info = await GetOrUpdateInfoAsync(leafItem);
+            var info = await GetOrUpdateInfoFromLeafItemAsync(leafItem);
             if (!info.Available)
             {
                 return null;
@@ -57,13 +57,13 @@ namespace NuGet.Insights
 
         public async Task<ZipDirectory?> GetZipDirectoryAsync(IPackageIdentityCommit leafItem)
         {
-            (var zipDirectory, _, _) = await GetZipDirectoryAndSizeAsync(leafItem);
+            (var zipDirectory, _, _) = await GetZipDirectoryAndLengthAsync(leafItem);
             return zipDirectory;
         }
 
-        public async Task<(ZipDirectory? directory, long size, ILookup<string, string>? headers)> GetZipDirectoryAndSizeAsync(IPackageIdentityCommit leafItem)
+        public async Task<(ZipDirectory? directory, long length, ILookup<string, string>? headers)> GetZipDirectoryAndLengthAsync(IPackageIdentityCommit leafItem)
         {
-            var info = await GetOrUpdateInfoAsync(leafItem);
+            var info = await GetOrUpdateInfoFromLeafItemAsync(leafItem);
             if (!info.Available)
             {
                 return (null, 0, null);
@@ -86,7 +86,7 @@ namespace NuGet.Insights
                 DataToOutput);
         }
 
-        public async Task<PackageFileInfoV1> GetOrUpdateInfoAsync(IPackageIdentityCommit leafItem)
+        public async Task<PackageFileInfoV1> GetOrUpdateInfoFromLeafItemAsync(IPackageIdentityCommit leafItem)
         {
             return await _wideEntityService.GetOrUpdateInfoAsync(
                 _options.Value.PackageArchiveTableName,

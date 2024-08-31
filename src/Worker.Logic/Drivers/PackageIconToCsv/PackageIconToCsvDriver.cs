@@ -93,11 +93,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
                     var output = new PackageIcon(scanId, scanTimestamp, leaf)
                     {
                         ResultType = PackageIconResultType.Available,
-                        FileSize = result.Value.Body.Stream.Length,
-                        MD5 = result.Value.Body.Hash.MD5.ToBase64(),
-                        SHA1 = result.Value.Body.Hash.SHA1.ToBase64(),
-                        SHA256 = result.Value.Body.Hash.SHA256.ToBase64(),
-                        SHA512 = result.Value.Body.Hash.SHA512.ToBase64(),
+                        FileLength = result.Value.Body.Stream.Length,
+                        FileSHA256 = result.Value.Body.Hash.SHA256.ToBase64(),
                         ContentType = result.Value.ContentType,
                     };
 

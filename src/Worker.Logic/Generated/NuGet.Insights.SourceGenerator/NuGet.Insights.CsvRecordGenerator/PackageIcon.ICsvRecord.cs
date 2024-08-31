@@ -23,11 +23,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         CatalogCommitTimestamp: datetime,
         Created: datetime,
         ResultType: string,
-        FileSize: long,
-        MD5: string,
-        SHA1: string,
-        SHA256: string,
-        SHA512: string,
+        FileLength: long,
+        FileSHA256: string,
         ContentType: string,
         HeaderFormat: string,
         AutoDetectedFormat: bool,
@@ -65,32 +62,29 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         '{"Column":"CatalogCommitTimestamp","DataType":"datetime","Properties":{"Ordinal":6}},'
         '{"Column":"Created","DataType":"datetime","Properties":{"Ordinal":7}},'
         '{"Column":"ResultType","DataType":"string","Properties":{"Ordinal":8}},'
-        '{"Column":"FileSize","DataType":"long","Properties":{"Ordinal":9}},'
-        '{"Column":"MD5","DataType":"string","Properties":{"Ordinal":10}},'
-        '{"Column":"SHA1","DataType":"string","Properties":{"Ordinal":11}},'
-        '{"Column":"SHA256","DataType":"string","Properties":{"Ordinal":12}},'
-        '{"Column":"SHA512","DataType":"string","Properties":{"Ordinal":13}},'
-        '{"Column":"ContentType","DataType":"string","Properties":{"Ordinal":14}},'
-        '{"Column":"HeaderFormat","DataType":"string","Properties":{"Ordinal":15}},'
-        '{"Column":"AutoDetectedFormat","DataType":"bool","Properties":{"Ordinal":16}},'
-        '{"Column":"Signature","DataType":"string","Properties":{"Ordinal":17}},'
-        '{"Column":"Width","DataType":"int","Properties":{"Ordinal":18}},'
-        '{"Column":"Height","DataType":"int","Properties":{"Ordinal":19}},'
-        '{"Column":"FrameCount","DataType":"int","Properties":{"Ordinal":20}},'
-        '{"Column":"IsOpaque","DataType":"bool","Properties":{"Ordinal":21}},'
-        '{"Column":"FrameFormats","DataType":"dynamic","Properties":{"Ordinal":22}},'
-        '{"Column":"FrameDimensions","DataType":"dynamic","Properties":{"Ordinal":23}},'
-        '{"Column":"FrameAttributeNames","DataType":"dynamic","Properties":{"Ordinal":24}}'
+        '{"Column":"FileLength","DataType":"long","Properties":{"Ordinal":9}},'
+        '{"Column":"FileSHA256","DataType":"string","Properties":{"Ordinal":10}},'
+        '{"Column":"ContentType","DataType":"string","Properties":{"Ordinal":11}},'
+        '{"Column":"HeaderFormat","DataType":"string","Properties":{"Ordinal":12}},'
+        '{"Column":"AutoDetectedFormat","DataType":"bool","Properties":{"Ordinal":13}},'
+        '{"Column":"Signature","DataType":"string","Properties":{"Ordinal":14}},'
+        '{"Column":"Width","DataType":"int","Properties":{"Ordinal":15}},'
+        '{"Column":"Height","DataType":"int","Properties":{"Ordinal":16}},'
+        '{"Column":"FrameCount","DataType":"int","Properties":{"Ordinal":17}},'
+        '{"Column":"IsOpaque","DataType":"bool","Properties":{"Ordinal":18}},'
+        '{"Column":"FrameFormats","DataType":"dynamic","Properties":{"Ordinal":19}},'
+        '{"Column":"FrameDimensions","DataType":"dynamic","Properties":{"Ordinal":20}},'
+        '{"Column":"FrameAttributeNames","DataType":"dynamic","Properties":{"Ordinal":21}}'
     ']'
 
     */
     partial record PackageIcon
     {
-        public int FieldCount => 25;
+        public int FieldCount => 22;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,FileSize,MD5,SHA1,SHA256,SHA512,ContentType,HeaderFormat,AutoDetectedFormat,Signature,Width,Height,FrameCount,IsOpaque,FrameFormats,FrameDimensions,FrameAttributeNames");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,FileLength,FileSHA256,ContentType,HeaderFormat,AutoDetectedFormat,Signature,Width,Height,FrameCount,IsOpaque,FrameFormats,FrameDimensions,FrameAttributeNames");
         }
 
         public void Write(List<string> fields)
@@ -104,11 +98,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             fields.Add(CsvUtility.FormatDateTimeOffset(CatalogCommitTimestamp));
             fields.Add(CsvUtility.FormatDateTimeOffset(Created));
             fields.Add(ResultType.ToString());
-            fields.Add(FileSize.ToString());
-            fields.Add(MD5);
-            fields.Add(SHA1);
-            fields.Add(SHA256);
-            fields.Add(SHA512);
+            fields.Add(FileLength.ToString());
+            fields.Add(FileSHA256);
             fields.Add(ContentType);
             fields.Add(HeaderFormat);
             fields.Add(CsvUtility.FormatBool(AutoDetectedFormat));
@@ -142,15 +133,9 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, ResultType.ToString());
             writer.Write(',');
-            writer.Write(FileSize);
+            writer.Write(FileLength);
             writer.Write(',');
-            CsvUtility.WriteWithQuotes(writer, MD5);
-            writer.Write(',');
-            CsvUtility.WriteWithQuotes(writer, SHA1);
-            writer.Write(',');
-            CsvUtility.WriteWithQuotes(writer, SHA256);
-            writer.Write(',');
-            CsvUtility.WriteWithQuotes(writer, SHA512);
+            CsvUtility.WriteWithQuotes(writer, FileSHA256);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, ContentType);
             writer.Write(',');
@@ -196,15 +181,9 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, ResultType.ToString());
             await writer.WriteAsync(',');
-            await writer.WriteAsync(FileSize.ToString());
+            await writer.WriteAsync(FileLength.ToString());
             await writer.WriteAsync(',');
-            await CsvUtility.WriteWithQuotesAsync(writer, MD5);
-            await writer.WriteAsync(',');
-            await CsvUtility.WriteWithQuotesAsync(writer, SHA1);
-            await writer.WriteAsync(',');
-            await CsvUtility.WriteWithQuotesAsync(writer, SHA256);
-            await writer.WriteAsync(',');
-            await CsvUtility.WriteWithQuotesAsync(writer, SHA512);
+            await CsvUtility.WriteWithQuotesAsync(writer, FileSHA256);
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, ContentType);
             await writer.WriteAsync(',');
@@ -243,11 +222,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
                 CatalogCommitTimestamp = CsvUtility.ParseDateTimeOffset(getNextField()),
                 Created = CsvUtility.ParseNullable(getNextField(), CsvUtility.ParseDateTimeOffset),
                 ResultType = Enum.Parse<PackageIconResultType>(getNextField()),
-                FileSize = CsvUtility.ParseNullable(getNextField(), long.Parse),
-                MD5 = getNextField(),
-                SHA1 = getNextField(),
-                SHA256 = getNextField(),
-                SHA512 = getNextField(),
+                FileLength = CsvUtility.ParseNullable(getNextField(), long.Parse),
+                FileSHA256 = getNextField(),
                 ContentType = getNextField(),
                 HeaderFormat = getNextField(),
                 AutoDetectedFormat = CsvUtility.ParseNullable(getNextField(), bool.Parse),
@@ -284,24 +260,9 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
                 Version = string.Empty;
             }
 
-            if (MD5 is null)
+            if (FileSHA256 is null)
             {
-                MD5 = string.Empty;
-            }
-
-            if (SHA1 is null)
-            {
-                SHA1 = string.Empty;
-            }
-
-            if (SHA256 is null)
-            {
-                SHA256 = string.Empty;
-            }
-
-            if (SHA512 is null)
-            {
-                SHA512 = string.Empty;
+                FileSHA256 = string.Empty;
             }
 
             if (ContentType is null)

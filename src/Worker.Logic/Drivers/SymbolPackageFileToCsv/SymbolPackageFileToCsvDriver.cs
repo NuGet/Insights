@@ -5,7 +5,7 @@
 
 namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
 {
-    public class SymbolPackageFileToCsvDriver : ZipArchiveEntryHashToCsvDriver<SymbolPackageFileRecord>
+    public class SymbolPackageFileToCsvDriver : FullZipArchiveEntryToCsvDriver<SymbolPackageFileRecord>
     {
         private readonly SymbolPackageFileService _fileService;
         private readonly SymbolPackageClient _client;
@@ -31,7 +31,7 @@ namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
         }
 
         public override string ResultContainerName => _options.Value.SymbolPackageFileContainerName;
-        protected override bool UrlNotFoundIsDeleted => false;
+        protected override bool NotFoundIsDeleted => false;
         protected override ArtifactFileType FileType => ArtifactFileType.Snupkg;
 
         protected override async Task<string?> GetZipUrlAsync(CatalogLeafScan leafScan)

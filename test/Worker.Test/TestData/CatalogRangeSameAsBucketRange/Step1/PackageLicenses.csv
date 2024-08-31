@@ -1,4 +1,4 @@
-ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Url,Expression,File,GeneratedUrl,ExpressionParsed,ExpressionLicenses,ExpressionExceptions,ExpressionNonStandardLicenses,ExpressionHasDeprecatedIdentifier,FileSize,FileSHA256,FileContent
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Url,Expression,File,GeneratedUrl,ExpressionParsed,ExpressionLicenses,ExpressionExceptions,ExpressionNonStandardLicenses,ExpressionHasDeprecatedIdentifier,FileLength,FileSHA256,FileContent
 ,,archimedes.library,archimedes.library/1.0.245,Archimedes.Library,1.0.245,2020-11-27T19:35:06.0046046Z,2020-11-27T19:33:25.687Z,None,,,,,,,,,,,,
 ,,danilovsoft.microorm,danilovsoft.microorm/3.3.4,DanilovSoft.MicroORM,3.3.4,2020-11-27T19:34:44.6917011Z,2020-11-27T19:33:08.023Z,None,,,,,,,,,,,,
 ,,eto.forms.templates,eto.forms.templates/2.5.8,Eto.Forms.Templates,2.5.8,2020-11-27T19:34:44.6917011Z,2020-11-27T19:32:25.937Z,File,https://aka.ms/deprecateLicenseUrl,,Eto-LICENSE.txt,https://aka.ms/deprecateLicenseUrl,,,,,,1531,kEB5hStO8xWtSd+jdW/tsGMoBe1o1o6/hFFsHLFJch0=,"The BSD-3 License.

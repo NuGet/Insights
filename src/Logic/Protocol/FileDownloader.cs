@@ -37,12 +37,21 @@ namespace NuGet.Insights
             _logger = logger;
         }
 
-        public async Task<(ILookup<string, string> Headers, TempStreamResult Body)?> DownloadUrlToFileAsync(string url, Func<string> getTempFileName, CancellationToken token)
+        public async Task<(ILookup<string, string> Headers, TempStreamResult Body)?> DownloadUrlToFileAsync(
+            string url,
+            Func<string> getTempFileName,
+            Func<IIncrementalHash> getHasher,
+            CancellationToken token)
         {
-            return await DownloadUrlToFileAsync(url, getTempFileName, allowNotFound: true, token);
+            return await DownloadUrlToFileAsync(url, getTempFileName, getHasher, allowNotFound: true, token);
         }
 
-        private async Task<(ILookup<string, string> Headers, TempStreamResult Body)?> DownloadUrlToFileAsync(string url, Func<string> getTempFileName, bool allowNotFound, CancellationToken token)
+        private async Task<(ILookup<string, string> Headers, TempStreamResult Body)?> DownloadUrlToFileAsync(
+            string url,
+            Func<string> getTempFileName,
+            Func<IIncrementalHash> getHasher,
+            bool allowNotFound,
+            CancellationToken token)
         {
             var nuGetLogger = _logger.ToNuGetLogger();
             var writer = _tempStreamService.GetWriter();
@@ -76,7 +85,7 @@ namespace NuGet.Insights
                                 networkStream,
                                 getTempFileName,
                                 response.Content.Headers.ContentLength.Value,
-                                IncrementalHash.CreateAll());
+                                getHasher());
                         },
                         _logger,
                         token);
@@ -116,6 +125,7 @@ namespace NuGet.Insights
                 var result = await DownloadUrlToFileAsync(
                     url,
                     () => $"{StorageUtility.GenerateDescendingId()}.{id}.{version}.sig-bytes.nupkg",
+                    IncrementalHash.CreateNone,
                     allowNotFound: false,
                     CancellationToken.None);
                 try
@@ -210,6 +220,7 @@ namespace NuGet.Insights
                     var result = await DownloadUrlToFileAsync(
                         url,
                         () => $"{StorageUtility.GenerateDescendingId()}.{id}.{version}.reader{GetFileExtension(fileType)}",
+                        IncrementalHash.CreateNone,
                         CancellationToken.None);
 
                     if (result is null)

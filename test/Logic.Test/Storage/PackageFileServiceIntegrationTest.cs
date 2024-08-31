@@ -22,12 +22,12 @@ namespace NuGet.Insights
                 LeafType = CatalogLeafType.PackageDetails,
             };
 
-            var first = await Target.GetOrUpdateInfoAsync(leafItem);
+            var first = await Target.GetOrUpdateInfoFromLeafItemAsync(leafItem);
             var requestCountBefore = HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg", StringComparison.Ordinal));
             leafItem.CommitTimestamp = timestampB;
 
             // Act
-            var second = await Target.GetOrUpdateInfoAsync(leafItem);
+            var second = await Target.GetOrUpdateInfoFromLeafItemAsync(leafItem);
 
             // Assert
             var requestCountAfter = HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg", StringComparison.Ordinal));
@@ -53,12 +53,12 @@ namespace NuGet.Insights
                 LeafType = CatalogLeafType.PackageDetails,
             };
 
-            var first = await Target.GetOrUpdateInfoAsync(leafItem);
+            var first = await Target.GetOrUpdateInfoFromLeafItemAsync(leafItem);
             var requestCount = HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg", StringComparison.Ordinal));
             leafItem.CommitTimestamp = timestampB;
 
             // Act
-            var second = await Target.GetOrUpdateInfoAsync(leafItem);
+            var second = await Target.GetOrUpdateInfoFromLeafItemAsync(leafItem);
 
             // Assert
             Assert.True(requestCount >= 2, $"There should be at least 2 requests. Actual: {requestCount}."); // HEAD and GET allowing for retries
@@ -94,7 +94,7 @@ namespace NuGet.Insights
             };
 
             // Act
-            var info = await Target.GetOrUpdateInfoAsync(leafItem);
+            var info = await Target.GetOrUpdateInfoFromLeafItemAsync(leafItem);
 
             // Assert
             Assert.NotNull(info);
@@ -128,7 +128,7 @@ namespace NuGet.Insights
             };
 
             // Act
-            var info = await Target.GetOrUpdateInfoAsync(leafItem);
+            var info = await Target.GetOrUpdateInfoFromLeafItemAsync(leafItem);
 
             // Assert
             Assert.NotNull(info);
@@ -162,7 +162,7 @@ namespace NuGet.Insights
             };
 
             // Act
-            var info = await Target.GetOrUpdateInfoAsync(leafItem);
+            var info = await Target.GetOrUpdateInfoFromLeafItemAsync(leafItem);
 
             // Assert
             Assert.NotNull(info);
@@ -185,11 +185,11 @@ namespace NuGet.Insights
                 LeafType = CatalogLeafType.PackageDetails,
             };
 
-            await Target.GetOrUpdateInfoAsync(leafItem);
+            await Target.GetOrUpdateInfoFromLeafItemAsync(leafItem);
             var requestCount = HttpMessageHandlerFactory.SuccessRequests.Count(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg", StringComparison.Ordinal));
 
             // Act
-            await Target.GetOrUpdateInfoAsync(leafItem);
+            await Target.GetOrUpdateInfoFromLeafItemAsync(leafItem);
 
             // Assert
             Assert.True(requestCount >= 2); // HEAD, GET, and potential retries on the GET

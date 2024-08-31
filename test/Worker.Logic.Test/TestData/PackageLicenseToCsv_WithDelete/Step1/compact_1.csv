@@ -1,4 +1,4 @@
-ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Url,Expression,File,GeneratedUrl,ExpressionParsed,ExpressionLicenses,ExpressionExceptions,ExpressionNonStandardLicenses,ExpressionHasDeprecatedIdentifier,FileSize,FileSHA256,FileContent
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Url,Expression,File,GeneratedUrl,ExpressionParsed,ExpressionLicenses,ExpressionExceptions,ExpressionNonStandardLicenses,ExpressionHasDeprecatedIdentifier,FileLength,FileSHA256,FileContent
 ,,lunabot.core,lunabot.core/1.0.4,LunaBot.Core,1.0.4,2020-12-20T02:39:20.5757299Z,2020-12-20T02:33:43.64Z,File,https://aka.ms/deprecateLicenseUrl,,LICENSE.txt,https://aka.ms/deprecateLicenseUrl,,,,,,35823,IwGE9guuL+ryRPEKi6wFPI/zOhg7zDZbTYuHbSt/SAk=,"                    GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 

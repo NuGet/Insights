@@ -31,11 +31,8 @@ namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
         CompressedLength: long,
         EntryUncompressedLength: long,
         ActualUncompressedLength: long,
-        MD5: string,
-        SHA1: string,
         SHA256: string,
-        SHA512: string,
-        First64: string
+        First16Bytes: string
     ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/SymbolPackageFiles.md", folder = "");
 
     .alter-merge table SymbolPackageFiles policy retention softdelete = 30d;
@@ -70,21 +67,18 @@ namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
         '{"Column":"CompressedLength","DataType":"long","Properties":{"Ordinal":14}},'
         '{"Column":"EntryUncompressedLength","DataType":"long","Properties":{"Ordinal":15}},'
         '{"Column":"ActualUncompressedLength","DataType":"long","Properties":{"Ordinal":16}},'
-        '{"Column":"MD5","DataType":"string","Properties":{"Ordinal":17}},'
-        '{"Column":"SHA1","DataType":"string","Properties":{"Ordinal":18}},'
-        '{"Column":"SHA256","DataType":"string","Properties":{"Ordinal":19}},'
-        '{"Column":"SHA512","DataType":"string","Properties":{"Ordinal":20}},'
-        '{"Column":"First64","DataType":"string","Properties":{"Ordinal":21}}'
+        '{"Column":"SHA256","DataType":"string","Properties":{"Ordinal":17}},'
+        '{"Column":"First16Bytes","DataType":"string","Properties":{"Ordinal":18}}'
     ']'
 
     */
     partial record SymbolPackageFileRecord
     {
-        public int FieldCount => 22;
+        public int FieldCount => 19;
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,SequenceNumber,Path,FileName,FileExtension,TopLevelFolder,CompressedLength,EntryUncompressedLength,ActualUncompressedLength,MD5,SHA1,SHA256,SHA512,First64");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,SequenceNumber,Path,FileName,FileExtension,TopLevelFolder,CompressedLength,EntryUncompressedLength,ActualUncompressedLength,SHA256,First16Bytes");
         }
 
         public void Write(List<string> fields)
@@ -106,11 +100,8 @@ namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
             fields.Add(CompressedLength.ToString());
             fields.Add(EntryUncompressedLength.ToString());
             fields.Add(ActualUncompressedLength.ToString());
-            fields.Add(MD5);
-            fields.Add(SHA1);
             fields.Add(SHA256);
-            fields.Add(SHA512);
-            fields.Add(First64);
+            fields.Add(First16Bytes);
         }
 
         public void Write(TextWriter writer)
@@ -149,15 +140,9 @@ namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
             writer.Write(',');
             writer.Write(ActualUncompressedLength);
             writer.Write(',');
-            CsvUtility.WriteWithQuotes(writer, MD5);
-            writer.Write(',');
-            CsvUtility.WriteWithQuotes(writer, SHA1);
-            writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, SHA256);
             writer.Write(',');
-            CsvUtility.WriteWithQuotes(writer, SHA512);
-            writer.Write(',');
-            CsvUtility.WriteWithQuotes(writer, First64);
+            CsvUtility.WriteWithQuotes(writer, First16Bytes);
             writer.WriteLine();
         }
 
@@ -197,15 +182,9 @@ namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
             await writer.WriteAsync(',');
             await writer.WriteAsync(ActualUncompressedLength.ToString());
             await writer.WriteAsync(',');
-            await CsvUtility.WriteWithQuotesAsync(writer, MD5);
-            await writer.WriteAsync(',');
-            await CsvUtility.WriteWithQuotesAsync(writer, SHA1);
-            await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, SHA256);
             await writer.WriteAsync(',');
-            await CsvUtility.WriteWithQuotesAsync(writer, SHA512);
-            await writer.WriteAsync(',');
-            await CsvUtility.WriteWithQuotesAsync(writer, First64);
+            await CsvUtility.WriteWithQuotesAsync(writer, First16Bytes);
             await writer.WriteLineAsync();
         }
 
@@ -230,11 +209,8 @@ namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
                 CompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse),
                 EntryUncompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse),
                 ActualUncompressedLength = CsvUtility.ParseNullable(getNextField(), long.Parse),
-                MD5 = getNextField(),
-                SHA1 = getNextField(),
                 SHA256 = getNextField(),
-                SHA512 = getNextField(),
-                First64 = getNextField(),
+                First16Bytes = getNextField(),
             };
         }
 
@@ -280,29 +256,14 @@ namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
                 TopLevelFolder = string.Empty;
             }
 
-            if (MD5 is null)
-            {
-                MD5 = string.Empty;
-            }
-
-            if (SHA1 is null)
-            {
-                SHA1 = string.Empty;
-            }
-
             if (SHA256 is null)
             {
                 SHA256 = string.Empty;
             }
 
-            if (SHA512 is null)
+            if (First16Bytes is null)
             {
-                SHA512 = string.Empty;
-            }
-
-            if (First64 is null)
-            {
-                First64 = string.Empty;
+                First16Bytes = string.Empty;
             }
         }
     }

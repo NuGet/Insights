@@ -32,7 +32,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
         ExpressionExceptions: dynamic,
         ExpressionNonStandardLicenses: dynamic,
         ExpressionHasDeprecatedIdentifier: bool,
-        FileSize: long,
+        FileLength: long,
         FileSHA256: string,
         FileContent: string
     ) with (docstring = "See https://github.com/NuGet/Insights/blob/main/docs/tables/PackageLicenses.md", folder = "");
@@ -70,7 +70,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
         '{"Column":"ExpressionExceptions","DataType":"dynamic","Properties":{"Ordinal":15}},'
         '{"Column":"ExpressionNonStandardLicenses","DataType":"dynamic","Properties":{"Ordinal":16}},'
         '{"Column":"ExpressionHasDeprecatedIdentifier","DataType":"bool","Properties":{"Ordinal":17}},'
-        '{"Column":"FileSize","DataType":"long","Properties":{"Ordinal":18}},'
+        '{"Column":"FileLength","DataType":"long","Properties":{"Ordinal":18}},'
         '{"Column":"FileSHA256","DataType":"string","Properties":{"Ordinal":19}},'
         '{"Column":"FileContent","DataType":"string","Properties":{"Ordinal":20}}'
     ']'
@@ -82,7 +82,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
 
         public void WriteHeader(TextWriter writer)
         {
-            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Url,Expression,File,GeneratedUrl,ExpressionParsed,ExpressionLicenses,ExpressionExceptions,ExpressionNonStandardLicenses,ExpressionHasDeprecatedIdentifier,FileSize,FileSHA256,FileContent");
+            writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Url,Expression,File,GeneratedUrl,ExpressionParsed,ExpressionLicenses,ExpressionExceptions,ExpressionNonStandardLicenses,ExpressionHasDeprecatedIdentifier,FileLength,FileSHA256,FileContent");
         }
 
         public void Write(List<string> fields)
@@ -105,7 +105,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             fields.Add(ExpressionExceptions);
             fields.Add(ExpressionNonStandardLicenses);
             fields.Add(CsvUtility.FormatBool(ExpressionHasDeprecatedIdentifier));
-            fields.Add(FileSize.ToString());
+            fields.Add(FileLength.ToString());
             fields.Add(FileSHA256);
             fields.Add(FileContent);
         }
@@ -148,7 +148,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             writer.Write(',');
             writer.Write(CsvUtility.FormatBool(ExpressionHasDeprecatedIdentifier));
             writer.Write(',');
-            writer.Write(FileSize);
+            writer.Write(FileLength);
             writer.Write(',');
             CsvUtility.WriteWithQuotes(writer, FileSHA256);
             writer.Write(',');
@@ -194,7 +194,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             await writer.WriteAsync(',');
             await writer.WriteAsync(CsvUtility.FormatBool(ExpressionHasDeprecatedIdentifier));
             await writer.WriteAsync(',');
-            await writer.WriteAsync(FileSize.ToString());
+            await writer.WriteAsync(FileLength.ToString());
             await writer.WriteAsync(',');
             await CsvUtility.WriteWithQuotesAsync(writer, FileSHA256);
             await writer.WriteAsync(',');
@@ -224,7 +224,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
                 ExpressionExceptions = getNextField(),
                 ExpressionNonStandardLicenses = getNextField(),
                 ExpressionHasDeprecatedIdentifier = CsvUtility.ParseNullable(getNextField(), bool.Parse),
-                FileSize = CsvUtility.ParseNullable(getNextField(), long.Parse),
+                FileLength = CsvUtility.ParseNullable(getNextField(), long.Parse),
                 FileSHA256 = getNextField(),
                 FileContent = getNextField(),
             };

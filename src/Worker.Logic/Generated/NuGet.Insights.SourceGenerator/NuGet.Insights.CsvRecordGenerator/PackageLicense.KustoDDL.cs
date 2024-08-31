@@ -32,7 +32,7 @@ namespace NuGet.Insights
     ExpressionExceptions: dynamic,
     ExpressionNonStandardLicenses: dynamic,
     ExpressionHasDeprecatedIdentifier: bool,
-    FileSize: long,
+    FileLength: long,
     FileSHA256: string,
     FileContent: string
 ) with (docstring = __DOCSTRING__, folder = __FOLDER__)",
@@ -57,7 +57,7 @@ namespace NuGet.Insights
     '{""Column"":""ExpressionExceptions"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":15}},'
     '{""Column"":""ExpressionNonStandardLicenses"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":16}},'
     '{""Column"":""ExpressionHasDeprecatedIdentifier"",""DataType"":""bool"",""Properties"":{""Ordinal"":17}},'
-    '{""Column"":""FileSize"",""DataType"":""long"",""Properties"":{""Ordinal"":18}},'
+    '{""Column"":""FileLength"",""DataType"":""long"",""Properties"":{""Ordinal"":18}},'
     '{""Column"":""FileSHA256"",""DataType"":""string"",""Properties"":{""Ordinal"":19}},'
     '{""Column"":""FileContent"",""DataType"":""string"",""Properties"":{""Ordinal"":20}}'
 ']'",
