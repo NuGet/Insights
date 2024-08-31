@@ -51,7 +51,11 @@ namespace NuGet.Insights.Worker
                         break;
                     }
 #endif
-                    if (catalogLeafScan.DriverType == CatalogScanDriverType.PackageAssemblyToCsv)
+
+                    if (catalogLeafScan.DriverType == CatalogScanDriverType.PackageAssemblyToCsv
+                        || catalogLeafScan.DriverType == CatalogScanDriverType.PackageFileToCsv
+                        || catalogLeafScan.DriverType == CatalogScanDriverType.SymbolPackageFileToCsv
+                        || catalogLeafScan.DriverType == CatalogScanDriverType.PackageContentToCsv)
                     {
                         batchSize = 10;
                         break;
