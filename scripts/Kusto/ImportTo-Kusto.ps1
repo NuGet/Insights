@@ -8,9 +8,6 @@ param (
     
     [Parameter(Mandatory = $true)]
     [string]$StorageAccountName,
-    
-    [Parameter(Mandatory = $false)]
-    [string]$StorageSas,
 
     [Parameter(Mandatory = $false)]
     [string]$ModelsPath,
@@ -31,6 +28,7 @@ param (
         "PackageDeprecations",
         "PackageDownloads",
         "PackageDownloadHistories",
+        "PackageFiles",
         "PackageIcons",
         "PackageLicenses",
         "PackageManifests",
@@ -55,6 +53,9 @@ param (
 
     [Parameter(Mandatory = $false)]
     [string]$WorkingDirectory,
+    
+    [Parameter(Mandatory = $false)]
+    [string]$StorageSas,
 
     [Parameter(Mandatory = $false)]
     [switch]$Parallel
@@ -75,6 +76,7 @@ $tableNameToContainerName = @{
     "PackageDeprecations"         = "packagedeprecations";
     "PackageDownloads"            = "packagedownloads";
     "PackageDownloadHistories"    = "packagedownloadhistories";
+    "PackageFiles"                = "packagefiles";
     "PackageIcons"                = "packageicons";
     "PackageLicenses"             = "packagelicenses";
     "PackageManifests"            = "packagemanifests";
@@ -133,7 +135,7 @@ if ($Parallel) {
         Start-Job `
             -Name $_ `
             -FilePath $PSCommandPath `
-            -ArgumentList $KustoClusterName, $KustoDatabaseName, $StorageAccountName, $StorageSas, $ModelsPath, $_, $TableNamePrefix, $TableNameSuffix, $TableFolder, $WorkingDirectory
+            -ArgumentList $KustoClusterName, $KustoDatabaseName, $StorageAccountName, $ModelsPath, $_, $TableNamePrefix, $TableNameSuffix, $TableFolder, $WorkingDirectory
     }
 
     Write-Host ""
@@ -152,29 +154,12 @@ if ($Parallel) {
     exit
 }
 
-if (!$StorageSas) {
-    Write-Host "No storage SAS was provided. Fetching one using the az CLI."
-    $StorageSas = az storage account generate-sas `
-        --account-name $StorageAccountName `
-        --services b `
-        --resource-types co `
-        --permissions lr `
-        --expiry ((Get-Date).ToUniversalTime().AddDays(1).ToString("yyyy-MM-dd'T'HH:mm'Z'")) `
-        --output tsv `
-        --only-show-errors
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "Could not get a storage SAS using az CLI. Check the error output."
-    }
-}
-
-$StorageSas = "?" + $StorageSas.TrimStart("?")
-
 Write-Host "Enumerating available containers using the az CLI."
 $containers = az storage container list `
     --account-name $StorageAccountName `
     --query "[].name" `
     --output tsv `
+    --auth-mode login `
     --only-show-errors
 if ($LASTEXITCODE) {
     throw "Enumerating containers in the storage account failed."
@@ -200,6 +185,25 @@ foreach ($model in $models) {
 
     $containerName = $tableNameToContainerName[$foundTableName]
     $selectedTableName = "$TableNamePrefix$foundTableName$TableNameSuffix"
+
+    if (!$StorageSas) {
+        Write-Host "No storage SAS was provided. Fetching one using the az CLI."
+        $StorageSas = az storage container generate-sas `
+            --account-name $StorageAccountName `
+            --name $containerName `
+            --permissions lr `
+            --expiry ((Get-Date).ToUniversalTime().AddDays(1).ToString("yyyy-MM-dd'T'HH:mm'Z'")) `
+            --output tsv `
+            --auth-mode login `
+            --as-user `
+            --only-show-errors
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Could not get a storage SAS using az CLI. Check the error output."
+        }
+    }
+
+    $StorageSas = "?" + $StorageSas.TrimStart("?")
 
     # Check if the container exists
     if (!($containerName -in $containers)) {
