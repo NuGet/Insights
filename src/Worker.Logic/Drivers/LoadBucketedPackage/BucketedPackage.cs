@@ -80,7 +80,7 @@ namespace NuGet.Insights.Worker.LoadBucketedPackage
 
         public static string GetRowKey(ICatalogLeafItem item)
         {
-            return item.PackageId.ToLowerInvariant() + "$" + item.ParsePackageVersion().ToNormalizedString().ToLowerInvariant();
+            return $"{item.PackageId.ToLowerInvariant()}${item.ParsePackageVersion().ToNormalizedString().ToLowerInvariant()}";
         }
     }
 }

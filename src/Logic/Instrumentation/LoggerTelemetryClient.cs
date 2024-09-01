@@ -25,35 +25,35 @@ namespace NuGet.Insights
         {
             return Metrics.GetOrAdd(
                 new MetricKey(metricId),
-                k => new LoggerMetric(metricId, Array.Empty<string>(), GetLogger(k)));
+                k => new LoggerMetric(metricId, [], GetLogger(k)));
         }
 
         public IMetric GetMetric(string metricId, string dimension1Name)
         {
             return Metrics.GetOrAdd(
                 new MetricKey(metricId, dimension1Name),
-                k => new LoggerMetric(metricId, new[] { dimension1Name }, GetLogger(k)));
+                k => new LoggerMetric(metricId, [dimension1Name], GetLogger(k)));
         }
 
         public IMetric GetMetric(string metricId, string dimension1Name, string dimension2Name)
         {
             return Metrics.GetOrAdd(
                 new MetricKey(metricId, dimension1Name, dimension2Name),
-                k => new LoggerMetric(metricId, new[] { dimension1Name, dimension2Name }, GetLogger(k)));
+                k => new LoggerMetric(metricId, [dimension1Name, dimension2Name], GetLogger(k)));
         }
 
         public IMetric GetMetric(string metricId, string dimension1Name, string dimension2Name, string dimension3Name)
         {
             return Metrics.GetOrAdd(
                 new MetricKey(metricId, dimension1Name, dimension2Name, dimension3Name),
-                k => new LoggerMetric(metricId, new[] { dimension1Name, dimension2Name, dimension3Name }, GetLogger(k)));
+                k => new LoggerMetric(metricId, [dimension1Name, dimension2Name, dimension3Name], GetLogger(k)));
         }
 
         public IMetric GetMetric(string metricId, string dimension1Name, string dimension2Name, string dimension3Name, string dimension4Name)
         {
             return Metrics.GetOrAdd(
                 new MetricKey(metricId, dimension1Name, dimension2Name, dimension3Name, dimension4Name),
-                k => new LoggerMetric(metricId, new[] { dimension1Name, dimension2Name, dimension3Name, dimension4Name }, GetLogger(k)));
+                k => new LoggerMetric(metricId, [dimension1Name, dimension2Name, dimension3Name, dimension4Name], GetLogger(k)));
         }
 
         public ConcurrentQueue<string> Operations { get; } = new();
@@ -61,7 +61,7 @@ namespace NuGet.Insights
         public IDisposable StartOperation(string operationName)
         {
             Operations.Enqueue(operationName);
-            return _logger.BeginScope("Telemetry operation: {Scope_OperationName}", operationName);
+            return GetLogger(new MetricKey(operationName)).BeginScope("Telemetry operation: {Scope_OperationName}", operationName);
         }
 
         public ConcurrentQueue<(string MetricId, double MetricValue, IDictionary<string, string> MetricProperties)> MetricValues { get; } = new();
@@ -70,13 +70,14 @@ namespace NuGet.Insights
         {
             MetricValues.Enqueue((name, value, properties));
 
+            var logger = GetLogger(new MetricKey(name));
             if (properties.Count == 0)
             {
-                _logger.LogInformation("Metric emitted: {MetricName} = {MetricValue}", name, value);
+                logger.LogInformation("Metric emitted: {MetricName} = {MetricValue}", name, value);
             }
             else
             {
-                _logger.LogInformation("Metric emitted: {MetricName} = {MetricValue} with properties {Properties}", name, value, JsonSerializer.Serialize(properties));
+                logger.LogInformation("Metric emitted: {MetricName} = {MetricValue} with properties {Properties}", name, value, JsonSerializer.Serialize(properties));
             }
         }
 

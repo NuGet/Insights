@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using NuGet.Insights.Worker.PackageCertificateToCsv;
+
 namespace NuGet.Insights.Worker
 {
     public class CatalogScanDriverMetadataTest : BaseWorkerLogicIntegrationTest
@@ -21,6 +23,58 @@ namespace NuGet.Insights.Worker
             var afterTypes = CatalogScanDriverMetadata.StartableDriverTypes.SkipWhile(x => x != type).Skip(1).ToList();
             var dependents = CatalogScanDriverMetadata.GetDependents(type);
             Assert.All(dependents, x => Assert.Contains(x, afterTypes));
+        }
+
+        [Theory]
+        [MemberData(nameof(LatestLeavesDriverTypesData))]
+        public void GetBucketKeyFactory_ReturnsBucketKeyMatchingRecords(CatalogScanDriverType type)
+        {
+            var id = "NuGet.Protocol";
+            var version = "6.11.0.0-BETA";
+            var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
+            var lowerId = id.ToLowerInvariant();
+            var fingerpint = "WZwhyq+aBTSc7liizyZSlTOr2/v+/vNEqmA5uMp/Ulk=";
+
+            var bucketKey = CatalogScanDriverMetadata.GetBucketKeyFactory(type)(lowerId, normalizedVersion);
+
+            if (Host.Services.GetRequiredService<CsvRecordContainers>().TryGetRecordTypes(type, out var recordTypes))
+            {
+                foreach (var recordType in recordTypes)
+                {
+                    if (!recordType.IsAssignableTo(typeof(IAggregatedCsvRecord)))
+                    {
+                        continue;
+                    }
+
+                    var record = (IAggregatedCsvRecord)Activator.CreateInstance(recordType);
+
+                    // Populate test data on the record so the bucket key can be realistic.
+                    recordType.GetProperty(nameof(PackageRecord.Id))?.SetValue(record, id);
+                    recordType.GetProperty(nameof(PackageRecord.LowerId))?.SetValue(record, lowerId);
+                    recordType.GetProperty(nameof(PackageRecord.Version), typeof(string))?.SetValue(record, version);
+                    recordType.GetProperty(nameof(PackageRecord.Identity))?.SetValue(record, PackageRecord.GetIdentity(lowerId, normalizedVersion));
+                    recordType.GetProperty(nameof(CertificateRecord.Fingerprint))?.SetValue(record, fingerpint);
+
+                    var recordBucketKey = record.GetBucketKey();
+                    switch (record)
+                    {
+                        // This record type is produced along with with PackageCertificateRecord.
+                        // These two records have different bucket strategies. We have to pick one of them so we
+                        // prefer the bucket key of the PackageCertificateRecord, which has more records per package.
+                        case CertificateRecord:
+                            Assert.Equal(fingerpint, recordBucketKey);
+                            Assert.NotEqual(bucketKey, recordBucketKey);
+                            break;
+
+                        // By default the driver's bucket key should match the bucket key of all of the records produced by the driver.
+                        default:
+                            Assert.NotNull(recordBucketKey);
+                            Assert.NotEmpty(recordBucketKey);
+                            Assert.Equal(bucketKey, record.GetBucketKey());
+                            break;
+                    }
+                }
+            }
         }
 
         [Theory]
@@ -96,6 +150,11 @@ namespace NuGet.Insights.Worker
             var overlap = directDependencies.Intersect(transitiveDependencies).Order().ToList();
             Assert.Empty(overlap);
         }
+
+        public static IEnumerable<object[]> LatestLeavesDriverTypesData => CatalogScanDriverMetadata
+            .StartableDriverTypes
+            .Where(x => CatalogScanDriverMetadata.GetOnlyLatestLeavesSupport(x) != false)
+            .Select(x => new object[] { x });
 
         public CatalogScanDriverMetadataTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {

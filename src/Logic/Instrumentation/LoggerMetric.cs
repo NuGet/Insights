@@ -22,7 +22,7 @@ namespace NuGet.Insights
         public void TrackValue(double metricValue)
         {
             AssertDimensionCount(0);
-            MetricValues.Enqueue((metricValue, Array.Empty<string>()));
+            MetricValues.Enqueue((metricValue, []));
             _logger.LogInformation("Metric emitted: {MetricId} = {MetricValue}", _metricId, metricValue);
         }
 
@@ -37,7 +37,9 @@ namespace NuGet.Insights
         public bool TrackValue(double metricValue, string dimension1Value)
         {
             AssertDimensionCount(1);
-            MetricValues.Enqueue((metricValue, [dimension1Value]));
+            string[] dimensions = [dimension1Value];
+            AssertNoNullOrEmptyDimensions(dimensions);
+            MetricValues.Enqueue((metricValue, dimensions));
             _logger.LogInformation(
                 "Metric emitted: {MetricId} ({Dimension1Name}, {Dimension1Value}) = {MetricValue}",
                 _metricId,
@@ -50,7 +52,9 @@ namespace NuGet.Insights
         public bool TrackValue(double metricValue, string dimension1Value, string dimension2Value)
         {
             AssertDimensionCount(2);
-            MetricValues.Enqueue((metricValue, [dimension1Value, dimension2Value]));
+            string[] dimensions = [dimension1Value, dimension2Value];
+            AssertNoNullOrEmptyDimensions(dimensions);
+            MetricValues.Enqueue((metricValue, dimensions));
             _logger.LogInformation(
                 "Metric emitted: {MetricId} ({Dimension1Name}, {Dimension1Value}) ({Dimension2Name}, {Dimension2Value}) = {MetricValue}",
                 _metricId,
@@ -65,7 +69,9 @@ namespace NuGet.Insights
         public bool TrackValue(double metricValue, string dimension1Value, string dimension2Value, string dimension3Value)
         {
             AssertDimensionCount(3);
-            MetricValues.Enqueue((metricValue, [dimension1Value, dimension2Value, dimension3Value]));
+            string[] dimensions = [dimension1Value, dimension2Value, dimension3Value];
+            AssertNoNullOrEmptyDimensions(dimensions);
+            MetricValues.Enqueue((metricValue, dimensions));
             _logger.LogInformation(
                 "Metric emitted: {MetricId} ({Dimension1Name}, {Dimension1Value}) ({Dimension2Name}, {Dimension2Value}) ({Dimension3Name}, {Dimension3Value}) = {MetricValue}",
                 _metricId,
@@ -82,7 +88,9 @@ namespace NuGet.Insights
         public bool TrackValue(double metricValue, string dimension1Value, string dimension2Value, string dimension3Value, string dimension4Value)
         {
             AssertDimensionCount(4);
-            MetricValues.Enqueue((metricValue, [dimension1Value, dimension2Value, dimension3Value, dimension4Value]));
+            string[] dimensions = [dimension1Value, dimension2Value, dimension3Value, dimension4Value];
+            AssertNoNullOrEmptyDimensions(dimensions);
+            MetricValues.Enqueue((metricValue, dimensions));
             _logger.LogInformation(
                 "Metric emitted: {MetricId} ({Dimension1Name}, {Dimension1Value}) ({Dimension2Name}, {Dimension2Value}) ({Dimension3Name}, {Dimension3Value}) ({Dimension4Name}, {Dimension4Value}) = {MetricValue}",
                 _metricId,
@@ -96,6 +104,17 @@ namespace NuGet.Insights
                 dimension4Value,
                 metricValue);
             return true;
+        }
+
+        private void AssertNoNullOrEmptyDimensions(string[] dimensions)
+        {
+            for (var i = 0; i < dimensions.Length; i++)
+            {
+                if (string.IsNullOrEmpty(dimensions[i]))
+                {
+                    throw new InvalidOperationException($"Dimension {i} is null or empty.");
+                }
+            }
         }
     }
 }

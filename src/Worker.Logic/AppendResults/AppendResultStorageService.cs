@@ -26,6 +26,9 @@ namespace NuGet.Insights.Worker
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<AppendResultStorageService> _logger;
+        private readonly IMetric _appendRecordCount;
+        private readonly IMetric _appendSize;
+        private readonly IMetric _appendBucketsInBatch;
         private readonly IMetric _tooLargeRecordCount;
         private readonly IMetric _tooLargeSizeInBytes;
         private readonly IMetric _compactDurationMs;
@@ -62,6 +65,15 @@ namespace NuGet.Insights.Worker
             _telemetryClient = telemetryClient;
             _logger = logger;
 
+            _appendRecordCount = _telemetryClient.GetMetric(
+                $"{nameof(AppendResultStorageService)}.{nameof(AppendToTableAsync)}.RecordCount",
+                "RecordType");
+            _appendSize = _telemetryClient.GetMetric(
+                $"{nameof(AppendResultStorageService)}.{nameof(AppendToTableAsync)}.SizeInBytes",
+                "RecordType");
+            _appendBucketsInBatch = _telemetryClient.GetMetric(
+                $"{nameof(AppendResultStorageService)}.{nameof(AppendToTableAsync)}.BucketsInBatch",
+                "RecordType");
             _tooLargeRecordCount = _telemetryClient.GetMetric(
                 $"{nameof(AppendResultStorageService)}.{nameof(AppendToTableAsync)}.TooLarge.RecordCount",
                 "RecordType");
@@ -156,13 +168,29 @@ namespace NuGet.Insights.Worker
             await _wideEntityService.DeleteTableAsync(srcTable);
         }
 
+        public async Task<IReadOnlyList<T>> ReadAsync<T>(string destContainer, int bucket) where T : ICsvRecord
+        {
+            var compactBlob = await GetCompactBlobClientAsync(destContainer, bucket);
+
+            try
+            {
+                (var records, _) = await DeserializeBlobAsync<T>(compactBlob);
+                return records;
+            }
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+            {
+                return Array.Empty<T>();
+            }
+        }
+
         public async Task AppendAsync<T>(string srcTable, int bucketCount, IEnumerable<T> records) where T : IAggregatedCsvRecord<T>
         {
+            var recordType = typeof(T).Name;
             var bucketGroups = records
                 .GroupBy(x => x.GetBucketKey())
                 .SelectMany(g => g.Select(x => (Bucket: StorageUtility.GetBucket(bucketCount, g.Key), Record: x)))
                 .GroupBy(g => g.Bucket, g => g.Record);
-
+            var bucketsInBatch = 0;
             foreach (var group in bucketGroups)
             {
                 var groupRecords = group.ToList();
@@ -171,14 +199,17 @@ namespace NuGet.Insights.Worker
                     record.SetEmptyStrings();
                 }
 
-                await AppendAsync(srcTable, group.Key, groupRecords);
+                await AppendAsync(recordType, srcTable, group.Key, groupRecords);
+                bucketsInBatch++;
             }
+
+            _appendBucketsInBatch.TrackValue(bucketsInBatch, recordType);
         }
 
-        private async Task AppendAsync<T>(string srcTable, int bucket, IReadOnlyList<T> records) where T : IAggregatedCsvRecord<T>
+        private async Task AppendAsync<T>(string recordType, string srcTable, int bucket, IReadOnlyList<T> records) where T : IAggregatedCsvRecord<T>
         {
             // Append the data.
-            await AppendToTableAsync(bucket, srcTable, records);
+            await AppendToTableAsync(recordType, bucket, srcTable, records);
 
             // Append a marker to show that this bucket has data.
             try
@@ -195,27 +226,12 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        public async Task<IReadOnlyList<T>> ReadAsync<T>(string destContainer, int bucket) where T : ICsvRecord
-        {
-            var compactBlob = await GetCompactBlobClientAsync(destContainer, bucket);
-
-            try
-            {
-                (var records, _) = await DeserializeBlobAsync<T>(compactBlob);
-                return records;
-            }
-            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
-            {
-                return Array.Empty<T>();
-            }
-        }
-
-        private async Task AppendToTableAsync<T>(int bucket, string srcTable, IReadOnlyList<T> records) where T : ICsvRecord
+        private async Task AppendToTableAsync<T>(string recordType, int bucket, string srcTable, IReadOnlyList<T> records) where T : ICsvRecord
         {
             var bytes = Serialize(records);
             if (bytes.Length > WideEntityService.MaxTotalDataSize)
             {
-                await SplitThenAppendToTableAsync(bucket, srcTable, records, bytes);
+                await SplitThenAppendToTableAsync(recordType, bucket, srcTable, records, bytes);
                 return;
             }
 
@@ -229,6 +245,8 @@ namespace NuGet.Insights.Worker
                     try
                     {
                         await _wideEntityService.InsertAsync(srcTable, partitionKey: bucket.ToString(CultureInfo.InvariantCulture), rowKey, content: bytes);
+                        _appendRecordCount.TrackValue(records.Count, recordType);
+                        _appendSize.TrackValue(bytes.Length, recordType);
                         break;
                     }
                     catch (RequestFailedException ex) when (attempt < 3 && ex.Status == (int)HttpStatusCode.Conflict)
@@ -249,20 +267,19 @@ namespace NuGet.Insights.Worker
                 && ((ex.Status == (int)HttpStatusCode.RequestEntityTooLarge && ex.ErrorCode == "RequestBodyTooLarge")
                     || (ex.Status == (int)HttpStatusCode.BadRequest && ex.ErrorCode == "EntityTooLarge")))
             {
-                await SplitThenAppendToTableAsync(bucket, srcTable, records, bytes);
+                await SplitThenAppendToTableAsync(recordType, bucket, srcTable, records, bytes);
             }
         }
 
-        private async Task SplitThenAppendToTableAsync<T>(int bucket, string srcTable, IReadOnlyList<T> records, byte[] bytes) where T : ICsvRecord
+        private async Task SplitThenAppendToTableAsync<T>(string recordType, int bucket, string srcTable, IReadOnlyList<T> records, byte[] bytes) where T : ICsvRecord
         {
-            var recordName = typeof(T).Name;
-            _tooLargeRecordCount.TrackValue(records.Count, recordName);
-            _tooLargeSizeInBytes.TrackValue(bytes.Length, recordName);
+            _tooLargeRecordCount.TrackValue(records.Count, recordType);
+            _tooLargeSizeInBytes.TrackValue(bytes.Length, recordType);
 
             var firstHalf = records.Take(records.Count / 2).ToList();
             var secondHalf = records.Skip(firstHalf.Count).ToList();
-            await AppendToTableAsync(bucket, srcTable, firstHalf);
-            await AppendToTableAsync(bucket, srcTable, secondHalf);
+            await AppendToTableAsync(recordType, bucket, srcTable, firstHalf);
+            await AppendToTableAsync(recordType, bucket, srcTable, secondHalf);
         }
 
         public async Task CompactAsync<T>(

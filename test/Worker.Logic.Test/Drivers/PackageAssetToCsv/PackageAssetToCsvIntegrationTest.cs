@@ -6,6 +6,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
     public class PackageAssetToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest<PackageAsset>
     {
         private const string PackageAssetToCsvDir = nameof(PackageAssetToCsv);
+        private const string PackageAssetToCsv_WithSingleBucketDir = nameof(PackageAssetToCsv_WithSingleBucket);
         private const string PackageAssetToCsv_WithDeleteDir = nameof(PackageAssetToCsv_WithDelete);
         private const string PackageAssetToCsv_WithDuplicatesDir = nameof(PackageAssetToCsv_WithDuplicates);
 
@@ -36,6 +37,66 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             await AssertOutputAsync(PackageAssetToCsvDir, Step2, 0);
             await AssertOutputAsync(PackageAssetToCsvDir, Step1, 1); // This file is unchanged.
             await AssertOutputAsync(PackageAssetToCsvDir, Step2, 2);
+        }
+
+        [Fact]
+        public async Task PackageAssetToCsv_WithSingleBucket()
+        {
+            // Arrange
+            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 3; // all of the packages are in bucket 0
+            var min0 = DateTimeOffset.Parse("2018-01-24T15:00:44.3794495Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2018-01-24T15:04:49.2801912Z", CultureInfo.InvariantCulture);
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
+            await SetCursorAsync(min0);
+
+            // Act
+            await UpdateAsync(max1);
+
+            // Assert
+            await AssertOutputAsync(PackageAssetToCsv_WithSingleBucketDir, Step1, 0);
+            await AssertCsvCountAsync(1);
+
+            // 3 batches of 5 leaf scans each
+            Assert.True(TelemetryClient.Metrics.TryGetValue(new("TableClient.EntityChangeCount", "TableName", "OperationName"), out var entityChangeCountMetric));
+            var leafScanOperations = entityChangeCountMetric.MetricValues.Where(x => x.DimensionValues[0].StartsWith(Options.Value.CatalogLeafScanTableName, StringComparison.Ordinal)).ToList();
+            Assert.Equal(3, leafScanOperations.Count);
+            Assert.All(leafScanOperations, x => Assert.Equal(5, x.MetricValue)); // 5 leaf scans
+            Assert.All(leafScanOperations, x => Assert.Equal("SubmitTransactionAsync", x.DimensionValues[1]));
+
+            // 15 individual entity operations (5 per batch)
+            Assert.True(TelemetryClient.Metrics.TryGetValue(new("TableClient.BatchActionTypeCount", "TableName", "ActionType"), out var batchActionTypeCountMetric));
+            var leafScanBatchActions = batchActionTypeCountMetric.MetricValues.Where(x => x.DimensionValues[0].StartsWith(Options.Value.CatalogLeafScanTableName, StringComparison.Ordinal)).ToList();
+            Assert.Equal(15, leafScanBatchActions.Count);
+            Assert.Equal(5, leafScanBatchActions.Where(x => x.DimensionValues[1] == "Add").Count());
+            Assert.Equal(5, leafScanBatchActions.Where(x => x.DimensionValues[1] == "UpdateReplace").Count());
+            Assert.Equal(5, leafScanBatchActions.Where(x => x.DimensionValues[1] == "Delete").Count());
+
+            // 1 append of CSV records to table
+            Assert.True(TelemetryClient.Metrics.TryGetValue(new("AppendResultStorageService.AppendToTableAsync.RecordCount", "RecordType"), out var appendToTableRecordCountMetric));
+            var appendValue = Assert.Single(appendToTableRecordCountMetric.MetricValues);
+            Assert.Equal(10, appendValue.MetricValue);
+            Assert.Equal(nameof(PackageAsset), appendValue.DimensionValues[0]);
+
+            // 1 bucket of CSV records
+            Assert.True(TelemetryClient.Metrics.TryGetValue(new("AppendResultStorageService.AppendToTableAsync.BucketsInBatch", "RecordType"), out var bucketsInBatchMetric));
+            var bucketsInBatchValue = Assert.Single(bucketsInBatchMetric.MetricValues);
+            Assert.Equal(1, bucketsInBatchValue.MetricValue);
+            Assert.Equal(nameof(PackageAsset), bucketsInBatchValue.DimensionValues[0]);
+
+            // 1 catalog leaf scan batch
+            Assert.True(TelemetryClient.Metrics.TryGetValue(new(MetricNames.MessageProcessedCount, "Status", "SchemaName", "IsBatch"), out var messageProcessedMetric));
+            var catalogLeafScanMessageValue = Assert.Single(messageProcessedMetric.MetricValues.Where(x => x.DimensionValues[1] == "cls"));
+            Assert.Equal(5, catalogLeafScanMessageValue.MetricValue);
+            Assert.Equal("true", catalogLeafScanMessageValue.DimensionValues[2]);
+
+            // 1 compacted blob
+            Assert.True(TelemetryClient.Metrics.TryGetValue(new("AppendResultStorageService.CompactAsync.RecordCount", "DestContainer", "RecordType"), out var compactMetric));
+            var compactValue = Assert.Single(compactMetric.MetricValues);
+            Assert.Equal(10, compactValue.MetricValue);
+            Assert.Equal(Options.Value.PackageAssetContainerName, compactValue.DimensionValues[0]);
+            Assert.Equal(nameof(PackageAsset), compactValue.DimensionValues[1]);
         }
 
         [Fact]

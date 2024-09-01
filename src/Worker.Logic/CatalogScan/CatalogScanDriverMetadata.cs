@@ -5,6 +5,8 @@ using System.Collections.Frozen;
 
 namespace NuGet.Insights.Worker
 {
+    public delegate string GetBucketKey(string lowerId, string normalizedVersion);
+
     public static class CatalogScanDriverMetadata
     {
         /// <summary>
@@ -79,7 +81,7 @@ namespace NuGet.Insights.Worker
             
             // processes individual IDs not versions, needs a "latest leaves" step to dedupe versions
             OnlyCatalogRangeDriver(CatalogScanDriverType.PackageVersionToCsv)
-                with { OnlyLatestLeavesSupport = true, Dependencies = [CatalogScanDriverType.LoadPackageVersion] },
+                with { OnlyLatestLeavesSupport = true, Dependencies = [CatalogScanDriverType.LoadPackageVersion], GetBucketKey = GetIdBucketKey },
 
             Default(CatalogScanDriverType.SymbolPackageArchiveToCsv)
                 with { Dependencies = [CatalogScanDriverType.SymbolPackageFileToCsv] },
@@ -151,8 +153,8 @@ namespace NuGet.Insights.Worker
 
             // This nullable boolean (tri-state) has the following meanings:
             // - null: the driver type supports run with or without the latest leaves scan
-            // - false: the driver type cannot run with "only latest leaves = false"
             // - true: the driver type can only run with "only latest leaves = true"
+            // - false: the driver type can only run with "only latest leaves = false"
             bool? OnlyLatestLeavesSupport,
 
             // This boolean has the following meanings:
@@ -174,7 +176,11 @@ namespace NuGet.Insights.Worker
 
             // The other drivers that this driver depends on. The driver's cursor will not go beyond the dependency
             // cursors.
-            IReadOnlyList<CatalogScanDriverType> Dependencies);
+            IReadOnlyList<CatalogScanDriverType> Dependencies,
+
+            // The function to get the bucket key for the latest leaf scan. Only used for drivers that have
+            // OnlyLatestLeavesSupport set to null or true.
+            GetBucketKey GetBucketKey);
 
         /// <summary>
         /// A driver that only supports catalog ranges and no bucket ranges. Typically this driver processes catalog
@@ -188,7 +194,8 @@ namespace NuGet.Insights.Worker
                 BucketRangeSupport: false,
                 UpdatedOutsideOfCatalog: UpdatesOutsideOfCatalog(type),
                 DefaultMin: CatalogClient.NuGetOrgMinDeleted,
-                Dependencies: []);
+                Dependencies: [],
+                GetBucketKey: null);
         }
 
         /// <summary>
@@ -204,7 +211,18 @@ namespace NuGet.Insights.Worker
                 BucketRangeSupport: true,
                 UpdatedOutsideOfCatalog: UpdatesOutsideOfCatalog(type),
                 DefaultMin: CatalogClient.NuGetOrgMinDeleted,
-                Dependencies: []);
+                Dependencies: [],
+                GetBucketKey: GetIdentityBucketKey);
+        }
+
+        private static string GetIdentityBucketKey(string lowerId, string normalizedVersion)
+        {
+            return PackageRecord.GetIdentity(lowerId, normalizedVersion);
+        }
+
+        private static string GetIdBucketKey(string lowerId, string normalizedVersion)
+        {
+            return lowerId;
         }
 
         private static readonly FrozenSet<CatalogScanDriverType> ValidDriverTypes = Enum
@@ -323,7 +341,7 @@ namespace NuGet.Insights.Worker
             .Order()
             .ToList();
 
-        private static T GetValue<T>(IReadOnlyDictionary<CatalogScanDriverType, T> lookup, CatalogScanDriverType driverType)
+        private static T GetValue<T>(FrozenDictionary<CatalogScanDriverType, T> lookup, CatalogScanDriverType driverType)
         {
             if (!lookup.TryGetValue(driverType, out var data))
             {
@@ -394,6 +412,17 @@ namespace NuGet.Insights.Worker
             }
 
             return batches;
+        }
+
+        public static GetBucketKey GetBucketKeyFactory(CatalogScanDriverType driverType)
+        {
+            var value = GetValue(TypeToMetadata, driverType);
+            if (value.OnlyLatestLeavesSupport == false)
+            {
+                throw new InvalidOperationException("Cannot get bucket key for a driver that does not support latest leaves.");
+            }
+
+            return value.GetBucketKey;
         }
 
         public static bool? GetOnlyLatestLeavesSupport(CatalogScanDriverType driverType)

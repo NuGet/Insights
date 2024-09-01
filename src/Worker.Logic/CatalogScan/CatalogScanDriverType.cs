@@ -6,7 +6,7 @@ namespace NuGet.Insights.Worker
     public enum CatalogScanDriverType
     {
         /// <summary>
-        /// Implemented by <see cref="FindLatestCatalogLeafScan.LatestCatalogLeafScanStorage"/> and <see cref="FindLatestLeafDriver{T}"/>.
+        /// Implemented by <see cref="FindLatestCatalogLeafScan.LatestCatalogLeafScanStorageFactory"/> and <see cref="FindLatestLeafDriver{T}"/>.
         /// This is a helper catalog scan used by <see cref="CatalogIndexScanMessageProcessor"/> when the driver returns
         /// <see cref="CatalogIndexScanResult.ExpandLatestLeaves"/>. This allows another driver to only process the latest
         /// catalog leaf per version instead of duplicating effort which is inevitable in the NuGet.org catalog.
@@ -14,7 +14,7 @@ namespace NuGet.Insights.Worker
         Internal_FindLatestCatalogLeafScan,
 
         /// <summary>
-        /// Implemented by <see cref="FindLatestCatalogLeafScanPerId.LatestCatalogLeafScanPerIdStorage"/> and <see cref="FindLatestLeafDriver{T}"/>.
+        /// Implemented by <see cref="FindLatestCatalogLeafScanPerId.LatestCatalogLeafScanPerIdStorageFactory"/> and <see cref="FindLatestLeafDriver{T}"/>.
         /// This is a helper catalog scan used by <see cref="CatalogIndexScanMessageProcessor"/> when the driver returns
         /// <see cref="CatalogIndexScanResult.ExpandLatestLeavesPerId"/>. This allows another driver to only process the latest
         /// catalog leaf per ID instead of duplicating effort which is inevitable in the NuGet.org catalog.
@@ -22,7 +22,7 @@ namespace NuGet.Insights.Worker
         Internal_FindLatestCatalogLeafScanPerId,
 
         /// <summary>
-        /// Implemented by <see cref="LoadBucketedPackage.BucketedPackageStorage"/> and <see cref="FindLatestLeafDriver{T}"/>.
+        /// Implemented by <see cref="LoadBucketedPackage.BucketedPackageStorageFactory"/> and <see cref="FindLatestLeafDriver{T}"/>.
         /// This driver records the latest catalog leaf URL for each package version to Azure Table Storage partitions them
         /// into 1000 buckets.
         /// </summary>
@@ -60,7 +60,7 @@ namespace NuGet.Insights.Worker
         LoadPackageVersion,
 
         /// <summary>
-        /// Implemented by <see cref="LoadLatestPackageLeaf.LatestPackageLeafStorage"/> and <see cref="FindLatestLeafDriver{T}"/>.
+        /// Implemented by <see cref="LoadLatestPackageLeaf.LatestPackageLeafStorageFactory"/> and <see cref="FindLatestLeafDriver{T}"/>.
         /// This driver records the latest catalog leaf URL for each package version to Azure Table Storage.
         /// </summary>
         LoadLatestPackageLeaf,
