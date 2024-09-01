@@ -9,8 +9,16 @@ namespace NuGet.Insights.Worker
 {
     public class LatestLeafStorageService<T> where T : class, ILatestPackageLeaf, new()
     {
+        public const string MetricIdPrefix = $"{nameof(LatestLeafStorageService<T>)}.";
+
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<LatestLeafStorageService<T>> _logger;
+        private readonly string _leafType;
+        private readonly IMetric _updateMetric;
+        private readonly IMetric _ignoreMetric;
+        private readonly IMetric _addMetric;
+        private readonly IMetric _wasteMetric;
+        private readonly IMetric _wasteRatioMetric;
 
         public LatestLeafStorageService(
             ITelemetryClient telemetryClient,
@@ -18,6 +26,12 @@ namespace NuGet.Insights.Worker
         {
             _telemetryClient = telemetryClient;
             _logger = logger;
+            _leafType = typeof(T).Name;
+            _updateMetric = telemetryClient.GetMetric($"{MetricIdPrefix}{nameof(GetExistingsRowsAsync)}.UpdateCount", "LeafType");
+            _ignoreMetric = telemetryClient.GetMetric($"{MetricIdPrefix}{nameof(GetExistingsRowsAsync)}.IgnoreCount", "LeafType");
+            _addMetric = telemetryClient.GetMetric($"{MetricIdPrefix}{nameof(GetExistingsRowsAsync)}.AddCount", "LeafType");
+            _wasteMetric = telemetryClient.GetMetric($"{MetricIdPrefix}{nameof(GetExistingsRowsAsync)}.WasteCount", "LeafType");
+            _wasteRatioMetric = telemetryClient.GetMetric($"{MetricIdPrefix}{nameof(GetExistingsRowsAsync)}.WasteRatio", "LeafType");
         }
 
         public async Task AddAsync(
@@ -104,7 +118,7 @@ namespace NuGet.Insights.Worker
             IEnumerable<ItemWithKey> itemsWithKeys,
             ILatestPackageLeafStorage<T> storage)
         {
-            using var metrics = _telemetryClient.StartQueryLoopMetrics();
+            using var metrics = _telemetryClient.StartQueryLoopMetrics("LeafType", _leafType);
 
             // Sort items by lexicographical order, since this is what table storage does.
             var itemList = itemsWithKeys
@@ -126,8 +140,12 @@ namespace NuGet.Insights.Worker
                 .QueryAsync(
                     filter,
                     maxPerPage: MaxTakeCount,
-                    select: new List<string> { RowKey, storage.CommitTimestampColumnName })
+                    select: [RowKey, storage.CommitTimestampColumnName])
                 .AsPages();
+
+            var updateCount = 0;
+            var ignoreCount = 0;
+            var wasteCount = 0;
             await using var enumerator = query.GetAsyncEnumerator();
             while (await enumerator.MoveNextAsync(metrics))
             {
@@ -139,15 +157,29 @@ namespace NuGet.Insights.Worker
                         {
                             // The version in Table Storage is newer, ignore the version we have.
                             rowKeyToItem.Remove(result.RowKey);
+                            ignoreCount++;
                         }
                         else
                         {
                             // The version in Table Storage is older, save the etag to update it.
                             rowKeyToEtag.Add(result.RowKey, result.ETag);
+                            updateCount++;
                         }
+                    }
+                    else
+                    {
+                        wasteCount++;
                     }
                 }
             }
+
+            _updateMetric.TrackValue(updateCount, _leafType);
+            _ignoreMetric.TrackValue(ignoreCount, _leafType);
+            _wasteMetric.TrackValue(wasteCount, _leafType);
+            _addMetric.TrackValue(rowKeyToItem.Count - rowKeyToEtag.Count, _leafType);
+
+            var readRows = ignoreCount + updateCount + wasteCount;
+            _wasteRatioMetric.TrackValue(readRows > 0 ? (1.0 * wasteCount) / readRows : 0, _leafType);
 
             return (rowKeyToItem, rowKeyToEtag);
         }

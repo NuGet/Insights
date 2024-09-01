@@ -16,6 +16,11 @@ namespace NuGet.Insights
 
         private ILogger GetLogger(MetricKey k)
         {
+            if (k.MetricId.Contains("..", StringComparison.Ordinal))
+            {
+                throw new ArgumentException("Metric IDs cannot contain two consecutive periods.", nameof(k));
+            }
+
             return _shouldIgnore(k) ? NullLogger.Instance : _logger;
         }
 
