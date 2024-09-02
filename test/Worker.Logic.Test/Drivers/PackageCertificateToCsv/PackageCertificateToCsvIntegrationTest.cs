@@ -50,7 +50,11 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         public async Task PackageCertificateToCsv_WithMultipleBuckets()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 3;
+            ConfigureWorkerSettings = x =>
+            {
+                x.AppendResultStorageBucketCount = 3;
+                x.RecordCertificateStatus = false;
+            };
             MakeDeletedPackageAvailable();
             var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z", CultureInfo.InvariantCulture);
