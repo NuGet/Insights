@@ -80,6 +80,11 @@ stages:
       displayName: "Build and publish"
 
       steps:
+      - checkout: self
+        displayName: Checkout
+        submodules: true
+        fetchDepth: 0
+
       - task: UseDotNet@2
         displayName: "Install .NET SDK from global.json"
         inputs:
@@ -166,6 +171,11 @@ stages:
         displayName: "Test with ${{ storageType }} storage"
 
         steps:
+        - checkout: self
+          displayName: Checkout
+          submodules: true
+          fetchDepth: 0
+
         - task: UseDotNet@2
           displayName: "Install .NET SDK from global.json"
           inputs:

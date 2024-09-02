@@ -32,6 +32,10 @@ else {
     $documents = Get-ChildItem (Join-Path $RootDirectory "*.md") -Recurse
 }
 
+$documents = $documents | `
+    Where-Object { !$_.FullName.StartsWith((Join-Path $RootDirectory "submodules")) } | `
+    Where-Object { !$_.FullName.StartsWith((Join-Path $RootDirectory "artifacts")) }
+
 foreach ($md in $documents) {
     $failed = $true
     for ($i = 0; $i -lt 5 -and $failed; $i++) {

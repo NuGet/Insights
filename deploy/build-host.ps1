@@ -49,32 +49,13 @@ $Env:PublishWithAspNetCoreTargetManifest = "false"
 
 # Clear repo-level NuGet and MSBuild settings so that the host publish step is isolated.
 Write-Host "Resetting repository level settings"
-@"
-<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-  <packageSources>
-    <clear />
-  </packageSources>
-  <packageSourceMapping>
-    <clear />
-  </packageSourceMapping>
-  <disabledPackageSources>
-    <clear />
-  </disabledPackageSources>
-</configuration>
-"@ | Out-File (Join-Path $artifactsDir "NuGet.config") -Encoding UTF8
-
-"<Project><PropertyGroup><WarningsNotAsErrors>NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors></PropertyGroup></Project>" | Out-File (Join-Path $artifactsDir ".\Directory.Build.props") -Encoding UTF8
-"<Project></Project>" | Out-File (Join-Path $artifactsDir ".\Directory.Build.targets") -Encoding UTF8
-"<Project><PropertyGroup><ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally></PropertyGroup></Project>" | Out-File (Join-Path $artifactsDir ".\Directory.Packages.props") -Encoding UTF8
-"root = true" | Out-File (Join-Path $artifactsDir ".editorconfig") -Encoding UTF8
+$submoduleDir = Resolve-Path (Join-Path $PSScriptRoot "../submodules")
+$resetFiles = ".editorconfig", "Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props", "NuGet.config"
+$resetFiles | ForEach-Object { Copy-Item (Join-Path $submoduleDir $_) (Join-Path $artifactsDir $_) }
 
 Write-Host "Publishing host"
 dotnet restore $hostProjectPath --verbosity Minimal
-
-# NoWarn on SA1518 due to inconsistent line endings.
-# See: https://github.com/Azure/azure-functions-host/pull/9564
-dotnet publish $hostProjectPath -c Release --output $hostBinDir --framework "net8.0" --runtime $RuntimeIdentifier --self-contained false /p:NoWarn=SA1518
+dotnet publish $hostProjectPath -c Release --output $hostBinDir --framework "net8.0" --runtime $RuntimeIdentifier --self-contained false
 
 if ($LASTEXITCODE -ne 0) {
   throw "Failed to publish the Azure Functions Host."
