@@ -129,8 +129,13 @@ namespace NuGet.Insights
                 }
             }
 
-            Clear();
+            Reset();
+        }
+
+        public void Reset()
+        {
             _partitionKey = null;
+            Clear();
         }
 
         private void SetPartitionKey(string partitionKey)

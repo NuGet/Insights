@@ -50,7 +50,7 @@ namespace NuGet.Insights.Worker
 
         private async Task AddAsync(List<CatalogLeafItem> items, ILatestPackageLeafStorage<T> storage)
         {
-            await _storageService.AddAsync(items, storage, allowRetries: true);
+            await _storageService.AddAsync(items, storage);
             _logger.LogInformation("Updated latest leaf entities for {Count} items.", items.Count);
         }
 

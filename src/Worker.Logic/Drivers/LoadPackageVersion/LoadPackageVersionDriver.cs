@@ -36,24 +36,9 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
 
         public async Task<BatchMessageProcessorResult<CatalogLeafScan>> ProcessLeavesAsync(IReadOnlyList<CatalogLeafScan> leafScans)
         {
-            var failed = new List<CatalogLeafScan>();
             var storage = await _storageService.GetLatestPackageLeafStorageAsync();
-            foreach (var group in leafScans.GroupBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase))
-            {
-                var leafItems = group.ToList();
-
-                try
-                {
-                    await _latestLeafStorageService.AddAsync(leafItems, storage, allowRetries: true);
-                }
-                catch (Exception ex) when (leafScans.Count != 1)
-                {
-                    _logger.LogError(ex, "Updating package package version info failed for {Id} with {Count} versions.", group.Key, leafItems.Count);
-                    failed.AddRange(group);
-                }
-            }
-
-            return new BatchMessageProcessorResult<CatalogLeafScan>(failed);
+            await _latestLeafStorageService.AddAsync(leafScans, storage);
+            return BatchMessageProcessorResult<CatalogLeafScan>.Empty;
         }
 
         public Task StartAggregateAsync(CatalogIndexScan indexScan)

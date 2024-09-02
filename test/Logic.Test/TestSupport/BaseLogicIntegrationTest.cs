@@ -352,7 +352,7 @@ namespace NuGet.Insights
                 }
         }
 
-        public Task InitializeAsync()
+        public virtual Task InitializeAsync()
         {
             return Task.CompletedTask;
         }

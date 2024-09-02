@@ -40,14 +40,14 @@ namespace NuGet.Insights.Worker.LoadBucketedPackage
             }
 
             public TableClientWithRetryContext Table { get; }
+            public string CommitTimestampColumnName => nameof(BucketedPackage.CommitTimestamp);
+            public LatestLeafStorageStrategy Strategy => LatestLeafStorageStrategy.AddOptimistically;
 
             public (string PartitionKey, string RowKey) GetKey(ICatalogLeafItem item)
             {
                 var rowKey = BucketedPackage.GetRowKey(item);
                 return (BucketedPackage.GetPartitionKey(rowKey), rowKey);
             }
-
-            public string CommitTimestampColumnName => nameof(BucketedPackage.CommitTimestamp);
 
             public Task<BucketedPackage> MapAsync(string partitionKey, string rowKey, ICatalogLeafItem item)
             {

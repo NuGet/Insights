@@ -52,13 +52,13 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
             }
 
             public TableClientWithRetryContext Table { get; }
+            public string CommitTimestampColumnName => nameof(LatestPackageLeaf.CommitTimestamp);
+            public LatestLeafStorageStrategy Strategy => LatestLeafStorageStrategy.ReadThenAdd;
 
             public (string PartitionKey, string RowKey) GetKey(ICatalogLeafItem item)
             {
                 return (LatestPackageLeaf.GetPartitionKey(item.PackageId), LatestPackageLeaf.GetRowKey(item.PackageVersion));
             }
-
-            public string CommitTimestampColumnName => nameof(LatestPackageLeaf.CommitTimestamp);
 
             public Task<LatestPackageLeaf> MapAsync(string partitionKey, string rowKey, ICatalogLeafItem item)
             {

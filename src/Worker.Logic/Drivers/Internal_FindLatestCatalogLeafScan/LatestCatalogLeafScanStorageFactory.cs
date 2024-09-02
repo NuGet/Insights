@@ -54,6 +54,7 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
 
             public TableClientWithRetryContext Table { get; }
             public string CommitTimestampColumnName => nameof(CatalogLeafScan.CommitTimestamp);
+            public LatestLeafStorageStrategy Strategy => LatestLeafStorageStrategy.AddOptimistically;
 
             public (string PartitionKey, string RowKey) GetKey(ICatalogLeafItem item)
             {

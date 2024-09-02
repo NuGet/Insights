@@ -66,6 +66,7 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
 
             public TableClientWithRetryContext Table { get; }
             public string CommitTimestampColumnName => nameof(PackageVersionEntity.CommitTimestamp);
+            public LatestLeafStorageStrategy Strategy => LatestLeafStorageStrategy.ReadThenAdd;
 
             public (string PartitionKey, string RowKey) GetKey(ICatalogLeafItem item)
             {

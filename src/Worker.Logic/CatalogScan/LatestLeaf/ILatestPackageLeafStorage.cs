@@ -8,8 +8,9 @@ namespace NuGet.Insights.Worker
     public interface ILatestPackageLeafStorage<T> where T : ILatestPackageLeaf
     {
         TableClientWithRetryContext Table { get; }
+        string CommitTimestampColumnName { get; }
+        LatestLeafStorageStrategy Strategy { get; }
         Task<T> MapAsync(string partitionKey, string rowKey, ICatalogLeafItem item);
         (string PartitionKey, string RowKey) GetKey(ICatalogLeafItem item);
-        string CommitTimestampColumnName { get; }
     }
 }

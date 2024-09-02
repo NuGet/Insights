@@ -6,7 +6,7 @@ namespace NuGet.Insights.Worker
     public class BatchMessageProcessorResult<T>
     {
         public static BatchMessageProcessorResult<T> Empty { get; } = new BatchMessageProcessorResult<T>(
-            failed: Array.Empty<T>(),
+            failed: [],
             tryAgainLater: new Dictionary<TimeSpan, IReadOnlyList<T>>());
 
         public BatchMessageProcessorResult(IEnumerable<T> failed)
