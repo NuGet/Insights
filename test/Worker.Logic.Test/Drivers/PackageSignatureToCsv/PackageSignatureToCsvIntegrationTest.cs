@@ -29,16 +29,12 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
 
             // Assert
             await AssertOutputAsync(PackageSignatureToCsvDir, Step1, 0);
-            await AssertOutputAsync(PackageSignatureToCsvDir, Step1, 1);
-            await AssertOutputAsync(PackageSignatureToCsvDir, Step1, 2);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
             await AssertOutputAsync(PackageSignatureToCsvDir, Step2, 0);
-            await AssertOutputAsync(PackageSignatureToCsvDir, Step1, 1); // This file is unchanged.
-            await AssertOutputAsync(PackageSignatureToCsvDir, Step2, 2);
         }
 
         [Fact]
@@ -58,24 +54,18 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
 
             // Assert
             await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step1, 0);
-            await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step1, 1);
-            await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step1, 2);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step1, 0); // This file is unchanged.
-            await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step2, 1);
-            await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step2, 2);
+            await AssertOutputAsync(PackageSignatureToCsv_WithDuplicatesInCommitDir, Step2, 0);
         }
 
         [Fact]
         public async Task PackageSignatureToCsv_AuthorSignature()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
-
             var min0 = DateTimeOffset.Parse("2020-03-04T22:55:23.8646211Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2020-03-04T22:56:51.1816512Z", CultureInfo.InvariantCulture);
 
@@ -94,8 +84,6 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
         public async Task PackageSignatureToCsv_BadTimestamp()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
-
             var min0 = DateTimeOffset.Parse("2020-11-04T15:12:14Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2020-11-04T15:12:15.7221964Z", CultureInfo.InvariantCulture);
 
@@ -114,8 +102,6 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
         public async Task PackageSignatureToCsv_BadTimestampEncoding()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
-
             var min0 = DateTimeOffset.Parse("2022-02-08T11:43:31.00000000Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2022-02-08T11:43:32.6621038Z", CultureInfo.InvariantCulture);
 
@@ -149,16 +135,12 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
 
             // Assert
             await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step1, 0);
-            await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step1, 1);
-            await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step1, 2);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-            await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
-            await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step2, 2);
+            await AssertOutputAsync(PackageSignatureToCsv_WithDeleteDir, Step2, 0);
         }
 
         public PackageSignatureToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)

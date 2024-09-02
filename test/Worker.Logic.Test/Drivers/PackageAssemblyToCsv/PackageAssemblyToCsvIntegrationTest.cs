@@ -29,16 +29,12 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
             // Assert
             await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 0);
-            await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 1);
-            await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 2);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
             await AssertOutputAsync(PackageAssemblyToCsvDir, Step2, 0);
-            await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 1); // This file is unchanged.
-            await AssertOutputAsync(PackageAssemblyToCsvDir, Step2, 2);
         }
 
         [Fact]
@@ -65,8 +61,6 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
             // Assert
             await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 0);
-            await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 1);
-            await AssertOutputAsync(PackageAssemblyToCsvDir, Step1, 2);
         }
 
         public string TempDirLeaseName
@@ -100,24 +94,18 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
             // Assert
             await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step1, 0);
-            await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step1, 1);
-            await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step1, 2);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-            await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
-            await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step2, 2);
+            await AssertOutputAsync(PackageAssemblyToCsv_WithDeleteDir, Step2, 0);
         }
 
         [Fact]
         public async Task PackageAssemblyToCsv_WithUnmanaged()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
-
             var min0 = DateTimeOffset.Parse("2018-08-29T04:22:56.6184931Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2018-08-29T04:24:40.3247223Z", CultureInfo.InvariantCulture);
 
@@ -176,8 +164,6 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
         private async Task PackageAssemblyToCsv_WithDuplicates()
         {
-            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
-
             // Arrange
             var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z", CultureInfo.InvariantCulture);

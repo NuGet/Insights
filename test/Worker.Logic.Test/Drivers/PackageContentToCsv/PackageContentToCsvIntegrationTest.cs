@@ -25,15 +25,12 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
 
             // Assert
             await AssertOutputAsync(PackageContentToCsvDir, Step1, 0);
-            await AssertOutputAsync(PackageContentToCsvDir, Step1, 2);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertOutputAsync(PackageContentToCsvDir, Step1, 0); // This file is unchanged
-            await AssertOutputAsync(PackageContentToCsvDir, Step2, 2);
-            await AssertCsvCountAsync(2);
+            await AssertOutputAsync(PackageContentToCsvDir, Step2, 0);
         }
 
         [Fact]
@@ -54,16 +51,12 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
 
             // Assert
             await AssertOutputAsync(PackageContentToCsv_WithDeleteDir, Step1, 0);
-            await AssertOutputAsync(PackageContentToCsv_WithDeleteDir, Step1, 1);
-            await AssertOutputAsync(PackageContentToCsv_WithDeleteDir, Step1, 2);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertOutputAsync(PackageContentToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-            await AssertOutputAsync(PackageContentToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
-            await AssertOutputAsync(PackageContentToCsv_WithDeleteDir, Step2, 2);
+            await AssertOutputAsync(PackageContentToCsv_WithDeleteDir, Step2, 0);
         }
 
         public PackageContentToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)

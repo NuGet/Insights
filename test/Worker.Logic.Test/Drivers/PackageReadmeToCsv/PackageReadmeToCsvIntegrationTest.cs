@@ -26,15 +26,12 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
 
             // Assert
             await AssertOutputAsync(PackageReadmeToCsvDir, Step1, 0);
-            await AssertOutputAsync(PackageReadmeToCsvDir, Step1, 2);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertOutputAsync(PackageReadmeToCsvDir, Step1, 0); // This file is unchanged
-            await AssertOutputAsync(PackageReadmeToCsvDir, Step2, 2);
-            await AssertCsvCountAsync(2);
+            await AssertOutputAsync(PackageReadmeToCsvDir, Step2, 0);
         }
 
         [Fact]
@@ -55,24 +52,18 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
 
             // Assert
             await AssertOutputAsync(PackageReadmeToCsv_WithDeleteDir, Step1, 0);
-            await AssertOutputAsync(PackageReadmeToCsv_WithDeleteDir, Step1, 1);
-            await AssertOutputAsync(PackageReadmeToCsv_WithDeleteDir, Step1, 2);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertOutputAsync(PackageReadmeToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-            await AssertOutputAsync(PackageReadmeToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
-            await AssertOutputAsync(PackageReadmeToCsv_WithDeleteDir, Step2, 2);
+            await AssertOutputAsync(PackageReadmeToCsv_WithDeleteDir, Step2, 0);
         }
 
         [Fact]
         public async Task PackageReadmeToCsv_WithVeryLargeBuffer()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
-
             var max1 = DateTimeOffset.Parse("2022-03-10T21:32:51.8317694Z", CultureInfo.InvariantCulture); // PodcastAPI 1.1.1
             var min0 = max1.AddTicks(-1);
 

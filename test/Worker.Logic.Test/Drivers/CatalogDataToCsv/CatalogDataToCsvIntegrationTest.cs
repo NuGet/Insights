@@ -18,8 +18,6 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         public async Task CatalogDataToCsv()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
-
             var min0 = DateTimeOffset.Parse("2020-12-27T05:06:30.4180312Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2020-12-27T05:07:45.7628472Z", CultureInfo.InvariantCulture);
 
@@ -47,10 +45,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             await UpdateAsync(max1);
 
             // Assert
-            await AssertCsvCountAsync(3);
             await AssertOutputAsync(CatalogDataToCsv_DeprecationDir, Step1, 0);
-            await AssertOutputAsync(CatalogDataToCsv_DeprecationDir, Step1, 1);
-            await AssertOutputAsync(CatalogDataToCsv_DeprecationDir, Step1, 2);
         }
 
         [Fact]
@@ -67,18 +62,13 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             await UpdateAsync(max1);
 
             // Assert
-            await AssertCsvCountAsync(3);
             await AssertOutputAsync(CatalogDataToCsv_VulnerabilitiesDir, Step1, 0);
-            await AssertOutputAsync(CatalogDataToCsv_VulnerabilitiesDir, Step1, 1);
-            await AssertOutputAsync(CatalogDataToCsv_VulnerabilitiesDir, Step1, 2);
         }
 
         [Fact]
         public async Task CatalogDataToCsv_NoSignatureFile()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
-
             var max1 = DateTimeOffset.Parse("2018-07-17T18:53:46.1209756Z", CultureInfo.InvariantCulture);
             var min0 = max1.AddTicks(-1);
 
@@ -89,7 +79,6 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             await UpdateAsync(max1);
 
             // Assert
-            await AssertCsvCountAsync(1);
             await AssertOutputAsync(CatalogDataToCsv_NoSignatureFileDir, Step1, 0);
         }
 
@@ -97,8 +86,6 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         public async Task CatalogDataToCsv_WithDuplicates()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
-
             var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z", CultureInfo.InvariantCulture);
 
@@ -129,16 +116,12 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
 
             // Assert
             await AssertOutputAsync(CatalogDataToCsv_WithDeleteDir, Step1, 0);
-            await AssertOutputAsync(CatalogDataToCsv_WithDeleteDir, Step1, 1);
-            await AssertOutputAsync(CatalogDataToCsv_WithDeleteDir, Step1, 2);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertOutputAsync(CatalogDataToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-            await AssertOutputAsync(CatalogDataToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
-            await AssertOutputAsync(CatalogDataToCsv_WithDeleteDir, Step2, 2);
+            await AssertOutputAsync(CatalogDataToCsv_WithDeleteDir, Step2, 0);
         }
 
         [OSPlatformFact(OSPlatformType.Windows)]
@@ -157,8 +140,6 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
 
         protected async Task RunTestWithKelvinKAsync(string dir)
         {
-            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
-
             // Arrange
             var min0 = DateTimeOffset.Parse("2021-08-11T23:38:05.65091Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2021-08-11T23:39:31.9024782Z", CultureInfo.InvariantCulture);

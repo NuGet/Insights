@@ -16,6 +16,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
         public async Task CleanupOrphanRecordsServiceTest_WithNoDeletions()
         {
             // Arrange
+            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 3;
             var subjectRecords = Enumerable
                 .Range(0, 10)
                 .Select(x => new TestSubjectRecord { BucketKey = x.ToString(CultureInfo.InvariantCulture), Id = "Subject" + x })
@@ -58,6 +59,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
         public async Task CleanupOrphanRecordsServiceTest_WithNoOrphans()
         {
             // Arrange
+            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 3;
             var subjectRecords = Enumerable
                 .Range(0, 10)
                 .Select(x => new TestSubjectRecord { BucketKey = x.ToString(CultureInfo.InvariantCulture), Id = "Subject" + x })
@@ -100,6 +102,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
         public async Task CleanupOrphanRecordsServiceTest_WithClearedCsv()
         {
             // Arrange
+            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 3;
             var subjectRecords = Enumerable
                 .Range(0, 10)
                 .Select(x => new TestSubjectRecord { BucketKey = x.ToString(CultureInfo.InvariantCulture), Id = "Subject" + x })

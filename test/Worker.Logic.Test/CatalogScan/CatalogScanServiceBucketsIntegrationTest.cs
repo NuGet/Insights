@@ -15,8 +15,6 @@ namespace NuGet.Insights.Worker
         public async Task CatalogScanService_UpdateWithBucketRanges()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
-
             var min0 = DateTimeOffset.Parse("2018-12-06T03:17:32.1388561Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2018-12-06T03:17:41.9986142Z", CultureInfo.InvariantCulture);
             var driverType = CatalogScanDriverType.PackageSignatureToCsv;
@@ -97,12 +95,7 @@ namespace NuGet.Insights.Worker
         private async Task CatalogScanService_TestCachedData(bool bucketRangeFirst, bool bucketRangeSecond, bool expectCached)
         {
             // Arrange
-            ConfigureWorkerSettings = x =>
-            {
-                x.AppendResultStorageBucketCount = 1;
-                x.OldCatalogIndexScansToKeep = 0;
-            };
-
+            ConfigureWorkerSettings = x => x.OldCatalogIndexScansToKeep = 0;
             var dir = nameof(CatalogScanService_TestCachedData);
             var min0 = DateTimeOffset.Parse("2020-05-11T20:11:38.5525171Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2020-05-11T20:12:56.9143404Z", CultureInfo.InvariantCulture);

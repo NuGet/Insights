@@ -25,7 +25,6 @@ namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
 
             // Assert
             await AssertOutputAsync(SymbolPackageFileToCsvDir, Step1, 0);
-            await AssertCsvCountAsync(1);
             await AssertSymbolPackageHashesTableAsync(SymbolPackageFileToCsvDir, Step1);
 
             // Act
@@ -33,8 +32,6 @@ namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
 
             // Assert
             await AssertOutputAsync(SymbolPackageFileToCsvDir, Step2, 0);
-            await AssertOutputAsync(SymbolPackageFileToCsvDir, Step2, 2);
-            await AssertCsvCountAsync(2);
             await AssertSymbolPackageHashesTableAsync(SymbolPackageFileToCsvDir, Step2);
         }
 
@@ -56,17 +53,13 @@ namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
 
             // Assert
             await AssertOutputAsync(SymbolPackageFileToCsv_WithDeleteDir, Step1, 0);
-            await AssertOutputAsync(SymbolPackageFileToCsv_WithDeleteDir, Step1, 1);
-            await AssertOutputAsync(SymbolPackageFileToCsv_WithDeleteDir, Step1, 2);
             await AssertSymbolPackageHashesTableAsync(SymbolPackageFileToCsv_WithDeleteDir, Step1);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertOutputAsync(SymbolPackageFileToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-            await AssertOutputAsync(SymbolPackageFileToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
-            await AssertOutputAsync(SymbolPackageFileToCsv_WithDeleteDir, Step2, 2);
+            await AssertOutputAsync(SymbolPackageFileToCsv_WithDeleteDir, Step2, 0);
             await AssertSymbolPackageHashesTableAsync(SymbolPackageFileToCsv_WithDeleteDir, Step2);
         }
 

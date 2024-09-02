@@ -24,17 +24,13 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             await UpdateAsync(max1);
 
             // Assert
-            await AssertCsvCountAsync(2); // bucket 0 does not exist
-            await AssertOutputAsync(NuGetPackageExplorerToCsvDir, Step1, 1);
-            await AssertOutputAsync(NuGetPackageExplorerToCsvDir, Step1, 2);
+            await AssertOutputAsync(NuGetPackageExplorerToCsvDir, Step1, 0);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
             await AssertOutputAsync(NuGetPackageExplorerToCsvDir, Step2, 0);
-            await AssertOutputAsync(NuGetPackageExplorerToCsvDir, Step1, 1); // This file is unchanged.
-            await AssertOutputAsync(NuGetPackageExplorerToCsvDir, Step2, 2);
         }
 
         [Fact]
@@ -55,16 +51,12 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
 
             // Assert
             await AssertOutputAsync(NuGetPackageExplorerToCsv_WithDeleteDir, Step1, 0);
-            await AssertOutputAsync(NuGetPackageExplorerToCsv_WithDeleteDir, Step1, 1);
-            await AssertOutputAsync(NuGetPackageExplorerToCsv_WithDeleteDir, Step1, 2);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertOutputAsync(NuGetPackageExplorerToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-            await AssertOutputAsync(NuGetPackageExplorerToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
-            await AssertOutputAsync(NuGetPackageExplorerToCsv_WithDeleteDir, Step2, 2);
+            await AssertOutputAsync(NuGetPackageExplorerToCsv_WithDeleteDir, Step2, 0);
         }
 
         public NuGetPackageExplorerToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)

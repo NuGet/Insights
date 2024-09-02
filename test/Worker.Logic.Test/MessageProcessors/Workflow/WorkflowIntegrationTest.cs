@@ -17,7 +17,6 @@ namespace NuGet.Insights.Worker.Workflow
             ConfigureWorkerSettings = x =>
             {
                 x.KustoTableNameFormat = "A{0}Z";
-                x.AppendResultStorageBucketCount = 1;
                 x.KustoConnectionString = "fake connection string";
                 x.KustoDatabaseName = "fake database name";
                 x.KustoValidationMaxAttempts = 1;
@@ -83,7 +82,6 @@ namespace NuGet.Insights.Worker.Workflow
             ConfigureWorkerSettings = x =>
             {
                 x.KustoTableNameFormat = "A{0}Z";
-                x.AppendResultStorageBucketCount = 1;
                 x.KustoConnectionString = "fake connection string";
                 x.KustoDatabaseName = "fake database name";
                 x.KustoValidationMaxAttempts = 1;
@@ -140,7 +138,6 @@ namespace NuGet.Insights.Worker.Workflow
             ConfigureWorkerSettings = x =>
             {
                 x.KustoTableNameFormat = "A{0}Z";
-                x.AppendResultStorageBucketCount = 1;
                 x.KustoConnectionString = "fake connection string";
                 x.KustoDatabaseName = "fake database name";
                 x.KustoValidationMaxAttempts = 1;
@@ -186,7 +183,6 @@ namespace NuGet.Insights.Worker.Workflow
             ConfigureWorkerSettings = x =>
             {
                 x.KustoTableNameFormat = "A{0}Z";
-                x.AppendResultStorageBucketCount = 1;
                 x.KustoConnectionString = "fake connection string";
                 x.KustoDatabaseName = "fake database name";
                 x.KustoValidationMaxAttempts = 1;

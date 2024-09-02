@@ -21,7 +21,6 @@ namespace NuGet.Insights.Worker.KustoIngestion
         {
             ConfigureWorkerSettings = x =>
             {
-                x.AppendResultStorageBucketCount = 1;
                 x.KustoTableNameFormat = StoragePrefix + "_{0}";
                 x.WithTestKustoSettings();
             };

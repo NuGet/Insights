@@ -1,4 +1,47 @@
 ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Message,Reasons,AlternatePackageId,AlternateVersionRange
+,,documentextractnuget.sdk,documentextractnuget.sdk/1.0.0-alpha,DocumentExtractNuget.SDK,1.0.0-alpha,2020-07-08T17:12:18.5692562Z,2020-07-08T17:09:48.88Z,NotDeprecated,,,,
+,,windowsazure.storage,windowsazure.storage/1.0.0,WindowsAzure.Storage,1.0.0,2020-07-08T17:12:18.5692562Z,2011-12-02T20:21:23.74Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/1.6.0,WindowsAzure.Storage,1.6.0,2020-07-08T17:12:18.5692562Z,2011-12-07T20:43:42.287Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/1.7.0,WindowsAzure.Storage,1.7.0,2020-07-08T17:12:18.5692562Z,2012-06-07T01:56:57.157Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
 ,,windowsazure.storage,windowsazure.storage/2.0.0,WindowsAzure.Storage,2.0.0,2020-07-08T17:12:18.5692562Z,2012-10-26T19:13:18.507Z,Deprecated,"Thank you for the interest in this package. 
 
 If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
@@ -13,7 +56,119 @@ https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
 https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
 
 ","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/2.0.1,WindowsAzure.Storage,2.0.1,2020-07-08T17:12:18.5692562Z,2012-11-12T20:01:02.72Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
 ,,windowsazure.storage,windowsazure.storage/2.0.2,WindowsAzure.Storage,2.0.2,2020-07-08T17:12:18.5692562Z,2012-12-05T22:43:10.093Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/2.0.3,WindowsAzure.Storage,2.0.3,2020-07-08T17:12:18.5692562Z,2012-12-17T17:48:22.957Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/2.0.4,WindowsAzure.Storage,2.0.4,2020-07-08T17:12:18.5692562Z,2013-02-05T19:12:17.193Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/2.0.4.1,WindowsAzure.Storage,2.0.4.1,2020-07-08T17:12:18.5692562Z,2013-02-26T22:37:03.813Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/2.0.5,WindowsAzure.Storage,2.0.5,2020-07-08T17:12:18.5692562Z,2013-03-20T20:58:17.567Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/2.0.5.1,WindowsAzure.Storage,2.0.5.1,2020-07-08T17:12:18.5692562Z,2013-03-27T22:42:50.277Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/2.0.6,WindowsAzure.Storage,2.0.6,2020-07-08T17:12:18.5692562Z,2013-07-02T20:01:05.997Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/2.0.6.1,WindowsAzure.Storage,2.0.6.1,2020-07-08T17:12:18.5692562Z,2013-08-05T23:20:04.39Z,Deprecated,"Thank you for the interest in this package. 
 
 If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
 https://www.nuget.org/packages/Azure.Storage.Blobs/
@@ -55,7 +210,35 @@ https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
 https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
 
 ","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/2.1.0.2,WindowsAzure.Storage,2.1.0.2,2020-07-08T17:12:18.5692562Z,2013-10-04T21:42:07.903Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
 ,,windowsazure.storage,windowsazure.storage/2.1.0.3,WindowsAzure.Storage,2.1.0.3,2020-07-08T17:12:18.5692562Z,2013-10-11T23:55:48.467Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/2.1.0.4,WindowsAzure.Storage,2.1.0.4,2020-07-08T17:12:18.5692562Z,2013-11-27T21:51:36.88Z,Deprecated,"Thank you for the interest in this package. 
 
 If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
 https://www.nuget.org/packages/Azure.Storage.Blobs/
@@ -83,7 +266,63 @@ https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
 https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
 
 ","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/3.0.1,WindowsAzure.Storage,3.0.1,2020-07-08T17:12:18.5692562Z,2013-12-11T00:16:07.303Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/3.0.2,WindowsAzure.Storage,3.0.2,2020-07-08T17:12:18.5692562Z,2014-01-04T00:08:39.417Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
 ,,windowsazure.storage,windowsazure.storage/3.0.3,WindowsAzure.Storage,3.0.3,2020-07-08T17:12:18.5692562Z,2014-02-11T17:14:57.097Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/3.1.0,WindowsAzure.Storage,3.1.0,2020-07-08T17:12:18.5692562Z,2014-03-19T20:06:00.3Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/3.1.0.1,WindowsAzure.Storage,3.1.0.1,2020-07-08T17:12:18.5692562Z,2014-04-02T20:31:01.3Z,Deprecated,"Thank you for the interest in this package. 
 
 If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
 https://www.nuget.org/packages/Azure.Storage.Blobs/
@@ -111,7 +350,63 @@ https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
 https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
 
 ","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/3.2.1,WindowsAzure.Storage,3.2.1,2020-07-08T17:12:18.5692562Z,2014-05-14T23:19:54.31Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/4.0.0,WindowsAzure.Storage,4.0.0,2020-07-08T17:12:18.5692562Z,2014-05-12T16:43:54.967Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/4.0.1,WindowsAzure.Storage,4.0.1,2020-07-08T17:12:18.5692562Z,2014-05-20T22:36:01.67Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
 ,,windowsazure.storage,windowsazure.storage/4.1.0,WindowsAzure.Storage,4.1.0,2020-07-08T17:12:18.5692562Z,2014-06-23T21:29:21.907Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/4.2.0,WindowsAzure.Storage,4.2.0,2020-07-08T17:12:18.5692562Z,2014-07-28T22:16:56.597Z,Deprecated,"Thank you for the interest in this package. 
 
 If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
 https://www.nuget.org/packages/Azure.Storage.Blobs/
@@ -139,7 +434,119 @@ https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
 https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
 
 ","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/4.3.0,WindowsAzure.Storage,4.3.0,2020-07-08T17:12:18.5692562Z,2014-09-16T22:46:07.777Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/4.3.1-preview,WindowsAzure.Storage,4.3.1-preview,2020-07-08T17:12:18.5692562Z,2014-11-12T17:51:44.633Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/4.3.2-preview,WindowsAzure.Storage,4.3.2-preview,2020-07-08T17:12:18.5692562Z,2014-11-12T22:19:16.297Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/4.4.0-preview,WindowsAzure.Storage,4.4.0-preview,2020-07-08T17:12:18.5692562Z,2015-04-29T22:10:41.32Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
 ,,windowsazure.storage,windowsazure.storage/4.4.1-preview,WindowsAzure.Storage,4.4.1-preview,2020-07-08T17:12:18.5692562Z,2015-05-13T19:25:02.153Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/5.0.0,WindowsAzure.Storage,5.0.0,2020-07-08T17:12:18.5692562Z,2015-08-05T00:04:02.543Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/5.0.1-preview,WindowsAzure.Storage,5.0.1-preview,2020-07-08T17:12:18.5692562Z,2015-08-05T00:04:55.293Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/5.0.2,WindowsAzure.Storage,5.0.2,2020-07-08T17:12:18.5692562Z,2015-09-02T01:05:04.257Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/5.0.3-preview,WindowsAzure.Storage,5.0.3-preview,2020-07-08T17:12:18.5692562Z,2015-09-02T01:07:11.883Z,Deprecated,"Thank you for the interest in this package. 
 
 If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
 https://www.nuget.org/packages/Azure.Storage.Blobs/
@@ -209,6 +616,20 @@ https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
 https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
 
 ","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/6.2.0,WindowsAzure.Storage,6.2.0,2020-07-08T17:12:18.5692562Z,2015-12-10T22:39:05.103Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
 ,,windowsazure.storage,windowsazure.storage/6.2.1-preview,WindowsAzure.Storage,6.2.1-preview,2020-07-08T17:12:18.5692562Z,2015-12-10T22:39:41Z,Deprecated,"Thank you for the interest in this package. 
 
 If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
@@ -237,6 +658,48 @@ https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
 https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
 
 ","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/7.0.0,WindowsAzure.Storage,7.0.0,2020-07-08T17:12:18.5692562Z,2016-04-08T00:07:30.893Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/7.0.1-preview,WindowsAzure.Storage,7.0.1-preview,2020-07-08T17:12:18.5692562Z,2016-04-08T00:08:34.45Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/7.0.2-preview,WindowsAzure.Storage,7.0.2-preview,2020-07-08T17:12:18.5692562Z,2016-05-27T22:02:17.34Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
 ,,windowsazure.storage,windowsazure.storage/7.1.0,WindowsAzure.Storage,7.1.0,2020-07-08T17:12:18.5692562Z,2016-06-30T01:00:15.41Z,Deprecated,"Thank you for the interest in this package. 
 
 If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
@@ -251,7 +714,119 @@ https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
 https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
 
 ","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/7.1.1-preview,WindowsAzure.Storage,7.1.1-preview,2020-07-08T17:12:18.5692562Z,2016-06-30T01:01:50.697Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/7.1.2,WindowsAzure.Storage,7.1.2,2020-07-08T17:12:18.5692562Z,2016-07-01T21:26:35.53Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/7.1.3-preview,WindowsAzure.Storage,7.1.3-preview,2020-07-08T17:12:18.5692562Z,2016-07-01T21:27:06.46Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/7.2.0,WindowsAzure.Storage,7.2.0,2020-07-08T17:12:18.5692562Z,2016-08-11T01:56:53.81Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/7.2.1,WindowsAzure.Storage,7.2.1,2020-07-08T17:12:18.5692562Z,2016-09-19T23:14:45.133Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/8.0.0,WindowsAzure.Storage,8.0.0,2020-07-08T17:12:18.5692562Z,2016-12-22T04:52:17.297Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
 ,,windowsazure.storage,windowsazure.storage/8.0.1,WindowsAzure.Storage,8.0.1,2020-07-08T17:12:18.5692562Z,2017-01-11T04:02:22.15Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/8.1.0,WindowsAzure.Storage,8.1.0,2020-07-08T17:12:18.5692562Z,2017-02-16T22:24:24.473Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/8.1.1,WindowsAzure.Storage,8.1.1,2020-07-08T17:12:18.5692562Z,2017-02-24T00:42:51.457Z,Deprecated,"Thank you for the interest in this package. 
 
 If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
 https://www.nuget.org/packages/Azure.Storage.Blobs/
@@ -293,7 +868,63 @@ https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
 https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
 
 ","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/8.1.4,WindowsAzure.Storage,8.1.4,2020-07-08T17:12:18.5692562Z,2017-06-06T23:22:28.09Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/8.2.0,WindowsAzure.Storage,8.2.0,2020-07-08T17:12:18.5692562Z,2017-07-14T17:10:36.657Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
 ,,windowsazure.storage,windowsazure.storage/8.2.1,WindowsAzure.Storage,8.2.1,2020-07-08T17:12:18.5692562Z,2017-07-25T19:02:06.22Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/8.3.0,WindowsAzure.Storage,8.3.0,2020-07-08T17:12:18.5692562Z,2017-08-09T19:04:40.65Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/8.4.0,WindowsAzure.Storage,8.4.0,2020-07-08T17:12:18.5692562Z,2017-08-22T20:12:54.223Z,Deprecated,"Thank you for the interest in this package. 
 
 If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
 https://www.nuget.org/packages/Azure.Storage.Blobs/
@@ -321,7 +952,133 @@ https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
 https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
 
 ","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/8.6.0,WindowsAzure.Storage,8.6.0,2020-07-08T17:12:18.5692562Z,2017-11-14T20:35:33.913Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/8.7.0,WindowsAzure.Storage,8.7.0,2020-07-08T17:12:18.5692562Z,2017-12-14T23:02:50.537Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/9.0.0,WindowsAzure.Storage,9.0.0,2020-07-08T17:12:18.5692562Z,2018-02-07T20:10:50.387Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/9.1.0,WindowsAzure.Storage,9.1.0,2020-07-08T17:12:18.5692562Z,2018-02-28T19:00:17.21Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/9.1.1,WindowsAzure.Storage,9.1.1,2020-07-08T17:12:18.5692562Z,2018-04-04T22:20:10.747Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/9.2.0,WindowsAzure.Storage,9.2.0,2020-07-08T17:12:18.5692562Z,2018-05-23T17:14:33.773Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
 ,,windowsazure.storage,windowsazure.storage/9.3.0,WindowsAzure.Storage,9.3.0,2020-07-08T17:12:18.5692562Z,2018-06-27T23:43:53.243Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/9.3.1,WindowsAzure.Storage,9.3.1,2020-07-08T17:12:18.5692562Z,2018-08-08T15:07:03.003Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/9.3.2,WindowsAzure.Storage,9.3.2,2020-07-08T17:12:18.5692562Z,2018-09-15T05:38:27.443Z,Deprecated,"Thank you for the interest in this package. 
+
+If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
+https://www.nuget.org/packages/Azure.Storage.Blobs/
+https://www.nuget.org/packages/Azure.Storage.Queues/
+https://www.nuget.org/packages/Azure.Storage.Blobs.Batch/
+https://www.nuget.org/packages/Azure.Storage.Files.Shares/
+
+For older versions of this package see these split packages:
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Blob/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.File/9.4.0
+https://www.nuget.org/packages/Microsoft.Azure.Storage.Queue/9.4.0
+
+","[""Other""]",Azure.Storage.Blobs,*
+,,windowsazure.storage,windowsazure.storage/9.3.3,WindowsAzure.Storage,9.3.3,2020-07-08T17:12:18.5692562Z,2018-11-27T00:08:28.04Z,Deprecated,"Thank you for the interest in this package. 
 
 If you are looking for the latest packages to interact with Azure Storage, please use the following libraries:
 https://www.nuget.org/packages/Azure.Storage.Blobs/

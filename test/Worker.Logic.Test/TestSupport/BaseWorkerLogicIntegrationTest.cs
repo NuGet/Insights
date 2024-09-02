@@ -117,7 +117,7 @@ namespace NuGet.Insights.Worker
 
             settings.TimedReprocessIsEnabled = true;
             settings.DisableMessageDelay = true;
-            settings.AppendResultStorageBucketCount = 3;
+            settings.AppendResultStorageBucketCount = 1;
             settings.KustoDatabaseName = "TestKustoDb";
             settings.PackageContentFileExtensions = new List<string> { ".txt" };
             settings.SkipContentMD5HeaderInCsv = true;

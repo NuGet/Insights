@@ -18,8 +18,6 @@ namespace NuGet.Insights.Worker.TimedReprocess
         public async Task TimedReprocess_AllReprocessDrivers()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
-
             await CatalogScanService.InitializeAsync();
             var min0 = DateTimeOffset.Parse("2018-12-06T03:17:32.1388561Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2018-12-06T03:17:41.9986142Z", CultureInfo.InvariantCulture);
@@ -121,8 +119,6 @@ namespace NuGet.Insights.Worker.TimedReprocess
         public async Task TimedReprocess_WaitForCursorBasedScan()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
-
             await CatalogScanService.InitializeAsync();
             var min0 = DateTimeOffset.Parse("2018-12-06T03:17:32.1388561Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2018-12-06T03:17:41.9986142Z", CultureInfo.InvariantCulture);
@@ -173,7 +169,6 @@ namespace NuGet.Insights.Worker.TimedReprocess
             // Arrange
             ConfigureWorkerSettings = x =>
             {
-                x.AppendResultStorageBucketCount = 1;
                 x.DisabledDrivers = [CatalogScanDriverType.LoadSymbolPackageArchive, CatalogScanDriverType.SymbolPackageFileToCsv, CatalogScanDriverType.SymbolPackageArchiveToCsv];
             };
 
@@ -221,7 +216,6 @@ namespace NuGet.Insights.Worker.TimedReprocess
             // Arrange
             ConfigureWorkerSettings = x =>
             {
-                x.AppendResultStorageBucketCount = 1;
                 x.DisabledDrivers = [CatalogScanDriverType.LoadSymbolPackageArchive, CatalogScanDriverType.SymbolPackageFileToCsv, CatalogScanDriverType.SymbolPackageArchiveToCsv];
             };
 
@@ -262,7 +256,6 @@ namespace NuGet.Insights.Worker.TimedReprocess
             // Arrange
             ConfigureWorkerSettings = x =>
             {
-                x.AppendResultStorageBucketCount = 1;
                 x.DisabledDrivers = [CatalogScanDriverType.LoadSymbolPackageArchive, CatalogScanDriverType.SymbolPackageFileToCsv, CatalogScanDriverType.SymbolPackageArchiveToCsv];
             };
 

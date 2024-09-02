@@ -256,8 +256,6 @@ namespace NuGet.Insights.Worker
                 Url = "https://example/page0.json",
             };
             LeafItemToRank = new Dictionary<ICatalogLeafItem, int>();
-
-            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
         }
 
         private List<CatalogLeafItem> GetItems(int firstId, int lastId, int commitDay, string instanceLabel, int skipBy = 1)

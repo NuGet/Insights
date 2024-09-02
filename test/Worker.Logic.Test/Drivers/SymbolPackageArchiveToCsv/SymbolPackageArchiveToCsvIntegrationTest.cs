@@ -27,7 +27,6 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
 
             // Assert
             await AssertOutputAsync(SymbolPackageArchiveToCsvDir, Step1, 0);
-            await AssertCsvCountAsync(1);
 
             // Act
             await UpdateAsync(CatalogScanDriverType.SymbolPackageFileToCsv, onlyLatestLeaves: true, max2);
@@ -35,8 +34,6 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
 
             // Assert
             await AssertOutputAsync(SymbolPackageArchiveToCsvDir, Step2, 0);
-            await AssertOutputAsync(SymbolPackageArchiveToCsvDir, Step2, 2);
-            await AssertCsvCountAsync(2);
         }
 
         [Fact]
@@ -59,17 +56,13 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
 
             // Assert
             await AssertOutputAsync(SymbolPackageArchiveToCsv_WithDeleteDir, Step1, 0);
-            await AssertOutputAsync(SymbolPackageArchiveToCsv_WithDeleteDir, Step1, 1);
-            await AssertOutputAsync(SymbolPackageArchiveToCsv_WithDeleteDir, Step1, 2);
 
             // Act
             await UpdateAsync(CatalogScanDriverType.SymbolPackageFileToCsv, onlyLatestLeaves: true, max2);
             await UpdateAsync(max2);
 
             // Assert
-            await AssertOutputAsync(SymbolPackageArchiveToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-            await AssertOutputAsync(SymbolPackageArchiveToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
-            await AssertOutputAsync(SymbolPackageArchiveToCsv_WithDeleteDir, Step2, 2);
+            await AssertOutputAsync(SymbolPackageArchiveToCsv_WithDeleteDir, Step2, 0);
         }
 
         public SymbolPackageArchiveToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)

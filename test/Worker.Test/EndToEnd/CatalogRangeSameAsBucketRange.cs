@@ -17,11 +17,10 @@ namespace NuGet.Insights.Worker
             // Arrange
             ConfigureWorkerSettings = x =>
             {
-                x.AppendResultStorageBucketCount = 1;
                 x.RecordCertificateStatus = false;
                 x.DisabledDrivers = CatalogScanDriverMetadata.StartableDriverTypes
                     .Where(x => !CatalogScanDriverMetadata.GetBucketRangeSupport(x))
-                    .Except(new[] { CatalogScanDriverType.LoadBucketedPackage })
+                    .Except([CatalogScanDriverType.LoadBucketedPackage])
                     .ToList();
             };
 
@@ -67,7 +66,7 @@ namespace NuGet.Insights.Worker
             // Assert
             foreach (var (containerName, recordType, defaultTableName) in expectedContainers)
             {
-                await AssertCsvAsync(recordType, containerName, nameof(CatalogRangeSameAsBucketRange), Step1, 0, $"{defaultTableName}.csv");
+                await AssertCsvAsync(recordType, containerName, nameof(EntireWorkflowSucceeds), Step1, 0, $"{defaultTableName}.csv");
                 await (await GetBlobAsync(containerName, $"compact_0.csv.gz")).DeleteAsync();
             }
 
@@ -100,7 +99,7 @@ namespace NuGet.Insights.Worker
             // Assert
             foreach (var (containerName, recordType, defaultTableName) in expectedContainers)
             {
-                await AssertCsvAsync(recordType, containerName, nameof(CatalogRangeSameAsBucketRange), Step1, 0, $"{defaultTableName}.csv");
+                await AssertCsvAsync(recordType, containerName, nameof(EntireWorkflowSucceeds), Step1, 0, $"{defaultTableName}.csv");
             }
         }
     }

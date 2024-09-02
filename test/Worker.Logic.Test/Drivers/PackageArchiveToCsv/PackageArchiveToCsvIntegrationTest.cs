@@ -28,8 +28,6 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
 
             // Assert
             await AssertOutputAsync(PackageArchiveToCsvDir, Step1, 0);
-            await AssertOutputAsync(PackageArchiveToCsvDir, Step1, 1);
-            await AssertOutputAsync(PackageArchiveToCsvDir, Step1, 2);
 
             // Act
             await UpdateAsync(CatalogScanDriverType.PackageFileToCsv, onlyLatestLeaves: true, max2);
@@ -37,8 +35,6 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
 
             // Assert
             await AssertOutputAsync(PackageArchiveToCsvDir, Step2, 0);
-            await AssertOutputAsync(PackageArchiveToCsvDir, Step1, 1); // This file is unchanged.
-            await AssertOutputAsync(PackageArchiveToCsvDir, Step2, 2);
         }
 
         [Fact]
@@ -61,17 +57,13 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
 
             // Assert
             await AssertOutputAsync(PackageArchiveToCsv_WithDeleteDir, Step1, 0);
-            await AssertOutputAsync(PackageArchiveToCsv_WithDeleteDir, Step1, 1);
-            await AssertOutputAsync(PackageArchiveToCsv_WithDeleteDir, Step1, 2);
 
             // Act
             await UpdateAsync(CatalogScanDriverType.PackageFileToCsv, onlyLatestLeaves: true, max2);
             await UpdateAsync(max2);
 
             // Assert
-            await AssertOutputAsync(PackageArchiveToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-            await AssertOutputAsync(PackageArchiveToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
-            await AssertOutputAsync(PackageArchiveToCsv_WithDeleteDir, Step2, 2);
+            await AssertOutputAsync(PackageArchiveToCsv_WithDeleteDir, Step2, 0);
         }
 
         [Fact]
@@ -92,8 +84,6 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
 
             // Assert
             await AssertOutputAsync(PackageArchiveToCsv_WithDuplicateEntriesDir, Step1, 0);
-            await AssertOutputAsync(PackageArchiveToCsv_WithDuplicateEntriesDir, Step1, 1);
-            await AssertOutputAsync(PackageArchiveToCsv_WithDuplicateEntriesDir, Step1, 2);
         }
 
         public PackageArchiveToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)

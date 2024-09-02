@@ -19,10 +19,6 @@ namespace NuGet.Insights.Worker
                 x.MaxTempMemoryStreamSize = 0;
                 x.TempDirectories[0].MaxConcurrentWriters = 1;
             };
-            ConfigureWorkerSettings = x =>
-            {
-                x.AppendResultStorageBucketCount = 1;
-            };
 
             await CatalogScanService.InitializeAsync();
 

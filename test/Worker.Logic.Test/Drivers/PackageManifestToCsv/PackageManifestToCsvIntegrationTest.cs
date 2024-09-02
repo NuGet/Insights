@@ -26,16 +26,12 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
 
             // Assert
             await AssertOutputAsync(PackageManifestToCsvDir, Step1, 0);
-            await AssertOutputAsync(PackageManifestToCsvDir, Step1, 1);
-            await AssertOutputAsync(PackageManifestToCsvDir, Step1, 2);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
             await AssertOutputAsync(PackageManifestToCsvDir, Step2, 0);
-            await AssertOutputAsync(PackageManifestToCsvDir, Step1, 1); // This file is unchanged.
-            await AssertOutputAsync(PackageManifestToCsvDir, Step2, 2);
         }
 
         [Fact]
@@ -56,24 +52,18 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
 
             // Assert
             await AssertOutputAsync(PackageManifestToCsv_WithDeleteDir, Step1, 0);
-            await AssertOutputAsync(PackageManifestToCsv_WithDeleteDir, Step1, 1);
-            await AssertOutputAsync(PackageManifestToCsv_WithDeleteDir, Step1, 2);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertOutputAsync(PackageManifestToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-            await AssertOutputAsync(PackageManifestToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
-            await AssertOutputAsync(PackageManifestToCsv_WithDeleteDir, Step2, 2);
+            await AssertOutputAsync(PackageManifestToCsv_WithDeleteDir, Step2, 0);
         }
 
         [Fact]
         public async Task PackageManifestToCsv_WithVeryLargeBuffer()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
-
             var min0 = DateTimeOffset.Parse("2020-01-09T14:58:13.0458090Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2020-01-09T15:02:21.9360277Z", CultureInfo.InvariantCulture); // GR.PageRender.Razor 1.7.0
             var max2 = DateTimeOffset.Parse("2020-01-09T15:04:22.3831333Z", CultureInfo.InvariantCulture);

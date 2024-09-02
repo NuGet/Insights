@@ -27,8 +27,6 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
 
             // Assert
             await AssertOutputAsync(PackageFileToCsvDir, Step1, 0);
-            await AssertOutputAsync(PackageFileToCsvDir, Step1, 1);
-            await AssertOutputAsync(PackageFileToCsvDir, Step1, 2);
             await AssertPackageHashesTableAsync(PackageFileToCsvDir, Step1);
 
             // Act
@@ -36,8 +34,6 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
 
             // Assert
             await AssertOutputAsync(PackageFileToCsvDir, Step2, 0);
-            await AssertOutputAsync(PackageFileToCsvDir, Step1, 1); // This file is unchanged.
-            await AssertOutputAsync(PackageFileToCsvDir, Step2, 2);
             await AssertPackageHashesTableAsync(PackageFileToCsvDir, Step2);
         }
 
@@ -64,8 +60,6 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
 
             // Assert
             await AssertOutputAsync(PackageFileToCsvDir, Step1, 0);
-            await AssertOutputAsync(PackageFileToCsvDir, Step1, 1);
-            await AssertOutputAsync(PackageFileToCsvDir, Step1, 2);
             await AssertPackageHashesTableAsync(PackageFileToCsvDir, Step1);
         }
 
@@ -99,17 +93,13 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
 
             // Assert
             await AssertOutputAsync(PackageFileToCsv_WithDeleteDir, Step1, 0);
-            await AssertOutputAsync(PackageFileToCsv_WithDeleteDir, Step1, 1);
-            await AssertOutputAsync(PackageFileToCsv_WithDeleteDir, Step1, 2);
             await AssertPackageHashesTableAsync(PackageFileToCsv_WithDeleteDir, Step1);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertOutputAsync(PackageFileToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-            await AssertOutputAsync(PackageFileToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
-            await AssertOutputAsync(PackageFileToCsv_WithDeleteDir, Step2, 2);
+            await AssertOutputAsync(PackageFileToCsv_WithDeleteDir, Step2, 0);
             await AssertPackageHashesTableAsync(PackageFileToCsv_WithDeleteDir, Step2);
         }
 
@@ -152,8 +142,6 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
 
         private async Task PackageFileToCsv_WithDuplicates()
         {
-            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
-
             // Arrange
             var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z", CultureInfo.InvariantCulture);

@@ -27,16 +27,12 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             // Assert
             await AssertOutputAsync(PackageAssetToCsvDir, Step1, 0);
-            await AssertOutputAsync(PackageAssetToCsvDir, Step1, 1);
-            await AssertOutputAsync(PackageAssetToCsvDir, Step1, 2);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
             await AssertOutputAsync(PackageAssetToCsvDir, Step2, 0);
-            await AssertOutputAsync(PackageAssetToCsvDir, Step1, 1); // This file is unchanged.
-            await AssertOutputAsync(PackageAssetToCsvDir, Step2, 2);
         }
 
         [Fact]
@@ -117,8 +113,6 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             // Assert
             await AssertOutputAsync(PackageAssetToCsvDir, Step1, 0);
-            await AssertOutputAsync(PackageAssetToCsvDir, Step1, 1);
-            await AssertOutputAsync(PackageAssetToCsvDir, Step1, 2);
         }
 
         [Fact]
@@ -143,8 +137,6 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             // Assert
             await AssertOutputAsync(PackageAssetToCsvDir, Step1, 0);
-            await AssertOutputAsync(PackageAssetToCsvDir, Step1, 1);
-            await AssertOutputAsync(PackageAssetToCsvDir, Step1, 2);
             TelemetryClient.Metrics.TryGetValue(new("AppendResultStorageService.CompactAsync.BigMode.Switch", "DestContainer", "RecordType", "Reason"), out var metric);
             Assert.NotNull(metric);
             Assert.All(metric.MetricValues, x => Assert.Equal(Options.Value.PackageAssetContainerName, x.DimensionValues[0]));
@@ -157,8 +149,6 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             // Assert
             await AssertOutputAsync(PackageAssetToCsvDir, Step2, 0);
-            await AssertOutputAsync(PackageAssetToCsvDir, Step1, 1); // This file is unchanged.
-            await AssertOutputAsync(PackageAssetToCsvDir, Step2, 2);
             TelemetryClient.Metrics.TryGetValue(new("AppendResultStorageService.CompactAsync.BigMode.Switch", "DestContainer", "RecordType", "Reason"), out metric);
             Assert.NotNull(metric);
             Assert.All(metric.MetricValues, x => Assert.Equal(Options.Value.PackageAssetContainerName, x.DimensionValues[0]));
@@ -227,16 +217,12 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             // Assert
             await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step1, 0);
-            await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step1, 1);
-            await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step1, 2);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
-            await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-            await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
-            await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step2, 2);
+            await AssertOutputAsync(PackageAssetToCsv_WithDeleteDir, Step2, 0);
         }
 
         [Fact]
@@ -298,13 +284,8 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
         private async Task PackageAssetToCsv_WithDuplicates(bool batchProcessing)
         {
-            ConfigureWorkerSettings = x =>
-            {
-                x.AppendResultStorageBucketCount = 1;
-                x.RunAllCatalogScanDriversAsBatch = batchProcessing;
-            };
-
             // Arrange
+            ConfigureWorkerSettings = x => x.RunAllCatalogScanDriversAsBatch = batchProcessing;
             var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z", CultureInfo.InvariantCulture);
 

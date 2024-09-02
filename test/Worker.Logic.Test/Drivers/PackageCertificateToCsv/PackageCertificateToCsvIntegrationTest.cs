@@ -10,6 +10,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
     public class PackageCertificateToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest<PackageCertificateRecord, CertificateRecord>
     {
         public const string PackageCertificateToCsvDir = nameof(PackageCertificateToCsv);
+        public const string PackageCertificateToCsv_WithMultipleBucketsDir = nameof(PackageCertificateToCsv_WithMultipleBuckets);
         public const string PackageCertificateToCsv_WithManyCertificatesDir = nameof(PackageCertificateToCsv_WithManyCertificates);
         public const string PackageCertificateToCsv_WithEVCodeSigningCertificateDir = nameof(PackageCertificateToCsv_WithEVCodeSigningCertificate);
         public const string PackageCertificateToCsv_WithDeleteDir = nameof(PackageCertificateToCsv_WithDelete);
@@ -34,11 +35,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             // Assert
             await AssertTableOutputAsync(PackageCertificateToCsvDir, Step1);
             await AssertOutputT1Async(PackageCertificateToCsvDir, Step1, 0);
-            await AssertOutputT1Async(PackageCertificateToCsvDir, Step1, 1);
-            await AssertOutputT1Async(PackageCertificateToCsvDir, Step1, 2);
             await AssertOutputT2Async(PackageCertificateToCsvDir, Step1, 0);
-            await AssertOutputT2Async(PackageCertificateToCsvDir, Step1, 1);
-            await AssertOutputT2Async(PackageCertificateToCsvDir, Step1, 2);
 
             // Act
             await UpdateAsync(max2);
@@ -46,11 +43,61 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             // Assert
             await AssertTableOutputAsync(PackageCertificateToCsvDir, Step2);
             await AssertOutputT1Async(PackageCertificateToCsvDir, Step2, 0);
-            await AssertOutputT1Async(PackageCertificateToCsvDir, Step2, 1);
-            await AssertOutputT1Async(PackageCertificateToCsvDir, Step2, 2);
             await AssertOutputT2Async(PackageCertificateToCsvDir, Step2, 0);
-            await AssertOutputT2Async(PackageCertificateToCsvDir, Step2, 1);
-            await AssertOutputT2Async(PackageCertificateToCsvDir, Step2, 2);
+        }
+
+        [Fact]
+        public async Task PackageCertificateToCsv_WithMultipleBuckets()
+        {
+            // Arrange
+            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 3;
+            MakeDeletedPackageAvailable();
+            var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z", CultureInfo.InvariantCulture);
+            var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z", CultureInfo.InvariantCulture);
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
+            await SetCursorAsync(min0);
+
+            SetupCleanupOrphans();
+
+            // Act
+            await UpdateAsync(max1);
+
+            // Assert
+            await AssertTableOutputAsync(PackageCertificateToCsv_WithMultipleBucketsDir, Step1);
+            await AssertOutputT1Async(PackageCertificateToCsv_WithMultipleBucketsDir, Step1, 0);
+            await AssertOutputT1Async(PackageCertificateToCsv_WithMultipleBucketsDir, Step1, 1);
+            await AssertOutputT1Async(PackageCertificateToCsv_WithMultipleBucketsDir, Step1, 2);
+            await AssertOutputT2Async(PackageCertificateToCsv_WithMultipleBucketsDir, Step1, 0);
+            await AssertOutputT2Async(PackageCertificateToCsv_WithMultipleBucketsDir, Step1, 1);
+            await AssertOutputT2Async(PackageCertificateToCsv_WithMultipleBucketsDir, Step1, 2);
+
+            // Act
+            await UpdateAsync(max2);
+
+            // Assert
+            await AssertTableOutputAsync(PackageCertificateToCsv_WithMultipleBucketsDir, Step2);
+            await AssertOutputT1Async(PackageCertificateToCsv_WithMultipleBucketsDir, Step1, 0); // This file is unchanged.
+            await AssertOutputT1Async(PackageCertificateToCsv_WithMultipleBucketsDir, Step1, 1); // This file is unchanged.
+            await AssertOutputT1Async(PackageCertificateToCsv_WithMultipleBucketsDir, Step2, 2);
+            await AssertOutputT2Async(PackageCertificateToCsv_WithMultipleBucketsDir, Step1, 0); // This file is unchanged.
+            await AssertOutputT2Async(PackageCertificateToCsv_WithMultipleBucketsDir, Step1, 1); // This file is unchanged.
+            await AssertOutputT2Async(PackageCertificateToCsv_WithMultipleBucketsDir, Step1, 2); // This file is unchanged.
+
+            // Act
+            await CleanupOrphansAsync();
+
+            // Assert
+            await AssertOwnerToSubjectAsync(PackageCertificateToCsv_WithMultipleBucketsDir, Step2); // This file is unchanged.
+            await AssertSubjectToOwnerAsync(PackageCertificateToCsv_WithMultipleBucketsDir, Step3);
+            await AssertOutputT1Async(PackageCertificateToCsv_WithMultipleBucketsDir, Step1, 0); // This file is unchanged.
+            await AssertOutputT1Async(PackageCertificateToCsv_WithMultipleBucketsDir, Step1, 1); // This file is unchanged.
+            await AssertOutputT1Async(PackageCertificateToCsv_WithMultipleBucketsDir, Step2, 2); // This file is unchanged.
+            await AssertOutputT2Async(PackageCertificateToCsv_WithMultipleBucketsDir, Step1, 0); // This file is unchanged.
+            await AssertOutputT2Async(PackageCertificateToCsv_WithMultipleBucketsDir, Step3, 1);
+            await AssertOutputT2Async(PackageCertificateToCsv_WithMultipleBucketsDir, Step1, 2); // This file is unchanged.
         }
 
         [Fact]
@@ -70,11 +117,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             // Assert
             await AssertTableOutputAsync(PackageCertificateToCsv_WithManyCertificatesDir, Step1);
             await AssertOutputT1Async(PackageCertificateToCsv_WithManyCertificatesDir, Step1, 0);
-            await AssertOutputT1Async(PackageCertificateToCsv_WithManyCertificatesDir, Step1, 1);
-            await AssertOutputT1Async(PackageCertificateToCsv_WithManyCertificatesDir, Step1, 2);
             await AssertOutputT2Async(PackageCertificateToCsv_WithManyCertificatesDir, Step1, 0);
-            await AssertOutputT2Async(PackageCertificateToCsv_WithManyCertificatesDir, Step1, 1);
-            await AssertOutputT2Async(PackageCertificateToCsv_WithManyCertificatesDir, Step1, 2);
         }
 
         [Fact]
@@ -94,11 +137,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             // Assert
             await AssertTableOutputAsync(PackageCertificateToCsv_WithEVCodeSigningCertificateDir, Step1);
             await AssertOutputT1Async(PackageCertificateToCsv_WithEVCodeSigningCertificateDir, Step1, 0);
-            await AssertOutputT1Async(PackageCertificateToCsv_WithEVCodeSigningCertificateDir, Step1, 1);
-            await AssertOutputT1Async(PackageCertificateToCsv_WithEVCodeSigningCertificateDir, Step1, 2);
             await AssertOutputT2Async(PackageCertificateToCsv_WithEVCodeSigningCertificateDir, Step1, 0);
-            await AssertOutputT2Async(PackageCertificateToCsv_WithEVCodeSigningCertificateDir, Step1, 1);
-            await AssertOutputT2Async(PackageCertificateToCsv_WithEVCodeSigningCertificateDir, Step1, 2);
         }
 
         [Fact]
@@ -122,23 +161,15 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             // Assert
             await AssertTableOutputAsync(PackageCertificateToCsv_WithDeleteDir, Step1);
             await AssertOutputT1Async(PackageCertificateToCsv_WithDeleteDir, Step1, 0);
-            await AssertOutputT1Async(PackageCertificateToCsv_WithDeleteDir, Step1, 1);
-            await AssertOutputT1Async(PackageCertificateToCsv_WithDeleteDir, Step1, 2);
             await AssertOutputT2Async(PackageCertificateToCsv_WithDeleteDir, Step1, 0);
-            await AssertOutputT2Async(PackageCertificateToCsv_WithDeleteDir, Step1, 1);
-            await AssertOutputT2Async(PackageCertificateToCsv_WithDeleteDir, Step1, 2);
 
             // Act
             await UpdateAsync(max2);
 
             // Assert
             await AssertTableOutputAsync(PackageCertificateToCsv_WithDeleteDir, Step2);
-            await AssertOutputT1Async(PackageCertificateToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-            await AssertOutputT1Async(PackageCertificateToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
-            await AssertOutputT1Async(PackageCertificateToCsv_WithDeleteDir, Step2, 2);
+            await AssertOutputT1Async(PackageCertificateToCsv_WithDeleteDir, Step2, 0);
             await AssertOutputT2Async(PackageCertificateToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-            await AssertOutputT2Async(PackageCertificateToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
-            await AssertOutputT2Async(PackageCertificateToCsv_WithDeleteDir, Step1, 2); // This file is unchanged.
 
             // Act
             await CleanupOrphansAsync();
@@ -146,12 +177,8 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             // Assert
             await AssertOwnerToSubjectAsync(PackageCertificateToCsv_WithDeleteDir, Step2); // This file is unchanged.
             await AssertSubjectToOwnerAsync(PackageCertificateToCsv_WithDeleteDir, Step3);
-            await AssertOutputT1Async(PackageCertificateToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-            await AssertOutputT1Async(PackageCertificateToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
-            await AssertOutputT1Async(PackageCertificateToCsv_WithDeleteDir, Step2, 2); // This file is unchanged.
-            await AssertOutputT2Async(PackageCertificateToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-            await AssertOutputT2Async(PackageCertificateToCsv_WithDeleteDir, Step3, 1);
-            await AssertOutputT2Async(PackageCertificateToCsv_WithDeleteDir, Step1, 2); // This file is unchanged.
+            await AssertOutputT1Async(PackageCertificateToCsv_WithDeleteDir, Step2, 0); // This file is unchanged.
+            await AssertOutputT2Async(PackageCertificateToCsv_WithDeleteDir, Step3, 0);
         }
 
 
@@ -176,11 +203,8 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
             // Assert
             await AssertTableOutputAsync(PackageCertificateToCsv_WithSingleDeleteDir, Step1);
-            await AssertOutputT1Async(PackageCertificateToCsv_WithSingleDeleteDir, Step1, 1);
-            await AssertCsvCountT1Async(1);
-            await AssertOutputT2Async(PackageCertificateToCsv_WithSingleDeleteDir, Step1, 1);
-            await AssertOutputT2Async(PackageCertificateToCsv_WithSingleDeleteDir, Step1, 2);
-            await AssertCsvCountT2Async(2);
+            await AssertOutputT1Async(PackageCertificateToCsv_WithSingleDeleteDir, Step1, 0);
+            await AssertOutputT2Async(PackageCertificateToCsv_WithSingleDeleteDir, Step1, 0);
 
             // Act
             await SetCursorAsync(DriverType, min2);
@@ -189,11 +213,8 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             // Assert
             await AssertOwnerToSubjectAsync(PackageCertificateToCsv_WithSingleDeleteDir, Step2, "empty-array.json");
             await AssertSubjectToOwnerAsync(PackageCertificateToCsv_WithSingleDeleteDir, Step2);
-            await AssertOutputT1Async(PackageCertificateToCsv_WithSingleDeleteDir, Step2, 1);
-            await AssertCsvCountT1Async(1);
-            await AssertOutputT2Async(PackageCertificateToCsv_WithSingleDeleteDir, Step1, 1); // This file is unchanged.
-            await AssertOutputT2Async(PackageCertificateToCsv_WithSingleDeleteDir, Step1, 2); // This file is unchanged.
-            await AssertCsvCountT2Async(2);
+            await AssertOutputT1Async(PackageCertificateToCsv_WithSingleDeleteDir, Step2, 0);
+            await AssertOutputT2Async(PackageCertificateToCsv_WithSingleDeleteDir, Step1, 0); // This file is unchanged.
 
             // Act
             await CleanupOrphansAsync();
@@ -201,11 +222,8 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             // Assert
             await AssertOwnerToSubjectAsync(PackageCertificateToCsv_WithSingleDeleteDir, Step2, "empty-array.json"); // This file is unchanged.
             await AssertSubjectToOwnerAsync(PackageCertificateToCsv_WithSingleDeleteDir, Step2, "empty-array.json");
-            await AssertOutputT1Async(PackageCertificateToCsv_WithSingleDeleteDir, Step2, 1); // This file is unchanged.
-            await AssertCsvCountT1Async(1);
-            await AssertOutputT2Async(PackageCertificateToCsv_WithSingleDeleteDir, Step3, 1, "empty.csv");
-            await AssertOutputT2Async(PackageCertificateToCsv_WithSingleDeleteDir, Step3, 2, "empty.csv");
-            await AssertCsvCountT2Async(2);
+            await AssertOutputT1Async(PackageCertificateToCsv_WithSingleDeleteDir, Step2, 0); // This file is unchanged.
+            await AssertOutputT2Async(PackageCertificateToCsv_WithSingleDeleteDir, Step3, 0, "empty.csv");
         }
 
         [Fact]
@@ -224,9 +242,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
             // Assert
             await AssertTableOutputAsync(PackageCertificateToCsv_WithDollarSignIdDir, Step1, "empty-array.json");
-            await AssertOutputT1Async(PackageCertificateToCsv_WithDollarSignIdDir, Step1, 2);
-            await AssertCsvCountT1Async(1);
-            await AssertCsvCountT2Async(0);
+            await AssertOutputT1Async(PackageCertificateToCsv_WithDollarSignIdDir, Step1, 0);
         }
 
 

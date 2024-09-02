@@ -6,6 +6,7 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
     public class PackageVersionToCsvIntegrationTest : BaseCatalogScanToCsvIntegrationTest<PackageVersionRecord>
     {
         private const string PackageVersionToCsvDir = nameof(PackageVersionToCsv);
+        private const string PackageVersionToCsv_WithMultipleBucketsDir = nameof(PackageVersionToCsv_WithMultipleBuckets);
         private const string PackageVersionToCsv_WithDeleteDir = nameof(PackageVersionToCsv_WithDelete);
         private const string PackageVersionToCsv_WithFirstCommitTimestampDir = nameof(PackageVersionToCsv_WithFirstCommitTimestamp);
         private const string PackageVersionToCsv_WithDuplicatesDir = nameof(PackageVersionToCsv_WithDuplicates);
@@ -29,8 +30,6 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
 
             // Assert
             await AssertOutputAsync(PackageVersionToCsvDir, Step1, 0);
-            await AssertOutputAsync(PackageVersionToCsvDir, Step1, 1);
-            await AssertOutputAsync(PackageVersionToCsvDir, Step1, 2);
 
             // Act
             await UpdateAsync(CatalogScanDriverType.LoadPackageVersion, onlyLatestLeaves: null, max2);
@@ -38,8 +37,38 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
 
             // Assert
             await AssertOutputAsync(PackageVersionToCsvDir, Step2, 0);
-            await AssertOutputAsync(PackageVersionToCsvDir, Step2, 1);
-            await AssertOutputAsync(PackageVersionToCsvDir, Step2, 2);
+        }
+
+        [Fact]
+        public async Task PackageVersionToCsv_WithMultipleBuckets()
+        {
+            // Arrange
+            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 3;
+            var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z", CultureInfo.InvariantCulture);
+            var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z", CultureInfo.InvariantCulture);
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageVersion, min0);
+            await SetCursorAsync(min0);
+
+            // Act
+            await UpdateAsync(CatalogScanDriverType.LoadPackageVersion, onlyLatestLeaves: null, max1);
+            await UpdateAsync(max1);
+
+            // Assert
+            await AssertOutputAsync(PackageVersionToCsv_WithMultipleBucketsDir, Step1, 0);
+            await AssertOutputAsync(PackageVersionToCsv_WithMultipleBucketsDir, Step1, 1);
+            await AssertOutputAsync(PackageVersionToCsv_WithMultipleBucketsDir, Step1, 2);
+
+            // Act
+            await UpdateAsync(CatalogScanDriverType.LoadPackageVersion, onlyLatestLeaves: null, max2);
+            await UpdateAsync(max2);
+
+            // Assert
+            await AssertOutputAsync(PackageVersionToCsv_WithMultipleBucketsDir, Step1, 0); // This file is unchanged.
+            await AssertOutputAsync(PackageVersionToCsv_WithMultipleBucketsDir, Step1, 1); // This file is unchanged.
+            await AssertOutputAsync(PackageVersionToCsv_WithMultipleBucketsDir, Step2, 2);
         }
 
         [Fact]
@@ -60,17 +89,13 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
 
             // Assert
             await AssertOutputAsync(PackageVersionToCsv_WithDeleteDir, Step1, 0);
-            await AssertOutputAsync(PackageVersionToCsv_WithDeleteDir, Step1, 1);
-            await AssertOutputAsync(PackageVersionToCsv_WithDeleteDir, Step1, 2);
 
             // Act
             await UpdateAsync(CatalogScanDriverType.LoadPackageVersion, onlyLatestLeaves: null, max2);
             await UpdateAsync(max2);
 
             // Assert
-            await AssertOutputAsync(PackageVersionToCsv_WithDeleteDir, Step1, 0); // This file is unchanged.
-            await AssertOutputAsync(PackageVersionToCsv_WithDeleteDir, Step1, 1); // This file is unchanged.
-            await AssertOutputAsync(PackageVersionToCsv_WithDeleteDir, Step2, 2);
+            await AssertOutputAsync(PackageVersionToCsv_WithDeleteDir, Step2, 0);
         }
 
         [Fact]
@@ -90,16 +115,12 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
 
             // Assert
             await AssertOutputAsync(PackageVersionToCsv_WithFirstCommitTimestampDir, Step1, 0);
-            await AssertOutputAsync(PackageVersionToCsv_WithFirstCommitTimestampDir, Step1, 1);
-            await AssertOutputAsync(PackageVersionToCsv_WithFirstCommitTimestampDir, Step1, 2);
         }
 
         [Fact]
         public async Task PackageVersionToCsv_WithDuplicates()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
-
             var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z", CultureInfo.InvariantCulture);
 
@@ -119,8 +140,6 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
         public async Task PackageVersionToCsv_WithAllLatest()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 1;
-
             var min0 = DateTimeOffset.Parse("2021-02-28T01:06:32.8546849Z", CultureInfo.InvariantCulture).AddTicks(-1);
             var max1 = DateTimeOffset.Parse("2021-02-28T01:06:32.8546849Z", CultureInfo.InvariantCulture);
 
