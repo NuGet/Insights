@@ -19,6 +19,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
         private readonly FlatContainerClient _flatContainerClient;
         private readonly HttpSource _httpSource;
         private readonly HttpClient _httpClient;
+        private readonly TemporaryFileProvider _temporaryFileProvider;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<NuGetPackageExplorerToCsvDriver> _logger;
 
@@ -27,6 +28,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             FlatContainerClient flatContainerClient,
             HttpSource httpSource,
             HttpClient httpClient,
+            TemporaryFileProvider temporaryFileProvider,
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<NuGetPackageExplorerToCsvDriver> logger)
         {
@@ -34,6 +36,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             _flatContainerClient = flatContainerClient;
             _httpSource = httpSource;
             _httpClient = httpClient;
+            _temporaryFileProvider = temporaryFileProvider;
             _options = options;
             _logger = logger;
         }
@@ -126,7 +129,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
 
                     using (zipPackage)
                     {
-                        var symbolValidator = new SymbolValidator(zipPackage, zipPackage.Source, rootFolder: null, _httpClient);
+                        var symbolValidator = new SymbolValidator(zipPackage, zipPackage.Source, rootFolder: null, _httpClient, _temporaryFileProvider);
 
                         SymbolValidatorResult symbolValidatorResult;
                         using (var cts = new CancellationTokenSource())

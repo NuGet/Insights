@@ -20,6 +20,7 @@ using NuGet.Insights.Worker.LoadPackageManifest;
 using NuGet.Insights.Worker.LoadPackageReadme;
 using NuGet.Insights.Worker.LoadPackageVersion;
 using NuGet.Insights.Worker.LoadSymbolPackageArchive;
+using NuGet.Insights.Worker.NuGetPackageExplorerToCsv;
 #if ENABLE_CRYPTOAPI
 using NuGet.Insights.Worker.PackageCertificateToCsv;
 using NuGet.Insights.Worker.PackageVersionToCsv;
@@ -120,6 +121,8 @@ namespace NuGet.Insights.Worker
             AddTableScan<LatestPackageLeaf>(serviceCollection);
             AddTableScan<CatalogLeafScan>(serviceCollection);
             AddTableScan<BucketedPackage>(serviceCollection);
+
+            serviceCollection.AddTransient<TemporaryFileProvider>();
 
             serviceCollection.AddTransient<KustoIngestionService>();
             serviceCollection.AddTransient<KustoIngestionStorageService>();
