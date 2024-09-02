@@ -41,7 +41,6 @@ namespace NuGet.Insights.Worker
         private readonly IMetric _addItemCount;
         private readonly IMetric _addOptimisticallyPartitionKeyCount;
         private readonly IMetric _addOptimisticallyRowKeyCount;
-        private readonly IMetric _addOptimisticallyLoopCount;
         private readonly IMetric _addOptimisticallyTryAgainCount;
         private readonly IMetric _addOptimisticallyTryAgainBatchRatio;
         private readonly IMetric _addOptimisticallyConflictCount;
