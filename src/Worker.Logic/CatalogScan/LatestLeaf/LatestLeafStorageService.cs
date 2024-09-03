@@ -47,6 +47,8 @@ namespace NuGet.Insights.Worker
         private readonly IMetric _addOptimisticallyUnknownCount;
         private readonly IMetric _addOptimisticallyUnknownBatchRatio;
         private readonly IMetric _addOptimisticallyBatchSize;
+        private readonly IMetric _addOptimisticallyFailureIndex;
+        private readonly IMetric _addOptimisticallyLoopCount;
         private readonly IMetric _pointUpdateMetric;
         private readonly IMetric _pointIgnoreMetric;
         private readonly IMetric _pointAddMetric;
@@ -74,7 +76,9 @@ namespace NuGet.Insights.Worker
             _addOptimisticallyConflictCount = telemetryClient.GetMetric($"{MetricIdPrefix}{nameof(AddOptimisticallyAsync)}.ConflictCount", "LeafType");
             _addOptimisticallyUnknownCount = telemetryClient.GetMetric($"{MetricIdPrefix}{nameof(AddOptimisticallyAsync)}.UnknownCount", "LeafType");
             _addOptimisticallyUnknownBatchRatio = telemetryClient.GetMetric($"{MetricIdPrefix}{nameof(AddOptimisticallyAsync)}.UnknownBatchRatio", "LeafType");
-            _addOptimisticallyBatchSize = telemetryClient.GetMetric($"{MetricIdPrefix}{nameof(AddOptimisticallyAsync)}.BatchSize", "LeafType", "Success");
+            _addOptimisticallyBatchSize = telemetryClient.GetMetric($"{MetricIdPrefix}{nameof(AddOptimisticallyAsync)}.BatchSize", "LeafType", "Success"); ;
+            _addOptimisticallyFailureIndex = telemetryClient.GetMetric($"{MetricIdPrefix}{nameof(AddOptimisticallyAsync)}.FailureIndex", "LeafType", "IsBatch", "StatusCode", "ErrorCode");
+            _addOptimisticallyLoopCount = telemetryClient.GetMetric($"{MetricIdPrefix}{nameof(AddOptimisticallyAsync)}.LoopCount", "LeafType");
 
             _pointUpdateMetric = telemetryClient.GetMetric($"{MetricIdPrefix}{nameof(SyncWithPointReadAsync)}.UpdateCount", "LeafType");
             _pointIgnoreMetric = telemetryClient.GetMetric($"{MetricIdPrefix}{nameof(SyncWithPointReadAsync)}.IgnoreCount", "LeafType");
@@ -137,16 +141,19 @@ namespace NuGet.Insights.Worker
         {
             var groups = GroupItems(items, storage);
             var state = new OptimisticGroupState(storage, [], new MutableTableTransactionalBatch(storage.Table), [], [], [], [], [], []);
+            _addOptimisticallyPartitionKeyCount.TrackValue(groups.Count, _leafType);
 
             foreach (var (partitionKey, group) in groups)
             {
-                _addOptimisticallyPartitionKeyCount.TrackValue(1, _leafType);
                 _addOptimisticallyRowKeyCount.TrackValue(group.Count, _leafType);
                 state.Incoming.AddRange(group);
+                var loopCount = 0;
                 await AddOptimisticallyAsync(state, partitionKey);
 
                 while (state.TryAgain.Count > 0 || state.Conflict.Count > 0 || state.Unknown.Count > 0)
                 {
+                    loopCount++;
+
                     _addOptimisticallyTryAgainCount.TrackValue(state.TryAgain.Count, _leafType);
                     _addOptimisticallyConflictCount.TrackValue(state.Conflict.Count, _leafType);
                     _addOptimisticallyUnknownCount.TrackValue(state.Unknown.Count, _leafType);
@@ -192,6 +199,7 @@ namespace NuGet.Insights.Worker
                     }
                 }
 
+                _addOptimisticallyLoopCount.TrackValue(loopCount, _leafType);
                 state.Incoming.Clear();
                 state.Batch.Reset();
                 state.RowKeyToEntity.Clear();
@@ -285,37 +293,20 @@ namespace NuGet.Insights.Worker
                 && (ex.Status == (int)HttpStatusCode.Conflict
                     || ex.Status == (int)HttpStatusCode.PreconditionFailed))
             {
-                _addOptimisticallyBatchSize.TrackValue(state.BatchItems.Count, _leafType, "false");
-                var failedIndex = ex.FailedTransactionActionIndex.Value;
-
-                _logger.LogTransientWarning(
-                    ex,
-                    "Submitting {Count} entities for partition key {PartitionKey} in a transaction failed due to an HTTP {StatusCode} on index {FailedIndex}.",
-                    state.Batch.Count,
-                    partitionKey,
-                    ex.Status,
-                    failedIndex);
-
-                AddConflictBatch(state, failedIndex);
+                AddConflictBatch(state, ex, ex.FailedTransactionActionIndex.Value);
             }
             catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.Conflict || ex.Status == (int)HttpStatusCode.PreconditionFailed)
             {
-                _addOptimisticallyBatchSize.TrackValue(state.BatchItems.Count, _leafType, "false");
-                _logger.LogTransientWarning(
-                    ex,
-                    "Submitting {Count} entities for partition key {PartitionKey} failed due to an HTTP {StatusCode}.",
-                    state.Batch.Count,
-                    partitionKey,
-                    ex.Status);
-
-                AddConflictBatch(state, failedIndex: 0);
+                AddConflictBatch(state, ex, failedIndex: 0);
             }
         }
 
-        private void AddConflictBatch(OptimisticGroupState state, int failedIndex)
+        private void AddConflictBatch(OptimisticGroupState state, RequestFailedException ex, int failedIndex)
         {
+            _addOptimisticallyBatchSize.TrackValue(state.BatchItems.Count, _leafType, "false");
             _addOptimisticallyTryAgainBatchRatio.TrackValue((1.0 * failedIndex) / state.BatchItems.Count, _leafType);
             _addOptimisticallyUnknownBatchRatio.TrackValue((1.0 * (state.BatchItems.Count - (failedIndex + 1))) / state.BatchItems.Count, _leafType);
+            _addOptimisticallyFailureIndex.TrackValue(failedIndex, _leafType, state.Batch.Count > 1 ? "true" : "false", ex.Status.ToString(CultureInfo.InvariantCulture), ex.ErrorCode ?? "N/A");
 
             state.TryAgain.AddRange(state.BatchItems.Take(failedIndex));
             state.Conflict.Add(state.BatchItems[failedIndex]);

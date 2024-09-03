@@ -6,9 +6,45 @@ namespace NuGet.Insights.Worker
     public class LatestLeafStorageServiceTest : BaseWorkerLogicIntegrationTest
     {
         [Fact]
+        public async Task HandlesSingleItem()
+        {
+            // Arrange
+            await InitializeStorageAsync();
+
+            // Act
+            await Target.AddAsync(GetItems(firstId: 0, lastId: 0, commitDay: 1, instanceLabel: "a"), Storage);
+
+            // Assert
+            var instanceLabels = await GetInstanceLabelsAsync();
+            Assert.Equal(new[] { "a" }, instanceLabels);
+        }
+
+        [Fact]
+        public async Task HandlesMultiplePartitionKeys()
+        {
+            // Arrange
+            ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 3;
+            await InitializeStorageAsync();
+            var lastId = 20;
+            await Target.AddAsync(GetItems(firstId: 0, lastId, commitDay: 1, instanceLabel: "b"), Storage);
+
+            // Act
+            await Target.AddAsync(GetItems(firstId: 0, lastId, commitDay: 2, instanceLabel: "a"), Storage);
+
+            // Assert
+            var instanceLabels0 = await GetInstanceLabelsAsync(0, lastId);
+            var instanceLabels1 = await GetInstanceLabelsAsync(1, lastId);
+            var instanceLabels2 = await GetInstanceLabelsAsync(2, lastId);
+            Assert.Equal("a aaaa     a   aa  a ", string.Join(string.Empty, instanceLabels0));
+            Assert.Equal("              a     a", string.Join(string.Empty, instanceLabels1));
+            Assert.Equal(" a    aaaaa aa   aa  ", string.Join(string.Empty, instanceLabels2));
+        }
+
+        [Fact]
         public async Task MergesMixOfNewAndOldData()
         {
             // Arrange
+            await InitializeStorageAsync();
             await Target.AddAsync(GetItems(firstId: 0, lastId: 2, commitDay: 5, instanceLabel: "a"), Storage);
             await Target.AddAsync(GetItems(firstId: 3, lastId: 5, commitDay: 1, instanceLabel: "a"), Storage);
             await Target.AddAsync(GetItems(firstId: 6, lastId: 8, commitDay: 3, instanceLabel: "a"), Storage);
@@ -25,6 +61,7 @@ namespace NuGet.Insights.Worker
         public async Task KeepsExistingDataIfCommitTimestampIsOlder()
         {
             // Arrange
+            await InitializeStorageAsync();
             await Target.AddAsync(GetItems(firstId: 0, lastId: 2, commitDay: 2, instanceLabel: "a"), Storage);
 
             // Act
@@ -39,6 +76,7 @@ namespace NuGet.Insights.Worker
         public async Task KeepsExistingDataIfCommitTimestampMatches()
         {
             // Arrange
+            await InitializeStorageAsync();
             await Target.AddAsync(GetItems(firstId: 0, lastId: 2, commitDay: 1, instanceLabel: "a"), Storage);
 
             // Act
@@ -53,6 +91,7 @@ namespace NuGet.Insights.Worker
         public async Task TakesIncomingDataIfCommitTimestampIsNewer()
         {
             // Arrange
+            await InitializeStorageAsync();
             await Target.AddAsync(GetItems(firstId: 0, lastId: 2, commitDay: 1, instanceLabel: "a"), Storage);
 
             // Act
@@ -67,6 +106,7 @@ namespace NuGet.Insights.Worker
         public async Task FirstAfterBatchIsConflict()
         {
             // Arrange
+            await InitializeStorageAsync();
             await Target.AddAsync(GetItems(firstId: 100, lastId: 100, commitDay: 2, instanceLabel: "a"), Storage);
 
             // Act
@@ -81,6 +121,7 @@ namespace NuGet.Insights.Worker
         public async Task SecondAfterBatchIsConflict()
         {
             // Arrange
+            await InitializeStorageAsync();
             await Target.AddAsync(GetItems(firstId: 101, lastId: 101, commitDay: 2, instanceLabel: "a"), Storage);
 
             // Act
@@ -95,6 +136,7 @@ namespace NuGet.Insights.Worker
         public async Task ThirdAfterBatchIsConflict()
         {
             // Arrange
+            await InitializeStorageAsync();
             await Target.AddAsync(GetItems(firstId: 102, lastId: 102, commitDay: 2, instanceLabel: "a"), Storage);
 
             // Act
@@ -116,6 +158,7 @@ namespace NuGet.Insights.Worker
         public async Task NthLeafIsConflict(int id)
         {
             // Arrange
+            await InitializeStorageAsync();
             await Target.AddAsync(GetItems(firstId: id, lastId: id, commitDay: 2, instanceLabel: "a"), Storage);
 
             // Act
@@ -130,6 +173,7 @@ namespace NuGet.Insights.Worker
         public async Task ThirdAndFifthAreConflict()
         {
             // Arrange
+            await InitializeStorageAsync();
             await Target.AddAsync(GetItems(firstId: 2, lastId: 2, commitDay: 2, instanceLabel: "a"), Storage);
             await Target.AddAsync(GetItems(firstId: 4, lastId: 4, commitDay: 2, instanceLabel: "a"), Storage);
 
@@ -145,6 +189,7 @@ namespace NuGet.Insights.Worker
         public async Task LotsOfOldDuplicatesLessThanOnePage()
         {
             // Arrange
+            await InitializeStorageAsync();
             await Target.AddAsync(GetItems(firstId: 0, lastId: 59, commitDay: 2, instanceLabel: "a"), Storage);
 
             // Act
@@ -159,6 +204,7 @@ namespace NuGet.Insights.Worker
         public async Task LotsOfNewDuplicatesLessThanOnePage()
         {
             // Arrange
+            await InitializeStorageAsync();
             await Target.AddAsync(GetItems(firstId: 0, lastId: 59, commitDay: 1, instanceLabel: "a"), Storage);
 
             // Act
@@ -173,6 +219,7 @@ namespace NuGet.Insights.Worker
         public async Task LotsOfOldDuplicatesLessMoreOnePage()
         {
             // Arrange
+            await InitializeStorageAsync();
             await Target.AddAsync(GetItems(firstId: 0, lastId: 3199, commitDay: 2, instanceLabel: "a"), Storage);
 
             // Act
@@ -187,6 +234,7 @@ namespace NuGet.Insights.Worker
         public async Task LotsOfNewDuplicatesMoreThanOnePage()
         {
             // Arrange
+            await InitializeStorageAsync();
             await Target.AddAsync(GetItems(firstId: 0, lastId: 3199, commitDay: 1, instanceLabel: "a"), Storage);
 
             // Act
@@ -201,6 +249,7 @@ namespace NuGet.Insights.Worker
         public async Task OldInterleavedDuplicatesMoreThanOnePage()
         {
             // Arrange
+            await InitializeStorageAsync();
             await Target.AddAsync(GetItems(firstId: 1, lastId: 3199, commitDay: 1, instanceLabel: "a", skipBy: 2), Storage);
 
             // Act
@@ -215,6 +264,7 @@ namespace NuGet.Insights.Worker
         public async Task NewInterleavedDuplicatesMoreThanOnePage()
         {
             // Arrange
+            await InitializeStorageAsync();
             await Target.AddAsync(GetItems(firstId: 1, lastId: 3199, commitDay: 2, instanceLabel: "a", skipBy: 2), Storage);
 
             // Act
@@ -233,7 +283,7 @@ namespace NuGet.Insights.Worker
         public IReadOnlyDictionary<ICatalogLeafItem, int> LeafItemToRank { get; }
         public ILatestPackageLeafStorage<CatalogLeafScan> Storage { get; private set; }
 
-        public override async Task InitializeAsync()
+        protected async Task InitializeStorageAsync()
         {
             await CatalogScanStorageService.InitializeAsync();
             await CatalogScanStorageService.InitializeLeafScanTableAsync(IndexScan.StorageSuffix);
@@ -278,11 +328,12 @@ namespace NuGet.Insights.Worker
             return output;
         }
 
-        private async Task<string[]> GetInstanceLabelsAsync()
+        private async Task<string[]> GetInstanceLabelsAsync(int bucket = 0, int? lastId = null)
         {
-            var leafScans = await CatalogScanStorageService.GetLeafScansAsync(IndexScan.StorageSuffix, IndexScan.ScanId, "B000");
-            var maxId = leafScans.Max(x => int.Parse(x.PackageId, CultureInfo.InvariantCulture));
-            var instanceLabels = new string[maxId + 1];
+            var leafScans = await CatalogScanStorageService.GetLeafScansAsync(IndexScan.StorageSuffix, IndexScan.ScanId, $"B{bucket:D3}");
+            lastId = lastId ?? leafScans.Max(x => int.Parse(x.PackageId, CultureInfo.InvariantCulture));
+            var instanceLabels = new string[lastId.Value + 1];
+            Array.Fill(instanceLabels, " ");
             foreach (var leafScan in leafScans)
             {
                 instanceLabels[int.Parse(leafScan.PackageId, CultureInfo.InvariantCulture)] = leafScan.Url;
