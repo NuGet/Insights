@@ -20,6 +20,8 @@ param adminUsername string
 param adminPassword string
 param addLoadBalancer bool
 param subnetId string
+param imageReference object
+param enableAutomaticOSUpgrade bool
 
 resource ipConfig 'Microsoft.Network/publicIPAddresses@2022-05-01' = if (addLoadBalancer) {
   name: ipConfigName
@@ -144,12 +146,7 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2023-03-01' = {
             placement: skuInfo[vmssSku].diffDiskPlacement
           }
         }
-        imageReference: {
-          publisher: 'MicrosoftWindowsServer'
-          offer: 'WindowsServer'
-          sku: '2022-datacenter-core-smalldisk-g2'
-          version: 'latest'
-        }
+        imageReference: imageReference
       }
       networkProfile: {
         networkInterfaceConfigurations: [
@@ -240,7 +237,7 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2023-03-01' = {
     upgradePolicy: {
       mode: 'Automatic'
       automaticOSUpgradePolicy: {
-        enableAutomaticOSUpgrade: false
+        enableAutomaticOSUpgrade: enableAutomaticOSUpgrade
       }
     }
   }

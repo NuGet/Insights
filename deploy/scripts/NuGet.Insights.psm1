@@ -122,6 +122,8 @@ class ResourceSettings {
     [string]$SpotWorkerAdminUsername
     [string]$SpotWorkerAdminPassword
     [object[]]$SpotWorkerSpecs
+    [object]$SpotWorkerImageReference
+    [bool]$SpotWorkerEnableAutomaticOSUpgrade
     
     [string]$SubscriptionId
     [string]$ServiceTreeId
@@ -239,6 +241,14 @@ class ResourceSettings {
                     Set-OrDefault AddLoadBalancer $false $target $keyPrefix
                 }
             }
+            
+            Set-OrDefault SpotWorkerImageReference @{
+                publisher = 'MicrosoftWindowsServer';
+                offer     = 'WindowsServer';
+                sku       = '2022-datacenter-core-smalldisk-g2';
+                version   = 'latest';
+            }
+            Set-OrDefault SpotWorkerEnableAutomaticOSUpgrade $false
         }
 
         # Static settings
@@ -647,6 +657,8 @@ function New-MainParameters(
         $parameters.spotWorkerAdminUsername = $ResourceSettings.SpotWorkerAdminUsername;
         $parameters.spotWorkerAdminPassword = $ResourceSettings.SpotWorkerAdminPassword;
         $parameters.spotWorkerSpecs = $ResourceSettings.SpotWorkerSpecs;
+        $parameters.spotWorkerImageReference = $ResourceSettings.SpotWorkerImageReference;
+        $parameters.spotWorkerEnableAutomaticOSUpgrade = $ResourceSettings.SpotWorkerEnableAutomaticOSUpgrade;
     }
 
     $parameters

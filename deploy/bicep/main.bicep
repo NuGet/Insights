@@ -54,6 +54,8 @@ param spotWorkerAdminUsername string = ''
 @secure()
 param spotWorkerAdminPassword string = ''
 param spotWorkerSpecs array = []
+param spotWorkerImageReference object = {}
+param spotWorkerEnableAutomaticOSUpgrade bool = false
 
 // Shared resources
 resource userManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
@@ -352,6 +354,8 @@ module spotWorkers './spot-workers.bicep' = if (useSpotWorkers) {
     deploymentScriptSubnetId: vnets.outputs.deploymentScriptSubnetId
     deploymentNamePrefix: deploymentNamePrefix
     subnetIds: vnets.outputs.spotWorkerSubnetIds
+    imageReference: spotWorkerImageReference
+    enableAutomaticOSUpgrade: spotWorkerEnableAutomaticOSUpgrade
   }
   dependsOn: [
     permissions
