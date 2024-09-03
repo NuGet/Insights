@@ -38,7 +38,7 @@ New-Deployment `
 
 # Initialize the AAD app, if necessary
 if (!$ResourceSettings.WebsiteAadAppClientId) {
-    $aadApp = (. (Join-Path $PSScriptRoot "Initialize-AadApp.ps1") -AadAppName $ResourceSettings.WebsiteAadAppName)
+    $aadApp = (. (Join-Path $PSScriptRoot "Initialize-AadApp.ps1") -AadAppName $ResourceSettings.WebsiteAadAppName -ServiceManagementReference $ResourceSettings.ServiceTreeId)
 
     # Make the app service support the website for login
     . (Join-Path $PSScriptRoot "Initialize-AadAppForWebsite.ps1") `

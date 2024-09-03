@@ -1,7 +1,10 @@
 [CmdletBinding()]
 param (
     [Parameter(Mandatory = $true)]
-    [string]$AadAppName
+    [string]$AadAppName,
+
+    [Parameter(Mandatory = $false)]
+    [string]$ServiceManagementReference
 )
 
 Import-Module (Join-Path $PSScriptRoot "NuGet.Insights.psm1")
@@ -21,6 +24,11 @@ elseif ($existingApps.Count -eq 1) {
 }
 else {
     throw "There are $($existingApps.Count) apps with the name '$AadAppName'."
+}
+
+if ($ServiceManagementReference -and $app.ServiceManagementReference -ne $ServiceManagementReference) {
+    Write-Status "Updating AAD app to have service management reference '$ServiceManagementReference'."
+    Update-AzADApplication -ObjectId $app.Id -ServiceManagementReference $ServiceManagementReference
 }
 
 $app
