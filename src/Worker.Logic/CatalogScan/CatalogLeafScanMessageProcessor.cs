@@ -88,7 +88,7 @@ namespace NuGet.Insights.Worker
             {
                 CatalogLeafScanMessage sampleMessage = failed[0];
                 _logger.LogError(
-                    "{FailedCount} catalog leaf scans of {Count} failed. Sample leaf: {ScanId} {PageId} {LeafId}",                    
+                    "{FailedCount} catalog leaf scans of {Count} failed. Sample leaf: {ScanId} {PageId} {LeafId}",
                     failed.Count,
                     messages.Count,
                     sampleMessage.ScanId,
