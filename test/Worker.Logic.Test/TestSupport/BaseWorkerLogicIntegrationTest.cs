@@ -229,7 +229,7 @@ namespace NuGet.Insights.Worker
 
         protected async Task<CatalogIndexScan> UpdateAsync(CatalogScanServiceResult result, bool parallel = false, TimeSpan? visibilityTimeout = null)
         {
-            Assert.Contains(result.Type, new[] { CatalogScanServiceResultType.NewStarted, CatalogScanServiceResultType.AlreadyRunning });
+            Assert.Contains(result.Type, new[] { CatalogScanServiceResultType.NewStarted, CatalogScanServiceResultType.AlreadyStarted });
             return await UpdateAsync(result.Scan, parallel, visibilityTimeout);
         }
 

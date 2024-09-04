@@ -295,7 +295,7 @@ namespace NuGet.Insights.Worker
             var existing = await _storageService.GetIndexScanAsync(driverType, scanId);
             if (existing is not null)
             {
-                return new CatalogScanServiceResult(CatalogScanServiceResultType.AlreadyRunning, dependencyName: null, existing);
+                return new CatalogScanServiceResult(CatalogScanServiceResultType.AlreadyStarted, dependencyName: null, existing);
             }
 
             var disabledOrStarted = await CheckForDisabledOrStartedAsync(driverType);
@@ -485,11 +485,11 @@ namespace NuGet.Insights.Worker
                 return new CatalogScanServiceResult(CatalogScanServiceResultType.Disabled, dependencyName: null, scan: null);
             }
 
-            // Check if a scan is already running, outside the lease.
+            // Check if a scan is already started, outside the lease.
             var incompleteScan = await GetLatestIncompleteScanAsync(driverType);
             if (incompleteScan != null)
             {
-                return new CatalogScanServiceResult(CatalogScanServiceResultType.AlreadyRunning, dependencyName: null, incompleteScan);
+                return new CatalogScanServiceResult(CatalogScanServiceResultType.AlreadyStarted, dependencyName: null, incompleteScan);
             }
 
             return null;
@@ -504,7 +504,7 @@ namespace NuGet.Insights.Worker
             DateTimeOffset min,
             DateTimeOffset max)
         {
-            // Check if a scan is already running, outside the lease.
+            // Check if a scan is already started, outside the lease.
             var incompleteScan = await _storageService.GetIndexScanAsync(driverType, scanId);
             if (incompleteScan != null)
             {

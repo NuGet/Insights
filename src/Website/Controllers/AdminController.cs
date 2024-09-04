@@ -256,8 +256,8 @@ namespace NuGet.Insights.Website.Controllers
         {
             switch (result.Type)
             {
-                case CatalogScanServiceResultType.AlreadyRunning:
-                    return (false, $"Scan <b>{result.Scan.ScanId}</b> is already running.");
+                case CatalogScanServiceResultType.AlreadyStarted:
+                    return (false, $"Scan <b>{result.Scan.ScanId}</b> was already started.");
                 case CatalogScanServiceResultType.BlockedByDependency when !useBucketRanges:
                     return (false, $"The scan can't use that max because it's beyond the <b>{result.DependencyName}</b> cursor.");
                 case CatalogScanServiceResultType.BlockedByDependency when useBucketRanges:

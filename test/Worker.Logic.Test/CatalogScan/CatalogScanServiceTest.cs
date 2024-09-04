@@ -131,7 +131,7 @@ namespace NuGet.Insights.Worker
                 var result = await CatalogScanService.UpdateAsync(ScanId, StorageSuffix, DriverType, Buckets);
 
                 // Assert
-                Assert.Equal(CatalogScanServiceResultType.AlreadyRunning, result.Type);
+                Assert.Equal(CatalogScanServiceResultType.AlreadyStarted, result.Type);
                 Assert.Equal(first.Scan.ScanId, result.Scan.ScanId);
                 Assert.Equal(ScanId, result.Scan.ScanId);
             }
@@ -262,7 +262,7 @@ namespace NuGet.Insights.Worker
                 var result = await CatalogScanService.UpdateAsync(DriverType);
 
                 // Assert
-                Assert.Equal(CatalogScanServiceResultType.AlreadyRunning, result.Type);
+                Assert.Equal(CatalogScanServiceResultType.AlreadyStarted, result.Type);
                 Assert.Equal(first.Scan.ScanId, result.Scan.ScanId);
             }
 

@@ -5,7 +5,7 @@ namespace NuGet.Insights.Worker
 {
     public enum CatalogScanServiceResultType
     {
-        AlreadyRunning,
+        AlreadyStarted,
         UnavailableLease,
         NewStarted,
         BlockedByDependency,

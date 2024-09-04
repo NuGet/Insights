@@ -10,6 +10,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
         private readonly TimedReprocessService _service;
         private readonly TimedReprocessStorageService _storageService;
         private readonly CatalogScanService _catalogScanService;
+        private readonly CatalogScanStorageService _catalogScanStorageService;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly ILogger<TimedReprocessMessageProcessor> _logger;
 
@@ -17,12 +18,14 @@ namespace NuGet.Insights.Worker.TimedReprocess
             TimedReprocessService service,
             TimedReprocessStorageService storageService,
             CatalogScanService catalogScanService,
+            CatalogScanStorageService catalogScanStorageService,
             IMessageEnqueuer messageEnqueuer,
             ILogger<TimedReprocessMessageProcessor> logger)
         {
             _service = service;
             _storageService = storageService;
             _catalogScanService = catalogScanService;
+            _catalogScanStorageService = catalogScanStorageService;
             _messageEnqueuer = messageEnqueuer;
             _logger = logger;
         }
@@ -91,52 +94,66 @@ namespace NuGet.Insights.Worker.TimedReprocess
 
                         if (!timedScan.Completed)
                         {
-                            var result = await _catalogScanService.UpdateAsync(
-                                timedScan.ScanId,
-                                timedScan.StorageSuffix,
-                                timedScan.DriverType,
-                                buckets);
-
-                            if (result.Scan is not null && result.Scan.ScanId != timedScan.ScanId)
-                            {
-                                // It's possible a cursor-based scan is running right now. Wait for it to complete
-                                // before starting the bucket range scan starts.
-                                _logger.LogInformation("Another scan for {DriverType} is already running. The scan ID is {ScanId}.", driverType, result.Scan.ScanId);
-                                incompleteCount++;
-                            }
-                            else if (result.Type == CatalogScanServiceResultType.NewStarted)
-                            {
-                                _logger.LogInformation("Catalog scan {ScanId} for {DriverType} has now begun.", timedScan.ScanId, driverType);
-                                incompleteCount++;
-                            }
-                            else if (result.Type == CatalogScanServiceResultType.UnavailableLease)
+                            // Check for the timed scan before trying to start it. This reduces confusing telemetry.
+                            var existing = await _catalogScanStorageService.GetIndexScanAsync(timedScan.DriverType, timedScan.ScanId);
+                            if (existing is not null && !existing.State.IsTerminal())
                             {
                                 _logger.LogInformation(
-                                    "The catalog scan {ScanId} for {DriverType} is being processed by another thread.",
+                                    "Catalog scan {ScanId} for {DriverType} driver is in the {State} state.",
                                     timedScan.ScanId,
-                                    driverType);
+                                    driverType,
+                                    existing.State);
                                 incompleteCount++;
-                            }
-                            else if (result.Type == CatalogScanServiceResultType.AlreadyRunning)
-                            {
-                                if (result.Scan.State != CatalogIndexScanState.Complete)
-                                {
-                                    _logger.LogInformation(
-                                        "Catalog scan {ScanId} for {DriverType} driver is in the {State} state.",
-                                        timedScan.ScanId,
-                                        driverType,
-                                        result.Scan.State);
-                                    incompleteCount++;
-                                }
-                                else
-                                {
-                                    timedScan.Completed = true;
-                                    await _storageService.ReplaceScanAsync(timedScan);
-                                }
                             }
                             else
                             {
-                                throw new InvalidOperationException($"Unexpected catalog scan service result of type {result.Type}.");
+                                var result = await _catalogScanService.UpdateAsync(
+                                    timedScan.ScanId,
+                                    timedScan.StorageSuffix,
+                                    timedScan.DriverType,
+                                    buckets);
+
+                                if (result.Scan is not null && result.Scan.ScanId != timedScan.ScanId)
+                                {
+                                    // It's possible a cursor-based scan is running right now. Wait for it to complete
+                                    // before starting the bucket range scan starts.
+                                    _logger.LogInformation("Another scan for {DriverType} is already running. The scan ID is {ScanId}.", driverType, result.Scan.ScanId);
+                                    incompleteCount++;
+                                }
+                                else if (result.Type == CatalogScanServiceResultType.NewStarted)
+                                {
+                                    _logger.LogInformation("Catalog scan {ScanId} for {DriverType} has now begun.", timedScan.ScanId, driverType);
+                                    incompleteCount++;
+                                }
+                                else if (result.Type == CatalogScanServiceResultType.UnavailableLease)
+                                {
+                                    _logger.LogInformation(
+                                        "The catalog scan {ScanId} for {DriverType} is being processed by another thread.",
+                                        timedScan.ScanId,
+                                        driverType);
+                                    incompleteCount++;
+                                }
+                                else if (result.Type == CatalogScanServiceResultType.AlreadyStarted)
+                                {
+                                    if (result.Scan.State != CatalogIndexScanState.Complete)
+                                    {
+                                        _logger.LogInformation(
+                                            "Catalog scan {ScanId} for {DriverType} driver is in the {State} state. Another thread must have started the scan first.",
+                                            timedScan.ScanId,
+                                            driverType,
+                                            result.Scan.State);
+                                        incompleteCount++;
+                                    }
+                                    else
+                                    {
+                                        timedScan.Completed = true;
+                                        await _storageService.ReplaceScanAsync(timedScan);
+                                    }
+                                }
+                                else
+                                {
+                                    throw new InvalidOperationException($"Unexpected catalog scan service result of type {result.Type}.");
+                                }
                             }
                         }
                     }
