@@ -292,7 +292,7 @@ namespace NuGet.Insights.TablePrefixScan
             var tablePageQuery = query.Parameters.Table
                 .QueryAsync(
                     filter,
-                    maxPerPage: MaxTakeCount,
+                    maxPerPage: query.Parameters.TakeCount,
                     select: query.Parameters.SelectColumns)
                 .AsPages();
 

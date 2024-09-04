@@ -35,8 +35,7 @@ namespace NuGet.Insights.Worker
                 TableScanDriverType.EnqueueCatalogLeafScans,
                 tableName,
                 TableScanStrategy.PrefixScan,
-                StorageUtility.MaxTakeCount,
-                expandPartitionKeys: !oneMessagePerId,
+                expandPartitionKeys: true,
                 partitionKeyPrefix: string.Empty,
                 partitionKeyLowerBound: null,
                 partitionKeyUpperBound: null,
@@ -53,8 +52,7 @@ namespace NuGet.Insights.Worker
             int minBucketIndex,
             int maxBucketIndex,
             CatalogScanDriverType driverType,
-            string scanId,
-            int takeCount = StorageUtility.MaxTakeCount)
+            string scanId)
         {
             var partitionKeyLowerBound = minBucketIndex > 0 ? BucketedPackage.GetBucketString(minBucketIndex - 1) : null;
             var partitionKeyUpperBound = maxBucketIndex < BucketedPackage.BucketCount - 1 ? BucketedPackage.GetBucketString(maxBucketIndex + 1) : null;
@@ -64,7 +62,6 @@ namespace NuGet.Insights.Worker
                 TableScanDriverType.CopyBucketRange,
                 _options.Value.BucketedPackageTableName,
                 TableScanStrategy.PrefixScan,
-                takeCount,
                 expandPartitionKeys: true,
                 partitionKeyPrefix: string.Empty,
                 partitionKeyLowerBound: partitionKeyLowerBound,
@@ -86,7 +83,6 @@ namespace NuGet.Insights.Worker
             string partitionKeyLowerBound,
             string partitionKeyUpperBound,
             TableScanStrategy strategy,
-            int takeCount,
             int segmentsPerFirstPrefix,
             int segmentsPerSubsequentPrefix)
             where T : class, ITableEntity, new()
@@ -96,7 +92,6 @@ namespace NuGet.Insights.Worker
                 TableScanDriverType.TableCopy,
                 sourceTable,
                 strategy,
-                takeCount,
                 expandPartitionKeys: true,
                 partitionKeyPrefix,
                 partitionKeyLowerBound,
@@ -114,7 +109,6 @@ namespace NuGet.Insights.Worker
             TableScanDriverType driverType,
             string sourceTable,
             TableScanStrategy strategy,
-            int takeCount,
             bool expandPartitionKeys,
             string partitionKeyPrefix,
             string partitionKeyLowerBound,
@@ -150,7 +144,7 @@ namespace NuGet.Insights.Worker
                     TableName = sourceTable,
                     Strategy = strategy,
                     DriverType = driverType,
-                    TakeCount = takeCount,
+                    TakeCount = _options.Value.TableScanTakeCount,
                     ExpandPartitionKeys = expandPartitionKeys,
                     PartitionKeyPrefix = partitionKeyPrefix,
                     PartitionKeyLowerBound = partitionKeyLowerBound,

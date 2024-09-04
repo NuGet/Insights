@@ -33,6 +33,7 @@ namespace NuGet.Insights.Worker.TableCopy
         private async Task CopyAsync(TableScanStrategy strategy, string lowerBound, string upperBound)
         {
             // Arrange
+            ConfigureWorkerSettings = x => x.TableScanTakeCount = 10;
             var min0 = DateTimeOffset.Parse("2020-11-27T20:58:24.1558179Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2020-11-27T23:41:30.2461308Z", CultureInfo.InvariantCulture);
 
@@ -62,7 +63,6 @@ namespace NuGet.Insights.Worker.TableCopy
                 partitionKeyLowerBound: lowerBound,
                 partitionKeyUpperBound: upperBound,
                 strategy,
-                takeCount: 10,
                 segmentsPerFirstPrefix: 1,
                 segmentsPerSubsequentPrefix: 1);
             await UpdateAsync(taskStateKey);

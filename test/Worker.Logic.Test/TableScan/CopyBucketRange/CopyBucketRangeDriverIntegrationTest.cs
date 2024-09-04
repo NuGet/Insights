@@ -98,6 +98,8 @@ namespace NuGet.Insights.Worker.CopyBucketRange
         [Fact]
         public async Task CopyBucketRange_WithMultiplePartitionKeyWrites()
         {
+            // Arrange
+            ConfigureWorkerSettings = x => x.TableScanTakeCount = 1;
             var min0 = DateTimeOffset.Parse("2023-04-20T15:28:51.3459132Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2023-04-20T15:29:24.2230035Z", CultureInfo.InvariantCulture);
 
@@ -129,8 +131,7 @@ namespace NuGet.Insights.Worker.CopyBucketRange
                 bucketMin,
                 bucketMax,
                 indexScan.DriverType,
-                indexScan.ScanId,
-                takeCount: 1);
+                indexScan.ScanId);
             await UpdateAsync(taskStateKey);
 
             // Assert

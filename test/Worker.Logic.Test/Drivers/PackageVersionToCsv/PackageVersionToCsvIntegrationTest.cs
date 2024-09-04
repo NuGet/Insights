@@ -121,6 +121,7 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
         public async Task PackageVersionToCsv_WithDuplicates()
         {
             // Arrange
+            ConfigureWorkerSettings = x => x.TableScanTakeCount = 3;
             var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z", CultureInfo.InvariantCulture);
 
