@@ -438,7 +438,6 @@ namespace NuGet.Insights.Worker
             // Enqueueing: start the table scan of the latest leaves table
             if (scan.State == CatalogIndexScanState.Enqueuing)
             {
-                await _taskStateStorageService.AddAsync(taskStateKey);
                 await _tableScanService.StartEnqueueCatalogLeafScansAsync(
                     taskStateKey,
                     _storageService.GetLeafScanTableName(scan.StorageSuffix),
