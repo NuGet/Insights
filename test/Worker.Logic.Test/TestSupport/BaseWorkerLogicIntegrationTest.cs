@@ -556,7 +556,7 @@ namespace NuGet.Insights.Worker
                 "X-Cache-Info",
                 "X-CDN-Rewrite",
                 "X-Content-Type-Options",
-                "X-EC-BRR-Enable",
+                "X-EC-BBR-Enable",
                 "x-fd-int-roxy-purgeid",
                 "x-ms-lease-state",
                 "x-ms-request-id",
