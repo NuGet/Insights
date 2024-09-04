@@ -34,13 +34,13 @@ namespace NuGet.Insights.Worker
                 taskState = await _taskStateStorageService.GetAsync(message.TaskStateKey);
             }
 
+            using var loggerScope = _logger.BeginScope("CSV compact: {Scope_CsvCompactContainer} {Scope_CsvCompactBucket}", _storage.ResultContainerName, message.Bucket);
+
             if (!message.Force && taskState == null)
             {
                 _logger.LogTransientWarning("No matching task state was found.");
                 return;
             }
-
-            using var loggerScope = _logger.BeginScope("CSV compact: {Scope_CsvCompactContainer} {Scope_CsvCompactBucket}", _storage.ResultContainerName, message.Bucket);
 
             await _storageService.CompactAsync<T>(
                 message.SourceTable,

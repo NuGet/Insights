@@ -42,9 +42,9 @@ namespace NuGet.Insights.Worker
             await AddAsync(taskState.StorageSuffix, taskState.PartitionKey, new[] { taskState });
         }
 
-        public async Task AddAsync(string storageSuffix, string partitionKey, IReadOnlyList<string> rowKeys)
+        public async Task<List<TaskState>> AddAsync(string storageSuffix, string partitionKey, IReadOnlyList<string> rowKeys)
         {
-            await AddAsync(
+            return await AddAsync(
                 storageSuffix,
                 partitionKey,
                 rowKeys.Select(r => new TaskState(storageSuffix, partitionKey, r)).ToList());
@@ -57,7 +57,7 @@ namespace NuGet.Insights.Worker
             taskState.UpdateETag(response);
         }
 
-        public async Task AddAsync(string storageSuffix, string partitionKey, IReadOnlyList<TaskState> taskStates)
+        public async Task<List<TaskState>> AddAsync(string storageSuffix, string partitionKey, IReadOnlyList<TaskState> taskStates)
         {
             if (taskStates.Any(x => x.StorageSuffix != storageSuffix || x.PartitionKey != partitionKey))
             {
@@ -74,6 +74,8 @@ namespace NuGet.Insights.Worker
                 .Where(x => !existingRowKeys.Contains(x.RowKey))
                 .ToList();
             await InsertAsync(toInsert);
+
+            return toInsert;
         }
 
         private async Task<IReadOnlyList<TaskState>> GetAllAsync(string storageSuffix, string partitionKey)
@@ -126,10 +128,17 @@ namespace NuGet.Insights.Worker
                 .GetEntityOrNullAsync<TaskState>(key.PartitionKey, key.RowKey);
         }
 
-        public async Task DeleteAsync(TaskState taskState)
+        public async Task<bool> DeleteAsync(TaskState taskState)
         {
-            await (await GetTableAsync(taskState.StorageSuffix))
+            var response = await (await GetTableAsync(taskState.StorageSuffix))
                 .DeleteEntityAsync(taskState.PartitionKey, taskState.RowKey);
+
+            return response.Status switch
+            {
+                (int)HttpStatusCode.NoContent => true,
+                (int)HttpStatusCode.NotFound => false,
+                _ => throw new InvalidOperationException($"Unexpected HTTP status for task state deletion: HTTP {response.Status}."),
+            };
         }
 
         public async Task DeleteAsync(IReadOnlyList<TaskState> taskStates)

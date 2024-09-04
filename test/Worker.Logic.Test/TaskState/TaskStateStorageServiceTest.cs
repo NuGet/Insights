@@ -31,6 +31,31 @@ namespace NuGet.Insights.Worker
             }
 
             [Fact]
+            public async Task ReturnsNewlyAdded()
+            {
+                var rowKeysA = Enumerable.Range(10, 10).Select(x => x.ToString(CultureInfo.InvariantCulture)).ToList();
+                var rowKeysB = Enumerable.Range(10, 20).Select(x => x.ToString(CultureInfo.InvariantCulture)).ToList();
+                await Target.AddAsync(StorageSuffix, PartitionKey, rowKeysA);
+
+                var newlyAdded = await Target.AddAsync(StorageSuffix, PartitionKey, rowKeysB);
+
+                Assert.Equal(10, newlyAdded.Count);
+                Assert.Equal(rowKeysB.Skip(10).ToList(), newlyAdded.Select(x => x.RowKey).ToList());
+            }
+
+            [Fact]
+            public async Task ReturnsEmptyWhenNoneWereNewlyAdded()
+            {
+                var rowKeysA = Enumerable.Range(10, 10).Select(x => x.ToString(CultureInfo.InvariantCulture)).ToList();
+                var rowKeysB = Enumerable.Range(10, 10).Select(x => x.ToString(CultureInfo.InvariantCulture)).ToList();
+                await Target.AddAsync(StorageSuffix, PartitionKey, rowKeysA);
+
+                var newlyAdded = await Target.AddAsync(StorageSuffix, PartitionKey, rowKeysB);
+
+                Assert.Empty(newlyAdded);
+            }
+
+            [Fact]
             public async Task CanAddMoreThan100TaskStatesAtOnce()
             {
                 var rowKeys = Enumerable.Range(100, 101).Select(x => x.ToString(CultureInfo.InvariantCulture)).ToList();
@@ -97,6 +122,62 @@ namespace NuGet.Insights.Worker
 
                 var output = await Target.GetAsync(input.GetKey());
                 Assert.Equal(output.ETag, input.ETag);
+            }
+        }
+
+        public class TheDeleteAsyncMethod : TaskStateStorageServiceTest
+        {
+            public TheDeleteAsyncMethod(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+            {
+            }
+
+            [Fact]
+            public async Task ReturnsTrueIfTaskStateExists()
+            {
+                var input = new TaskState(StorageSuffix, PartitionKey, "foo");
+                await Target.AddAsync(input);
+
+                var output = await Target.DeleteAsync(input);
+
+                Assert.True(output);
+                Assert.Null(await Target.GetAsync(new TaskStateKey(StorageSuffix, PartitionKey, "foo")));
+            }
+
+            [Fact]
+            public async Task ReturnsTrueIETagHasChangedAndStateExists()
+            {
+                var input = new TaskState(StorageSuffix, PartitionKey, "foo");
+                await Target.AddAsync(input);
+                await Target.UpdateAsync(new TaskState(StorageSuffix, PartitionKey, "foo") { Parameters = "a", ETag = input.ETag });
+
+                var output = await Target.DeleteAsync(input);
+
+                Assert.True(output);
+                Assert.Null(await Target.GetAsync(new TaskStateKey(StorageSuffix, PartitionKey, "foo")));
+            }
+
+            [Fact]
+            public async Task ReturnsFalseIfTaskStateNoLongerExists()
+            {
+                var input = new TaskState(StorageSuffix, PartitionKey, "foo");
+                await Target.AddAsync(input);
+                await Target.DeleteAsync(input);
+
+                var output = await Target.DeleteAsync(input);
+
+                Assert.False(output);
+                Assert.Null(await Target.GetAsync(new TaskStateKey(StorageSuffix, PartitionKey, "foo")));
+            }
+
+            [Fact]
+            public async Task ReturnsFalseIfTaskStateNeverExisted()
+            {
+                var input = new TaskState(StorageSuffix, PartitionKey, "foo");
+
+                var output = await Target.DeleteAsync(input);
+
+                Assert.False(output);
+                Assert.Null(await Target.GetAsync(new TaskStateKey(StorageSuffix, PartitionKey, "foo")));
             }
         }
 

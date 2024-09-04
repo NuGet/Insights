@@ -10,6 +10,8 @@ namespace NuGet.Insights.Worker
 {
     public class TableScanMessageProcessor<T> : IMessageProcessor<TableScanMessage<T>> where T : class, ITableEntity, new()
     {
+        public const string MetricIdPrefix = $"{nameof(TableScanMessageProcessor<T>)}.";
+
         private readonly TaskStateStorageService _taskStateStorageService;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IMessageEnqueuer _enqueuer;
@@ -18,6 +20,14 @@ namespace NuGet.Insights.Worker
         private readonly TableScanDriverFactory<T> _driverFactory;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<TableScanMessageProcessor<T>> _logger;
+        private readonly IMetric _sinceStarted;
+        private readonly IMetric _messageProcessed;
+        private readonly IMetric _duplicateTaskState;
+        private readonly IMetric _entitySegmentCount;
+        private readonly IMetric _entitySegmentSize;
+        private readonly IMetric _processEntities;
+        private readonly IMetric _enqueuePartitionKeyQuery;
+        private readonly IMetric _enqueuePrefixScanQuery;
 
         public TableScanMessageProcessor(
             TaskStateStorageService taskStateStorageService,
@@ -37,6 +47,23 @@ namespace NuGet.Insights.Worker
             _driverFactory = driverFactory;
             _telemetryClient = telemetryClient;
             _logger = logger;
+
+            _sinceStarted = _telemetryClient
+                .GetMetric($"{MetricIdPrefix}SinceStartedSeconds", "Strategy", "MessageType", "DriverType");
+            _messageProcessed = _telemetryClient
+                .GetMetric($"{MetricIdPrefix}MessageProcessed", "Strategy", "MessageType", "DriverType", "IsDuplicate");
+            _duplicateTaskState = _telemetryClient
+                .GetMetric($"{MetricIdPrefix}{nameof(TableScanStrategy.PrefixScan)}.DuplicateTaskStateCount", "MessageType", "DriverType");
+            _entitySegmentCount = _telemetryClient
+                .GetMetric($"{MetricIdPrefix}{nameof(TableScanStrategy.PrefixScan)}.EntitySegmentCount", "MessageType", "DriverType");
+            _entitySegmentSize = _telemetryClient
+                .GetMetric($"{MetricIdPrefix}{nameof(TableScanStrategy.PrefixScan)}.EntitySegmentSize", "MessageType", "DriverType");
+            _processEntities = _telemetryClient
+                .GetMetric($"{MetricIdPrefix}{nameof(TableScanStrategy.PrefixScan)}.ProcessEntitiesCount", "MessageType", "DriverType");
+            _enqueuePartitionKeyQuery = _telemetryClient
+                .GetMetric($"{MetricIdPrefix}{nameof(TableScanStrategy.PrefixScan)}.EnqueuePartitionKeyQueryCount", "MessageType", "DriverType");
+            _enqueuePrefixScanQuery = _telemetryClient
+                .GetMetric($"{MetricIdPrefix}{nameof(TableScanStrategy.PrefixScan)}.EnqueuePrefixScanQueryCount", "MessageType", "DriverType");
         }
 
         public async Task ProcessAsync(TableScanMessage<T> message, long dequeueCount)
@@ -44,7 +71,11 @@ namespace NuGet.Insights.Worker
             var taskState = await _taskStateStorageService.GetAsync(message.TaskStateKey);
             if (taskState == null)
             {
-                _logger.LogTransientWarning("No matching task state was found for a table scan step.");
+                _logger.LogTransientWarning(
+                    "No matching task state was found for a table scan step. Key: {StorageSuffix} {PartitionKey} {RowKey}",
+                    message.TaskStateKey.StorageSuffix,
+                    message.TaskStateKey.PartitionKey,
+                    message.TaskStateKey.RowKey);
                 return;
             }
 
@@ -60,12 +91,14 @@ namespace NuGet.Insights.Worker
                     throw new NotImplementedException();
             }
 
-            await _taskStateStorageService.DeleteAsync(taskState);
+            var strategy = message.Strategy.ToString();
+            var messageType = typeof(T).Name;
+            var driverType = message.DriverType.ToString();
+            var duplicate = !(await _taskStateStorageService.DeleteAsync(taskState));
+            _messageProcessed.TrackValue(1, strategy, messageType, driverType, duplicate ? "true" : "false");
 
             var sinceStarted = DateTimeOffset.UtcNow - message.Started;
-            _telemetryClient
-                .GetMetric("TableScanMessageProcessor.SinceStartedSeconds", "Strategy")
-                .TrackValue(sinceStarted.TotalSeconds, message.Strategy.ToString());
+            _sinceStarted.TrackValue(sinceStarted.TotalSeconds, strategy, messageType, driverType);
         }
 
         private async Task ProcessSerialAsync(TableScanMessage<T> message)
@@ -183,15 +216,24 @@ namespace NuGet.Insights.Worker
             var entities = new List<T>();
             var tableScanMessages = new List<TableScanMessage<T>>();
             var taskStates = new List<TaskState>();
+            var messageType = typeof(T).Name;
+            var driverType = originalMessage.DriverType.ToString();
+
+            var entitySegmentCount = 0;
+            var enqueuePartitionKeyQuery = 0;
+            var enqueuePrefixScanQuery = 0;
 
             foreach (var nextStep in nextSteps)
             {
                 switch (nextStep)
                 {
                     case TablePrefixScanEntitySegment<T> segment:
+                        entitySegmentCount++;
+                        _entitySegmentSize.TrackValue(segment.Entities.Count, messageType, driverType);
                         entities.AddRange(segment.Entities);
                         break;
                     case TablePrefixScanPartitionKeyQuery partitionKeyQuery:
+                        enqueuePartitionKeyQuery++;
                         tableScanMessages.Add(GetPrefixScanMessage(
                             originalMessage,
                             new TablePrefixScanPartitionKeyQueryParameters
@@ -205,6 +247,7 @@ namespace NuGet.Insights.Worker
                             taskStates));
                         break;
                     case TablePrefixScanPrefixQuery prefixQuery:
+                        enqueuePrefixScanQuery++;
                         tableScanMessages.Add(GetPrefixScanMessage(
                             originalMessage,
                             new TablePrefixScanPrefixQueryParameters
@@ -223,6 +266,11 @@ namespace NuGet.Insights.Worker
                 }
             }
 
+            _entitySegmentCount.TrackValue(entitySegmentCount, messageType, driverType);
+            _processEntities.TrackValue(entities.Count, messageType, driverType);
+            _enqueuePartitionKeyQuery.TrackValue(enqueuePartitionKeyQuery, messageType, driverType);
+            _enqueuePrefixScanQuery.TrackValue(enqueuePrefixScanQuery, messageType, driverType);
+
             if (entities.Any())
             {
                 await driver.ProcessEntitySegmentAsync(originalMessage.TableName, originalMessage.DriverParameters, entities);
@@ -230,10 +278,11 @@ namespace NuGet.Insights.Worker
 
             if (tableScanMessages.Any())
             {
-                await _taskStateStorageService.AddAsync(
+                var newlyAdded = await _taskStateStorageService.AddAsync(
                     originalMessage.TaskStateKey.StorageSuffix,
                     originalMessage.TaskStateKey.PartitionKey,
                     taskStates);
+                _duplicateTaskState.TrackValue(taskStates.Count - newlyAdded.Count, messageType, driverType);
 
                 await _enqueuer.EnqueueAsync(tableScanMessages);
             }

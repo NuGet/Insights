@@ -74,27 +74,52 @@ namespace NuGet.Insights.Worker
 
             if (noMatchingScan.Any())
             {
-                _logger.LogTransientWarning("There were {NoMatchingScanCount} messages of {Count} with no matching leaf scans.", noMatchingScan.Count, messages.Count);
+                CatalogLeafScanMessage sampleMessage = noMatchingScan[0];
+                _logger.LogTransientWarning(
+                    "There were {NoMatchingScanCount} messages of {Count} with no matching leaf scans. Sample leaf: {ScanId} {PageId} {LeafId}",
+                    noMatchingScan.Count,
+                    messages.Count,
+                    sampleMessage.ScanId,
+                    sampleMessage.PageId,
+                    sampleMessage.LeafId);
             }
 
             if (failed.Any())
             {
-                _logger.LogError("{FailedCount} catalog leaf scans of {Count} failed.", failed.Count, messages.Count);
+                CatalogLeafScanMessage sampleMessage = failed[0];
+                _logger.LogError(
+                    "{FailedCount} catalog leaf scans of {Count} failed. Sample leaf: {ScanId} {PageId} {LeafId}",                    
+                    failed.Count,
+                    messages.Count,
+                    sampleMessage.ScanId,
+                    sampleMessage.PageId,
+                    sampleMessage.LeafId);
             }
 
             if (tryAgainLater.Any())
             {
+                CatalogLeafScanMessage sampleMessage = tryAgainLater[0].Message;
                 _logger.LogTransientWarning(
-                    "{TryAgainLaterCount} catalog leaf scans of {Count} will be tried again later, in {Min} to {Max}.",
+                    "{TryAgainLaterCount} catalog leaf scans of {Count} will be tried again later, in {Min} to {Max}. Sample leaf: {ScanId} {PageId} {LeafId}",
                     tryAgainLater.Count,
                     messages.Count,
                     tryAgainLater.Min(x => x.NotBefore),
-                    tryAgainLater.Max(x => x.NotBefore));
+                    tryAgainLater.Max(x => x.NotBefore),
+                    sampleMessage.ScanId,
+                    sampleMessage.PageId,
+                    sampleMessage.LeafId);
             }
 
             if (poison.Any())
             {
-                _logger.LogError("{PoisonCount} catalog leaf scans of {Count} will be moved to the poison queue.", poison.Count, messages.Count);
+                CatalogLeafScanMessage sampleMessage = poison[0].Message;
+                _logger.LogError(
+                    "{PoisonCount} catalog leaf scans of {Count} will be moved to the poison queue. Sample leaf: {ScanId} {PageId} {LeafId}",
+                    poison.Count,
+                    messages.Count,
+                    sampleMessage.ScanId,
+                    sampleMessage.PageId,
+                    sampleMessage.LeafId);
 
                 // Enqueue these one at a time to ease debugging.
                 foreach ((var message, var scan) in poison)
