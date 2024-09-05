@@ -18,11 +18,12 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             var max2 = DateTimeOffset.Parse("2020-11-27T19:36:50.4909042Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
-            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, min0);
             await SetCursorAsync(CatalogScanDriverType.PackageFileToCsv, min0);
             await SetCursorAsync(min0);
 
             // Act
+            await UpdateAsync(CatalogScanDriverType.LoadPackageArchive, onlyLatestLeaves: true, max1);
             await UpdateAsync(CatalogScanDriverType.PackageFileToCsv, onlyLatestLeaves: true, max1);
             await UpdateAsync(max1);
 
@@ -30,6 +31,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             await AssertOutputAsync(PackageArchiveToCsvDir, Step1, 0);
 
             // Act
+            await UpdateAsync(CatalogScanDriverType.LoadPackageArchive, onlyLatestLeaves: true, max2);
             await UpdateAsync(CatalogScanDriverType.PackageFileToCsv, onlyLatestLeaves: true, max2);
             await UpdateAsync(max2);
 
@@ -47,11 +49,12 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
-            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, min0);
             await SetCursorAsync(CatalogScanDriverType.PackageFileToCsv, min0);
             await SetCursorAsync(min0);
 
             // Act
+            await UpdateAsync(CatalogScanDriverType.LoadPackageArchive, onlyLatestLeaves: true, max1);
             await UpdateAsync(CatalogScanDriverType.PackageFileToCsv, onlyLatestLeaves: true, max1);
             await UpdateAsync(max1);
 
@@ -59,6 +62,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             await AssertOutputAsync(PackageArchiveToCsv_WithDeleteDir, Step1, 0);
 
             // Act
+            await UpdateAsync(CatalogScanDriverType.LoadPackageArchive, onlyLatestLeaves: true, max2);
             await UpdateAsync(CatalogScanDriverType.PackageFileToCsv, onlyLatestLeaves: true, max2);
             await UpdateAsync(max2);
 
@@ -74,11 +78,12 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             var max1 = DateTimeOffset.Parse("2019-12-03T16:44:55.0668686Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
-            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, min0);
             await SetCursorAsync(CatalogScanDriverType.PackageFileToCsv, min0);
             await SetCursorAsync(min0);
 
             // Act
+            await UpdateAsync(CatalogScanDriverType.LoadPackageArchive, onlyLatestLeaves: true, max1);
             await UpdateAsync(CatalogScanDriverType.PackageFileToCsv, onlyLatestLeaves: true, max1);
             await UpdateAsync(max1);
 
@@ -113,41 +118,42 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         protected override string DestinationContainerName1 => Options.Value.PackageArchiveContainerName;
         protected override string DestinationContainerName2 => Options.Value.PackageArchiveEntryContainerName;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageArchiveToCsv;
-        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType, CatalogScanDriverType.PackageFileToCsv };
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => [CatalogScanDriverType.LoadPackageArchive, CatalogScanDriverType.PackageFileToCsv, DriverType];
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
 
         protected override IEnumerable<string> GetExpectedCursorNames()
         {
-            return base.GetExpectedCursorNames().Concat(new[]
-            {
+            return base.GetExpectedCursorNames().Concat(
+            [
                 "CatalogScan-" + CatalogScanDriverType.LoadPackageArchive,
                 "CatalogScan-" + CatalogScanDriverType.PackageFileToCsv,
-            });
+            ]);
         }
 
         protected override IEnumerable<string> GetExpectedLeaseNames()
         {
-            return base.GetExpectedLeaseNames().Concat(new[]
-            {
+            return base.GetExpectedLeaseNames().Concat(
+            [
+                "Start-" + CatalogScanDriverType.LoadPackageArchive,
                 "Start-" + CatalogScanDriverType.PackageFileToCsv,
-            });
+            ]);
         }
 
         protected override IEnumerable<string> GetExpectedBlobContainerNames()
         {
-            return base.GetExpectedBlobContainerNames().Concat(new[]
-            {
+            return base.GetExpectedBlobContainerNames().Concat(
+            [
                 Options.Value.PackageFileContainerName,
-            });
+            ]);
         }
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {
-            return base.GetExpectedTableNames().Concat(new[]
-            {
+            return base.GetExpectedTableNames().Concat(
+            [
                 Options.Value.PackageArchiveTableName,
                 Options.Value.PackageHashesTableName,
-            });
+            ]);
         }
     }
 }

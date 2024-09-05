@@ -552,7 +552,6 @@ namespace NuGet.Insights.Worker
     #if ENABLE_NPE
                         CatalogScanDriverType.NuGetPackageExplorerToCsv,
     #endif
-                        CatalogScanDriverType.PackageFileToCsv,
                         CatalogScanDriverType.PackageIconToCsv,
                         CatalogScanDriverType.PackageLicenseToCsv,
                     },
@@ -854,7 +853,6 @@ namespace NuGet.Insights.Worker
                     SupportsBucketRangeProcessing = true,
                     SetDependencyCursorAsync = async (self, x) =>
                     {
-                        await self.SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, x);
                         await self.SetCursorAsync(CatalogScanDriverType.PackageFileToCsv, x);
                     },
                 }
@@ -912,10 +910,9 @@ namespace NuGet.Insights.Worker
                     DefaultMin = CatalogClient.NuGetOrgMinDeleted,
                     OnlyLatestLeavesSupport = null,
                     SupportsBucketRangeProcessing = true,
-                    SetDependencyCursorAsync = (self, x) =>
+                    SetDependencyCursorAsync = async (self, x) =>
                     {
-                        self.FlatContainerCursor = x;
-                        return Task.CompletedTask;
+                        await self.SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, x);
                     },
                 }
             },

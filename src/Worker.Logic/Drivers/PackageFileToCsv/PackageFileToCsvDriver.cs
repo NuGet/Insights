@@ -3,15 +3,19 @@
 
 #nullable enable
 
+using Knapcode.MiniZip;
+
 namespace NuGet.Insights.Worker.PackageFileToCsv
 {
     public class PackageFileToCsvDriver : FullZipArchiveEntryToCsvDriver<PackageFileRecord>
     {
+        private readonly PackageFileService _fileService;
         private readonly FlatContainerClient _client;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
         public PackageFileToCsvDriver(
             CatalogClient catalogClient,
+            PackageFileService fileService,
             PackageHashService hashService,
             FlatContainerClient client,
             FileDownloader fileDownloader,
@@ -23,6 +27,7 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
                   hashService,
                   logger)
         {
+            _fileService = fileService;
             _client = client;
             _options = options;
         }
@@ -31,14 +36,25 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
         protected override bool NotFoundIsDeleted => true;
         protected override ArtifactFileType FileType => ArtifactFileType.Nupkg;
 
-        protected override async Task<string?> GetZipUrlAsync(CatalogLeafScan leafScan)
+        protected override async Task<ZipDirectory?> GetZipDirectoryAsync(IPackageIdentityCommit leafItem)
+        {
+            var info = await _fileService.GetZipDirectoryAndLengthAsync(leafItem);
+            if (!info.HasValue)
+            {
+                return null;
+            }
+
+            return info.Value.Directory;
+        }
+
+        protected override async Task<string> GetZipUrlAsync(CatalogLeafScan leafScan)
         {
             return await _client.GetPackageContentUrlAsync(leafScan.PackageId, leafScan.PackageVersion);
         }
 
-        protected override Task InternalInitializeAsync()
+        protected override async Task InternalInitializeAsync()
         {
-            return Task.CompletedTask;
+            await _fileService.InitializeAsync();
         }
 
         protected override PackageFileRecord NewDeleteRecord(Guid scanId, DateTimeOffset scanTimestamp, PackageDeleteCatalogLeaf leaf)

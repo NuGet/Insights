@@ -57,22 +57,22 @@ namespace NuGet.Insights
 
         public async Task<ZipDirectory?> GetZipDirectoryAsync(IPackageIdentityCommit leafItem)
         {
-            (var zipDirectory, _, _) = await GetZipDirectoryAndLengthAsync(leafItem);
-            return zipDirectory;
+            var info = await GetZipDirectoryAndLengthAsync(leafItem);
+            return info?.Directory;
         }
 
-        public async Task<(ZipDirectory? directory, long length, ILookup<string, string>? headers)> GetZipDirectoryAndLengthAsync(IPackageIdentityCommit leafItem)
+        public async Task<(ZipDirectory Directory, long Length, ILookup<string, string> Headers)?> GetZipDirectoryAndLengthAsync(IPackageIdentityCommit leafItem)
         {
             var info = await GetOrUpdateInfoFromLeafItemAsync(leafItem);
             if (!info.Available)
             {
-                return (null, 0, null);
+                return null;
             }
 
             using var srcStream = info.MZipBytes.AsStream();
             using var destStream = await _mzipFormat.ReadAsync(srcStream);
             var reader = new ZipDirectoryReader(destStream);
-            return (await reader.ReadAsync(), destStream.Length, info.HttpHeaders);
+            return (await reader.ReadAsync(), destStream.Length, info.HttpHeaders!);
         }
 
         public async Task<IReadOnlyDictionary<IPackageIdentityCommit, PackageFileInfoV1>> UpdateBatchAsync(string id, IReadOnlyCollection<IPackageIdentityCommit> leafItems)

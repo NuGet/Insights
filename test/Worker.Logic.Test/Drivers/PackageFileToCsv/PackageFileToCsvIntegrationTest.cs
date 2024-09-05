@@ -20,9 +20,11 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
             var max2 = DateTimeOffset.Parse("2020-11-27T19:36:50.4909042Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, min0);
             await SetCursorAsync(min0);
 
             // Act
+            await UpdateAsync(CatalogScanDriverType.LoadPackageArchive, onlyLatestLeaves: true, max1);
             await UpdateAsync(max1);
 
             // Assert
@@ -30,6 +32,7 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
             await AssertPackageHashesTableAsync(PackageFileToCsvDir, Step1);
 
             // Act
+            await UpdateAsync(CatalogScanDriverType.LoadPackageArchive, onlyLatestLeaves: true, max2);
             await UpdateAsync(max2);
 
             // Assert
@@ -53,9 +56,11 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
             var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, min0);
             await SetCursorAsync(min0);
 
             // Act
+            await UpdateAsync(CatalogScanDriverType.LoadPackageArchive, onlyLatestLeaves: true, max1);
             await UpdateAsync(max1);
 
             // Assert
@@ -86,9 +91,11 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
             var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, min0);
             await SetCursorAsync(min0);
 
             // Act
+            await UpdateAsync(CatalogScanDriverType.LoadPackageArchive, onlyLatestLeaves: true, max1);
             await UpdateAsync(max1);
 
             // Assert
@@ -96,6 +103,7 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
             await AssertPackageHashesTableAsync(PackageFileToCsv_WithDeleteDir, Step1);
 
             // Act
+            await UpdateAsync(CatalogScanDriverType.LoadPackageArchive, onlyLatestLeaves: true, max2);
             await UpdateAsync(max2);
 
             // Assert
@@ -112,7 +120,7 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
         [Fact]
         public Task PackageFileToCsv_WithDuplicates_AllLeaves()
         {
-            MutableLatestLeavesTypes.Clear();
+            MutableLatestLeavesTypes.Remove(DriverType);
             return PackageFileToCsv_WithDuplicates();
         }
 
@@ -122,23 +130,35 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
             MutableLatestLeavesTypes.Add(DriverType);
         }
 
-        private List<string> AdditionalLeaseNames { get; } = new();
+        private List<string> AdditionalLeaseNames { get; } = ["Start-" + CatalogScanDriverType.LoadPackageArchive];
+
+        protected override IEnumerable<string> GetExpectedCursorNames()
+        {
+            return base.GetExpectedCursorNames().Concat(
+            [
+                "CatalogScan-" + CatalogScanDriverType.LoadPackageArchive,
+            ]);
+        }
 
         protected override IEnumerable<string> GetExpectedLeaseNames()
         {
             return base.GetExpectedLeaseNames().Concat(AdditionalLeaseNames);
         }
 
-        protected override string DestinationContainerName => Options.Value.PackageFileContainerName;
-        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageFileToCsv;
-        private List<CatalogScanDriverType> MutableLatestLeavesTypes { get; } = new();
-        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => MutableLatestLeavesTypes;
-        public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
-
         protected override IEnumerable<string> GetExpectedTableNames()
         {
-            return base.GetExpectedTableNames().Concat([Options.Value.PackageHashesTableName]);
+            return base.GetExpectedTableNames().Concat(
+            [
+                Options.Value.PackageArchiveTableName,
+                Options.Value.PackageHashesTableName
+            ]);
         }
+
+        protected override string DestinationContainerName => Options.Value.PackageFileContainerName;
+        protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageFileToCsv;
+        private List<CatalogScanDriverType> MutableLatestLeavesTypes { get; } = [CatalogScanDriverType.LoadPackageArchive];
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => MutableLatestLeavesTypes;
+        public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => [];
 
         private async Task PackageFileToCsv_WithDuplicates()
         {
@@ -147,9 +167,11 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
             var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z", CultureInfo.InvariantCulture);
 
             await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, min0);
             await SetCursorAsync(min0);
 
             // Act
+            await UpdateAsync(CatalogScanDriverType.LoadPackageArchive, onlyLatestLeaves: true, max1);
             await UpdateAsync(max1);
 
             // Assert
@@ -160,7 +182,8 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
                 .SuccessRequests
                 .Where(x => x.RequestUri.GetLeftPart(UriPartial.Path).EndsWith("/gosms.ge-sms-api.1.0.1.nupkg", StringComparison.Ordinal))
                 .ToList();
-            Assert.Equal(LatestLeavesTypes.Contains(DriverType) ? 1 : 2, duplicatePackageRequests.Count());
+            Assert.Single(duplicatePackageRequests.Where(r => r.Method == HttpMethod.Head));
+            Assert.Equal(LatestLeavesTypes.Contains(DriverType) ? 2 : 3, duplicatePackageRequests.Where(r => r.Method == HttpMethod.Get).Count());
         }
     }
 }

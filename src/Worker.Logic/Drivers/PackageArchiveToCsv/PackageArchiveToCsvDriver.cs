@@ -29,7 +29,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         protected override bool NotFoundIsDeleted => true;
         protected override ArtifactFileType FileType => ArtifactFileType.Nupkg;
 
-        protected override async Task<(ZipDirectory directory, long length, ILookup<string, string> headers)> GetZipDirectoryAndLengthAsync(IPackageIdentityCommit leafItem)
+        protected override async Task<(ZipDirectory directory, long length, ILookup<string, string> headers)?> GetZipDirectoryAndLengthAsync(IPackageIdentityCommit leafItem)
         {
             return await _packageFileService.GetZipDirectoryAndLengthAsync(leafItem);
         }

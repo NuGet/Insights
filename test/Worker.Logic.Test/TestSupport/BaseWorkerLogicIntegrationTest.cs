@@ -778,6 +778,7 @@ namespace NuGet.Insights.Worker
                     string sha1 = null;
                     string sha256 = null;
                     string sha512 = null;
+                    List<object> entryHashes = null;
 
                     if (entity.V1.Available)
                     {
@@ -786,6 +787,16 @@ namespace NuGet.Insights.Worker
                         sha1 = entity.V1.SHA1.ToBase64();
                         sha256 = entity.V1.SHA256.ToBase64();
                         sha512 = entity.V1.SHA512.ToBase64();
+                        entryHashes = new List<object>();
+                        foreach (var entry in entity.V1.EntryHashes)
+                        {
+                            entryHashes.Add(new
+                            {
+                                entry.ActualCompressedLength,
+                                SHA256 = entry.SHA256.ToBase64(),
+                                First16Bytes = entry.First16Bytes.ToBase64(),
+                            });
+                        }
                     }
 
                     return new
@@ -797,6 +808,7 @@ namespace NuGet.Insights.Worker
                         SHA1 = sha1,
                         SHA256 = sha256,
                         SHA512 = sha512,
+                        EntryHashes = entryHashes,
                     };
                 },
                 fileName);

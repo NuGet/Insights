@@ -58,6 +58,15 @@ namespace NuGet.Insights.Worker
 
         [DocsTheory]
         [MemberData(nameof(TableNameTestData))]
+        public void TableDocHasNoTODO(string tableName)
+        {
+            var info = new TableDocInfo(tableName);
+            info.ReadMarkdown();
+            Assert.DoesNotContain("TODO", info.UnparsedMarkdown, StringComparison.OrdinalIgnoreCase);
+        }
+
+        [DocsTheory]
+        [MemberData(nameof(TableNameTestData))]
         public void HasDefaultTableNameHeading(string tableName)
         {
             var info = new TableDocInfo(tableName);

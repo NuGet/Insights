@@ -73,7 +73,6 @@ flowchart LR
     FlatContainer --> LoadPackageVersion
     FlatContainer --> LoadSymbolPackageArchive
     FlatContainer --> NuGetPackageExplorerToCsv
-    LoadPackageArchive --> PackageArchiveToCsv
     PackageFileToCsv --> PackageArchiveToCsv
     LoadPackageArchive --> PackageAssemblyToCsv
     LoadPackageArchive --> PackageAssetToCsv
@@ -81,7 +80,7 @@ flowchart LR
     LoadPackageArchive --> PackageCompatibilityToCsv
     LoadPackageManifest --> PackageCompatibilityToCsv
     LoadPackageArchive --> PackageContentToCsv
-    FlatContainer --> PackageFileToCsv
+    LoadPackageArchive --> PackageFileToCsv
     FlatContainer --> PackageIconToCsv
     FlatContainer --> PackageLicenseToCsv
     LoadPackageManifest --> PackageManifestToCsv

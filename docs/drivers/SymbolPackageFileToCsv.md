@@ -1,6 +1,8 @@
 # SymbolPackageFileToCsv
 
-TODO DRIVER DESCRIPTION
+This driver hashes every file in the .snupkg as well as the .snupkg itself. These entries are mostly portable PDB files.
+The produces CSV has the .snupkg entry hashes. The hash of the .snupkg itself is stored for the
+[SymbolPackageArchiveToCsv](SymbolPackageArchiveToCsv.md) driver.
 
 |                                    |                                                                                                                                                                                                                                                                                                       |
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -15,4 +17,7 @@ TODO DRIVER DESCRIPTION
 
 ## Algorithm
 
-TODO ALGORITHM DESCRIPTION
+When the incoming leaf scan is new, the .snupkg is downloaded. Then, the .snupkg is opened as a ZIP archive and each
+file entries is hashed. The hashes are stored in table storage. The results are written out as CSV records.
+
+If the incoming leaf is not new or is stale, cached file entry hashes are used to produce the CSV records.

@@ -45,7 +45,7 @@ namespace NuGet.Insights.Worker
 #endif
 
             Default(CatalogScanDriverType.PackageArchiveToCsv)
-                with { Dependencies = [CatalogScanDriverType.LoadPackageArchive, CatalogScanDriverType.PackageFileToCsv] },
+                with { Dependencies = [CatalogScanDriverType.PackageFileToCsv] },
 
             Default(CatalogScanDriverType.PackageAssemblyToCsv)
                 with { Dependencies = [CatalogScanDriverType.LoadPackageArchive] },
@@ -64,7 +64,8 @@ namespace NuGet.Insights.Worker
             Default(CatalogScanDriverType.PackageContentToCsv)
                 with { Dependencies = [CatalogScanDriverType.LoadPackageArchive] },
 
-            Default(CatalogScanDriverType.PackageFileToCsv),
+            Default(CatalogScanDriverType.PackageFileToCsv)
+                with { Dependencies = [CatalogScanDriverType.LoadPackageArchive] },
 
             Default(CatalogScanDriverType.PackageIconToCsv),
 

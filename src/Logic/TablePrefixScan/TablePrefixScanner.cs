@@ -255,23 +255,6 @@ namespace NuGet.Insights.TablePrefixScan
             return steps;
         }
 
-        /*
-        public List<TablePrefixScanStep> Start(TableRangeScanStart start)
-        {
-            var steps = new List<TablePrefixScanStep>();
-            var nextDepth = start.Depth + 1;
-
-            steps.Add(new TablePrefixScanPrefixQuery(
-                start.Parameters,
-                nextDepth,
-                partitionKeyPrefix: string.Empty,
-                partitionKeyLowerBound: start.PartitionKeyLowerBound,
-                partitionKeyUpperBound: start.PartitionKeyUpperBound));
-
-            return steps;
-        }
-        */
-
         public async Task<List<TablePrefixScanStep>> ExecutePartitionKeyQueryAsync<T>(TablePrefixScanPartitionKeyQuery query) where T : class, ITableEntity, new()
         {
             using var metrics = _telemetryClient.StartQueryLoopMetrics();

@@ -65,6 +65,15 @@ namespace NuGet.Insights.Worker
             Assert.True(File.Exists(info.DocPath), $"The {driverName} driver should be documented at {info.DocPath}");
         }
 
+        [DocsTheory]
+        [MemberData(nameof(DriverNameTestData))]
+        public void DriverDocHasNoTODO(string driverName)
+        {
+            var info = new DocInfo(Path.Combine("drivers", $"{driverName}.md"));
+            info.ReadMarkdown();
+            Assert.DoesNotContain("TODO", info.UnparsedMarkdown, StringComparison.OrdinalIgnoreCase);
+        }
+
         [DocsFact]
         public void DriverDependencyGraphIsUpdated()
         {

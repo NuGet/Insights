@@ -34,7 +34,39 @@
       "MD5": "kONDG4tr8ljtslFzP0LsVg==",
       "SHA1": "GoyzDYr6/iEVmyTADA8y4oOgtzo=",
       "SHA256": "ffv0GQKZqR\u002B238bADiGavstff5W4JhMG\u002B7sjyBQnn70=",
-      "SHA512": "q/kbBSqu/KJpoucUnm3VWVUv\u002BJWDIvKnuajEZn5LKUBrtyf2qRcJnjFZTQN55BsWKANEzpMISWxHtuezMW5mTw=="
+      "SHA512": "q/kbBSqu/KJpoucUnm3VWVUv\u002BJWDIvKnuajEZn5LKUBrtyf2qRcJnjFZTQN55BsWKANEzpMISWxHtuezMW5mTw==",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 512,
+          "SHA256": "rCoFwJA9lfdZEgj/szbggfdePBYJPlWrKXb4GCSbvgo=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 757,
+          "SHA256": "af9vYL5fR5/05GZOAGNj/85aphTiGKasRQ1aBu6IS14=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 57856,
+          "SHA256": "xhDnEPA7MSItW91EadcDUZwKWl5C6U8GvtD7PemQi\u002B8=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 465,
+          "SHA256": "pZlrOm75NHkBx0F3V4ZX1tGJUxxhvGu\u002BeKANLHevbzo=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 636,
+          "SHA256": "s5S2oVY5o6FKt2Qblvm\u002B6mH/EdcRscJuxkBOPFHenVA=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 9464,
+          "SHA256": "KwwI9kTDXLf3qc15RtF7VmOHy8ceSSgOzRYroT6GGQ4=",
+          "First16Bytes": "MIIk9AYJKoZIhvcNAQcCoA=="
+        }
+      ]
     }
   },
   {
@@ -72,7 +104,44 @@
       "MD5": "JzfKS/FdD56p6T3zYUxh4g==",
       "SHA1": "1eP2kWDRcarWPErMy96B3s9KmPg=",
       "SHA256": "XfF5jhAX55gA3UvB\u002Blqb60SAbS5QHFoDUx5NzZ5kHlY=",
-      "SHA512": "o\u002B/nMymBAcd5IYWZtLjjLqYhogucOmJMuavF8gmHP0TFQ80aTx/FWIvAy9TG7ZfSIybC2Q8HaD1qU/R4/erAsw=="
+      "SHA512": "o\u002B/nMymBAcd5IYWZtLjjLqYhogucOmJMuavF8gmHP0TFQ80aTx/FWIvAy9TG7ZfSIybC2Q8HaD1qU/R4/erAsw==",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 514,
+          "SHA256": "GTWK1JCrEEwjCuqyS01tDt8Vgq0ofpqr6qecNXbIk1U=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 503,
+          "SHA256": "nf96L5gB81FJtUBTmDMURwHgcHcTSouw2FmZote5iVA=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 96768,
+          "SHA256": "jDQrPhT1IewB63dOpaJOU3/WmB\u002BidvSSKm39BtSZ\u002B\u002Bo=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 20472,
+          "SHA256": "E7tWiIfbOEWF7s5bRkpfm2isyyc6i3yix2SiueJqQ0k=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 528,
+          "SHA256": "6RpiErPAXuV\u002BLH2TaRd6R/aKCwV5BNHsAt\u002BPkLtDLkY=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 643,
+          "SHA256": "7JjF6cYD9hpVSImeg\u002BYhD1rHfiDB6NM0IK7zWBwu8Fc=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 9465,
+          "SHA256": "xVXLb9I2\u002B6BtihL9NqXT9Ql/auQCuStZlff1KGiWtqE=",
+          "First16Bytes": "MIIk9QYJKoZIhvcNAQcCoA=="
+        }
+      ]
     }
   },
   {
@@ -110,7 +179,49 @@
       "MD5": "3VAQtBRq8lhP1PdU4cTxzg==",
       "SHA1": "Es6QorHMzv\u002Bml01mcXgHfdzwTzc=",
       "SHA256": "kF\u002B3i0AllVm\u002BfmdGKQVPBWbnd9AWN3iAJqgFRyw6nmE=",
-      "SHA512": "TC/VJDQaFbSh8XAWcsE9U0opxVwKO/8JVLQ7hQUYZokUtjl2Mpge3u\u002Bu2akT41fW62t/mGCqmvOJVs07poFhJg=="
+      "SHA512": "TC/VJDQaFbSh8XAWcsE9U0opxVwKO/8JVLQ7hQUYZokUtjl2Mpge3u\u002Bu2akT41fW62t/mGCqmvOJVs07poFhJg==",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 504,
+          "SHA256": "qkqeC/zO756QoofmdVwFNKUuhPffNcW6p0vXAgOx/Ns=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 1662,
+          "SHA256": "4a\u002BAOUbw3XVHL72Hh3TCbilUEPsVbYs2JUs0RcHMIOU=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 143360,
+          "SHA256": "buiSKRvbhmHeRovVRwx571p1UeSWCmfgMbct9GqGHMU=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 17,
+          "SHA256": "9sjgiVjwGhRI6KW3xvf6OrcSHKnkEN3cSNEKS6sEf2U=",
+          "First16Bytes": "IyBNYXJrZG93biBGaWxlDQ=="
+        },
+        {
+          "ActualCompressedLength": 263319,
+          "SHA256": "EreX9hm/WNSQ0jMIK7uFEbQclgD8ix6OAeK1mzfDBvs=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 590,
+          "SHA256": "EVdBX1yvICzKoTy3W\u002BDQ2iP07cxRXPXWz3cTcqhJQ88=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 796,
+          "SHA256": "VOFlNCI4eVo\u002BvIjVDnEOyMUaiTnrBagE7kLXphm4fs4=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 9466,
+          "SHA256": "W/8Gka7oUKm5/fskz68OB6lvdu0K0ejqu9jb6f1gWU8=",
+          "First16Bytes": "MIIk9gYJKoZIhvcNAQcCoA=="
+        }
+      ]
     }
   },
   {
@@ -148,7 +259,49 @@
       "MD5": "DJGyWwz\u002B2B9X\u002BJEJxV8eLQ==",
       "SHA1": "Vcak1ZB7wkdfZQ\u002BtGf/WzdvxDM0=",
       "SHA256": "O8a/Z0HbA4NbkK2vbtD2Toqkq9otiyzD1k2dSYHnORI=",
-      "SHA512": "IxIVHR8eIiBq\u002Bzll1/Idpf/XGYGWG6FcAFiYKrm4raU28Dvf4WeC3vZAaEYtAxxUa6D1R0kKMA8Yc8U4rJv9XA=="
+      "SHA512": "IxIVHR8eIiBq\u002Bzll1/Idpf/XGYGWG6FcAFiYKrm4raU28Dvf4WeC3vZAaEYtAxxUa6D1R0kKMA8Yc8U4rJv9XA==",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 511,
+          "SHA256": "iOJgen\u002BQ4VYGH\u002BO6RHoCtrciUru/hJWZ4bfXzIa7FPM=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 1643,
+          "SHA256": "2TLT3w7WKcldwJvzWVLUSWdNSagShjLZLs/Z/soVOj0=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 73216,
+          "SHA256": "Q8aFlg2Z9f8TCS4k8YKivXThIHzfMqDnMXBH9/3QtBQ=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 17,
+          "SHA256": "9sjgiVjwGhRI6KW3xvf6OrcSHKnkEN3cSNEKS6sEf2U=",
+          "First16Bytes": "IyBNYXJrZG93biBGaWxlDQ=="
+        },
+        {
+          "ActualCompressedLength": 263319,
+          "SHA256": "EreX9hm/WNSQ0jMIK7uFEbQclgD8ix6OAeK1mzfDBvs=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 590,
+          "SHA256": "EVdBX1yvICzKoTy3W\u002BDQ2iP07cxRXPXWz3cTcqhJQ88=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 803,
+          "SHA256": "Nt7PVhXu1Yt4Ha\u002BImh5vjoWOVQ\u002BuIi3bH6qdVEufOxE=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 9467,
+          "SHA256": "iZEy\u002BYFvId\u002BpV8lxDzEVofR8EtOLzBtBx9jMOiUtc9Y=",
+          "First16Bytes": "MIIk9wYJKoZIhvcNAQcCoA=="
+        }
+      ]
     }
   },
   {
@@ -186,7 +339,49 @@
       "MD5": "5pnxmoIf5Je5MCig7Fxcqg==",
       "SHA1": "EYIGVUV673yZDBY4TURmOqjUdrk=",
       "SHA256": "k1DW7owfrHozTUsx5PoJIYgSY6SGxaEjF9yPBfKpjB8=",
-      "SHA512": "mXyEMwskL7R/DMZrxCx2p/2\u002BLXzfTMuBBhqo8vMPJXQcxAQ0JEh6\u002BUnTRBQVmjvqrJ/Pz17k/TItMrcPFKGhEQ=="
+      "SHA512": "mXyEMwskL7R/DMZrxCx2p/2\u002BLXzfTMuBBhqo8vMPJXQcxAQ0JEh6\u002BUnTRBQVmjvqrJ/Pz17k/TItMrcPFKGhEQ==",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 520,
+          "SHA256": "yaNWJzoV8Sv/8i94z9DFSHNm9MCew\u002BzPOgvRKe7ftls=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 1378,
+          "SHA256": "v2bs7XU5GwzTwn/BlyZ7dzH3H1Q486MH\u002BUYN0OXYzi4=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 25600,
+          "SHA256": "d9270swTSBsjEhoCVpSMg4n98\u002B6Amxkb/A8RF0aqp\u002Bk=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 17,
+          "SHA256": "9sjgiVjwGhRI6KW3xvf6OrcSHKnkEN3cSNEKS6sEf2U=",
+          "First16Bytes": "IyBNYXJrZG93biBGaWxlDQ=="
+        },
+        {
+          "ActualCompressedLength": 263319,
+          "SHA256": "EreX9hm/WNSQ0jMIK7uFEbQclgD8ix6OAeK1mzfDBvs=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 590,
+          "SHA256": "EVdBX1yvICzKoTy3W\u002BDQ2iP07cxRXPXWz3cTcqhJQ88=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 812,
+          "SHA256": "pK1p7kja5s0w\u002BirH2QkzVx4bM9ynK7XdUvVN7SOROSA=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 9467,
+          "SHA256": "lR\u002BgqoOTZ9ZGK2CgfR1ZL7/M5\u002BqkyV\u002B3fUrC/Tyr/bw=",
+          "First16Bytes": "MIIk9wYJKoZIhvcNAQcCoA=="
+        }
+      ]
     }
   },
   {
@@ -224,7 +419,509 @@
       "MD5": "o5PUDrdXHUlODvIIuGQ62w==",
       "SHA1": "07rYaBueqCV8fixOszLv5GwROhM=",
       "SHA256": "Vx7QYaxCKjgmSvv03f3C5kIR2B\u002Bffj/fS4q5MiHKSYE=",
-      "SHA512": "AniYDPO2GmR5UqPJVs6uEsG4Rc8NfdaoEGA5V2XWHKETRA3jPv4oFqasIrd1IbqPjwzU3PitVDy2WQNs6TAzXw=="
+      "SHA512": "AniYDPO2GmR5UqPJVs6uEsG4Rc8NfdaoEGA5V2XWHKETRA3jPv4oFqasIrd1IbqPjwzU3PitVDy2WQNs6TAzXw==",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 513,
+          "SHA256": "V3ObHiNx7co9xGxhbl/jqG1GhjZIcDOC/xO2Gd42h8U=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 830,
+          "SHA256": "Lwh\u002BQ\u002Bc6ahsvE5jmc66G\u002BgrWzm1GH8lj5AS0TT4FVDY=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 632,
+          "SHA256": "M/9HzIGdoAE6HrsST5SOiSDjpk5ylqWth6Q6kv4fDN8=",
+          "First16Bytes": "ew0KCSIkc2NoZW1hIjogIg=="
+        },
+        {
+          "ActualCompressedLength": 6635,
+          "SHA256": "iZJT\u002BHumUbcPudCZjL2wQhWOA8wYGC76l07AskxxPUc=",
+          "First16Bytes": "77u/ew0KCSIkc2NoZW1hIg=="
+        },
+        {
+          "ActualCompressedLength": 773,
+          "SHA256": "FFrS7soPEg6K8IywAUWXvG8/vvWFjZfcUOwrmcSuat4=",
+          "First16Bytes": "77u/PFByb2plY3QgU2RrPQ=="
+        },
+        {
+          "ActualCompressedLength": 670,
+          "SHA256": "/EMcxqAU/AvunyvP8mCSIV01mPpc8oWwPb8dzwSAM0Q=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 114177,
+          "SHA256": "\u002B17GedBFtGDpza9/yz14IuHg15r7zcIavVeLENwIT5I=",
+          "First16Bytes": "aWNucwABvgFUT0MgAAAAOA=="
+        },
+        {
+          "ActualCompressedLength": 237,
+          "SHA256": "RUHpD0oun3XMzz4MIe5ddXCHMdJNOURTGg1rPPUX8TM=",
+          "First16Bytes": "77u/dXNpbmcgU3lzdGVtOw=="
+        },
+        {
+          "ActualCompressedLength": 938,
+          "SHA256": "8DE6giprW0tdiqAmIar/UGOmDVuVTIysi1sfODWKII0=",
+          "First16Bytes": "77u/PFByb2plY3QgU2RrPQ=="
+        },
+        {
+          "ActualCompressedLength": 222,
+          "SHA256": "5Ll2nZCPl4bfCe2TZRzilMzdHHD1FIgvjbb7Ho9Ux5s=",
+          "First16Bytes": "77u/dXNpbmcgU3lzdGVtOw=="
+        },
+        {
+          "ActualCompressedLength": 725,
+          "SHA256": "FwfncSwPMYKbyWVCSbQ5l/bKNBV7CuZlCtXUVoX3UYM=",
+          "First16Bytes": "77u/PFByb2plY3QgU2RrPQ=="
+        },
+        {
+          "ActualCompressedLength": 114177,
+          "SHA256": "\u002B17GedBFtGDpza9/yz14IuHg15r7zcIavVeLENwIT5I=",
+          "First16Bytes": "aWNucwABvgFUT0MgAAAAOA=="
+        },
+        {
+          "ActualCompressedLength": 668,
+          "SHA256": "lfRe\u002B4LrVPCGoPrLQJ2eGsHPfmIRQ77sQYvRvglyqRM=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 224,
+          "SHA256": "EzYO4mhTwPng\u002B8dhXM5m/N1MNxO3dXyQkxOTp2I7po0=",
+          "First16Bytes": "77u/dXNpbmcgU3lzdGVtOw=="
+        },
+        {
+          "ActualCompressedLength": 4267,
+          "SHA256": "gzUarkVZnA3cQw88D/HG21stk06DIzKVUO0zowYr0KE=",
+          "First16Bytes": "77u/TWljcm9zb2Z0IFZpcw=="
+        },
+        {
+          "ActualCompressedLength": 629,
+          "SHA256": "heRTQcAwXtGrRN0NWFNK9kgnqPr1c9pzLcYQz3TC8eY=",
+          "First16Bytes": "77u/PFByb2plY3QgU2RrPQ=="
+        },
+        {
+          "ActualCompressedLength": 232,
+          "SHA256": "J0NNlqhacegl\u002BK8UT9NSFJAUxKYOjdyDnGj4QJtSNJo=",
+          "First16Bytes": "77u/dXNpbmcgU3lzdGVtOw=="
+        },
+        {
+          "ActualCompressedLength": 626,
+          "SHA256": "2s9lYdyBAiw1eYTBLoM0GpoCazat2j3oPBm41spjbEc=",
+          "First16Bytes": "77u/PFByb2plY3QgU2RrPQ=="
+        },
+        {
+          "ActualCompressedLength": 222,
+          "SHA256": "gjaBDjIfPCvoDjrD3eJ6ugvgZPGRl6Dog82OAjekqmo=",
+          "First16Bytes": "77u/dXNpbmcgU3lzdGVtOw=="
+        },
+        {
+          "ActualCompressedLength": 8125,
+          "SHA256": "X\u002B55V05kabJ9tOhySaxDE1uxScHDuPnoardQ5mT87AA=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 20798,
+          "SHA256": "I7Qn7vLLnf30N15ptZwo/DejQoyEcOpcnfClbFzlz9Q=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 711,
+          "SHA256": "yHU882gidfwQvbhZzFjzUcwWQIQQYQMzK9mhaY0KMS4=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 1484,
+          "SHA256": "aPCSzwMoB5Lf\u002BPV/xE0F4BhnzyArXhyjWPXbRnllpZ4=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 20798,
+          "SHA256": "I7Qn7vLLnf30N15ptZwo/DejQoyEcOpcnfClbFzlz9Q=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 59335,
+          "SHA256": "mkre2Rrleo//uWjs4MFm\u002BZ0SJPJt5eKXWcYlTG5vtVA=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 1484,
+          "SHA256": "aPCSzwMoB5Lf\u002BPV/xE0F4BhnzyArXhyjWPXbRnllpZ4=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 3428,
+          "SHA256": "FBMTsDBHBYhfbNxNMDNm8xbugwUkdRzdt0O/KFO\u002BXIc=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 59335,
+          "SHA256": "mkre2Rrleo//uWjs4MFm\u002BZ0SJPJt5eKXWcYlTG5vtVA=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 177632,
+          "SHA256": "m4frnKePLfCWncXubiZYJfhPn1ggcoIvuXs3VbN61Co=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 1317,
+          "SHA256": "B0i4XEEjKwDmR04xHRyqMcNwn93NitxEHkK1rf7fv4c=",
+          "First16Bytes": "ew0KICAiaW1hZ2VzIjogWw=="
+        },
+        {
+          "ActualCompressedLength": 70,
+          "SHA256": "wvwlIruATcrWZm\u002BAuB5tfQFDqkShM2zelSV6r9JBwS0=",
+          "First16Bytes": "77u/ew0KICAiaW5mbyIgOg=="
+        },
+        {
+          "ActualCompressedLength": 4205,
+          "SHA256": "c0qtZT8rsGB7xPpIkq/JM2trz69wtdMKxxdmHqZa5Jk=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 933,
+          "SHA256": "6blepdNWOcx1So\u002BD3EDfQkcfFDAzmWCFC/BpFF6LfJc=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 214,
+          "SHA256": "d1P2JJUYB5SAR/u0tKDncKpBzFXVchuo4yntC7bf\u002BZs=",
+          "First16Bytes": "77u/dXNpbmcgQXBwS2l0Ow=="
+        },
+        {
+          "ActualCompressedLength": 552,
+          "SHA256": "VGouXQ\u002BWJHZnBBmCdGaZkNG4cD99LGlTZTBostyOSGU=",
+          "First16Bytes": "77u/PFByb2plY3QgU2RrPQ=="
+        },
+        {
+          "ActualCompressedLength": 1705,
+          "SHA256": "E9u8b48YZmsw\u002BypDHGixnytl6CWjKtfeMIi8xz1YJO8=",
+          "First16Bytes": "77u/I2lmIChVc2VDb2RlIA=="
+        },
+        {
+          "ActualCompressedLength": 1631,
+          "SHA256": "CfjUMvgmGvKg9q0t0PTMPtPHaDyi88iDbZCFX71VHnU=",
+          "First16Bytes": "77u/I2lmIChVc2VDb2RlUA=="
+        },
+        {
+          "ActualCompressedLength": 873,
+          "SHA256": "iZ9e2jv40ZyWZUbjy4WSPmxDgUKqc53NxOo94UKmlrg=",
+          "First16Bytes": "77u/ew0KCSIkdHlwZSI6IA=="
+        },
+        {
+          "ActualCompressedLength": 614,
+          "SHA256": "GMprxCZ5kNIqxxn9vXaWkmyhA2Qo1VkpxUbBZ1c\u002BqK0=",
+          "First16Bytes": "77u/I2lmIChVc2VKZXRvKQ=="
+        },
+        {
+          "ActualCompressedLength": 1060,
+          "SHA256": "DhqfKgsXKIDVXkzrhnv41aBj\u002BPoHUv/J6VumeY7MKpY=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 614,
+          "SHA256": "g1MyfX8wK49uqQRrul9prefa3z6XBrLicm0CiY\u002B9J4Y=",
+          "First16Bytes": "77u/I2lmIChVc2VYZXRvKQ=="
+        },
+        {
+          "ActualCompressedLength": 632,
+          "SHA256": "M/9HzIGdoAE6HrsST5SOiSDjpk5ylqWth6Q6kv4fDN8=",
+          "First16Bytes": "ew0KCSIkc2NoZW1hIjogIg=="
+        },
+        {
+          "ActualCompressedLength": 6648,
+          "SHA256": "etfl9Pz9DoKrc2wkWlCjWFYUSYy5Rw2VV8M6CTqn2to=",
+          "First16Bytes": "77u/ew0KCSIkc2NoZW1hIg=="
+        },
+        {
+          "ActualCompressedLength": 727,
+          "SHA256": "re8ufwku2/0RtXikkvnodNPII6tzgLgzbb\u002BTsgO6BaQ=",
+          "First16Bytes": "77u/PFByb2plY3QgU2RrPQ=="
+        },
+        {
+          "ActualCompressedLength": 668,
+          "SHA256": "lfRe\u002B4LrVPCGoPrLQJ2eGsHPfmIRQ77sQYvRvglyqRM=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 114177,
+          "SHA256": "\u002B17GedBFtGDpza9/yz14IuHg15r7zcIavVeLENwIT5I=",
+          "First16Bytes": "aWNucwABvgFUT0MgAAAAOA=="
+        },
+        {
+          "ActualCompressedLength": 261,
+          "SHA256": "N7UnFnquxZ4GSKcp/q0kZSD4Lr0PrSGdRR\u002BufMf7xYE=",
+          "First16Bytes": "77u/bmFtZXNwYWNlIEV0bw=="
+        },
+        {
+          "ActualCompressedLength": 829,
+          "SHA256": "SxraarTt4ewGFlUfMf62sFDs69wPyhPpDJAo7vmPBeE=",
+          "First16Bytes": "77u/PFByb2plY3QgU2RrPQ=="
+        },
+        {
+          "ActualCompressedLength": 255,
+          "SHA256": "pa6H91UNcEXwPuvafeem\u002BlzRKPleRoXAwB8aRlLGV8A=",
+          "First16Bytes": "77u/bmFtZXNwYWNlIEV0bw=="
+        },
+        {
+          "ActualCompressedLength": 868,
+          "SHA256": "WsAcd48\u002BZvHrQNBSKCVq\u002BdwiGdmlvKY3ZuOEs\u002BX7jzc=",
+          "First16Bytes": "77u/PFByb2plY3QgU2RrPQ=="
+        },
+        {
+          "ActualCompressedLength": 114177,
+          "SHA256": "\u002B17GedBFtGDpza9/yz14IuHg15r7zcIavVeLENwIT5I=",
+          "First16Bytes": "aWNucwABvgFUT0MgAAAAOA=="
+        },
+        {
+          "ActualCompressedLength": 668,
+          "SHA256": "lfRe\u002B4LrVPCGoPrLQJ2eGsHPfmIRQ77sQYvRvglyqRM=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 257,
+          "SHA256": "PoRqf99mlqbPvW836Z/EVbB\u002Bs8so7y22IWMoS7zsWk0=",
+          "First16Bytes": "77u/bmFtZXNwYWNlIEV0bw=="
+        },
+        {
+          "ActualCompressedLength": 4267,
+          "SHA256": "jz0xeQjueb7Q0\u002BdoKr2RPeeUpIKuL7jy8WP6Bd7TH\u002BQ=",
+          "First16Bytes": "77u/TWljcm9zb2Z0IFZpcw=="
+        },
+        {
+          "ActualCompressedLength": 697,
+          "SHA256": "WKNn81FbaG0qRQhT6mtkkCfP164sQ7csSEqh3yb3ypM=",
+          "First16Bytes": "77u/PFByb2plY3QgU2RrPQ=="
+        },
+        {
+          "ActualCompressedLength": 265,
+          "SHA256": "2nkZPPy7DNMvUXjibkSfB7EaeW7Ud64OxA3Skh72GTQ=",
+          "First16Bytes": "77u/bmFtZXNwYWNlIEV0bw=="
+        },
+        {
+          "ActualCompressedLength": 693,
+          "SHA256": "NI9ffFk9SMc/4cZAe6LCVyXj7GT5Y4tBFr3Gb8DewN0=",
+          "First16Bytes": "77u/PFByb2plY3QgU2RrPQ=="
+        },
+        {
+          "ActualCompressedLength": 255,
+          "SHA256": "m6WUPbL3Rr14/IgIYGNTOovJOyPw5cKfvfYQZrHIaug=",
+          "First16Bytes": "77u/bmFtZXNwYWNlIEV0bw=="
+        },
+        {
+          "ActualCompressedLength": 8125,
+          "SHA256": "X\u002B55V05kabJ9tOhySaxDE1uxScHDuPnoardQ5mT87AA=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 20798,
+          "SHA256": "I7Qn7vLLnf30N15ptZwo/DejQoyEcOpcnfClbFzlz9Q=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 711,
+          "SHA256": "yHU882gidfwQvbhZzFjzUcwWQIQQYQMzK9mhaY0KMS4=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 1484,
+          "SHA256": "aPCSzwMoB5Lf\u002BPV/xE0F4BhnzyArXhyjWPXbRnllpZ4=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 20798,
+          "SHA256": "I7Qn7vLLnf30N15ptZwo/DejQoyEcOpcnfClbFzlz9Q=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 59335,
+          "SHA256": "mkre2Rrleo//uWjs4MFm\u002BZ0SJPJt5eKXWcYlTG5vtVA=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 1484,
+          "SHA256": "aPCSzwMoB5Lf\u002BPV/xE0F4BhnzyArXhyjWPXbRnllpZ4=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 3428,
+          "SHA256": "FBMTsDBHBYhfbNxNMDNm8xbugwUkdRzdt0O/KFO\u002BXIc=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 59335,
+          "SHA256": "mkre2Rrleo//uWjs4MFm\u002BZ0SJPJt5eKXWcYlTG5vtVA=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 177632,
+          "SHA256": "m4frnKePLfCWncXubiZYJfhPn1ggcoIvuXs3VbN61Co=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 1317,
+          "SHA256": "B0i4XEEjKwDmR04xHRyqMcNwn93NitxEHkK1rf7fv4c=",
+          "First16Bytes": "ew0KICAiaW1hZ2VzIjogWw=="
+        },
+        {
+          "ActualCompressedLength": 70,
+          "SHA256": "wvwlIruATcrWZm\u002BAuB5tfQFDqkShM2zelSV6r9JBwS0=",
+          "First16Bytes": "77u/ew0KICAiaW5mbyIgOg=="
+        },
+        {
+          "ActualCompressedLength": 4561,
+          "SHA256": "j6KmPEeWPdwAb5qxlB7FGW\u002B3bWXJP/sod10QYyhJwng=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 937,
+          "SHA256": "BWk2bm9kew32k1KGfXKzGVt/lsQFtho4t0NmXp\u002BsIoo=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 262,
+          "SHA256": "KpYamMAkpLWezwV2fRZeCjyo8Z\u002BrQm2hHRFs3MsNys0=",
+          "First16Bytes": "77u/bmFtZXNwYWNlIEV0bw=="
+        },
+        {
+          "ActualCompressedLength": 1315,
+          "SHA256": "TPrC3mSOB9MuGpraPR5YJPID7nQB2Er0IPMRCERAB0I=",
+          "First16Bytes": "77u/PFByb2plY3QgU2RrPQ=="
+        },
+        {
+          "ActualCompressedLength": 1955,
+          "SHA256": "ulesAZY3\u002BP0TJaOppAifvjFfHH8ZMOfB7826sK7pYwI=",
+          "First16Bytes": "77u/I2lmIChVc2VDb2RlUA=="
+        },
+        {
+          "ActualCompressedLength": 2044,
+          "SHA256": "bufZ0heFPtdhMjKNpYi07WSpMJe71A0SdRtTkgxNhH0=",
+          "First16Bytes": "77u/I2lmIChVc2VDb2RlIA=="
+        },
+        {
+          "ActualCompressedLength": 873,
+          "SHA256": "iZ9e2jv40ZyWZUbjy4WSPmxDgUKqc53NxOo94UKmlrg=",
+          "First16Bytes": "77u/ew0KCSIkdHlwZSI6IA=="
+        },
+        {
+          "ActualCompressedLength": 570,
+          "SHA256": "PtAzOyIQMUHi29AawcUvaSWAumWSeAx42LbnP4WRu4I=",
+          "First16Bytes": "77u/I2lmIChVc2VKZXRvKQ=="
+        },
+        {
+          "ActualCompressedLength": 1060,
+          "SHA256": "DhqfKgsXKIDVXkzrhnv41aBj\u002BPoHUv/J6VumeY7MKpY=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 570,
+          "SHA256": "WrMzUhf\u002BiiylrIUvb2fwBUO/CRjZGRZ5\u002B6r2JSlnkUo=",
+          "First16Bytes": "77u/I2lmIChVc2VYZXRvKQ=="
+        },
+        {
+          "ActualCompressedLength": 289,
+          "SHA256": "dxG3MBr/S6OyB8ceLT5RwcCqrDCkoU8Z8RlgBOHK1II=",
+          "First16Bytes": "ew0KCSIkc2NoZW1hIjogIg=="
+        },
+        {
+          "ActualCompressedLength": 3903,
+          "SHA256": "wuU0xAueYBE5Wa4v34c8bvk\u002BcMccbihRbdmETsVhXNM=",
+          "First16Bytes": "ew0KCSIkc2NoZW1hIjogIg=="
+        },
+        {
+          "ActualCompressedLength": 1705,
+          "SHA256": "E9u8b48YZmsw\u002BypDHGixnytl6CWjKtfeMIi8xz1YJO8=",
+          "First16Bytes": "77u/I2lmIChVc2VDb2RlIA=="
+        },
+        {
+          "ActualCompressedLength": 1631,
+          "SHA256": "CfjUMvgmGvKg9q0t0PTMPtPHaDyi88iDbZCFX71VHnU=",
+          "First16Bytes": "77u/I2lmIChVc2VDb2RlUA=="
+        },
+        {
+          "ActualCompressedLength": 873,
+          "SHA256": "iZ9e2jv40ZyWZUbjy4WSPmxDgUKqc53NxOo94UKmlrg=",
+          "First16Bytes": "77u/ew0KCSIkdHlwZSI6IA=="
+        },
+        {
+          "ActualCompressedLength": 614,
+          "SHA256": "GMprxCZ5kNIqxxn9vXaWkmyhA2Qo1VkpxUbBZ1c\u002BqK0=",
+          "First16Bytes": "77u/I2lmIChVc2VKZXRvKQ=="
+        },
+        {
+          "ActualCompressedLength": 1060,
+          "SHA256": "DhqfKgsXKIDVXkzrhnv41aBj\u002BPoHUv/J6VumeY7MKpY=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 614,
+          "SHA256": "g1MyfX8wK49uqQRrul9prefa3z6XBrLicm0CiY\u002B9J4Y=",
+          "First16Bytes": "77u/I2lmIChVc2VYZXRvKQ=="
+        },
+        {
+          "ActualCompressedLength": 287,
+          "SHA256": "Gkay9spHcfy\u002B2r3veskURGCJWMwFBjkELI/W\u002B3q4byw=",
+          "First16Bytes": "ew0KCSIkc2NoZW1hIjogIg=="
+        },
+        {
+          "ActualCompressedLength": 3903,
+          "SHA256": "MX7MJdS/e4huvU4\u002Bw2awaQfCgp2p3t/hbBz5WEkhVac=",
+          "First16Bytes": "ew0KCSIkc2NoZW1hIjogIg=="
+        },
+        {
+          "ActualCompressedLength": 1955,
+          "SHA256": "ulesAZY3\u002BP0TJaOppAifvjFfHH8ZMOfB7826sK7pYwI=",
+          "First16Bytes": "77u/I2lmIChVc2VDb2RlUA=="
+        },
+        {
+          "ActualCompressedLength": 2044,
+          "SHA256": "bufZ0heFPtdhMjKNpYi07WSpMJe71A0SdRtTkgxNhH0=",
+          "First16Bytes": "77u/I2lmIChVc2VDb2RlIA=="
+        },
+        {
+          "ActualCompressedLength": 873,
+          "SHA256": "iZ9e2jv40ZyWZUbjy4WSPmxDgUKqc53NxOo94UKmlrg=",
+          "First16Bytes": "77u/ew0KCSIkdHlwZSI6IA=="
+        },
+        {
+          "ActualCompressedLength": 570,
+          "SHA256": "PtAzOyIQMUHi29AawcUvaSWAumWSeAx42LbnP4WRu4I=",
+          "First16Bytes": "77u/I2lmIChVc2VKZXRvKQ=="
+        },
+        {
+          "ActualCompressedLength": 1060,
+          "SHA256": "DhqfKgsXKIDVXkzrhnv41aBj\u002BPoHUv/J6VumeY7MKpY=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 570,
+          "SHA256": "WrMzUhf\u002BiiylrIUvb2fwBUO/CRjZGRZ5\u002B6r2JSlnkUo=",
+          "First16Bytes": "77u/I2lmIChVc2VYZXRvKQ=="
+        },
+        {
+          "ActualCompressedLength": 1531,
+          "SHA256": "kEB5hStO8xWtSd\u002BjdW/tsGMoBe1o1o6/hFFsHLFJch0=",
+          "First16Bytes": "VGhlIEJTRC0zIExpY2Vucw=="
+        },
+        {
+          "ActualCompressedLength": 1168,
+          "SHA256": "tU64kh43f2DZO7mb9TSrrNbxA\u002B65jGhF4LguYESSIQg=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 652,
+          "SHA256": "pev1Xz1uBxvlhDAVoU/auLBOhOpRBKPaeZGbTdJZAL8=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 9470,
+          "SHA256": "7YMNsj15SieADX8jsD\u002Bjj3uuaQl1dZee\u002BHPn/xq\u002BXmQ=",
+          "First16Bytes": "MIIk\u002BgYJKoZIhvcNAQcCoA=="
+        }
+      ]
     }
   },
   {
@@ -262,7 +959,49 @@
       "MD5": "gjppk3lZHTO2RnNlfEY1Mw==",
       "SHA1": "lboTXHCpt2zZBti2EaglBqTty9Q=",
       "SHA256": "rzg9Tyr1TucR4xIfLUFcYZZadkaKmwIIIzBV\u002BAgrTmE=",
-      "SHA512": "KU7lJ\u002BVjCafd7Vw4ANJjfRwswHbjPRhb5mBXTrgOclAIUwLx\u002BCk5SH4sOfFTvcfteLGGfIEarNspFNOizZc\u002BJw=="
+      "SHA512": "KU7lJ\u002BVjCafd7Vw4ANJjfRwswHbjPRhb5mBXTrgOclAIUwLx\u002BCk5SH4sOfFTvcfteLGGfIEarNspFNOizZc\u002BJw==",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 515,
+          "SHA256": "AMbdkp47lJYl8jUop4EWIsWOlXSI1LNFzw\u002Bi0nC\u002By4M=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 2521,
+          "SHA256": "CH1\u002BIvFY\u002Bynye6BcqWC0wM9/uE6CD8Z9gvBMIdp/38I=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 70144,
+          "SHA256": "KGOgy4xtFp9kzyLfwwFHj1/WYb6hkCu/YCJKochwQoE=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 70656,
+          "SHA256": "SsHPLaTQNKL6toYTZ6UD62CK5pcj1bYL4jBh7lhVeEo=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 1531,
+          "SHA256": "kEB5hStO8xWtSd\u002BjdW/tsGMoBe1o1o6/hFFsHLFJch0=",
+          "First16Bytes": "VGhlIEJTRC0zIExpY2Vucw=="
+        },
+        {
+          "ActualCompressedLength": 528,
+          "SHA256": "zEjtN\u002BfQPJGn2zOj2ETSVwPI1rwHmQA68VkOicbSYfo=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 1259,
+          "SHA256": "ON8JZalcBdVv3JGG\u002BOgr7VcgBHFP6X7A8fkkWuCsGEk=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 9469,
+          "SHA256": "cVC4DXIIBRs9pkVhXqWWBBeqyREAEYAvgfdBEZOtWAU=",
+          "First16Bytes": "MIIk\u002BQYJKoZIhvcNAQcCoA=="
+        }
+      ]
     }
   },
   {
@@ -300,7 +1039,44 @@
       "MD5": "ah3n3Mk7/iQFIWVxXNNWGw==",
       "SHA1": "M7Iba9dFneGee7CkQMWkmIyAWEA=",
       "SHA256": "O6YS19ZzXTFA6VM1KPwrmCaSow//0/HkpcI1iinj31c=",
-      "SHA512": "1Z5vrl7A2Y\u002B5G5wEEd96zF73asMOM5AVvFWSnXpvgZSR2JZ3DJVQostj9yay8upLBNuDZAO5ClsJL\u002BEKNZGs9A=="
+      "SHA512": "1Z5vrl7A2Y\u002B5G5wEEd96zF73asMOM5AVvFWSnXpvgZSR2JZ3DJVQostj9yay8upLBNuDZAO5ClsJL\u002BEKNZGs9A==",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 510,
+          "SHA256": "6X7JRi3b/8\u002BXyREwHPsKeBbD0wTDxkTRXg\u002B4POm1sUo=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 1597,
+          "SHA256": "SB4yk5FENfknjE/PAsdYDC8JHzyd7AhXf8OhT8eNw1s=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 444928,
+          "SHA256": "qThhhMNI70jr9MIYbTQyHIjtKwfko6CdI63PNmbL4ZA=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 1531,
+          "SHA256": "kEB5hStO8xWtSd\u002BjdW/tsGMoBe1o1o6/hFFsHLFJch0=",
+          "First16Bytes": "VGhlIEJTRC0zIExpY2Vucw=="
+        },
+        {
+          "ActualCompressedLength": 528,
+          "SHA256": "zEjtN\u002BfQPJGn2zOj2ETSVwPI1rwHmQA68VkOicbSYfo=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 1161,
+          "SHA256": "AU4/MCWJMgSuSU8VZ0O24rGur1/beSTD/VhekDjmR/0=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 9470,
+          "SHA256": "\u002BCWIt/7/dQo8SGMqUg5dhGhUE2yv9tlg2ap0UB/DsAs=",
+          "First16Bytes": "MIIk\u002BgYJKoZIhvcNAQcCoA=="
+        }
+      ]
     }
   },
   {
@@ -338,7 +1114,44 @@
       "MD5": "8AxZGY1VewxI6VMj4g3ZDA==",
       "SHA1": "WvSvjvyr/zBg6ozGad5oGNhjHjE=",
       "SHA256": "8yprNxIalS2v/exQoRL/WDLAetGRG4ytb/7Vh1BjZQQ=",
-      "SHA512": "D1SwPXzv8RvDFGTyu142JLnQ0StuZbIKOHqxZRoyB4wzwFHkvkHZSvewOlHKPdEe/X5Hq/vM\u002BP1fe1\u002BEUQiFYw=="
+      "SHA512": "D1SwPXzv8RvDFGTyu142JLnQ0StuZbIKOHqxZRoyB4wzwFHkvkHZSvewOlHKPdEe/X5Hq/vM\u002BP1fe1\u002BEUQiFYw==",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 507,
+          "SHA256": "P8Pjz0hDKzqgAo8J1yI0Dft2h5vYXMGe0xC4CzF2vnE=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 1739,
+          "SHA256": "Vr6Hy9xZObOQM/n8aMniRJ1HUdVvY6zqSx0MJXB7i10=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 445952,
+          "SHA256": "gxZZEtCnxgVrPWF2BdoYnTiaKnb9ip1W7G6LXgZEId0=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 1505,
+          "SHA256": "p3xaHdHsIRLHr1RvnyteOE7Uq1icQHr6N2auvl9hA7Y=",
+          "First16Bytes": "VGhlIEJTRC0zIExpY2Vucw=="
+        },
+        {
+          "ActualCompressedLength": 521,
+          "SHA256": "sEjUJrZM5fHZrULJ6u0hTzro0GedozV/zC5Lmbyw2sQ=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 1172,
+          "SHA256": "S2wcKbJNsM4Dzi2W\u002B\u002BqkijBG0YZv\u002B40mNVeoBsssXV0=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 9469,
+          "SHA256": "p4\u002Bm1q4q2fBt889MBMfWom90iq70dFBS8X1y7v/eyO4=",
+          "First16Bytes": "MIIk\u002BQYJKoZIhvcNAQcCoA=="
+        }
+      ]
     }
   },
   {
@@ -376,7 +1189,44 @@
       "MD5": "Kwz4FKoMchQZ3x/qLyLZkA==",
       "SHA1": "GisQCw/bhtZWXfGZdlQzK3oToiM=",
       "SHA256": "HKbPD1AHcM802zq5kpHEABK7WnNMEeC4rXAS5UwylIg=",
-      "SHA512": "HDet6DkhFo1aCwNNsiP2sBYKS6X1ZrIhA9FWhqlTUv0ld9JIYCSoDsPzTGX30IH/qsgFApa9KxEQKgrg\u002BKpu6A=="
+      "SHA512": "HDet6DkhFo1aCwNNsiP2sBYKS6X1ZrIhA9FWhqlTUv0ld9JIYCSoDsPzTGX30IH/qsgFApa9KxEQKgrg\u002BKpu6A==",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 511,
+          "SHA256": "u/E5PKu4dLhjrwjigD6CShJ8mUbW5ofLPJtiZJQ8V4Y=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 1782,
+          "SHA256": "Lzcm/DRzk3eDidt7Vk28UVKWjKv2NBdgdWqOTQf/A2g=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 444416,
+          "SHA256": "P7iFvAfvYJYglkP99bRfzJf1I0/XkP7sj9kXjz52KHg=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 1531,
+          "SHA256": "kEB5hStO8xWtSd\u002BjdW/tsGMoBe1o1o6/hFFsHLFJch0=",
+          "First16Bytes": "VGhlIEJTRC0zIExpY2Vucw=="
+        },
+        {
+          "ActualCompressedLength": 528,
+          "SHA256": "zEjtN\u002BfQPJGn2zOj2ETSVwPI1rwHmQA68VkOicbSYfo=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 1198,
+          "SHA256": "xCkJesf/Rf353llLF4ziMl6DC0M2hPIrMlJ9WwZVIXY=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 9470,
+          "SHA256": "y3rJoEgh4qB8hd/7yENfWmCLbVBrvv6Y2kCSsd7FI2w=",
+          "First16Bytes": "MIIk\u002BgYJKoZIhvcNAQcCoA=="
+        }
+      ]
     }
   },
   {
@@ -414,7 +1264,144 @@
       "MD5": "Mixh38c7Pkrh05UKgQNBeg==",
       "SHA1": "z7IwzE0nGwQr2R0N0ybyyKJCaco=",
       "SHA256": "INt8/xkSQsxZZPptKAJsfYBQj9GTKFjY\u002Bbnf5PRkuTY=",
-      "SHA512": "VUdSBHGV0A6oqV7Ug6tyBB37bubNMbG2oC6N283iC9GKwhHTZE5GzCBoBeTB4VbFqlLVL\u002BZg0Vm42vfhxEif1A=="
+      "SHA512": "VUdSBHGV0A6oqV7Ug6tyBB37bubNMbG2oC6N283iC9GKwhHTZE5GzCBoBeTB4VbFqlLVL\u002BZg0Vm42vfhxEif1A==",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 512,
+          "SHA256": "2uNPhCdkB7LFnq67Q8WTk0La10uy1Cu3obCiUA08Gr4=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 2005,
+          "SHA256": "NUONTj5ku/nXH5zYIPPa7//h/fKzGEGDsgkVkTwCA5c=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 5625344,
+          "SHA256": "EDnvHrPCJ3exjgjJzz80PF7kdJNMTAZiH8azPCPGULg=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 530432,
+          "SHA256": "hg2fF34\u002BRkKUeg7dQQsKZ\u002BGSFDJ1B6SFvQTe2et9A9k=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 5625344,
+          "SHA256": "CoiZusTKIXdvumSThGxUMgAyHHhRBibyCvbbbMt5K38=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 530432,
+          "SHA256": "7/\u002BRkmp2yO2EYvQt3rMYkwAtKuih7bMUaMlxih2LEIE=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 11588,
+          "SHA256": "xvkQehd5cd8GUlXfS/RMFY\u002BisK2RVUR8Ohgr3W2BJrw=",
+          "First16Bytes": "RHVhbCBsaWNlbnNlZCB1bg=="
+        },
+        {
+          "ActualCompressedLength": 1531,
+          "SHA256": "kEB5hStO8xWtSd\u002BjdW/tsGMoBe1o1o6/hFFsHLFJch0=",
+          "First16Bytes": "VGhlIEJTRC0zIExpY2Vucw=="
+        },
+        {
+          "ActualCompressedLength": 5166,
+          "SHA256": "rIUXlQbcDtwu4Y/sYBJegDIxLkR3KrLf8mEmPknH5Rs=",
+          "First16Bytes": "PFByb2plY3QgeG1sbnM9Ig=="
+        },
+        {
+          "ActualCompressedLength": 10683,
+          "SHA256": "NXDobe0dxHAXjOl9AW2BHT/60swtJT\u002Bpt7W2IoaVQPE=",
+          "First16Bytes": "PFByb2plY3QgeG1sbnM9Ig=="
+        },
+        {
+          "ActualCompressedLength": 477,
+          "SHA256": "U3Z7SY70DjiAM5yCyuVnYNQuEwKogfruBVNJlubLPGg=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 3805,
+          "SHA256": "uYjyCFWlO/8CwlLUGBbUGa5EZ76DVmClqTHhq4NlXms=",
+          "First16Bytes": "PFByb2plY3QgeG1sbnM9Ig=="
+        },
+        {
+          "ActualCompressedLength": 1761,
+          "SHA256": "gbl8RITtdC6wLRUz\u002BpENBC2W2WcDd9xtKf7Ggo\u002BY/js=",
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
+        },
+        {
+          "ActualCompressedLength": 6295,
+          "SHA256": "7iXWptSvgE8DYwgdUEGSwqd7ggfyMbloEXs/\u002BHZ2Pe0=",
+          "First16Bytes": "PFByb2plY3QgeG1sbnM9Ig=="
+        },
+        {
+          "ActualCompressedLength": 114177,
+          "SHA256": "\u002B17GedBFtGDpza9/yz14IuHg15r7zcIavVeLENwIT5I=",
+          "First16Bytes": "aWNucwABvgFUT0MgAAAAOA=="
+        },
+        {
+          "ActualCompressedLength": 570,
+          "SHA256": "s1TPIDpg3nbmTJ2\u002BrdMILTwQ8itV804Sk\u002B0Lma6StQY=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 624032,
+          "SHA256": "qHXoIjfgomI3GJ0XIea2UFewXFLuFW22DxuTk82VnBM=",
+          "First16Bytes": "z/rt/gcAAAEDAACAAgAAAA=="
+        },
+        {
+          "ActualCompressedLength": 6842,
+          "SHA256": "nH1qzGlZ5jjMXqm2Ad8ew7JNW5xp3YhY4NMCObW2NWw=",
+          "First16Bytes": "PFByb2plY3QgeG1sbnM9Ig=="
+        },
+        {
+          "ActualCompressedLength": 1585,
+          "SHA256": "8lPkrFrcJtAShvDLpQ18YwjLWp1txQee\u002ByMwA9Bgrv8=",
+          "First16Bytes": "DQpUaGlzIHBhY2thZ2Ugdw=="
+        },
+        {
+          "ActualCompressedLength": 377,
+          "SHA256": "/zPZk96XyaLj3jPlXdVdDmaFYoVGtUHS7IASM7gejEk=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 373,
+          "SHA256": "SlmBX6ps5O3Ko4RDchwefieaz\u002BJycXvKqLI9ELXGKvE=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 15147,
+          "SHA256": "ezOfJajQA5tm8UcYjoLcdzVNgaU3tZ2CXAA5JvVlLHs=",
+          "First16Bytes": "PFByb2plY3QgeG1sbnM9Ig=="
+        },
+        {
+          "ActualCompressedLength": 1735,
+          "SHA256": "Lhe1vqqZadGaazadBdiu6x12eSM3d1nZOIjbiwhw4YU=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 2034,
+          "SHA256": "Vh0ek6epgpMFVxB5rXQhvkuR9Dk9JC/MkIsmi/ANNHA=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 1001,
+          "SHA256": "S9xLwbCBa5GyBTUw9Avh6wlwpAlumswg1WaG/r9m\u002BII=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 1498,
+          "SHA256": "IomeKgfDnnSEfgBVrItLwSGxbKuIc0VAToPPjXVE0IY=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 9470,
+          "SHA256": "REMY7xlqSdNASpAFCaKFtV5o7L\u002Bl4yEnom6377XHTIg=",
+          "First16Bytes": "MIIk\u002BgYJKoZIhvcNAQcCoA=="
+        }
+      ]
     }
   },
   {
@@ -452,7 +1439,54 @@
       "MD5": "QCmHynRBZmO0G1uzIaktMw==",
       "SHA1": "BQp52eql02mdWC0oCifOGn0Xo8k=",
       "SHA256": "3E67iGw2iuXH45LgVzgcKDAWlR6AprilRBj9z3u8fmk=",
-      "SHA512": "YJyrpaTUMjH/vx2NeQc48\u002BkkQHUC5FO/MN1XV4D\u002BINQdCbZlrnBDumrbEu7bJok\u002BZWw28jBDntUysVcyPSZn8g=="
+      "SHA512": "YJyrpaTUMjH/vx2NeQc48\u002BkkQHUC5FO/MN1XV4D\u002BINQdCbZlrnBDumrbEu7bJok\u002BZWw28jBDntUysVcyPSZn8g==",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 514,
+          "SHA256": "oUwK9Qifrx8nUnFnBAWY8rzugNdzYVbqtMXuxCi0uaU=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 2177,
+          "SHA256": "FotbeW2rJIGu/F39aaMdVFeGkgrGhYIGAn/4xw\u002BHlpo=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 577024,
+          "SHA256": "s8VCpRxf5L2ghn0oxPxJPt9Hq6pSCOhfMUwzgbyiutY=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 591872,
+          "SHA256": "oZF260iNppvnIdyGtH\u002BUERuhSZLJN2yP4Sag/SheBG8=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 592384,
+          "SHA256": "s4IPBVRR3A4r20cu/O/h/wNoaw7XvqEFLxufLzP7zSg=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 1531,
+          "SHA256": "kEB5hStO8xWtSd\u002BjdW/tsGMoBe1o1o6/hFFsHLFJch0=",
+          "First16Bytes": "VGhlIEJTRC0zIExpY2Vucw=="
+        },
+        {
+          "ActualCompressedLength": 528,
+          "SHA256": "zEjtN\u002BfQPJGn2zOj2ETSVwPI1rwHmQA68VkOicbSYfo=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 1032,
+          "SHA256": "pH0KFQboX16dtBIysxUVr/meJPWbx2e7p4Oenab/vmM=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 9469,
+          "SHA256": "UuJHPysEq/Qs7zt8p1URXzj6SjN9rpED/tj67orp4R8=",
+          "First16Bytes": "MIIk\u002BQYJKoZIhvcNAQcCoA=="
+        }
+      ]
     }
   },
   {
@@ -490,7 +1524,54 @@
       "MD5": "ipbVExKieOF36LTKoRgrog==",
       "SHA1": "PQ3XmpaCxUnfAqXiTVn2cyCB17U=",
       "SHA256": "mb72xyf1inI/YsuNlT94gF0ww9dUUX7sHy9aMT/UXY0=",
-      "SHA512": "mzxtm6JJEa/mC9vm\u002BOAaz/z6777wYA7WRHMvnKUFQks7IUxj5pNt8cIPPmQae9t6Znif2qGgrtmnwI/IkMJbsA=="
+      "SHA512": "mzxtm6JJEa/mC9vm\u002BOAaz/z6777wYA7WRHMvnKUFQks7IUxj5pNt8cIPPmQae9t6Znif2qGgrtmnwI/IkMJbsA==",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 510,
+          "SHA256": "JMh61oBbhibGnYRX2Fb83gHnYTHbXSQCkImvUXA6JHU=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 2462,
+          "SHA256": "cdhc/eEzTEtcsflh\u002BL1Og8ZqT/hAiyLGh/TRd5OafJs=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 740352,
+          "SHA256": "GKmdHi06qEgKt3Y7/HSbh\u002BawJDkPx8ThAJU76nUgZRY=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 755200,
+          "SHA256": "aPEcxoC8zXZz1\u002B3Xwub6/XNbaJhG6qpyfDi5Vx1fVp0=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 756224,
+          "SHA256": "XyTaQzNP0jEiFuyeAPByzjAOAkwl2X3Q6g8CGUWppgI=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 1531,
+          "SHA256": "kEB5hStO8xWtSd\u002BjdW/tsGMoBe1o1o6/hFFsHLFJch0=",
+          "First16Bytes": "VGhlIEJTRC0zIExpY2Vucw=="
+        },
+        {
+          "ActualCompressedLength": 528,
+          "SHA256": "zEjtN\u002BfQPJGn2zOj2ETSVwPI1rwHmQA68VkOicbSYfo=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 1109,
+          "SHA256": "6VDXnun509eh5RUHS4Ca1lUapRhw/OWCVFA/tFl0jXE=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 9469,
+          "SHA256": "sea7GvmfPl5OOcuGlEDlFwLxk5HOpEzkr10k1qMUNik=",
+          "First16Bytes": "MIIk\u002BQYJKoZIhvcNAQcCoA=="
+        }
+      ]
     }
   },
   {
@@ -528,7 +1609,54 @@
       "MD5": "Fn\u002Bur6gF\u002BF0NMUoGWrv1MA==",
       "SHA1": "B6T6C/MtLTXRIRnsfVqU8oGR7g8=",
       "SHA256": "kEL8KAkHbeqxJGjCzDC3RwxSAzEkwpKKAJN4E86zuik=",
-      "SHA512": "LhkKKDSS60ybnpyMTftLnE6e7y6pO5nZTfZZMqYdSbqM/4k2ibAeycRi\u002Bbzq4lbBHeFaely5CQcmDTiQEID2Cw=="
+      "SHA512": "LhkKKDSS60ybnpyMTftLnE6e7y6pO5nZTfZZMqYdSbqM/4k2ibAeycRi\u002Bbzq4lbBHeFaely5CQcmDTiQEID2Cw==",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 516,
+          "SHA256": "4kR4sk2Uo/BwvdunB/CD7takWmU6BPkB9gzbCyPCLqc=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 1723,
+          "SHA256": "wboNJnSPy4UYCe3souX8pRo27gCZr2wQwjEWApyuWpw=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 29696,
+          "SHA256": "hkQ3RHGJJNY7Fkl0hB8MwoKtQtnV5FuW2i7YS7L4x5g=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 29696,
+          "SHA256": "UdbrF\u002BG8FmWSGI/UZhMBWos5Oses5T19DCHh4xuGuGk=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 1531,
+          "SHA256": "kEB5hStO8xWtSd\u002BjdW/tsGMoBe1o1o6/hFFsHLFJch0=",
+          "First16Bytes": "VGhlIEJTRC0zIExpY2Vucw=="
+        },
+        {
+          "ActualCompressedLength": 444,
+          "SHA256": "8rrvwgqkEmXIMFwNX8CD0Y0PSwZmc/8rBd2IZ14cAoU=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 595,
+          "SHA256": "KRun4MvblfxK83REv13y2haVFdXhYvCqz5\u002B0rOAXHbE=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 857,
+          "SHA256": "a8pHOR83JzA095BD\u002Bax8DuORu4GBBXAUP0dm/LsFy0A=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 9470,
+          "SHA256": "bnf2G17qSh2uA54NcwuZKBfCEnA/UDUZMtBm7rVYimA=",
+          "First16Bytes": "MIIk\u002BgYJKoZIhvcNAQcCoA=="
+        }
+      ]
     }
   },
   {
@@ -566,7 +1694,39 @@
       "MD5": "Rhw3aZfd79cUGdAf9SQb1w==",
       "SHA1": "TDNBou5xQPjPV79SkmW\u002BXPBk2cU=",
       "SHA256": "r\u002BBDfc4bY7HF7L1Zuromas/RYMGBV1pa0IYLd\u002By0r\u002BQ=",
-      "SHA512": "HviFDLsrG4PMH\u002BNVvsuy2/WQvzXdo/k2HedmJakvABOmzbdYqH/8QomVfAC7Di3hvodES8u\u002Bh30htWkD9aPiGA=="
+      "SHA512": "HviFDLsrG4PMH\u002BNVvsuy2/WQvzXdo/k2HedmJakvABOmzbdYqH/8QomVfAC7Di3hvodES8u\u002Bh30htWkD9aPiGA==",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 530,
+          "SHA256": "4sefWqLRvmyQVGKXMRaEJGOPXTplcyf46M7FmnaWfhk=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 1280,
+          "SHA256": "Sl8zLAxYkokul4OilUnKFsxwOleBvDuSPT3kfqEcX14=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 200704,
+          "SHA256": "XwJ805bJjZt72KWowsuv4usWfPLpjvH3Z\u002B4iEY7GHf8=",
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
+        },
+        {
+          "ActualCompressedLength": 465,
+          "SHA256": "pZlrOm75NHkBx0F3V4ZX1tGJUxxhvGu\u002BeKANLHevbzo=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 744,
+          "SHA256": "ffdiJMO0iYwglMZyzSJPFTBN9GDNG1xXSQTYHibnX2g=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 9469,
+          "SHA256": "NY8ghOewr/yLtmC9MGiQvqWjk92/4B51koJzy5RZqK8=",
+          "First16Bytes": "MIIk\u002BQYJKoZIhvcNAQcCoA=="
+        }
+      ]
     }
   }
 ]

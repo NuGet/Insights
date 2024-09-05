@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.IO.Compression;
+using Knapcode.MiniZip;
 
 #nullable enable
 
@@ -41,7 +42,8 @@ namespace NuGet.Insights.Worker
 
         protected abstract T NewDeleteRecord(Guid scanId, DateTimeOffset scanTimestamp, PackageDeleteCatalogLeaf leaf);
         protected abstract T NewDetailsRecord(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf);
-        protected abstract Task<string?> GetZipUrlAsync(CatalogLeafScan leafScan);
+        protected abstract Task<string> GetZipUrlAsync(CatalogLeafScan leafScan);
+        protected abstract Task<ZipDirectory?> GetZipDirectoryAsync(IPackageIdentityCommit leafItem);
         protected abstract Task InternalInitializeAsync();
 
         public async Task<DriverResult<IReadOnlyList<T>>> ProcessLeafAsync(CatalogLeafScan leafScan)
@@ -54,7 +56,7 @@ namespace NuGet.Insights.Worker
                 var leaf = (PackageDeleteCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
                 // We must clear the data related to deleted ZIP archives.
-                await _hashService.SetHashesAsync(leafScan.ToPackageIdentityCommit(), headers: null, hashes: null);
+                await _hashService.SetHashesAsync(leafScan.ToPackageIdentityCommit(), headers: null, archiveHashes: null, entryHashes: null);
 
                 return MakeResults([NewDeleteRecord(scanId, scanTimestamp, leaf)]);
             }
@@ -62,19 +64,47 @@ namespace NuGet.Insights.Worker
             {
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
-                var hashes = await _hashService.GetHashesAsync(leafScan.ToPackageIdentityCommit(), requireFresh: true);
-                if (hashes is not null)
-                {
-                    // The data is already up to date. No-op.
-                    return MakeEmptyResults();
-                }
-
-                var url = await GetZipUrlAsync(leafScan);
-                if (url is null)
+                var zipDirectory = await GetZipDirectoryAsync(leafScan.ToPackageIdentityCommit());
+                if (zipDirectory is null)
                 {
                     return await HandleEmptyResultAsync(leafScan, scanId, scanTimestamp, leaf);
                 }
 
+                var existingHashes = await _hashService.GetHashesAsync(leafScan.ToPackageIdentityCommit(), requireFresh: true);
+                if (existingHashes is not null)
+                {
+                    var records = new List<T>();
+                    for (var i = 0; i < zipDirectory.Entries.Count; i++)
+                    {
+                        CentralDirectoryHeader? entry = zipDirectory.Entries[i];
+                        var record = NewDetailsRecord(scanId, scanTimestamp, leaf);
+                        record.SequenceNumber = i;
+                        record.Path = entry.GetName();
+                        record.FileName = Path.GetFileName(record.Path);
+                        record.FileExtension = Path.GetExtension(record.Path);
+                        record.TopLevelFolder = PathUtility.GetTopLevelFolder(record.Path);
+                        record.CompressedLength = entry.CompressedSize;
+                        record.EntryUncompressedLength = entry.UncompressedSize;
+
+                        var entryHash = existingHashes.Value.EntryHashes[i];
+                        if (entryHash is not null)
+                        {
+                            record.ActualUncompressedLength = entryHash.ActualCompressedLength;
+                            record.SHA256 = entryHash.SHA256.ToBase64();
+                            record.First16Bytes = entryHash.First16Bytes.ToBase64();
+                        }
+                        else
+                        {
+                            record.ResultType = FileRecordResultType.InvalidZipEntry;
+                        }
+
+                        records.Add(record);
+                    }
+
+                    return MakeResults(records);
+                }
+
+                var url = await GetZipUrlAsync(leafScan);
                 var result = await _fileDownloader.DownloadUrlToFileAsync(
                     url,
                     TempStreamWriter.GetTempFileNameFactory(
@@ -97,9 +127,6 @@ namespace NuGet.Insights.Worker
                         return DriverResult.TryAgainLater<IReadOnlyList<T>>();
                     }
 
-                    // We have downloaded the full ZIP archive here so we can capture the calculated hashes.
-                    await _hashService.SetHashesAsync(leafScan.ToPackageIdentityCommit(), result.Value.Headers, result.Value.Body.Hash);
-
                     using var zipArchive = new ZipArchive(result.Value.Body.Stream);
 
                     if (zipArchive.Entries.Count == 0)
@@ -108,6 +135,7 @@ namespace NuGet.Insights.Worker
                     }
 
                     var records = new List<T>(zipArchive.Entries.Count);
+                    var entryHashes = new List<EntryHash?>(zipArchive.Entries.Count);
                     var sequenceNumber = 0;
                     var pool = ArrayPool<byte>.Shared;
                     var buffer = pool.Rent(TempStreamDirectory.DefaultBufferSize);
@@ -125,8 +153,7 @@ namespace NuGet.Insights.Worker
                             record.CompressedLength = entry.CompressedLength;
                             record.EntryUncompressedLength = entry.Length;
 
-                            ProcessEntryStream(buffer, entry, record);
-
+                            entryHashes.Add(ProcessEntryStream(buffer, entry, record));
                             records.Add(record);
 
                             sequenceNumber++;
@@ -136,6 +163,13 @@ namespace NuGet.Insights.Worker
                     {
                         pool.Return(buffer);
                     }
+
+                    // We have downloaded the full ZIP archive here so we can capture the calculated hashes.
+                    await _hashService.SetHashesAsync(
+                        leafScan.ToPackageIdentityCommit(),
+                        result.Value.Headers,
+                        result.Value.Body.Hash,
+                        entryHashes);
 
                     return MakeResults(records);
                 }
@@ -149,7 +183,7 @@ namespace NuGet.Insights.Worker
             PackageDetailsCatalogLeaf leaf)
         {
             // We must clear the data related to deleted, or unavailable ZIP archives.
-            await _hashService.SetHashesAsync(leafScan.ToPackageIdentityCommit(), headers: null, hashes: null);
+            await _hashService.SetHashesAsync(leafScan.ToPackageIdentityCommit(), headers: null, archiveHashes: null, entryHashes: null);
 
             if (NotFoundIsDeleted)
             {
@@ -163,7 +197,7 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        private void ProcessEntryStream(byte[] buffer, ZipArchiveEntry entry, T record)
+        private EntryHash? ProcessEntryStream(byte[] buffer, ZipArchiveEntry entry, T record)
         {
             try
             {
@@ -171,13 +205,13 @@ namespace NuGet.Insights.Worker
                 using var hasher = IncrementalHash.CreateSHA256();
                 int read;
                 long totalRead = 0;
-                string? firstBytes = null;
+                byte[] firstBytes = Array.Empty<byte>();
                 const int firstBytesLength = 16;
                 while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
                 {
-                    if (firstBytes is null)
+                    if (totalRead == 0)
                     {
-                        firstBytes = Convert.ToBase64String(buffer, 0, Math.Min(firstBytesLength, read));
+                        firstBytes = buffer.Take(Math.Min(firstBytesLength, read)).ToArray();
                     }
 
                     hasher.TransformBlock(buffer, 0, read);
@@ -187,13 +221,15 @@ namespace NuGet.Insights.Worker
                 hasher.TransformFinalBlock();
 
                 record.ActualUncompressedLength = totalRead;
-                record.SHA256 = Convert.ToBase64String(hasher.Output.SHA256);
-                record.First16Bytes = firstBytes;
+                record.SHA256 = hasher.Output.SHA256.ToBase64();
+                record.First16Bytes = firstBytes.ToBase64();
+                return new EntryHash(totalRead, hasher.Output.SHA256, firstBytes);
             }
             catch (InvalidDataException ex)
             {
                 record.ResultType = FileRecordResultType.InvalidZipEntry;
                 _logger.LogInformation(ex, "{FileType} ZIP archive for {Id} {Version} has an invalid ZIP entry: {Path}", FileType, record.Id, record.Version, record.Path);
+                return null;
             }
         }
 

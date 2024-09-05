@@ -271,6 +271,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
 
         private async Task InitializeAsync(CatalogLeafScan leaf)
         {
+            await Host.Services.GetRequiredService<PackageFileService>().InitializeAsync();
             await PackageFileToCsv.InitializeAsync();
             await PackageFileToCsv.ProcessLeafAsync(leaf.SetDefaults());
             await Target.InitializeAsync();

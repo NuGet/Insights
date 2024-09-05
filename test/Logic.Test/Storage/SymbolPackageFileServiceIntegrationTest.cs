@@ -89,7 +89,7 @@ namespace NuGet.Insights
                 HttpMessageHandlerFactory.Clear();
 
                 // Act
-                (var directory, var length, var headers) = await Target.GetZipDirectoryAndLengthAsync(leafItem);
+                (var directory, var length, var headers) = (await Target.GetZipDirectoryAndLengthAsync(leafItem)).Value;
 
                 // Assert
                 Assert.Equal(11, directory.Entries.Count);

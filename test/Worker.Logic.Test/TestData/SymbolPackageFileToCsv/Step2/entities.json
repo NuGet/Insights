@@ -31,7 +31,34 @@
       "MD5": "9CMu6cQOfA8a9XGsipU26Q==",
       "SHA1": "YfH2yeByi6ylCxHbJE\u002ByjE472WQ=",
       "SHA256": "t8r2MwY32NAfjfF7MGc59JP4cUxeN\u002B73eqrPgYNF9m0=",
-      "SHA512": "Zi73DIcS1RendkkwmEJgOgq\u002BMdQ8LF0QE5yRVxanvRecd6\u002BGgQStFO6XEMYnoQZeWqsgITGNB8EO8bqZbxBCVg=="
+      "SHA512": "Zi73DIcS1RendkkwmEJgOgq\u002BMdQ8LF0QE5yRVxanvRecd6\u002BGgQStFO6XEMYnoQZeWqsgITGNB8EO8bqZbxBCVg==",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 526,
+          "SHA256": "5bKIWwwHsNz6uz9ur4gI5Vz3gAwcoXPIR1kmhpm\u002BbEM=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 1014,
+          "SHA256": "wTotjS6c6bu6COeq8BZMWng462I4zrWB2oYCoftD04I=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 19912,
+          "SHA256": "mATTuk259MN0FYmUR3ErOT3syNee/DttD0\u002BKqj\u002BMNrM=",
+          "First16Bytes": "QlNKQgEAAQAAAAAADAAAAA=="
+        },
+        {
+          "ActualCompressedLength": 459,
+          "SHA256": "ghd7vDkc9JjzYeqx/kRjNGFstOFD/nNQhUqCErfT\u002Bdw=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 725,
+          "SHA256": "inAQLOQ0XS5FXst7s2bPpUx7kahOP3kacNOvogcEaj8=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        }
+      ]
     }
   },
   {
@@ -44,7 +71,8 @@
       "MD5": null,
       "SHA1": null,
       "SHA256": null,
-      "SHA512": null
+      "SHA512": null,
+      "EntryHashes": null
     }
   },
   {
@@ -79,7 +107,64 @@
       "MD5": "jRzvirf3Q1udIjn2m1L6vQ==",
       "SHA1": "Z0LHaGXHLUmrGbGzISv1stCGByE=",
       "SHA256": "9WljKAdpVsA7D4Odw\u002BcmHxZH2p3tFTfWPhIsVHH8h8Y=",
-      "SHA512": "vaWuAPufkOrRT0f48FuX90NnymmB/hrLUvg\u002BXsQUHkaht/cwpqkLYcNlUPrjiak7Uhw4uX14dcXUT/NznHHHHg=="
+      "SHA512": "vaWuAPufkOrRT0f48FuX90NnymmB/hrLUvg\u002BXsQUHkaht/cwpqkLYcNlUPrjiak7Uhw4uX14dcXUT/NznHHHHg==",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 509,
+          "SHA256": "0rB6xP8NsAbNDmssnngc0\u002BvhPs4u9CkB0mr54lrb3y8=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 2162,
+          "SHA256": "40Je8lvIfEwVoyxn28f0BC\u002BsEsQyieyFbKF9qQgQcyQ=",
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
+        },
+        {
+          "ActualCompressedLength": 224788,
+          "SHA256": "JruEcWDL0rzzR\u002B0egRNznlSJbqL0CM52ZBhAL76vrvk=",
+          "First16Bytes": "QlNKQgEAAQAAAAAADAAAAA=="
+        },
+        {
+          "ActualCompressedLength": 217852,
+          "SHA256": "O57dccf5kdq6P/QGhPaHbGtT1vZ35e8NYECJuIZuCGw=",
+          "First16Bytes": "QlNKQgEAAQAAAAAADAAAAA=="
+        },
+        {
+          "ActualCompressedLength": 231824,
+          "SHA256": "ZQFGecyGr05Z\u002BOsaY0H2ipRWOaIQKiMfHUUhLoF1t\u002BM=",
+          "First16Bytes": "QlNKQgEAAQAAAAAADAAAAA=="
+        },
+        {
+          "ActualCompressedLength": 260832,
+          "SHA256": "8Z9j9MOS0hHHr6e\u002BTQahOOw4bCR78FBEW7Xu1w2Lecg=",
+          "First16Bytes": "QlNKQgEAAQAAAAAADAAAAA=="
+        },
+        {
+          "ActualCompressedLength": 250292,
+          "SHA256": "sO2d6tooarolEP/3gxg/cHlhHUIlyxYKfB7oMMVz2zo=",
+          "First16Bytes": "QlNKQgEAAQAAAAAADAAAAA=="
+        },
+        {
+          "ActualCompressedLength": 258940,
+          "SHA256": "Y\u002BciF/TOcpz0A3iNFSFzbemuzvWfBF8uyA1ig9ZfwI4=",
+          "First16Bytes": "QlNKQgEAAQAAAAAADAAAAA=="
+        },
+        {
+          "ActualCompressedLength": 264060,
+          "SHA256": "1FxaViGEiF7ooDDRdNhoSD/SF/U1UJF/y1L\u002BNThtI2Q=",
+          "First16Bytes": "QlNKQgEAAQAAAAAADAAAAA=="
+        },
+        {
+          "ActualCompressedLength": 465,
+          "SHA256": "AgfVe9xDco77dpxIsB84sqqzKcTLIq9BMbUqGmyRiRg=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        },
+        {
+          "ActualCompressedLength": 732,
+          "SHA256": "JBOVC7MlvCGsuPQ11XEH1Abgnmf\u002BsXPBksctuE7hjoA=",
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
+        }
+      ]
     }
   },
   {
@@ -92,7 +177,8 @@
       "MD5": null,
       "SHA1": null,
       "SHA256": null,
-      "SHA512": null
+      "SHA512": null,
+      "EntryHashes": null
     }
   }
 ]

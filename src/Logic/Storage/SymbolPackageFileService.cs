@@ -41,18 +41,18 @@ namespace NuGet.Insights
             await _wideEntityService.DeleteTableAsync(_options.Value.SymbolPackageArchiveTableName);
         }
 
-        public async Task<(ZipDirectory? directory, long length, ILookup<string, string>? headers)> GetZipDirectoryAndLengthAsync(IPackageIdentityCommit leafItem)
+        public async Task<(ZipDirectory Directory, long Length, ILookup<string, string> Headers)?> GetZipDirectoryAndLengthAsync(IPackageIdentityCommit leafItem)
         {
             var info = await GetOrUpdateInfoFromLeafItemAsync(leafItem);
             if (!info.Available)
             {
-                return (null, 0, null);
+                return null;
             }
 
             using var srcStream = info.MZipBytes.AsStream();
             using var destStream = await _mzipFormat.ReadAsync(srcStream);
             var reader = new ZipDirectoryReader(destStream);
-            return (await reader.ReadAsync(), destStream.Length, info.HttpHeaders);
+            return (await reader.ReadAsync(), destStream.Length, info.HttpHeaders!);
         }
 
         public async Task<IReadOnlyDictionary<IPackageIdentityCommit, SymbolPackageFileInfoV1>> UpdateBatchFromLeafItemsAsync(

@@ -40,7 +40,7 @@ namespace NuGet.Insights.Worker
         protected abstract TArchive NewArchiveDetailsRecord(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf);
         protected abstract TEntry NewEntryDetailsRecord(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf);
         protected abstract Task InternalInitializeAsync();
-        protected abstract Task<(ZipDirectory directory, long length, ILookup<string, string> headers)> GetZipDirectoryAndLengthAsync(IPackageIdentityCommit leafItem);
+        protected abstract Task<(ZipDirectory directory, long length, ILookup<string, string> headers)?> GetZipDirectoryAndLengthAsync(IPackageIdentityCommit leafItem);
 
         public Task DestroyAsync()
         {
@@ -73,7 +73,7 @@ namespace NuGet.Insights.Worker
                 var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(leafScan.LeafType, leafScan.Url);
 
                 var hashes = await _hashService.GetHashesAsync(leafScan.ToPackageIdentityCommit(), requireFresh: false);
-                if (hashes is null)
+                if (!hashes.HasValue)
                 {
                     if (NotFoundIsDeleted)
                     {
@@ -86,8 +86,8 @@ namespace NuGet.Insights.Worker
                     }
                 }
 
-                (var zipDirectory, var size, var headers) = await GetZipDirectoryAndLengthAsync(leafScan.ToPackageIdentityCommit());
-                if (zipDirectory is null)
+                var zipInfo = await GetZipDirectoryAndLengthAsync(leafScan.ToPackageIdentityCommit());
+                if (!zipInfo.HasValue)
                 {
                     if (NotFoundIsDeleted)
                     {
@@ -99,6 +99,8 @@ namespace NuGet.Insights.Worker
                         return MakeDoesNotExist(scanId, scanTimestamp, leaf);
                     }
                 }
+
+                var (zipDirectory, size, headers) = zipInfo.Value;
 
                 // Necessary because of https://github.com/neuecc/MessagePack-CSharp/issues/1431
                 var headerMD5 = !_options.Value.SkipContentMD5HeaderInCsv && headers.Contains(MD5Header) ? headers[MD5Header].SingleOrDefault() : null;
@@ -116,10 +118,10 @@ namespace NuGet.Insights.Worker
                 archive.HeaderMD5 = headerMD5;
                 archive.HeaderSHA512 = headerSHA512;
 
-                archive.MD5 = hashes.MD5.ToBase64();
-                archive.SHA1 = hashes.SHA1.ToBase64();
-                archive.SHA256 = hashes.SHA256.ToBase64();
-                archive.SHA512 = hashes.SHA512.ToBase64();
+                archive.MD5 = hashes.Value.ArchiveHashes.MD5.ToBase64();
+                archive.SHA1 = hashes.Value.ArchiveHashes.SHA1.ToBase64();
+                archive.SHA256 = hashes.Value.ArchiveHashes.SHA256.ToBase64();
+                archive.SHA512 = hashes.Value.ArchiveHashes.SHA512.ToBase64();
 
                 var entries = new List<TEntry>();
 

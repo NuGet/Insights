@@ -3,6 +3,8 @@
 
 #nullable enable
 
+using Knapcode.MiniZip;
+
 namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
 {
     public class SymbolPackageFileToCsvDriver : FullZipArchiveEntryToCsvDriver<SymbolPackageFileRecord>
@@ -34,15 +36,20 @@ namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
         protected override bool NotFoundIsDeleted => false;
         protected override ArtifactFileType FileType => ArtifactFileType.Snupkg;
 
-        protected override async Task<string?> GetZipUrlAsync(CatalogLeafScan leafScan)
+        protected override async Task<ZipDirectory?> GetZipDirectoryAsync(IPackageIdentityCommit leafItem)
         {
-            var info = await _fileService.GetOrUpdateInfoFromLeafItemAsync(leafScan.ToPackageIdentityCommit());
-            if (!info.Available)
+            var info = await _fileService.GetZipDirectoryAndLengthAsync(leafItem);
+            if (!info.HasValue)
             {
                 return null;
             }
 
-            return _client.GetSymbolPackageUrl(leafScan.PackageId, leafScan.PackageVersion);
+            return info.Value.Directory;
+        }
+
+        protected override Task<string> GetZipUrlAsync(CatalogLeafScan leafScan)
+        {
+            return Task.FromResult(_client.GetSymbolPackageUrl(leafScan.PackageId, leafScan.PackageVersion));
         }
 
         protected override async Task InternalInitializeAsync()
