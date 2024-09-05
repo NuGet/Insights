@@ -71,31 +71,85 @@ namespace NuGet.Insights.Worker
         [Fact]
         public async Task CatalogScanService_BucketRangeUpdatesDataCachedByBucketRange()
         {
-            await CatalogScanService_TestCachedData(bucketRangeFirst: true, bucketRangeSecond: true, expectCached: false);
+            await CatalogScanService_TestCachedData(bucketRangeFirst: true, bucketRangeSecond: true, expectCached: false, appendCsvError: false);
         }
 
         [Fact]
         public async Task CatalogScanService_BucketRangeUpdatesDataCachedByCatalogRange()
         {
-            await CatalogScanService_TestCachedData(bucketRangeFirst: false, bucketRangeSecond: true, expectCached: false);
+            await CatalogScanService_TestCachedData(bucketRangeFirst: false, bucketRangeSecond: true, expectCached: false, appendCsvError: false);
         }
 
         [Fact]
         public async Task CatalogScanService_CatalogRangeUpdatesDataCachedByBucketRange()
         {
-            await CatalogScanService_TestCachedData(bucketRangeFirst: true, bucketRangeSecond: false, expectCached: false);
+            await CatalogScanService_TestCachedData(bucketRangeFirst: true, bucketRangeSecond: false, expectCached: false, appendCsvError: false);
         }
 
         [Fact]
         public async Task CatalogScanService_CatalogRangeUsesDataCachedByCatalogRange()
         {
-            await CatalogScanService_TestCachedData(bucketRangeFirst: false, bucketRangeSecond: false, expectCached: true);
+            await CatalogScanService_TestCachedData(bucketRangeFirst: false, bucketRangeSecond: false, expectCached: true, appendCsvError: false);
         }
 
-        private async Task CatalogScanService_TestCachedData(bool bucketRangeFirst, bool bucketRangeSecond, bool expectCached)
+        [Fact]
+        public async Task CatalogScanService_BucketRangeUpdatesDataCachedByBucketRange_WithAppendCsvError()
+        {
+            await CatalogScanService_TestCachedData(bucketRangeFirst: true, bucketRangeSecond: true, expectCached: false, appendCsvError: true);
+        }
+
+        [Fact]
+        public async Task CatalogScanService_BucketRangeUpdatesDataCachedByCatalogRange_WithAppendCsvError()
+        {
+            await CatalogScanService_TestCachedData(bucketRangeFirst: false, bucketRangeSecond: true, expectCached: false, appendCsvError: true);
+        }
+
+        [Fact]
+        public async Task CatalogScanService_CatalogRangeUpdatesDataCachedByBucketRange_WithAppendCsvError()
+        {
+            await CatalogScanService_TestCachedData(bucketRangeFirst: true, bucketRangeSecond: false, expectCached: false, appendCsvError: true);
+        }
+
+        [Fact]
+        public async Task CatalogScanService_CatalogRangeUsesDataCachedByCatalogRange_WithAppendCsvError()
+        {
+            await CatalogScanService_TestCachedData(bucketRangeFirst: false, bucketRangeSecond: false, expectCached: true, appendCsvError: true);
+        }
+
+        private async Task<int> GetMinimumLeafAttemptCount(string storageSuffix)
+        {
+            var indexScans = await CatalogScanStorageService.GetIndexScansAsync();
+            foreach (var indexScan in indexScans)
+            {
+                if (indexScan.StorageSuffix != storageSuffix
+                    || indexScan.State == CatalogIndexScanState.Created
+                    || indexScan.State >= CatalogIndexScanState.StartingAggregate)
+                {
+                    continue;
+                }
+
+                var leafScans = await CatalogScanStorageService.GetLeafScansAsync(indexScan.StorageSuffix);
+                return leafScans.Min(x => x.AttemptCount);
+            }
+
+            throw new InvalidOperationException();
+        }
+
+        private async Task CatalogScanService_TestCachedData(bool bucketRangeFirst, bool bucketRangeSecond, bool expectCached, bool appendCsvError)
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.OldCatalogIndexScansToKeep = 0;
+            RetryFailedMessages = appendCsvError;
+            ConfigureWorkerSettings = x =>
+            {
+                if (appendCsvError)
+                {
+                    // retry at the queue message level instead
+                    x.AzureServiceClientMaxRetries = 0;
+                    x.AzureServiceClientNetworkTimeout = TimeSpan.FromSeconds(10);
+                }
+
+                x.OldCatalogIndexScansToKeep = 0;
+            };
             var dir = nameof(CatalogScanService_TestCachedData);
             var min0 = DateTimeOffset.Parse("2020-05-11T20:11:38.5525171Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2020-05-11T20:12:56.9143404Z", CultureInfo.InvariantCulture);
@@ -109,18 +163,36 @@ namespace NuGet.Insights.Worker
                 .SelectMany(x => CsvRecordContainers.TryGetRecordTypes(x, out var types) ? types : Enumerable.Empty<Type>())
                 .ToList();
 
-            HttpMessageHandlerFactory.OnSendAsync = (r, b, t) =>
+            HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
             {
+                // simulate an error while writing out CSV records, using cached data should reproduce the records
+                if (appendCsvError
+                    && r.Method != HttpMethod.Get
+                    && r.RequestUri.AbsolutePath.Contains("/" + Options.Value.CsvRecordTableName, StringComparison.Ordinal))
+                {
+                    // CSV record table format: CsvRecordTableName + storage suffix + set index (digit)
+                    var storageSuffix = r.RequestUri.AbsolutePath.Split(Options.Value.CsvRecordTableName)[1];
+                    storageSuffix = storageSuffix.Substring(0, storageSuffix.Length - 1);
+                    if (await GetMinimumLeafAttemptCount(storageSuffix) == 1)
+                    {
+                        return new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                        {
+                            RequestMessage = r,
+                            Content = new StringContent("Big yikes!"),
+                        };
+                    }
+                }
+
                 if (r.RequestUri.AbsolutePath.EndsWith("/readme", StringComparison.Ordinal))
                 {
-                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                    return new HttpResponseMessage(HttpStatusCode.OK)
                     {
                         RequestMessage = r,
                         Content = new StringContent("# My package"),
-                    });
+                    };
                 }
 
-                return Task.FromResult<HttpResponseMessage>(null);
+                return null;
             };
 
             // Act
@@ -157,9 +229,13 @@ namespace NuGet.Insights.Worker
                 var tableName = CsvRecordContainers.GetDefaultKustoTableName(recordType);
                 await AssertCsvAsync(recordType, containerName, dir, Step1, bucket, $"{tableName}.csv");
             }
-            Assert.Equal(1, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.Method == HttpMethod.Head && x.OriginalRequest.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
-            Assert.Equal(1, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.Method == HttpMethod.Get && x.OriginalRequest.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
-            Assert.Equal(1, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.RequestUri.AbsolutePath.EndsWith("/readme", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
+
+            if (!appendCsvError)
+            {
+                Assert.Equal(1, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.Method == HttpMethod.Head && x.OriginalRequest.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
+                Assert.Equal(1, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.Method == HttpMethod.Get && x.OriginalRequest.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
+                Assert.Equal(1, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.RequestUri.AbsolutePath.EndsWith("/readme", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
+            }
 
             // Arrange
             HttpMessageHandlerFactory.OnSendAsync = async (req, b, t) =>
@@ -209,9 +285,13 @@ namespace NuGet.Insights.Worker
                 var tableName = CsvRecordContainers.GetDefaultKustoTableName(recordType);
                 await AssertCsvAsync(recordType, containerName, dir, expectCached ? Step1 : Step2, bucket, $"{tableName}.csv");
             }
-            Assert.Equal(expectCached ? 1 : 2, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.Method == HttpMethod.Head && x.OriginalRequest.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
-            Assert.Equal(expectCached ? 1 : 2, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.Method == HttpMethod.Get && x.OriginalRequest.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
-            Assert.Equal(expectCached ? 1 : 2, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.RequestUri.AbsolutePath.EndsWith("/readme", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
+
+            if (!appendCsvError)
+            {
+                Assert.Equal(expectCached ? 1 : 2, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.Method == HttpMethod.Head && x.OriginalRequest.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
+                Assert.Equal(expectCached ? 1 : 2, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.Method == HttpMethod.Get && x.OriginalRequest.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
+                Assert.Equal(expectCached ? 1 : 2, HttpMessageHandlerFactory.RequestAndResponses.Count(x => x.OriginalRequest.RequestUri.AbsolutePath.EndsWith("/readme", StringComparison.Ordinal) && x.Response.StatusCode == HttpStatusCode.OK));
+            }
         }
 
         /// <summary>

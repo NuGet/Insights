@@ -95,6 +95,8 @@ namespace NuGet.Insights.Worker
         public static IEnumerable<object[]> StartabledDriverTypesData => CatalogScanDriverMetadata.StartableDriverTypes
             .Select(x => new object[] { x });
 
+        protected bool RetryFailedMessages { get; set; } = false;
+
         protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
         {
             base.ConfigureHostBuilder(hostBuilder);
@@ -330,6 +332,7 @@ namespace NuGet.Insights.Worker
                 }
 
                 var skip = false;
+
                 lock (messageLock)
                 {
                     if (!processingMessages.ContainsKey(message.MessageId))
@@ -344,18 +347,6 @@ namespace NuGet.Insights.Worker
                             message.DequeueCount,
                             message.Body.ToString());
                         skip = true;
-                    }
-                }
-
-                if (skip)
-                {
-                    try
-                    {
-                        await queue.UpdateMessageAsync(message.MessageId, message.PopReceipt, visibilityTimeout: TimeSpan.FromSeconds(5));
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogTransientWarning(ex, "Unable tp update visibility timeout on message {MessageId}.", message.MessageId);
                     }
                 }
 
@@ -376,7 +367,15 @@ namespace NuGet.Insights.Worker
                             "Processing message {MessageId} failed. Message body: {Body}",
                             message.MessageId,
                             message.Body.ToString());
-                        throw;
+
+                        if (RetryFailedMessages)
+                        {
+                            skip = true;
+                        }
+                        else
+                        {
+                            throw;
+                        }
                     }
                 }
                 finally
@@ -387,19 +386,33 @@ namespace NuGet.Insights.Worker
                     }
                 }
 
-                try
+                if (skip)
                 {
-                    await queue.DeleteMessageAsync(message.MessageId, message.PopReceipt);
+                    try
+                    {
+                        await queue.UpdateMessageAsync(message.MessageId, message.PopReceipt, visibilityTimeout: TimeSpan.FromSeconds(5));
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogTransientWarning(ex, "Unable to update visibility timeout on message {MessageId}.", message.MessageId);
+                    }
                 }
-                catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound
-                                                     || ex.Status == (int)HttpStatusCode.BadRequest)
+                else
                 {
-                    // Ignore, some other thread processed the message and completed it first.
-                    Logger.LogTransientWarning(
-                        ex,
-                        "Failed to delete message {MessageId} failed. Another thread probably completed it first. Message body: {Body}",
-                        message.MessageId,
-                        message.Body.ToString());
+                    try
+                    {
+                        await queue.DeleteMessageAsync(message.MessageId, message.PopReceipt);
+                    }
+                    catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound
+                                                         || ex.Status == (int)HttpStatusCode.BadRequest)
+                    {
+                        // Ignore, some other thread processed the message and completed it first.
+                        Logger.LogTransientWarning(
+                            ex,
+                            "Failed to delete message {MessageId} failed. Another thread probably completed it first. Message body: {Body}",
+                            message.MessageId,
+                            message.Body.ToString());
+                    }
                 }
 
                 return true;

@@ -56,6 +56,8 @@ namespace NuGet.Insights
         public string SymbolPackageHashesTableName { get; set; } = "symbolpackagehashes";
         public string TimerTableName { get; set; } = "timers";
         public int MaxTempMemoryStreamSize { get; set; } = 1024 * 1024 * 196;
+        public int AzureServiceClientMaxRetries { get; set; } = 2;
+        public TimeSpan AzureServiceClientNetworkTimeout { get; set; } = ServiceCollectionExtensions.HttpClientTimeout;
         public string UserManagedIdentityClientId { get; set; } = null;
         public List<TempStreamDirectory> TempDirectories { get; set; } = new List<TempStreamDirectory>
         {

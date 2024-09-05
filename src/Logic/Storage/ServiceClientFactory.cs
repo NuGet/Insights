@@ -187,11 +187,11 @@ namespace NuGet.Insights
             if (transport is not null)
             {
                 options.Transport = transport;
-            };
+            }
 
-            const int maxRetries = 2;
+            var maxRetries = _options.Value.AzureServiceClientMaxRetries;
             options.Retry.MaxRetries = maxRetries;
-            options.Retry.NetworkTimeout = ServiceCollectionExtensions.HttpClientTimeout;
+            options.Retry.NetworkTimeout = _options.Value.AzureServiceClientNetworkTimeout;
             options.RetryPolicy = new StorageNoOpRetryPolicy(
                 _loggerFactory.CreateLogger<StorageNoOpRetryPolicy>(),
                 maxRetries);

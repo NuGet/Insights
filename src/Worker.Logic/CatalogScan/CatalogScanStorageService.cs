@@ -88,6 +88,14 @@ namespace NuGet.Insights.Worker
             return await GetLeafScansAsync(table, scanId, pageId);
         }
 
+        public async Task<IReadOnlyList<CatalogLeafScan>> GetLeafScansAsync(string storageSuffix)
+        {
+            var table = await GetLeafScanTableAsync(storageSuffix);
+            return await table
+                .QueryAsync<CatalogLeafScan>()
+                .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
+        }
+
         private async Task<IReadOnlyList<CatalogLeafScan>> GetLeafScansAsync(TableClientWithRetryContext table, string scanId, string pageId)
         {
             return await table

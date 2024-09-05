@@ -433,10 +433,17 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        private static void StartAttempt(CatalogLeafScan scan, long dequeueCount)
+        private void StartAttempt(CatalogLeafScan scan, long dequeueCount)
         {
             scan.AttemptCount++;
-            scan.NextAttempt = DateTime.UtcNow + GetMessageDelay(GetTotalAttempts(scan, dequeueCount));
+            if (_options.Value.DisableMessageDelay)
+            {
+                scan.NextAttempt = DateTime.UtcNow;
+            }
+            else
+            {
+                scan.NextAttempt = DateTime.UtcNow + GetMessageDelay(GetTotalAttempts(scan, dequeueCount));
+            }
         }
 
         private static void ResetAttempt(CatalogLeafScan scan)
@@ -445,7 +452,7 @@ namespace NuGet.Insights.Worker
             scan.NextAttempt = DateTime.UtcNow;
         }
 
-        private static long GetTotalAttempts(CatalogLeafScan scan, long dequeueCount)
+        private long GetTotalAttempts(CatalogLeafScan scan, long dequeueCount)
         {
             return Math.Max(scan.AttemptCount + 1, dequeueCount);
         }
