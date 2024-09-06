@@ -11,7 +11,7 @@ namespace NuGet.Insights.Website
     public class ViewModelFactory
     {
         private const int HistoryCount = 10;
-
+        private readonly TimeProvider _timeProvider;
         private readonly CatalogCommitTimestampProvider _catalogCommitTimestampProvider;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
         private readonly CatalogScanStorageService _catalogScanStorageService;
@@ -27,6 +27,7 @@ namespace NuGet.Insights.Website
         private readonly IOptions<NuGetInsightsWebsiteSettings> _options;
 
         public ViewModelFactory(
+            TimeProvider timeProvider,
             CatalogCommitTimestampProvider catalogCommitTimestampProvider,
             IRawMessageEnqueuer rawMessageEnqueuer,
             CatalogScanStorageService catalogScanStorageService,
@@ -41,6 +42,7 @@ namespace NuGet.Insights.Website
             MoveMessagesTaskQueue moveMessagesTaskQueue,
             IOptions<NuGetInsightsWebsiteSettings> options)
         {
+            _timeProvider = timeProvider;
             _catalogCommitTimestampProvider = catalogCommitTimestampProvider;
             _rawMessageEnqueuer = rawMessageEnqueuer;
             _catalogScanStorageService = catalogScanStorageService;
@@ -169,7 +171,7 @@ namespace NuGet.Insights.Website
             return new TimedReprocessViewModel
             {
                 StaleBuckets = await staleBucketsTask,
-                Details = TimedReprocessDetails.Create(_options.Value),
+                Details = TimedReprocessDetails.Create(_timeProvider.GetUtcNow(), _options),
                 Runs = runViewModels,
             };
         }

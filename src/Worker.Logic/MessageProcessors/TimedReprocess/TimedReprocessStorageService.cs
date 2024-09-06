@@ -10,21 +10,29 @@ namespace NuGet.Insights.Worker.TimedReprocess
 {
     public class TimedReprocessStorageService
     {
+        public const string MetricIdPrefix = $"{nameof(TimedReprocessStorageService)}.";
+
+        private readonly TimeProvider _timeProvider;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<TimedReprocessStorageService> _logger;
+        private readonly IMetric _processingDelay;
 
         public TimedReprocessStorageService(
+            TimeProvider timeProvider,
             ServiceClientFactory serviceClientFactory,
             ITelemetryClient telemetryClient,
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<TimedReprocessStorageService> logger)
         {
+            _timeProvider = timeProvider;
             _serviceClientFactory = serviceClientFactory;
             _telemetryClient = telemetryClient;
             _options = options;
             _logger = logger;
+
+            _processingDelay = _telemetryClient.GetMetric($"{MetricIdPrefix}ProcessingDelayDays");
         }
 
         public async Task InitializeAsync()
@@ -37,14 +45,17 @@ namespace NuGet.Insights.Worker.TimedReprocess
                 .Range(0, BucketedPackage.BucketCount)
                 .Except(buckets.Select(x => x.Index))
                 .ToList();
-            var lastReprocessed = GetInitializeLastProcessed(DateTimeOffset.UtcNow, _options.Value.TimedReprocessWindow);
+            var timeWindow = GetCurrentTimeWindow(BucketedPackage.BucketCount);
 
             if (missingBuckets.Any())
             {
                 var batch = new MutableTableTransactionalBatch(table);
                 foreach (var index in missingBuckets)
                 {
-                    batch.AddEntity(new TimedReprocessBucket(index) { LastProcessed = lastReprocessed });
+                    batch.AddEntity(new TimedReprocessBucket(index)
+                    {
+                        ScheduledFor = timeWindow.GetScheduledTime(index),
+                    });
                     if (batch.Count >= StorageUtility.MaxBatchSize)
                     {
                         await batch.SubmitBatchAsync();
@@ -59,11 +70,6 @@ namespace NuGet.Insights.Worker.TimedReprocess
             {
                 throw new InvalidOperationException("There are extra buckets to reprocess. Perhaps the table schema has changed.");
             }
-        }
-
-        private static DateTimeOffset GetInitializeLastProcessed(DateTimeOffset created, TimeSpan window)
-        {
-            return created - (2 * window);
         }
 
         public async Task<TimedReprocessRun> GetRunAsync(string runId)
@@ -183,71 +189,50 @@ namespace NuGet.Insights.Worker.TimedReprocess
 
         public async Task<IReadOnlyList<int>> GetAllStaleBucketsAsync()
         {
-            var details = TimedReprocessDetails.Create(_options.Value.TimedReprocessWindow, BucketedPackage.BucketCount);
-
-            var bucketsToProcess = await GetBucketsToReprocessAsync(details);
-
+            var bucketsToProcess = await GetStaleBucketsAsync(BucketedPackage.BucketCount);
             return bucketsToProcess.Select(x => x.Index).ToList();
         }
 
         public async Task<List<TimedReprocessBucket>> GetBucketsToReprocessAsync()
         {
-            var details = TimedReprocessDetails.Create(_options.Value);
-
-            var bucketsToProcess = await GetBucketsToReprocessAsync(details);
-
-            _logger.LogInformation("Next buckets to process: {Buckets}, using details {Details}", bucketsToProcess.Select(x => x.Index), details);
-
-            return bucketsToProcess;
+            return await GetStaleBucketsAsync(_options.Value.TimedReprocessMaxBuckets);
         }
 
-        private async Task<List<TimedReprocessBucket>> GetBucketsToReprocessAsync(TimedReprocessDetails details)
+        private async Task<List<TimedReprocessBucket>> GetStaleBucketsAsync(int bucketCount)
         {
             var table = await GetTableAsync();
             var buckets = await GetBucketsAsync(table);
 
-            var bucketsToProcess = new List<TimedReprocessBucket>();
-            var added = new HashSet<int>();
+            var currentWindow = GetCurrentTimeWindow(bucketCount);
 
-            // Add unprocessed or late buckets.
-            foreach (var bucket in buckets.OrderBy(x => x.LastProcessed))
+            var bucketsToProcess = new List<TimedReprocessBucket>();
+            var sortedBuckets = buckets.OrderBy(x => x.LastProcessed).ThenBy(x => x.Index).ToList();
+            foreach (var bucket in sortedBuckets)
             {
-                if (bucket.LastProcessed + details.Window < details.WindowStart)
+                if (bucket.LastProcessed.HasValue
+                    && bucket.LastProcessed > currentWindow.WindowStart)
+                {
+                    continue;
+                }
+
+                if (bucket.LastProcessed is null
+                    || bucket.ScheduledFor <= currentWindow.Now)
                 {
                     bucketsToProcess.Add(bucket);
-                    added.Add(bucket.Index);
-                }
-                else
-                {
-                    break;
                 }
 
-                if (bucketsToProcess.Count >= details.MaxBuckets)
+                if (bucketsToProcess.Count >= currentWindow.MaxBuckets)
                 {
                     break;
                 }
             }
 
-            // Add buckets that are up to the current time's bucket.
-            if (bucketsToProcess.Count < details.MaxBuckets)
-            {
-                foreach (var bucket in buckets)
-                {
-                    if (bucket.LastProcessed + details.Window < details.WindowEnd &&
-                        bucket.Index <= details.CurrentBucket)
-                    {
-                        if (added.Add(bucket.Index))
-                        {
-                            bucketsToProcess.Add(bucket);
-                        }
-                    }
-
-                    if (bucketsToProcess.Count >= details.MaxBuckets)
-                    {
-                        break;
-                    }
-                }
-            }
+            _logger.LogInformation(
+                "[{Now:O}] {BucketCount}x buckets to process: {Buckets}, using details {Details}",
+                currentWindow.Now,
+                bucketsToProcess.Count,
+                bucketsToProcess.Select(x => x.Index),
+                currentWindow);
 
             return bucketsToProcess;
         }
@@ -257,12 +242,13 @@ namespace NuGet.Insights.Worker.TimedReprocess
             var table = await GetTableAsync();
             var buckets = await GetBucketsWithoutValidationAsync(table);
 
-            var lastReprocessed = GetInitializeLastProcessed(DateTimeOffset.UtcNow, _options.Value.TimedReprocessWindow);
+            var previousTimeWindow = GetCurrentTimeWindow(BucketedPackage.BucketCount).GetPrevious();
             var batch = new MutableTableTransactionalBatch(table);
 
             foreach (var bucket in buckets)
             {
-                bucket.LastProcessed = lastReprocessed;
+                bucket.LastProcessed = null;
+                bucket.ScheduledFor = previousTimeWindow.GetScheduledTime(bucket.Index);
                 batch.UpdateEntity(bucket, ETag.All, TableUpdateMode.Replace);
                 await batch.SubmitBatchIfFullAsync();
             }
@@ -272,24 +258,45 @@ namespace NuGet.Insights.Worker.TimedReprocess
 
         public async Task MarkBucketsAsProcessedAsync(IEnumerable<int> buckets)
         {
-            await MarkBucketsAsProcessedAsync(buckets, _options.Value.TimedReprocessWindow);
-        }
-
-        public async Task MarkBucketsAsProcessedAsync(IEnumerable<int> buckets, TimeSpan lastProcessedDelta)
-        {
             var indexToBucket = (await GetBucketsAsync()).ToDictionary(x => x.Index);
             var bucketEntities = buckets.Select(x => indexToBucket[x]).ToList();
+            var currentTimeWindow = GetCurrentTimeWindow(BucketedPackage.BucketCount);
+            var previousTimeWindow = currentTimeWindow.GetPrevious();
+            var nextTimeWindow = currentTimeWindow.GetNext();
 
             var table = await GetTableAsync();
             var batch = new MutableTableTransactionalBatch(table);
             foreach (var bucket in bucketEntities)
             {
-                bucket.LastProcessed += lastProcessedDelta;
+                if (bucket.LastProcessed.HasValue)
+                {
+                    var processDelay = nextTimeWindow.Now - bucket.LastProcessed.Value;
+                    _processingDelay.TrackValue(processDelay.TotalDays);
+                }
+
+                bucket.LastProcessed = nextTimeWindow.Now;
+
+                var roundedScheduledFor = currentTimeWindow.GetBounding(bucket.ScheduledFor).GetScheduledTime(bucket.Index);
+                if (roundedScheduledFor < previousTimeWindow.WindowStart || roundedScheduledFor > nextTimeWindow.WindowEnd)
+                {
+                    bucket.ScheduledFor = nextTimeWindow.GetScheduledTime(bucket.Index);
+                }
+                else
+                {
+                    bucket.ScheduledFor = roundedScheduledFor + currentTimeWindow.Window;
+                }
+
                 batch.UpdateEntity(bucket, bucket.ETag, TableUpdateMode.Replace);
                 await batch.SubmitBatchIfFullAsync();
             }
 
             await batch.SubmitBatchIfNotEmptyAsync();
+        }
+
+        private static DateTimeOffset RoundDown(DateTimeOffset time, TimeSpan modulus)
+        {
+            var ticks = time.Ticks;
+            return new DateTimeOffset(ticks - (ticks % modulus.Ticks), TimeSpan.Zero);
         }
 
         private async Task<List<TimedReprocessBucket>> GetBucketsAsync(TableClientWithRetryContext table)
@@ -302,6 +309,16 @@ namespace NuGet.Insights.Worker.TimedReprocess
             }
 
             return buckets;
+        }
+
+        public TimedReprocessDetails GetCurrentTimeWindow()
+        {
+            return GetCurrentTimeWindow(_options.Value.TimedReprocessMaxBuckets);
+        }
+
+        private TimedReprocessDetails GetCurrentTimeWindow(int maxBuckets)
+        {
+            return TimedReprocessDetails.Create(_timeProvider.GetUtcNow(), _options.Value.TimedReprocessWindow, maxBuckets);
         }
 
         public async Task<List<TimedReprocessBucket>> GetBucketsAsync()

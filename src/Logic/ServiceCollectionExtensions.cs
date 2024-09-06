@@ -171,6 +171,8 @@ namespace NuGet.Insights
 
             serviceCollection.AddSingleton<IThrottle>(NullThrottle.Instance);
 
+            serviceCollection.AddSingleton(x => TimeProvider.System);
+
             serviceCollection.AddSingleton(
                 x =>
                 {

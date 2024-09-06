@@ -94,7 +94,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
                 {
                     // no more work to do, return the latest run.
                     var runs = await _storageService.GetLatestRunsAsync(1);
-                    return runs.Single();
+                    return runs.SingleOrDefault();
                 }
             }
 

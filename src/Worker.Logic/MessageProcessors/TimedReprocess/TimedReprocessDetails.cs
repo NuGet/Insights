@@ -5,6 +5,7 @@ using NuGet.Insights.Worker.LoadBucketedPackage;
 
 namespace NuGet.Insights.Worker.TimedReprocess
 {
+    [DebuggerDisplay("{WindowStart} - {WindowEnd} ({Window}, current time is {Now}, up to bucket {CurrentBucket})")]
     public record TimedReprocessDetails(
         TimeSpan Window,
         int MaxBuckets,
@@ -14,21 +15,45 @@ namespace NuGet.Insights.Worker.TimedReprocess
         TimeSpan BucketSize,
         int CurrentBucket)
     {
-        public static TimedReprocessDetails Create(NuGetInsightsWorkerSettings settings)
+        public static TimedReprocessDetails Create(DateTimeOffset now, IOptions<NuGetInsightsWorkerSettings> options)
         {
-            return Create(settings.TimedReprocessWindow, settings.TimedReprocessMaxBuckets);
+            var settings = options.Value;
+            return Create(now, settings.TimedReprocessWindow, settings.TimedReprocessMaxBuckets);
         }
 
-        public static TimedReprocessDetails Create(TimeSpan window, int maxBuckets)
+        public static TimedReprocessDetails Create(DateTimeOffset now, TimeSpan window, int maxBuckets)
         {
-            var now = DateTimeOffset.UtcNow;
+            return Create(now, now, window, maxBuckets);
+        }
 
-            var windowStart = new DateTimeOffset(now.Ticks - (now.Ticks % window.Ticks), TimeSpan.Zero);
+        private static TimedReprocessDetails Create(DateTimeOffset now, DateTimeOffset sample, TimeSpan window, int maxBuckets)
+        {
+            var windowStart = new DateTimeOffset(sample.Ticks - (sample.Ticks % window.Ticks), TimeSpan.Zero);
             var windowEnd = windowStart + window;
             var bucketSize = window / BucketedPackage.BucketCount;
-            var currentBucket = (int)((now - windowStart) / bucketSize);
+            var currentBucket = (int)((sample - windowStart) / bucketSize);
 
             return new TimedReprocessDetails(window, maxBuckets, now, windowStart, windowEnd, bucketSize, currentBucket);
+        }
+
+        public TimedReprocessDetails GetPrevious()
+        {
+            return Create(Now, Now - Window, Window, MaxBuckets);
+        }
+
+        public TimedReprocessDetails GetNext()
+        {
+            return Create(Now, Now + Window, Window, MaxBuckets);
+        }
+
+        public TimedReprocessDetails GetBounding(DateTimeOffset sample)
+        {
+            return Create(Now, sample, Window, MaxBuckets);
+        }
+
+        public DateTimeOffset GetScheduledTime(int bucket)
+        {
+            return WindowStart + TimeSpan.FromTicks(bucket * BucketSize.Ticks);
         }
     }
 }
