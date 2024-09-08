@@ -68,7 +68,7 @@ namespace NuGet.Insights
             fileInfo.LastWriteTimeUtc = parsedLastModified.UtcDateTime;
         }
 
-        public const string ProgramName = "NuGet.Insights.Logic.Test";
+        public const string UserAgentAppName = "NuGet.Insights.Logic.Test";
         public const string TestInput = "TestInput";
         public const string TestData = "TestData";
         public const string Step1 = "Step1";
@@ -104,7 +104,7 @@ namespace NuGet.Insights
             hostBuilder
                 .ConfigureServices(serviceCollection =>
                 {
-                    serviceCollection.AddNuGetInsights(ProgramName);
+                    serviceCollection.AddNuGetInsights(userAgentAppName: UserAgentAppName);
 
                     serviceCollection.AddSingleton((INuGetInsightsHttpMessageHandlerFactory)HttpMessageHandlerFactory);
 

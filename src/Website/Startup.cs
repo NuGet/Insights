@@ -27,7 +27,7 @@ namespace NuGet.Insights.Website
             services.Configure<NuGetInsightsWorkerSettings>(Configuration.GetSection(NuGetInsightsSettings.DefaultSectionName));
             services.Configure<NuGetInsightsWebsiteSettings>(Configuration.GetSection(NuGetInsightsSettings.DefaultSectionName));
 
-            services.AddNuGetInsights("NuGet.Insights.Website");
+            services.AddNuGetInsights(Configuration, "NuGet.Insights.Website");
             services.AddNuGetInsightsWorker();
 
             services.AddSingleton<ControllerInitializer>();

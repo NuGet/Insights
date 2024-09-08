@@ -172,12 +172,21 @@ namespace NuGet.Insights.Tool
 
         public static ServiceCollection InitializeServiceCollection()
         {
+            var configurationBuilder = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: false);
+
+            var configuration = configurationBuilder.Build();
+
             var serviceCollection = new ServiceCollection();
 
+            serviceCollection.Configure<NuGetInsightsSettings>(configuration.GetSection(NuGetInsightsSettings.DefaultSectionName));
+            serviceCollection.Configure<NuGetInsightsWorkerSettings>(configuration.GetSection(NuGetInsightsSettings.DefaultSectionName));
+
             serviceCollection.AddSingleton<TelemetryClient>();
-            serviceCollection.AddNuGetInsights("NuGet.Insights.Tool");
+
+            serviceCollection.AddNuGetInsights(configuration, "NuGet.Insights.Tool");
             serviceCollection.AddNuGetInsightsWorker();
-            AddNuGetInsightsSettings<Program>(serviceCollection);
 
             serviceCollection.AddLogging(o =>
             {
@@ -189,28 +198,6 @@ namespace NuGet.Insights.Tool
             {
                 serviceCollection.AddTransient(pair.Value);
             }
-
-            return serviceCollection;
-        }
-
-        private static IServiceCollection AddNuGetInsightsSettings<T>(IServiceCollection serviceCollection)
-        {
-            var localDirectory = Path.GetDirectoryName(typeof(T).Assembly.Location);
-            return AddNuGetInsightsSettings(serviceCollection, localDirectory);
-        }
-
-        private static IServiceCollection AddNuGetInsightsSettings(
-            IServiceCollection serviceCollection,
-            string localDirectory = null)
-        {
-            var configurationBuilder = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-                .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: false);
-
-            var configuration = configurationBuilder.Build();
-
-            serviceCollection.Configure<NuGetInsightsSettings>(configuration.GetSection(NuGetInsightsSettings.DefaultSectionName));
-            serviceCollection.Configure<NuGetInsightsWorkerSettings>(configuration.GetSection(NuGetInsightsSettings.DefaultSectionName));
 
             return serviceCollection;
         }

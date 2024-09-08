@@ -75,7 +75,7 @@ namespace NuGet.Insights.Worker
                             Configure(settings);
                         });
 
-                    services.AddNuGetInsights("NuGet.Insights.Worker");
+                    services.AddNuGetInsights(hostContext.Configuration, "NuGet.Insights.Worker");
                     services.AddNuGetInsightsWorker();
                 })
                 .ConfigureLogging((hostContext, logging) =>

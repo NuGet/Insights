@@ -3,6 +3,7 @@
 
 using System.Runtime.InteropServices;
 using Knapcode.MiniZip;
+using Microsoft.Extensions.Configuration;
 using NuGet.Configuration;
 using NuGet.Insights.ReferenceTracking;
 using NuGet.Insights.TablePrefixScan;
@@ -101,14 +102,20 @@ namespace NuGet.Insights
 
         public static IServiceCollection AddNuGetInsights(
             this IServiceCollection serviceCollection,
-            string programName = null,
-            string programVersion = null,
-            string programUrl = null)
+            IConfiguration configuration = null,
+            string userAgentAppName = null)
         {
             // Avoid re-adding all the services.
             if (serviceCollection.Any(x => x.ServiceType == typeof(Marker)))
             {
                 return serviceCollection;
+            }
+
+            if (configuration is null)
+            {
+                configuration = new ConfigurationBuilder()
+                    .AddEnvironmentVariables()
+                    .Build();
             }
 
             serviceCollection.AddSingleton<Marker>();
@@ -129,7 +136,7 @@ namespace NuGet.Insights
 
                 if (error is not null)
                 {
-                    if (AllowIcu())
+                    if (AllowIcu(configuration))
                     {
                         Console.WriteLine($"Environment {AllowIcuEnvName} has been set to true so the following error is suppressed:" + Environment.NewLine + error);
                     }
@@ -142,13 +149,13 @@ namespace NuGet.Insights
 
             serviceCollection.AddMemoryCache();
 
-            var userAgent = GetUserAgent(programName, programVersion, programUrl);
+            var userAgent = GetUserAgent(configuration, userAgentAppName);
 
             // Set the user agent for NuGet Client HTTP requests (i.e. HttpSource)
             typeof(UserAgent)
                 .GetProperty(nameof(UserAgent.UserAgentString), BindingFlags.Public | BindingFlags.Static | BindingFlags.SetProperty)
                 .SetMethod
-                .Invoke(null, new object[] { userAgent });
+                .Invoke(null, [userAgent]);
 
             serviceCollection.AddSingleton(x => GetHttpClient(x, enableLogging: true, HttpHandlerFlavor.Decompressing));
             serviceCollection.AddTransient<RedirectResolver>();
@@ -259,14 +266,14 @@ namespace NuGet.Insights
             return serviceCollection;
         }
 
-        private static string GetUserAgent(string programName, string programVersion, string programUrl)
+        private static string GetUserAgent(IConfiguration configuration, string appName)
         {
             var builder = new StringBuilder();
 
             // Ignored by the statistics pipeline here:
             // https://github.com/NuGet/NuGet.Jobs/blob/062f7501e34d34a12abf780f6a01629e66b7f28b/src/Stats.ImportAzureCdnStatistics/StatisticsParser.cs#L41
             builder.Append("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0; AppInsights)");
-            builder.Append(" ");
+            builder.Append(' ');
 
             // Parsed by the statistics pipeline here:
             // https://github.com/NuGet/NuGet.Jobs/blob/062f7501e34d34a12abf780f6a01629e66b7f28b/src/Stats.LogInterpretation/knownclients.yaml#L156-L158
@@ -276,33 +283,25 @@ namespace NuGet.Insights
                 .WithOSDescription(RuntimeInformation.OSDescription)
                 .Build());
 
-            builder.Append(" ");
-            if (string.IsNullOrWhiteSpace(programName))
+            builder.Append(' ');
+            if (string.IsNullOrWhiteSpace(appName))
             {
-                builder.Append("NuGet.Insights");
+                builder.Append(Assembly.GetEntryAssembly()?.GetName().Name ?? "NuGet.Insights");
             }
             else
             {
-                builder.Append(programName);
+                builder.Append(appName);
             }
             builder.Append(".Bot");
 
-            if (string.IsNullOrWhiteSpace(programVersion))
+            var assemblyInformationalVersion = typeof(ServiceCollectionExtensions)
+                .Assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+                .InformationalVersion;
+            if (assemblyInformationalVersion != null)
             {
-                var assemblyInformationalVersion = typeof(ServiceCollectionExtensions)
-                    .Assembly
-                    .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
-                    .InformationalVersion;
-                if (assemblyInformationalVersion != null)
-                {
-                    builder.Append("/");
-                    builder.Append(assemblyInformationalVersion);
-                }
-            }
-            else
-            {
-                builder.Append("/");
-                builder.Append(programVersion);
+                builder.Append('/');
+                builder.Append(assemblyInformationalVersion);
             }
 
             builder.Append(" (");
@@ -312,30 +311,35 @@ namespace NuGet.Insights
             builder.Append("; ");
             builder.Append(RuntimeInformation.FrameworkDescription);
             builder.Append("; +");
-            if (string.IsNullOrWhiteSpace(programUrl))
-            {
-                builder.Append("https://github.com/NuGet/Insights");
-            }
-            else
-            {
-                builder.Append(programUrl);
-            }
-            builder.Append(")");
+            builder.Append(GetUserAgentInfoUrl(configuration));
+            builder.Append(')');
 
             return builder.ToString();
         }
 
         private const string AllowIcuEnvName = "NUGET_INSIGHTS_ALLOW_ICU";
+        private const string UserAgentInfoUrlEnvName = "NUGET_INSIGHTS_USER_AGENT_INFO_URL";
 
-        private static bool AllowIcu()
+        private static bool AllowIcu(IConfiguration configuration)
         {
-            var value = Environment.GetEnvironmentVariable(AllowIcuEnvName);
+            var value = configuration?[AllowIcuEnvName];
             if (bool.TryParse(value, out var parsed))
             {
                 return parsed;
             }
 
             return false;
+        }
+
+        private static string GetUserAgentInfoUrl(IConfiguration configuration)
+        {
+            var value = configuration?[UserAgentInfoUrlEnvName];
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return "https://github.com/NuGet/Insights";
+            }
+
+            return value.Trim();
         }
 
         /// <summary>
