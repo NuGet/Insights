@@ -90,51 +90,18 @@ namespace NuGet.Insights.Worker
 
         [Theory]
         [MemberData(nameof(StartabledDriverTypesData))]
-        public void GetOnlyLatestLeavesSupport_SupportsAllDriverTypes(CatalogScanDriverType type)
+        public void GetRuntimeType_ReturnsBatchOrNonBatchDriver(CatalogScanDriverType type)
         {
-            CatalogScanDriverMetadata.GetOnlyLatestLeavesSupport(type);
-        }
+            var runtimeType = CatalogScanDriverMetadata.GetRuntimeType(type);
 
-        [Theory]
-        [MemberData(nameof(StartabledDriverTypesData))]
-        public void GetBucketRangeSupport_SupportsAllDriverTypes(CatalogScanDriverType type)
-        {
-            CatalogScanDriverMetadata.GetBucketRangeSupport(type);
-        }
-
-        [Theory]
-        [MemberData(nameof(StartabledDriverTypesData))]
-        public void GetUpdatedOutsideOfCatalog_SupportsAllDriverTypes(CatalogScanDriverType type)
-        {
-            CatalogScanDriverMetadata.GetUpdatedOutsideOfCatalog(type);
-        }
-
-        [Theory]
-        [MemberData(nameof(StartabledDriverTypesData))]
-        public void GetDefaultMin_SupportsAllDriverTypes(CatalogScanDriverType type)
-        {
-            CatalogScanDriverMetadata.GetDefaultMin(type);
-        }
-
-        [Theory]
-        [MemberData(nameof(StartabledDriverTypesData))]
-        public void GetTransitiveClosure_SupportsAllDriverTypes(CatalogScanDriverType type)
-        {
-            CatalogScanDriverMetadata.GetTransitiveClosure(type);
-        }
-
-        [Theory]
-        [MemberData(nameof(StartabledDriverTypesData))]
-        public void GetDependents_SupportsAllDriverTypes(CatalogScanDriverType type)
-        {
-            CatalogScanDriverMetadata.GetDependents(type);
-        }
-
-        [Theory]
-        [MemberData(nameof(StartabledDriverTypesData))]
-        public void GetDependencies_SupportsAllDriverTypes(CatalogScanDriverType type)
-        {
-            CatalogScanDriverMetadata.GetDependencies(type);
+            if (CatalogScanDriverMetadata.IsBatchDriver(type))
+            {
+                Assert.True(runtimeType.IsAssignableTo(typeof(ICatalogLeafScanBatchDriver)));
+            }
+            else
+            {
+                Assert.True(runtimeType.IsAssignableTo(typeof(ICatalogLeafScanNonBatchDriver)));
+            }
         }
 
         [Theory]
