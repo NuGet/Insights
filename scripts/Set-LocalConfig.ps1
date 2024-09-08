@@ -51,7 +51,7 @@ process {
 
     $websiteConfigPath = Resolve-Path (Join-Path $PSScriptRoot "../src/Website/appsettings.Development.json")
     $workerConfigPath = Resolve-Path (Join-Path $PSScriptRoot "../src/Worker/local.settings.json")
-    $toolConfigPath = Join-Path (Join-Path $PSScriptRoot "../src/Tool/appsettings.Development.json")
+    $toolConfigPath = Resolve-Path (Join-Path $PSScriptRoot "../src/Tool/appsettings.Development.json")
     $workerHostPath = Resolve-Path (Join-Path $PSScriptRoot "../src/Worker/host.json")
     $AddCurrentUserToStoragePath = Resolve-Path (Join-Path $PSScriptRoot "Add-CurrentUserToStorage.ps1")
 
