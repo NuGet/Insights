@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#if ENABLE_CRYPTOAPI
 using NuGet.Insights.Worker.PackageCertificateToCsv;
+#endif
 
 namespace NuGet.Insights.Worker
 {
@@ -33,7 +35,10 @@ namespace NuGet.Insights.Worker
             var version = "6.11.0.0-BETA";
             var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
             var lowerId = id.ToLowerInvariant();
+
+#if ENABLE_CRYPTOAPI
             var fingerpint = "WZwhyq+aBTSc7liizyZSlTOr2/v+/vNEqmA5uMp/Ulk=";
+#endif
 
             var bucketKey = CatalogScanDriverMetadata.GetBucketKeyFactory(type)(lowerId, normalizedVersion);
 
@@ -53,11 +58,16 @@ namespace NuGet.Insights.Worker
                     recordType.GetProperty(nameof(PackageRecord.LowerId))?.SetValue(record, lowerId);
                     recordType.GetProperty(nameof(PackageRecord.Version), typeof(string))?.SetValue(record, version);
                     recordType.GetProperty(nameof(PackageRecord.Identity))?.SetValue(record, PackageRecord.GetIdentity(lowerId, normalizedVersion));
+
+#if ENABLE_CRYPTOAPI
                     recordType.GetProperty(nameof(CertificateRecord.Fingerprint))?.SetValue(record, fingerpint);
+#endif
 
                     var recordBucketKey = record.GetBucketKey();
                     switch (record)
                     {
+
+#if ENABLE_CRYPTOAPI
                         // This record type is produced along with with PackageCertificateRecord.
                         // These two records have different bucket strategies. We have to pick one of them so we
                         // prefer the bucket key of the PackageCertificateRecord, which has more records per package.
@@ -65,6 +75,7 @@ namespace NuGet.Insights.Worker
                             Assert.Equal(fingerpint, recordBucketKey);
                             Assert.NotEqual(bucketKey, recordBucketKey);
                             break;
+#endif
 
                         // By default the driver's bucket key should match the bucket key of all of the records produced by the driver.
                         default:

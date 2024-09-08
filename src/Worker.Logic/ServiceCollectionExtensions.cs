@@ -20,17 +20,20 @@ using NuGet.Insights.Worker.LoadPackageManifest;
 using NuGet.Insights.Worker.LoadPackageReadme;
 using NuGet.Insights.Worker.LoadPackageVersion;
 using NuGet.Insights.Worker.LoadSymbolPackageArchive;
-using NuGet.Insights.Worker.NuGetPackageExplorerToCsv;
-#if ENABLE_CRYPTOAPI
-using NuGet.Insights.Worker.PackageCertificateToCsv;
 using NuGet.Insights.Worker.PackageVersionToCsv;
-
-#endif
 using NuGet.Insights.Worker.ReferenceTracking;
 using NuGet.Insights.Worker.TableCopy;
 using NuGet.Insights.Worker.TimedReprocess;
 using NuGet.Insights.Worker.Workflow;
 using NuGetGallery.Frameworks;
+
+#if ENABLE_CRYPTOAPI
+using NuGet.Insights.Worker.PackageCertificateToCsv;
+#endif
+
+#if ENABLE_NPE
+using NuGet.Insights.Worker.NuGetPackageExplorerToCsv;
+#endif
 
 namespace NuGet.Insights.Worker
 {
@@ -122,7 +125,9 @@ namespace NuGet.Insights.Worker
             AddTableScan<CatalogLeafScan>(serviceCollection);
             AddTableScan<BucketedPackage>(serviceCollection);
 
+#if ENABLE_NPE
             serviceCollection.AddTransient<TemporaryFileProvider>();
+#endif
 
             serviceCollection.AddTransient<KustoIngestionService>();
             serviceCollection.AddTransient<KustoIngestionStorageService>();
