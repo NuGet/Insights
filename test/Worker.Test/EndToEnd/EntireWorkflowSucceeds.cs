@@ -41,7 +41,6 @@ namespace NuGet.Insights.Worker
         protected override void ConfigureWorkerSettingsInternal(NuGetInsightsWorkerSettings x)
         {
             x.AppendResultBigModeRecordThreshold = 0;
-            x.RunAllCatalogScanDriversAsBatch = true;
         }
     }
 

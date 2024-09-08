@@ -2,6 +2,37 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Frozen;
+using NuGet.Insights.Worker.BuildVersionSet;
+using NuGet.Insights.Worker.CatalogDataToCsv;
+using NuGet.Insights.Worker.LoadBucketedPackage;
+using NuGet.Insights.Worker.LoadLatestPackageLeaf;
+using NuGet.Insights.Worker.LoadPackageArchive;
+using NuGet.Insights.Worker.LoadPackageManifest;
+using NuGet.Insights.Worker.LoadPackageReadme;
+using NuGet.Insights.Worker.LoadPackageVersion;
+using NuGet.Insights.Worker.LoadSymbolPackageArchive;
+using NuGet.Insights.Worker.PackageArchiveToCsv;
+using NuGet.Insights.Worker.PackageAssemblyToCsv;
+using NuGet.Insights.Worker.PackageAssetToCsv;
+using NuGet.Insights.Worker.PackageCompatibilityToCsv;
+using NuGet.Insights.Worker.PackageContentToCsv;
+using NuGet.Insights.Worker.PackageFileToCsv;
+using NuGet.Insights.Worker.PackageIconToCsv;
+using NuGet.Insights.Worker.PackageLicenseToCsv;
+using NuGet.Insights.Worker.PackageManifestToCsv;
+using NuGet.Insights.Worker.PackageReadmeToCsv;
+using NuGet.Insights.Worker.PackageSignatureToCsv;
+using NuGet.Insights.Worker.PackageVersionToCsv;
+using NuGet.Insights.Worker.SymbolPackageArchiveToCsv;
+using NuGet.Insights.Worker.SymbolPackageFileToCsv;
+
+#if ENABLE_CRYPTOAPI
+using NuGet.Insights.Worker.PackageCertificateToCsv;
+#endif
+
+#if ENABLE_NPE
+using NuGet.Insights.Worker.NuGetPackageExplorerToCsv;
+#endif
 
 namespace NuGet.Insights.Worker
 {
@@ -16,78 +47,93 @@ namespace NuGet.Insights.Worker
         private static readonly IReadOnlyList<DriverMetadata> AllMetadata = new[]
         {
             // only needs catalog pages, not leaves
-            OnlyCatalogRangeDriver(CatalogScanDriverType.BuildVersionSet),
+            OnlyCatalogRangeDriver<BuildVersionSetDriver>(
+                CatalogScanDriverType.BuildVersionSet),
 
             // needs all catalog leaves
-            OnlyCatalogRangeDriver(CatalogScanDriverType.CatalogDataToCsv)
+            OnlyCatalogRangeDriver<CatalogLeafScanToCsvNonBatchAdapter<PackageDeprecationRecord, PackageVulnerabilityRecord, CatalogLeafItemRecord>>(
+                CatalogScanDriverType.CatalogDataToCsv)
                 with { DefaultMin = CatalogClient.NuGetOrgMin },
 
             // uses find latest driver, only reads catalog pages
-            OnlyCatalogRangeDriver(CatalogScanDriverType.LoadBucketedPackage),
+            OnlyCatalogRangeDriver<FindLatestLeafDriver<BucketedPackage>>(
+                CatalogScanDriverType.LoadBucketedPackage),
 
             // uses find latest driver, only reads catalog pages
-            OnlyCatalogRangeDriver(CatalogScanDriverType.LoadLatestPackageLeaf),
+            OnlyCatalogRangeDriver<FindLatestLeafDriver<LatestPackageLeaf>>(
+                CatalogScanDriverType.LoadLatestPackageLeaf),
 
-            Default(CatalogScanDriverType.LoadPackageArchive),
+            Default<LoadPackageArchiveDriver>(
+                CatalogScanDriverType.LoadPackageArchive),
 
-            Default(CatalogScanDriverType.LoadPackageManifest),
+            Default<LoadPackageManifestDriver>(
+                CatalogScanDriverType.LoadPackageManifest),
 
-            Default(CatalogScanDriverType.LoadPackageReadme),
+            Default<LoadPackageReadmeDriver>(
+                CatalogScanDriverType.LoadPackageReadme),
 
             // internally uses find latest driver
-            Default(CatalogScanDriverType.LoadPackageVersion)
+            Default<LoadPackageVersionDriver>(
+                CatalogScanDriverType.LoadPackageVersion)
                 with { OnlyLatestLeavesSupport = false },
 
-            Default(CatalogScanDriverType.LoadSymbolPackageArchive),
+            Default<LoadSymbolPackageArchiveDriver>(
+                CatalogScanDriverType.LoadSymbolPackageArchive),
 
 #if ENABLE_NPE
-            Default(CatalogScanDriverType.NuGetPackageExplorerToCsv),
+            Default<CatalogLeafScanToCsvNonBatchAdapter<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>>(
+                CatalogScanDriverType.NuGetPackageExplorerToCsv),
 #endif
 
-            Default(CatalogScanDriverType.PackageArchiveToCsv)
+            Default<CatalogLeafScanToCsvNonBatchAdapter<PackageArchiveRecord, PackageArchiveEntry>>(
+                CatalogScanDriverType.PackageArchiveToCsv)
                 with { Dependencies = [CatalogScanDriverType.PackageFileToCsv] },
 
-            Default(CatalogScanDriverType.PackageAssemblyToCsv)
+            Default<CatalogLeafScanToCsvNonBatchAdapter<PackageAssembly>>(
+                CatalogScanDriverType.PackageAssemblyToCsv)
                 with { Dependencies = [CatalogScanDriverType.LoadPackageArchive] },
 
-            Default(CatalogScanDriverType.PackageAssetToCsv)
+            Default<CatalogLeafScanToCsvNonBatchAdapter<PackageAsset>>(
+                CatalogScanDriverType.PackageAssetToCsv)
                 with { Dependencies = [CatalogScanDriverType.LoadPackageArchive] },
 
 #if ENABLE_CRYPTOAPI
-            Default(CatalogScanDriverType.PackageCertificateToCsv)
+            Default<CatalogLeafScanToCsvBatchAdapter<PackageCertificateRecord, CertificateRecord>>(
+                CatalogScanDriverType.PackageCertificateToCsv)
                 with { Dependencies = [CatalogScanDriverType.LoadPackageArchive] },
 #endif
 
-            Default(CatalogScanDriverType.PackageCompatibilityToCsv)
+            Default<CatalogLeafScanToCsvNonBatchAdapter<PackageCompatibility>>(
+                CatalogScanDriverType.PackageCompatibilityToCsv)
                 with { Dependencies = [CatalogScanDriverType.LoadPackageArchive, CatalogScanDriverType.LoadPackageManifest] },
 
-            Default(CatalogScanDriverType.PackageContentToCsv)
+            Default<CatalogLeafScanToCsvNonBatchAdapter<PackageContent>>(CatalogScanDriverType.PackageContentToCsv)
                 with { Dependencies = [CatalogScanDriverType.LoadPackageArchive] },
 
-            Default(CatalogScanDriverType.PackageFileToCsv)
+            Default<CatalogLeafScanToCsvNonBatchAdapter<PackageFileRecord>>(CatalogScanDriverType.PackageFileToCsv)
                 with { Dependencies = [CatalogScanDriverType.LoadPackageArchive] },
 
-            Default(CatalogScanDriverType.PackageIconToCsv),
+            Default<CatalogLeafScanToCsvNonBatchAdapter<PackageIcon>>(CatalogScanDriverType.PackageIconToCsv),
 
-            Default(CatalogScanDriverType.PackageLicenseToCsv),
+            Default<CatalogLeafScanToCsvNonBatchAdapter<PackageLicense>>(CatalogScanDriverType.PackageLicenseToCsv),
 
-            Default(CatalogScanDriverType.PackageManifestToCsv)
+            Default<CatalogLeafScanToCsvNonBatchAdapter<PackageManifestRecord>>(CatalogScanDriverType.PackageManifestToCsv)
                 with { Dependencies = [CatalogScanDriverType.LoadPackageManifest] },
 
-            Default(CatalogScanDriverType.PackageReadmeToCsv)
+            Default<CatalogLeafScanToCsvNonBatchAdapter<PackageReadme>>(CatalogScanDriverType.PackageReadmeToCsv)
                 with { Dependencies = [CatalogScanDriverType.LoadPackageReadme] },
 
-            Default(CatalogScanDriverType.PackageSignatureToCsv)
+            Default<CatalogLeafScanToCsvNonBatchAdapter<PackageSignature>>(CatalogScanDriverType.PackageSignatureToCsv)
                 with { Dependencies = [CatalogScanDriverType.LoadPackageArchive] },
             
             // processes individual IDs not versions, needs a "latest leaves" step to dedupe versions
-            OnlyCatalogRangeDriver(CatalogScanDriverType.PackageVersionToCsv)
+            OnlyCatalogRangeDriver<CatalogLeafScanToCsvNonBatchAdapter<PackageVersionRecord>>(CatalogScanDriverType.PackageVersionToCsv)
                 with { OnlyLatestLeavesSupport = true, Dependencies = [CatalogScanDriverType.LoadPackageVersion], GetBucketKey = GetIdBucketKey },
 
-            Default(CatalogScanDriverType.SymbolPackageArchiveToCsv)
+            Default<CatalogLeafScanToCsvNonBatchAdapter<SymbolPackageArchiveRecord, SymbolPackageArchiveEntry>>(CatalogScanDriverType.SymbolPackageArchiveToCsv)
                 with { Dependencies = [CatalogScanDriverType.SymbolPackageFileToCsv] },
 
-            Default(CatalogScanDriverType.SymbolPackageFileToCsv)
+            Default<CatalogLeafScanToCsvNonBatchAdapter<SymbolPackageFileRecord>>(CatalogScanDriverType.SymbolPackageFileToCsv)
                 with { Dependencies = [CatalogScanDriverType.LoadSymbolPackageArchive] },
         };
 
@@ -150,7 +196,14 @@ namespace NuGet.Insights.Worker
         }
 
         private record DriverMetadata(
+            // The type enum value, used for switch statements.
             CatalogScanDriverType Type,
+
+            // The .NET type of the driver used for runtime processing. Implements ICatalogLeafScanBatchDriver or ICatalogLeafScanNonBatchDriver.
+            Type RuntimeType,
+
+            // Whether or not the runtime type is ICatalogLeafScanBatchDriver.
+            bool IsBatchDriver,
 
             // This nullable boolean (tri-state) has the following meanings:
             // - null: the driver type supports run with or without the latest leaves scan
@@ -187,10 +240,12 @@ namespace NuGet.Insights.Worker
         /// A driver that only supports catalog ranges and no bucket ranges. Typically this driver processes catalog
         /// pages but not catalog leaves.
         /// </summary>
-        private static DriverMetadata OnlyCatalogRangeDriver(CatalogScanDriverType type)
+        private static DriverMetadata OnlyCatalogRangeDriver<T>(CatalogScanDriverType type) where T : ICatalogLeafScanBatchDriver
         {
             return new DriverMetadata(
                 Type: type,
+                RuntimeType: typeof(T),
+                IsBatchDriver: true,
                 OnlyLatestLeavesSupport: false,
                 BucketRangeSupport: false,
                 UpdatedOutsideOfCatalog: UpdatesOutsideOfCatalog(type),
@@ -204,10 +259,12 @@ namespace NuGet.Insights.Worker
         /// latest" scan to eliminate duplicate package processing. This should probably be used for new drivers that
         /// generate some CSV records per package or load data into storage (e.g. Azure Table Storage) per package.
         /// </summary>
-        private static DriverMetadata Default(CatalogScanDriverType type)
+        private static DriverMetadata Default<T>(CatalogScanDriverType type) where T : ICatalogLeafScanBatchDriver
         {
             return new DriverMetadata(
                 Type: type,
+                RuntimeType: typeof(T),
+                IsBatchDriver: true,
                 OnlyLatestLeavesSupport: null,
                 BucketRangeSupport: true,
                 UpdatedOutsideOfCatalog: UpdatesOutsideOfCatalog(type),
@@ -413,6 +470,16 @@ namespace NuGet.Insights.Worker
             }
 
             return batches;
+        }
+
+        public static Type GetRuntimeType(CatalogScanDriverType driverType)
+        {
+            return GetValue(TypeToMetadata, driverType).RuntimeType;
+        }
+
+        public static bool IsBatchDriver(CatalogScanDriverType driverType)
+        {
+            return GetValue(TypeToMetadata, driverType).IsBatchDriver;
         }
 
         public static GetBucketKey GetBucketKeyFactory(CatalogScanDriverType driverType)

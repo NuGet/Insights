@@ -15,7 +15,6 @@ namespace NuGet.Insights.Worker
         public int TableScanTakeCount { get; set; } = StorageUtility.MaxTakeCount;
         public bool AllowBatching { get; set; } = true;
         public bool DisableMessageDelay { get; set; } = false;
-        public bool RunAllCatalogScanDriversAsBatch { get; set; } = false;
         public bool OnlyKeepLatestInAuxiliaryFileUpdater { get; set; } = true;
         public bool RecordCertificateStatus { get; set; } = true;
         public bool MoveTempToHome { get; set; } = false;

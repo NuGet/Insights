@@ -228,28 +228,21 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
         [Fact]
         public Task PackageAssetToCsv_WithDuplicates_OnlyLatestLeaves()
         {
-            return PackageAssetToCsv_WithDuplicates(batchProcessing: false);
+            return PackageAssetToCsv_WithDuplicates();
         }
 
         [Fact]
         public async Task PackageAssetToCsv_WithDuplicates_AllLeaves()
         {
             MutableLatestLeavesTypes.Clear();
-            await PackageAssetToCsv_WithDuplicates(batchProcessing: false);
-        }
-
-        [Fact]
-        public Task PackageAssetToCsv_WithDuplicates_BatchProcessing()
-        {
-            MutableLatestLeavesTypes.Clear();
-            return PackageAssetToCsv_WithDuplicates(batchProcessing: true);
+            await PackageAssetToCsv_WithDuplicates();
         }
 
         [Fact]
         public Task PackageAssetToCsv_WithDuplicates_OnlyLatestLeaves_FailedRangeRequests()
         {
             FailRangeRequests();
-            return PackageAssetToCsv_WithDuplicates(batchProcessing: false);
+            return PackageAssetToCsv_WithDuplicates();
         }
 
         [Fact]
@@ -257,15 +250,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
         {
             MutableLatestLeavesTypes.Clear();
             FailRangeRequests();
-            await PackageAssetToCsv_WithDuplicates(batchProcessing: false);
-        }
-
-        [Fact]
-        public Task PackageAssetToCsv_WithDuplicates_BatchProcessing_FailedRangeRequests()
-        {
-            MutableLatestLeavesTypes.Clear();
-            FailRangeRequests();
-            return PackageAssetToCsv_WithDuplicates(batchProcessing: true);
+            await PackageAssetToCsv_WithDuplicates();
         }
 
         public PackageAssetToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
@@ -282,10 +267,9 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
         public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => MutableLatestLeavesTypes;
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
 
-        private async Task PackageAssetToCsv_WithDuplicates(bool batchProcessing)
+        private async Task PackageAssetToCsv_WithDuplicates()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.RunAllCatalogScanDriversAsBatch = batchProcessing;
             var min0 = DateTimeOffset.Parse("2020-11-27T21:58:12.5094058Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2020-11-27T22:09:56.3587144Z", CultureInfo.InvariantCulture);
 

@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker.BuildVersionSet
 {
-    public class BuildVersionSetDriver : ICatalogLeafScanNonBatchDriver
+    public class BuildVersionSetDriver : ICatalogLeafScanBatchDriver
     {
         private readonly CatalogClient _catalogClient;
         private readonly VersionSetAggregateStorageService _aggregateStorageService;
@@ -53,9 +53,9 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             return CatalogPageScanResult.Processed;
         }
 
-        public Task<DriverResult> ProcessLeafAsync(CatalogLeafScan leafScan)
+        public Task<BatchMessageProcessorResult<CatalogLeafScan>> ProcessLeavesAsync(IReadOnlyList<CatalogLeafScan> leafScans)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public async Task StartAggregateAsync(CatalogIndexScan indexScan)

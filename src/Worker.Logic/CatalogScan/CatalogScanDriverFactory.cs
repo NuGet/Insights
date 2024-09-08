@@ -1,36 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using NuGet.Insights.Worker.BuildVersionSet;
-using NuGet.Insights.Worker.CatalogDataToCsv;
 using NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId;
-using NuGet.Insights.Worker.LoadLatestPackageLeaf;
-using NuGet.Insights.Worker.LoadPackageArchive;
-#if ENABLE_CRYPTOAPI
-using NuGet.Insights.Worker.PackageCertificateToCsv;
-#endif
-using NuGet.Insights.Worker.LoadPackageManifest;
-using NuGet.Insights.Worker.LoadPackageReadme;
-using NuGet.Insights.Worker.LoadPackageVersion;
-#if ENABLE_NPE
-using NuGet.Insights.Worker.NuGetPackageExplorerToCsv;
-#endif
-using NuGet.Insights.Worker.PackageArchiveToCsv;
-using NuGet.Insights.Worker.PackageAssemblyToCsv;
-using NuGet.Insights.Worker.PackageAssetToCsv;
-using NuGet.Insights.Worker.PackageCompatibilityToCsv;
-using NuGet.Insights.Worker.PackageIconToCsv;
-using NuGet.Insights.Worker.PackageManifestToCsv;
-using NuGet.Insights.Worker.PackageSignatureToCsv;
-using NuGet.Insights.Worker.PackageVersionToCsv;
-using NuGet.Insights.Worker.PackageReadmeToCsv;
-using NuGet.Insights.Worker.LoadSymbolPackageArchive;
-using NuGet.Insights.Worker.SymbolPackageArchiveToCsv;
-using NuGet.Insights.Worker.PackageContentToCsv;
-using NuGet.Insights.Worker.PackageLicenseToCsv;
-using NuGet.Insights.Worker.LoadBucketedPackage;
-using NuGet.Insights.Worker.PackageFileToCsv;
-using NuGet.Insights.Worker.SymbolPackageFileToCsv;
 
 #nullable enable
 
@@ -56,67 +27,18 @@ namespace NuGet.Insights.Worker
         {
             switch (driverType)
             {
-                case CatalogScanDriverType.LoadPackageArchive:
-                    return _serviceProvider.GetRequiredService<LoadPackageArchiveDriver>();
-                case CatalogScanDriverType.LoadSymbolPackageArchive:
-                    return _serviceProvider.GetRequiredService<LoadSymbolPackageArchiveDriver>();
-                case CatalogScanDriverType.LoadPackageManifest:
-                    return _serviceProvider.GetRequiredService<LoadPackageManifestDriver>();
-                case CatalogScanDriverType.LoadPackageReadme:
-                    return _serviceProvider.GetRequiredService<LoadPackageReadmeDriver>();
-                case CatalogScanDriverType.LoadPackageVersion:
-                    return _serviceProvider.GetRequiredService<LoadPackageVersionDriver>();
-
-                case CatalogScanDriverType.PackageFileToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageFileRecord>>();
-                case CatalogScanDriverType.SymbolPackageFileToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<SymbolPackageFileRecord>>();
-                case CatalogScanDriverType.PackageArchiveToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageArchiveRecord, PackageArchiveEntry>>();
-                case CatalogScanDriverType.SymbolPackageArchiveToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<SymbolPackageArchiveRecord, SymbolPackageArchiveEntry>>();
-                case CatalogScanDriverType.PackageAssemblyToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageAssembly>>();
-                case CatalogScanDriverType.PackageAssetToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageAsset>>();
-                case CatalogScanDriverType.PackageSignatureToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageSignature>>();
-                case CatalogScanDriverType.PackageManifestToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageManifestRecord>>();
-                case CatalogScanDriverType.PackageReadmeToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageReadme>>();
-                case CatalogScanDriverType.PackageLicenseToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageLicense>>();
-                case CatalogScanDriverType.PackageVersionToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageVersionRecord>>();
-                case CatalogScanDriverType.PackageCompatibilityToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageCompatibility>>();
-                case CatalogScanDriverType.PackageIconToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageIcon>>();
-                case CatalogScanDriverType.CatalogDataToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageDeprecationRecord, PackageVulnerabilityRecord, CatalogLeafItemRecord>>();
-                case CatalogScanDriverType.PackageContentToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<PackageContent>>();
-
-#if ENABLE_NPE
-                case CatalogScanDriverType.NuGetPackageExplorerToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvNonBatchAdapter<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>>();
-#endif
-
-#if ENABLE_CRYPTOAPI
-                case CatalogScanDriverType.PackageCertificateToCsv:
-                    return _serviceProvider.GetRequiredService<CatalogLeafScanToCsvBatchAdapter<PackageCertificateRecord, CertificateRecord>>();
-#endif
+                case CatalogScanDriverType.Internal_FindLatestCatalogLeafScan:
+                    return _serviceProvider.GetRequiredService<FindLatestLeafDriver<CatalogLeafScan>>();
+                case CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId:
+                    return _serviceProvider.GetRequiredService<FindLatestLeafDriver<CatalogLeafScanPerId>>();
 
                 default:
-                    if (_options.Value.RunAllCatalogScanDriversAsBatch)
+                    if (CatalogScanDriverMetadata.IsBatchDriver(driverType))
                     {
-                        return WrapNonBatchDriver(CreateNonBatchDriver(driverType));
+                        return (ICatalogLeafScanBatchDriver)_serviceProvider.GetRequiredService(CatalogScanDriverMetadata.GetRuntimeType(driverType));
                     }
-                    else
-                    {
-                        return null;
-                    }
+
+                    return null;
             }
         }
 
@@ -135,18 +57,12 @@ namespace NuGet.Insights.Worker
         {
             switch (driverType)
             {
-                case CatalogScanDriverType.Internal_FindLatestCatalogLeafScan:
-                    return _serviceProvider.GetRequiredService<FindLatestLeafDriver<CatalogLeafScan>>();
-                case CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId:
-                    return _serviceProvider.GetRequiredService<FindLatestLeafDriver<CatalogLeafScanPerId>>();
-
-                case CatalogScanDriverType.BuildVersionSet:
-                    return _serviceProvider.GetRequiredService<BuildVersionSetDriver>();
-                case CatalogScanDriverType.LoadLatestPackageLeaf:
-                    return _serviceProvider.GetRequiredService<FindLatestLeafDriver<LatestPackageLeaf>>();
-                case CatalogScanDriverType.LoadBucketedPackage:
-                    return _serviceProvider.GetRequiredService<FindLatestLeafDriver<BucketedPackage>>();
                 default:
+                    if (!CatalogScanDriverMetadata.IsBatchDriver(driverType))
+                    {
+                        return (ICatalogLeafScanNonBatchDriver)_serviceProvider.GetRequiredService(CatalogScanDriverMetadata.GetRuntimeType(driverType));
+                    }
+
                     return null;
             }
         }

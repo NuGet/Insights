@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker
 {
-    public class FindLatestLeafDriver<T> : ICatalogLeafScanNonBatchDriver where T : class, ILatestPackageLeaf, new()
+    public class FindLatestLeafDriver<T> : ICatalogLeafScanBatchDriver where T : class, ILatestPackageLeaf, new()
     {
         private readonly CatalogClient _catalogClient;
         private readonly ILatestPackageLeafStorageFactory<T> _storageFactory;
@@ -48,15 +48,15 @@ namespace NuGet.Insights.Worker
             return CatalogPageScanResult.Processed;
         }
 
+        public Task<BatchMessageProcessorResult<CatalogLeafScan>> ProcessLeavesAsync(IReadOnlyList<CatalogLeafScan> leafScans)
+        {
+            throw new NotSupportedException();
+        }
+
         private async Task AddAsync(List<CatalogLeafItem> items, ILatestPackageLeafStorage<T> storage)
         {
             await _storageService.AddAsync(items, storage);
             _logger.LogInformation("Updated latest leaf entities for {Count} items.", items.Count);
-        }
-
-        public Task<DriverResult> ProcessLeafAsync(CatalogLeafScan leafScan)
-        {
-            throw new NotImplementedException();
         }
 
         public Task StartAggregateAsync(CatalogIndexScan indexScan)
