@@ -13,6 +13,8 @@ param actionGroupShortName string
 param alertEmail string
 param alertPrefix string
 
+param allowedIpRanges array
+
 param websitePlanId string = 'new'
 param websitePlanName string = 'default'
 param websiteIsLinux bool
@@ -177,6 +179,7 @@ module storageNetworkAcls './storage-network-acls.bicep' = {
       [vnets.outputs.deploymentScriptSubnetId],
       vnets.outputs.spotWorkerSubnetIds
     )
+    allowedIpRanges: allowedIpRanges
   }
 }
 

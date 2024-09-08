@@ -118,6 +118,8 @@ class ResourceSettings {
 
     [ValidateNotNullOrEmpty()]
     [string]$RuntimeIdentifier
+
+    [string[]]$AllowedIpRanges
     
     [string]$SpotWorkerAdminUsername
     [string]$SpotWorkerAdminPassword
@@ -212,6 +214,7 @@ class ResourceSettings {
         Set-OrDefault KeyVaultName "nugin$($StampName.Replace('-', '').ToLowerInvariant())"
         Set-OrDefault DeploymentNamePrefix "NuGetInsights-$StampName-Deployment-"
         Set-OrDefault UseSpotWorkers $false
+        Set-OrDefault AllowedIpRanges @()
 
         # Optional settings
         $this.SubscriptionId = $DeploymentConfig.SubscriptionId
@@ -619,6 +622,7 @@ function New-MainParameters(
         leaseContainerName        = $ResourceSettings.LeaseContainerName;
         location                  = $ResourceSettings.Location;
         storageAccountName        = $ResourceSettings.StorageAccountName;
+        allowedIpRanges           = $ResourceSettings.AllowedIpRanges;
         deploymentNamePrefix      = $ResourceSettings.DeploymentNamePrefix;
         useSpotWorkers            = $ResourceSettings.UseSpotWorkers;
         userManagedIdentityName   = $ResourceSettings.UserManagedIdentityName;

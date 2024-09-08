@@ -2,6 +2,7 @@ param storageAccountName string
 param location string
 param subnetIds array
 param denyTraffic bool
+param allowedIpRanges array
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-04-01' = {
   name: storageAccountName
@@ -19,6 +20,11 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-04-01' = {
         for subnetId in subnetIds: {
           id: subnetId
           action: 'Allow'
+        }
+      ]
+      ipRules: [
+        for item in allowedIpRanges: {
+          value: item
         }
       ]
     }
