@@ -9,111 +9,214 @@ namespace NuGet.Insights.Worker
 {
     public class CatalogScanServiceIntegrationTest : BaseWorkerLogicIntegrationTest
     {
-        private const string CatalogScanService_UpdateWithBucketRangesDir = nameof(CatalogScanService_UpdateWithBucketRanges);
-
-        [Fact]
-        public async Task CatalogScanService_UpdateWithBucketRanges()
+        public class PositiveTests : CatalogScanServiceIntegrationTest
         {
-            // Arrange
-            var min0 = DateTimeOffset.Parse("2018-12-06T03:17:32.1388561Z", CultureInfo.InvariantCulture);
-            var max1 = DateTimeOffset.Parse("2018-12-06T03:17:41.9986142Z", CultureInfo.InvariantCulture);
-            var driverType = CatalogScanDriverType.PackageSignatureToCsv;
-            var scanId = "my-scan-id";
-            var storageSuffix = "zz";
-            var buckets = new[] { 375, 401, 826, 827, 828, 829 };
+            private const string CatalogScanService_UpdateWithBucketRangesDir = nameof(CatalogScanService_UpdateWithBucketRanges);
 
-            await CatalogScanService.InitializeAsync();
-            await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);
-            await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, max1);
-            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
-            var cursorBefore = await SetCursorAsync(driverType, max1);
-
-            // Act
-            var result = await CatalogScanService.UpdateAsync(scanId, storageSuffix, driverType, buckets);
-            Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
-            await UpdateAsync(result);
-
-            // Assert
-            Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
-            Assert.Equal(scanId, result.Scan.ScanId);
-            Assert.Equal(storageSuffix, result.Scan.StorageSuffix);
-            var scan = await CatalogScanStorageService.GetIndexScanAsync(driverType, scanId);
-            Assert.Equal(CatalogIndexScanState.Complete, scan.State);
-            var cursorAfter = await CatalogScanCursorService.GetCursorAsync(driverType);
-            Assert.Equal(max1, cursorAfter.Value);
-            Assert.Equal(cursorBefore.ETag, cursorAfter.ETag);
-
-            var csvContent = await AssertCsvAsync<PackageSignature>(Options.Value.PackageSignatureContainerName, CatalogScanService_UpdateWithBucketRangesDir, Step1, 0);
-
-            var bucketedPackages = (await GetEntitiesAsync<BucketedPackage>(Options.Value.BucketedPackageTableName))
-                .Where(x => buckets.Contains(x.GetBucket()))
-                .OrderBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(x => x.PackageVersion, StringComparer.OrdinalIgnoreCase)
-                .ToList();
-            var packageArchiveEntities = (await GetWideEntitiesAsync<PackageFileService.PackageFileInfoVersions>(Options.Value.PackageArchiveTableName))
-                .OrderBy(x => x.PartitionKey, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(x => x.RowKey, StringComparer.OrdinalIgnoreCase)
-                .ToList();
-            var csvLines = csvContent.Split('\n').Select(x => x.Trim()).Where(x => x.Length > 0).Skip(1).ToList();
-
-            Assert.Equal(7, bucketedPackages.Count);
-            Assert.Equal(7, packageArchiveEntities.Count);
-            Assert.Equal(7, csvLines.Count);
-            Assert.All(bucketedPackages.Zip(packageArchiveEntities, csvLines), tuple =>
+            [Fact]
+            public async Task CatalogScanService_UpdateWithBucketRanges()
             {
-                var (bp, pa, csvLine) = tuple;
-                Assert.Equal(bp.PackageId.ToLowerInvariant(), pa.PartitionKey);
-                Assert.Equal(bp.ParsePackageVersion().ToNormalizedString().ToLowerInvariant(), pa.RowKey);
-                Assert.StartsWith($",,{pa.PartitionKey},{pa.PartitionKey}/{pa.RowKey},", csvLine, StringComparison.Ordinal);
-            });
+                // Arrange
+                var min0 = DateTimeOffset.Parse("2018-12-06T03:17:32.1388561Z", CultureInfo.InvariantCulture);
+                var max1 = DateTimeOffset.Parse("2018-12-06T03:17:41.9986142Z", CultureInfo.InvariantCulture);
+                var driverType = CatalogScanDriverType.PackageSignatureToCsv;
+                var scanId = "my-scan-id";
+                var storageSuffix = "zz";
+                var buckets = new[] { 375, 401, 826, 827, 828, 829 };
+
+                await CatalogScanService.InitializeAsync();
+                await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);
+                await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, max1);
+                await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
+                var cursorBefore = await SetCursorAsync(driverType, max1);
+
+                // Act
+                var result = await CatalogScanService.UpdateAsync(scanId, storageSuffix, driverType, buckets);
+                Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
+                await UpdateAsync(result);
+
+                // Assert
+                Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
+                Assert.Equal(scanId, result.Scan.ScanId);
+                Assert.Equal(storageSuffix, result.Scan.StorageSuffix);
+                var scan = await CatalogScanStorageService.GetIndexScanAsync(driverType, scanId);
+                Assert.Equal(CatalogIndexScanState.Complete, scan.State);
+                var cursorAfter = await CatalogScanCursorService.GetCursorAsync(driverType);
+                Assert.Equal(max1, cursorAfter.Value);
+                Assert.Equal(cursorBefore.ETag, cursorAfter.ETag);
+
+                var csvContent = await AssertCsvAsync<PackageSignature>(Options.Value.PackageSignatureContainerName, CatalogScanService_UpdateWithBucketRangesDir, Step1, 0);
+
+                var bucketedPackages = (await GetEntitiesAsync<BucketedPackage>(Options.Value.BucketedPackageTableName))
+                    .Where(x => buckets.Contains(x.GetBucket()))
+                    .OrderBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(x => x.PackageVersion, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+                var packageArchiveEntities = (await GetWideEntitiesAsync<PackageFileService.PackageFileInfoVersions>(Options.Value.PackageArchiveTableName))
+                    .OrderBy(x => x.PartitionKey, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(x => x.RowKey, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+                var csvLines = csvContent.Split('\n').Select(x => x.Trim()).Where(x => x.Length > 0).Skip(1).ToList();
+
+                Assert.Equal(7, bucketedPackages.Count);
+                Assert.Equal(7, packageArchiveEntities.Count);
+                Assert.Equal(7, csvLines.Count);
+                Assert.All(bucketedPackages.Zip(packageArchiveEntities, csvLines), tuple =>
+                {
+                    var (bp, pa, csvLine) = tuple;
+                    Assert.Equal(bp.PackageId.ToLowerInvariant(), pa.PartitionKey);
+                    Assert.Equal(bp.ParsePackageVersion().ToNormalizedString().ToLowerInvariant(), pa.RowKey);
+                    Assert.StartsWith($",,{pa.PartitionKey},{pa.PartitionKey}/{pa.RowKey},", csvLine, StringComparison.Ordinal);
+                });
+            }
+
+            [Fact]
+            public async Task AllDrivers_UpdateWithCatalogRange_FindLatest()
+            {
+                var driversUnderTest = CatalogScanDriverMetadata.StartableDriverTypes
+                    .Where(x => CatalogScanDriverMetadata.GetOnlyLatestLeavesSupport(x).GetValueOrDefault(true))
+                    .ToHashSet();
+
+                var scans = await RunAllDriversAsync(
+                    driversUnderTest,
+                    async () =>
+                    {
+                        await CatalogScanService.InitializeAsync();
+                        await SetCursorsAsync(CatalogScanDriverMetadata.StartableDriverTypes, Min0);
+                    },
+                    async driverType =>
+                    {
+                        bool? onlyLatestLeaves = driversUnderTest.Contains(driverType) ? true : null;
+                        return await CatalogScanService.UpdateAsync(driverType, Max1, onlyLatestLeaves);
+                    });
+
+                Assert.All(driversUnderTest, x => Assert.True(scans[x][0].OnlyLatestLeaves));
+            }
+
+            [Fact]
+            public async Task AllDrivers_UpdateWithCatalogRange_AllLeaves()
+            {
+                var driversUnderTest = CatalogScanDriverMetadata.StartableDriverTypes
+                    .Where(x => !CatalogScanDriverMetadata.GetOnlyLatestLeavesSupport(x).GetValueOrDefault(false))
+                    .ToHashSet();
+
+                var scans = await RunAllDriversAsync(
+                    driversUnderTest,
+                    async () =>
+                    {
+                        await CatalogScanService.InitializeAsync();
+                        await SetCursorsAsync(CatalogScanDriverMetadata.StartableDriverTypes, Min0);
+                    },
+                    async driverType =>
+                    {
+                        bool? onlyLatestLeaves = driversUnderTest.Contains(driverType) ? false : null;
+                        return await CatalogScanService.UpdateAsync(driverType, Max1, onlyLatestLeaves);
+                    });
+
+                Assert.All(driversUnderTest, x => Assert.False(scans[x][0].OnlyLatestLeaves));
+            }
+
+            [Fact]
+            public async Task AllDrivers_UpdateWithBuckets()
+            {
+                var buckets = Enumerable.Range(0, BucketedPackage.BucketCount).ToList();
+                var driversUnderTest = CatalogScanDriverMetadata.StartableDriverTypes
+                    .Where(CatalogScanDriverMetadata.GetBucketRangeSupport)
+                    .ToHashSet();
+
+                var scans = await RunAllDriversAsync(
+                    driversUnderTest,
+                    async () =>
+                    {
+                        await CatalogScanService.InitializeAsync();
+                        await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, Min0);
+                        await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, Max1);
+                        await SetCursorsAsync(CatalogScanDriverMetadata.StartableDriverTypes, Max1);
+                    },
+                    async driverType =>
+                    {
+                        if (driversUnderTest.Contains(driverType))
+                        {
+                            return await CatalogScanService.UpdateAsync(driverType, buckets);
+                        }
+                        else
+                        {
+                            await SetCursorAsync(driverType, Min0);
+                            var result = await CatalogScanService.UpdateAsync(driverType, Max1);
+                            await SetCursorAsync(driverType, Max1);
+                            return result;
+                        }
+                    });
+
+                Assert.All(driversUnderTest, x => Assert.True(scans[x][0].OnlyLatestLeaves));
+                Assert.All(driversUnderTest, x => Assert.Equal("0-999", scans[x][0].BucketRanges));
+            }
+
+            public PositiveTests(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
         }
 
-        [Fact]
-        public async Task CatalogScanService_BucketRangeUpdatesDataCachedByBucketRange()
+        public class CachingTests : CatalogScanServiceIntegrationTest
         {
-            await CatalogScanService_TestCachedData(bucketRangeFirst: true, bucketRangeSecond: true, expectCached: false, appendCsvError: false);
+            [Fact]
+            public async Task CatalogScanService_BucketRangeUpdatesDataCachedByBucketRange()
+            {
+                await CatalogScanService_TestCachedData(bucketRangeFirst: true, bucketRangeSecond: true, expectCached: false, appendCsvError: false);
+            }
+
+            [Fact]
+            public async Task CatalogScanService_BucketRangeUpdatesDataCachedByCatalogRange()
+            {
+                await CatalogScanService_TestCachedData(bucketRangeFirst: false, bucketRangeSecond: true, expectCached: false, appendCsvError: false);
+            }
+
+            [Fact]
+            public async Task CatalogScanService_CatalogRangeUpdatesDataCachedByBucketRange()
+            {
+                await CatalogScanService_TestCachedData(bucketRangeFirst: true, bucketRangeSecond: false, expectCached: false, appendCsvError: false);
+            }
+
+            [Fact]
+            public async Task CatalogScanService_CatalogRangeUsesDataCachedByCatalogRange()
+            {
+                await CatalogScanService_TestCachedData(bucketRangeFirst: false, bucketRangeSecond: false, expectCached: true, appendCsvError: false);
+            }
+
+            public CachingTests(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
         }
 
-        [Fact]
-        public async Task CatalogScanService_BucketRangeUpdatesDataCachedByCatalogRange()
+        public class AppendCsvErrorTests : CatalogScanServiceIntegrationTest
         {
-            await CatalogScanService_TestCachedData(bucketRangeFirst: false, bucketRangeSecond: true, expectCached: false, appendCsvError: false);
-        }
+            [Fact]
+            public async Task CatalogScanService_BucketRangeUpdatesDataCachedByBucketRange_WithAppendCsvError()
+            {
+                await CatalogScanService_TestCachedData(bucketRangeFirst: true, bucketRangeSecond: true, expectCached: false, appendCsvError: true);
+            }
 
-        [Fact]
-        public async Task CatalogScanService_CatalogRangeUpdatesDataCachedByBucketRange()
-        {
-            await CatalogScanService_TestCachedData(bucketRangeFirst: true, bucketRangeSecond: false, expectCached: false, appendCsvError: false);
-        }
+            [Fact]
+            public async Task CatalogScanService_BucketRangeUpdatesDataCachedByCatalogRange_WithAppendCsvError()
+            {
+                await CatalogScanService_TestCachedData(bucketRangeFirst: false, bucketRangeSecond: true, expectCached: false, appendCsvError: true);
+            }
 
-        [Fact]
-        public async Task CatalogScanService_CatalogRangeUsesDataCachedByCatalogRange()
-        {
-            await CatalogScanService_TestCachedData(bucketRangeFirst: false, bucketRangeSecond: false, expectCached: true, appendCsvError: false);
-        }
+            [Fact]
+            public async Task CatalogScanService_CatalogRangeUpdatesDataCachedByBucketRange_WithAppendCsvError()
+            {
+                await CatalogScanService_TestCachedData(bucketRangeFirst: true, bucketRangeSecond: false, expectCached: false, appendCsvError: true);
+            }
 
-        [Fact]
-        public async Task CatalogScanService_BucketRangeUpdatesDataCachedByBucketRange_WithAppendCsvError()
-        {
-            await CatalogScanService_TestCachedData(bucketRangeFirst: true, bucketRangeSecond: true, expectCached: false, appendCsvError: true);
-        }
+            [Fact]
+            public async Task CatalogScanService_CatalogRangeUsesDataCachedByCatalogRange_WithAppendCsvError()
+            {
+                await CatalogScanService_TestCachedData(bucketRangeFirst: false, bucketRangeSecond: false, expectCached: true, appendCsvError: true);
+            }
 
-        [Fact]
-        public async Task CatalogScanService_BucketRangeUpdatesDataCachedByCatalogRange_WithAppendCsvError()
-        {
-            await CatalogScanService_TestCachedData(bucketRangeFirst: false, bucketRangeSecond: true, expectCached: false, appendCsvError: true);
-        }
-
-        [Fact]
-        public async Task CatalogScanService_CatalogRangeUpdatesDataCachedByBucketRange_WithAppendCsvError()
-        {
-            await CatalogScanService_TestCachedData(bucketRangeFirst: true, bucketRangeSecond: false, expectCached: false, appendCsvError: true);
-        }
-
-        [Fact]
-        public async Task CatalogScanService_CatalogRangeUsesDataCachedByCatalogRange_WithAppendCsvError()
-        {
-            await CatalogScanService_TestCachedData(bucketRangeFirst: false, bucketRangeSecond: false, expectCached: true, appendCsvError: true);
+            public AppendCsvErrorTests(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+            {
+            }
         }
 
         private async Task<int> GetMinimumLeafAttemptCount(string storageSuffix)
@@ -160,7 +263,7 @@ namespace NuGet.Insights.Worker
                 .SelectMany(x => x)
                 .ToHashSet();
             var recordTypes = driversUnderTest
-                .SelectMany(x => CsvRecordContainers.TryGetRecordTypes(x, out var types) ? types : Enumerable.Empty<Type>())
+                .SelectMany(x => CatalogScanDriverMetadata.GetRecordTypes(x) ?? Enumerable.Empty<Type>())
                 .ToList();
 
             HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
@@ -303,88 +406,6 @@ namespace NuGet.Insights.Worker
         /// This catalog commit has a single package that is tiny. This reduces the amount of IO for the test.
         /// </summary>
         private static readonly DateTimeOffset Max1 = DateTimeOffset.Parse("2019-07-21T23:52:24.7439835Z", CultureInfo.InvariantCulture);
-
-        [Fact]
-        public async Task AllDrivers_UpdateWithCatalogRange_FindLatest()
-        {
-            var driversUnderTest = CatalogScanDriverMetadata.StartableDriverTypes
-                .Where(x => CatalogScanDriverMetadata.GetOnlyLatestLeavesSupport(x).GetValueOrDefault(true))
-                .ToHashSet();
-
-            var scans = await RunAllDriversAsync(
-                driversUnderTest,
-                async () =>
-                {
-                    await CatalogScanService.InitializeAsync();
-                    await SetCursorsAsync(CatalogScanDriverMetadata.StartableDriverTypes, Min0);
-                },
-                async driverType =>
-                {
-                    bool? onlyLatestLeaves = driversUnderTest.Contains(driverType) ? true : null;
-                    return await CatalogScanService.UpdateAsync(driverType, Max1, onlyLatestLeaves);
-                });
-
-            Assert.All(driversUnderTest, x => Assert.True(scans[x][0].OnlyLatestLeaves));
-        }
-
-        [Fact]
-        public async Task AllDrivers_UpdateWithCatalogRange_AllLeaves()
-        {
-            var driversUnderTest = CatalogScanDriverMetadata.StartableDriverTypes
-                .Where(x => !CatalogScanDriverMetadata.GetOnlyLatestLeavesSupport(x).GetValueOrDefault(false))
-                .ToHashSet();
-
-            var scans = await RunAllDriversAsync(
-                driversUnderTest,
-                async () =>
-                {
-                    await CatalogScanService.InitializeAsync();
-                    await SetCursorsAsync(CatalogScanDriverMetadata.StartableDriverTypes, Min0);
-                },
-                async driverType =>
-                {
-                    bool? onlyLatestLeaves = driversUnderTest.Contains(driverType) ? false : null;
-                    return await CatalogScanService.UpdateAsync(driverType, Max1, onlyLatestLeaves);
-                });
-
-            Assert.All(driversUnderTest, x => Assert.False(scans[x][0].OnlyLatestLeaves));
-        }
-
-        [Fact]
-        public async Task AllDrivers_UpdateWithBuckets()
-        {
-            var buckets = Enumerable.Range(0, BucketedPackage.BucketCount).ToList();
-            var driversUnderTest = CatalogScanDriverMetadata.StartableDriverTypes
-                .Where(CatalogScanDriverMetadata.GetBucketRangeSupport)
-                .ToHashSet();
-
-            var scans = await RunAllDriversAsync(
-                driversUnderTest,
-                async () =>
-                {
-                    await CatalogScanService.InitializeAsync();
-                    await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, Min0);
-                    await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, Max1);
-                    await SetCursorsAsync(CatalogScanDriverMetadata.StartableDriverTypes, Max1);
-                },
-                async driverType =>
-                {
-                    if (driversUnderTest.Contains(driverType))
-                    {
-                        return await CatalogScanService.UpdateAsync(driverType, buckets);
-                    }
-                    else
-                    {
-                        await SetCursorAsync(driverType, Min0);
-                        var result = await CatalogScanService.UpdateAsync(driverType, Max1);
-                        await SetCursorAsync(driverType, Max1);
-                        return result;
-                    }
-                });
-
-            Assert.All(driversUnderTest, x => Assert.True(scans[x][0].OnlyLatestLeaves));
-            Assert.All(driversUnderTest, x => Assert.Equal("0-999", scans[x][0].BucketRanges));
-        }
 
         private async Task<Dictionary<CatalogScanDriverType, List<CatalogIndexScan>>> RunAllDriversAsync(
             IReadOnlySet<CatalogScanDriverType> driversUnderTest,

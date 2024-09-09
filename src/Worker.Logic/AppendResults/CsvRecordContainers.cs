@@ -18,7 +18,6 @@ namespace NuGet.Insights.Worker
         private readonly IReadOnlyList<string> _containerNames;
         private readonly IReadOnlyList<Type> _recordTypes;
         private readonly FrozenDictionary<Type, CsvRecordProducer> _recordTypeToProducer;
-        private readonly FrozenDictionary<CatalogScanDriverType, IReadOnlyList<Type>> _driverTypeToRecordTypes;
 
         public CsvRecordContainers(
             IEnumerable<ICsvRecordStorage> csvResultStorage,
@@ -34,7 +33,6 @@ namespace NuGet.Insights.Worker
             _containerNames = _containerNameToStorage.Keys.OrderBy(x => x, StringComparer.Ordinal).ToList();
             _recordTypes = _recordTypeToStorage.Keys.OrderBy(x => x.FullName, StringComparer.Ordinal).ToList();
             _recordTypeToProducer = ComputeCsvResultProducers(catalogScanDriverFactory, auxiliaryFileUpdaters);
-            _driverTypeToRecordTypes = ComputeDriverTypeToRecordTypes();
         }
 
         private FrozenDictionary<Type, CsvRecordProducer> ComputeCsvResultProducers(
@@ -70,15 +68,6 @@ namespace NuGet.Insights.Worker
             return output.ToFrozenDictionary();
         }
 
-        private FrozenDictionary<CatalogScanDriverType, IReadOnlyList<Type>> ComputeDriverTypeToRecordTypes()
-        {
-            return _recordTypeToProducer
-                .Where(x => x.Value.Type == CsvRecordProducerType.CatalogScanDriver)
-                .GroupBy(x => x.Value.CatalogScanDriverType.Value)
-                .ToDictionary(x => x.Key, x => (IReadOnlyList<Type>)x.Select(y => y.Key).ToList())
-                .ToFrozenDictionary();
-        }
-
         public async Task<IReadOnlyList<CsvRecordBlob>> GetBlobsAsync(string containerName)
         {
             var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
@@ -99,11 +88,6 @@ namespace NuGet.Insights.Worker
                 // Handle the missing container case.
                 return Array.Empty<CsvRecordBlob>();
             }
-        }
-
-        public bool TryGetRecordTypes(CatalogScanDriverType driverType, out IReadOnlyList<Type> recordTypes)
-        {
-            return _driverTypeToRecordTypes.TryGetValue(driverType, out recordTypes);
         }
 
         public CsvRecordProducer GetProducer(Type recordType)

@@ -41,8 +41,9 @@ namespace NuGet.Insights.Worker
 #endif
 
             var bucketKey = CatalogScanDriverMetadata.GetBucketKeyFactory(type)(lowerId, normalizedVersion);
+            var recordTypes = CatalogScanDriverMetadata.GetRecordTypes(type);
 
-            if (Host.Services.GetRequiredService<CsvRecordContainers>().TryGetRecordTypes(type, out var recordTypes))
+            if (recordTypes is not null)
             {
                 foreach (var recordType in recordTypes)
                 {
