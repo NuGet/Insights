@@ -186,7 +186,7 @@ namespace NuGet.Insights.Website
                 {
                     try
                     {
-                        var leafScans = await _catalogScanStorageService.GetLeafScansAsync(
+                        var leafScans = await _catalogScanStorageService.GetSpecificLeafScansAsync(
                             group.Key.StorageSuffix,
                             group.Key.ScanId,
                             group.Key.PageId,

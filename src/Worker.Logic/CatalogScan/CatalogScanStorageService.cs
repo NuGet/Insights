@@ -79,13 +79,13 @@ namespace NuGet.Insights.Worker
             var table = await GetPageScanTableAsync(storageSuffix);
             return await table
                 .QueryAsync<CatalogPageScan>(x => x.PartitionKey == scanId)
-                .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
+                .ToListAsync(_telemetryClient.StartQueryLoopMetrics(dimension1Name: "StorageSuffix", storageSuffix, dimension2Name: "ScanId", scanId));
         }
 
         public async Task<IReadOnlyList<CatalogLeafScan>> GetLeafScansAsync(string storageSuffix, string scanId, string pageId)
         {
             var table = await GetLeafScanTableAsync(storageSuffix);
-            return await GetLeafScansAsync(table, scanId, pageId);
+            return await GetLeafScansByPageScanAsync(table, storageSuffix, scanId, pageId);
         }
 
         public async Task<IReadOnlyList<CatalogLeafScan>> GetLeafScansAsync(string storageSuffix)
@@ -93,17 +93,17 @@ namespace NuGet.Insights.Worker
             var table = await GetLeafScanTableAsync(storageSuffix);
             return await table
                 .QueryAsync<CatalogLeafScan>()
-                .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
+                .ToListAsync(_telemetryClient.StartQueryLoopMetrics(dimension1Name: "StorageSuffix", storageSuffix));
         }
 
-        private async Task<IReadOnlyList<CatalogLeafScan>> GetLeafScansAsync(TableClientWithRetryContext table, string scanId, string pageId)
+        private async Task<IReadOnlyList<CatalogLeafScan>> GetLeafScansByPageScanAsync(TableClientWithRetryContext table, string storageSuffix, string scanId, string pageId)
         {
             return await table
                 .QueryAsync<CatalogLeafScan>(x => x.PartitionKey == CatalogLeafScan.GetPartitionKey(scanId, pageId))
-                .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
+                .ToListAsync(_telemetryClient.StartQueryLoopMetrics(dimension1Name: "StorageSuffix", storageSuffix, dimension2Name: "ScanId", scanId));
         }
 
-        public async Task<IReadOnlyDictionary<string, CatalogLeafScan>> GetLeafScansAsync(string storageSuffix, string scanId, string pageId, IEnumerable<string> leafIds)
+        public async Task<IReadOnlyDictionary<string, CatalogLeafScan>> GetSpecificLeafScansAsync(string storageSuffix, string scanId, string pageId, IEnumerable<string> leafIds)
         {
             var sortedLeafIds = leafIds.OrderBy(x => x, StringComparer.Ordinal).ToList();
             if (sortedLeafIds.Count == 0)
@@ -132,7 +132,7 @@ namespace NuGet.Insights.Worker
                     x.PartitionKey == CatalogLeafScan.GetPartitionKey(scanId, pageId)
                     && x.RowKey.CompareTo(min) >= 0
                     && x.RowKey.CompareTo(max) <= 0)
-                .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
+                .ToListAsync(_telemetryClient.StartQueryLoopMetrics(dimension1Name: "StorageSuffix", storageSuffix, dimension2Name: "ScanId", scanId));
             var uniqueLeafIds = sortedLeafIds.ToHashSet();
             return leafScans
                 .Where(x => uniqueLeafIds.Contains(x.LeafId))
@@ -153,7 +153,7 @@ namespace NuGet.Insights.Worker
             foreach (var group in leafScans.GroupBy(x => new { x.StorageSuffix, x.ScanId, x.PageId }))
             {
                 var table = await GetLeafScanTableAsync(group.Key.StorageSuffix);
-                var createdLeaves = await GetLeafScansAsync(table, group.Key.ScanId, group.Key.PageId);
+                var createdLeaves = await GetLeafScansByPageScanAsync(table, group.Key.StorageSuffix, group.Key.ScanId, group.Key.PageId);
 
                 var allUrls = group.Select(x => x.Url).ToHashSet();
                 var createdUrls = createdLeaves.Select(x => x.Url).ToHashSet();
@@ -288,7 +288,7 @@ namespace NuGet.Insights.Worker
             var oldScans = await table
                 .QueryAsync<CatalogIndexScan>(x => x.PartitionKey == driverType.ToString()
                                                 && x.RowKey.CompareTo(currentScanId) > 0)
-                .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
+                .ToListAsync(_telemetryClient.StartQueryLoopMetrics(dimension1Name: "DriverType", driverType.ToString()));
 
             var oldScansToDelete = oldScans
                 .OrderByDescending(x => x.Created)
@@ -463,7 +463,7 @@ namespace NuGet.Insights.Worker
         public async Task<int> GetPageScanCountLowerBoundAsync(string storageSuffix, string scanId)
         {
             var table = await GetPageScanTableAsync(storageSuffix);
-            return await table.GetEntityCountLowerBoundAsync(scanId, _telemetryClient.StartQueryLoopMetrics());
+            return await table.GetEntityCountLowerBoundAsync(scanId, _telemetryClient.StartQueryLoopMetrics(dimension1Name: "StorageSuffix", storageSuffix, dimension2Name: "ScanId", scanId));
         }
 
         public async Task<int> GetLeafScanCountLowerBoundAsync(string storageSuffix, string scanId)
@@ -472,7 +472,7 @@ namespace NuGet.Insights.Worker
             return await table.GetEntityCountLowerBoundAsync(
                 CatalogLeafScan.GetPartitionKey(scanId, string.Empty),
                 CatalogLeafScan.GetPartitionKey(scanId, char.MaxValue.ToString()),
-                _telemetryClient.StartQueryLoopMetrics());
+                _telemetryClient.StartQueryLoopMetrics(dimension1Name: "StorageSuffix", storageSuffix, dimension2Name: "ScanId", scanId));
         }
 
         public async Task DeleteAsync(CatalogIndexScan indexScan)

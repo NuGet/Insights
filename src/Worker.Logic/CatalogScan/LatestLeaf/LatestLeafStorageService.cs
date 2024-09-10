@@ -450,7 +450,7 @@ namespace NuGet.Insights.Worker
             ILatestPackageLeafStorage<T> storage,
             int? pageLimit)
         {
-            using var metrics = _telemetryClient.StartQueryLoopMetrics("LeafType", _leafType);
+            using var metrics = _telemetryClient.StartQueryLoopMetrics(dimension1Name: "LeafType", _leafType);
 
             var rowKeyToItemWithKey = new Dictionary<string, ItemWithKey>();
             string minRowKey = null;

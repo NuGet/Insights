@@ -176,7 +176,7 @@ namespace NuGet.Insights.Worker
             IReadOnlyDictionary<string, CatalogLeafScan> leafIdToScan;
             try
             {
-                leafIdToScan = await _storageService.GetLeafScansAsync(
+                leafIdToScan = await _storageService.GetSpecificLeafScansAsync(
                     pageGroup.Key.StorageSuffix,
                     pageGroup.Key.ScanId,
                     pageGroup.Key.PageId,
