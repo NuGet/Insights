@@ -1,66 +1,63 @@
 [
   {
+    "Entity": {
+      "CommitTimestamp": "2020-12-20T02:39:20.5757299+00:00"
+    },
     "PartitionKey": "amazonks3",
-    "RowKey": "1.5.0",
-    "Entity": {
-      "Available": false,
-      "CommitTimestamp": "2020-12-20T02:39:20.5757299+00:00",
-      "HttpHeaders": null,
-      "MD5": null,
-      "SHA1": null,
-      "SHA256": null,
-      "SHA512": null,
-      "EntryHashes": null
-    }
+    "RowKey": "1.5.0"
   },
   {
+    "Entity": {
+      "CommitTimestamp": "2020-12-20T03:03:53.7885893+00:00"
+    },
     "PartitionKey": "behaviorsample",
-    "RowKey": "1.0.0",
-    "Entity": {
-      "Available": false,
-      "CommitTimestamp": "2020-12-20T03:03:53.7885893+00:00",
-      "HttpHeaders": null,
-      "MD5": null,
-      "SHA1": null,
-      "SHA256": null,
-      "SHA512": null,
-      "EntryHashes": null
-    }
+    "RowKey": "1.0.0"
   },
   {
+    "Entity": {
+      "CommitTimestamp": "2020-12-20T03:01:57.2082154+00:00"
+    },
     "PartitionKey": "lunabot.commands.public",
-    "RowKey": "1.2.0",
-    "Entity": {
-      "Available": false,
-      "CommitTimestamp": "2020-12-20T03:01:57.2082154+00:00",
-      "HttpHeaders": null,
-      "MD5": null,
-      "SHA1": null,
-      "SHA256": null,
-      "SHA512": null,
-      "EntryHashes": null
-    }
+    "RowKey": "1.2.0"
   },
   {
+    "Entity": {
+      "CommitTimestamp": "2020-12-20T02:39:20.5757299+00:00"
+    },
     "PartitionKey": "lunabot.core",
-    "RowKey": "1.0.4",
-    "Entity": {
-      "Available": false,
-      "CommitTimestamp": "2020-12-20T02:39:20.5757299+00:00",
-      "HttpHeaders": null,
-      "MD5": null,
-      "SHA1": null,
-      "SHA256": null,
-      "SHA512": null,
-      "EntryHashes": null
-    }
+    "RowKey": "1.0.4"
   },
   {
-    "PartitionKey": "nut.mediatr.behaviors",
-    "RowKey": "0.0.0-preview.0.44",
     "Entity": {
       "Available": true,
       "CommitTimestamp": "2020-12-20T02:37:52.9649363+00:00",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 511,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "KY1oW0wFQYwi7aAbJ9XBURllc7SNtnWazXr7Fk3YOaI="
+        },
+        {
+          "ActualCompressedLength": 1105,
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg==",
+          "SHA256": "dYbpFyZ2hb\u002BznixIyzRBBoBRlY7Tti968Z1cfOCfTn4="
+        },
+        {
+          "ActualCompressedLength": 13180,
+          "First16Bytes": "QlNKQgEAAQAAAAAADAAAAA==",
+          "SHA256": "z/N2gUnRo2HWjKF7TJ5d23cFMrmlKrTJ09Mz5FBG\u002BOA="
+        },
+        {
+          "ActualCompressedLength": 459,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "ghd7vDkc9JjzYeqx/kRjNGFstOFD/nNQhUqCErfT\u002Bdw="
+        },
+        {
+          "ActualCompressedLength": 663,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "Yam/T2RPv/2pWbvOzGr4PDmi1zvkGV19VA7bqlWaS2A="
+        }
+      ],
       "HttpHeaders": {
         "Content-Length": [
           "10075"
@@ -87,42 +84,42 @@
       "MD5": "QNA6Bus8A4cBmQy6a2FK6Q==",
       "SHA1": "PxphiQNTB7Bi3U\u002B3ksEXeg7sS88=",
       "SHA256": "GvH57RvoUHRWDDwn/DecoVXlQo0ipV51ZrJtbKv6tU8=",
-      "SHA512": "ysL8/1vPNb7WUjBC0wvIEsyW/MJHNbpei/LJqx50nPZhqzIJqI9BNVcxzlKwTn2IGXJPcgHm2htMEHmphK4zog==",
-      "EntryHashes": [
-        {
-          "ActualCompressedLength": 511,
-          "SHA256": "KY1oW0wFQYwi7aAbJ9XBURllc7SNtnWazXr7Fk3YOaI=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 1105,
-          "SHA256": "dYbpFyZ2hb\u002BznixIyzRBBoBRlY7Tti968Z1cfOCfTn4=",
-          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
-        },
-        {
-          "ActualCompressedLength": 13180,
-          "SHA256": "z/N2gUnRo2HWjKF7TJ5d23cFMrmlKrTJ09Mz5FBG\u002BOA=",
-          "First16Bytes": "QlNKQgEAAQAAAAAADAAAAA=="
-        },
-        {
-          "ActualCompressedLength": 459,
-          "SHA256": "ghd7vDkc9JjzYeqx/kRjNGFstOFD/nNQhUqCErfT\u002Bdw=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 663,
-          "SHA256": "Yam/T2RPv/2pWbvOzGr4PDmi1zvkGV19VA7bqlWaS2A=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        }
-      ]
-    }
+      "SHA512": "ysL8/1vPNb7WUjBC0wvIEsyW/MJHNbpei/LJqx50nPZhqzIJqI9BNVcxzlKwTn2IGXJPcgHm2htMEHmphK4zog=="
+    },
+    "PartitionKey": "nut.mediatr.behaviors",
+    "RowKey": "0.0.0-preview.0.44"
   },
   {
-    "PartitionKey": "nut.mediatr.behaviors.fluentvalidation",
-    "RowKey": "0.0.0-preview.0.44",
     "Entity": {
       "Available": true,
       "CommitTimestamp": "2020-12-20T02:37:52.9649363+00:00",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 528,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "I6qsEP1XMbEQ1osxWXV/HmWZr4I8hLE8VPkpFuvbL9I="
+        },
+        {
+          "ActualCompressedLength": 1034,
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg==",
+          "SHA256": "Ma/Xb0D4tVP0V5QGaKrh3a3CyjenQUQjOlCrvOznew4="
+        },
+        {
+          "ActualCompressedLength": 9272,
+          "First16Bytes": "QlNKQgEAAQAAAAAADAAAAA==",
+          "SHA256": "Osx3/yFUDZyUexZzpU1\u002B4tATtvzUI7LPxXbaFmdQ7j0="
+        },
+        {
+          "ActualCompressedLength": 459,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "ghd7vDkc9JjzYeqx/kRjNGFstOFD/nNQhUqCErfT\u002Bdw="
+        },
+        {
+          "ActualCompressedLength": 721,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "hL1sHQiNfQawSufFMy6ran/aTgF0BFngqzCHR5KP/WA="
+        }
+      ],
       "HttpHeaders": {
         "Content-Length": [
           "8029"
@@ -149,42 +146,42 @@
       "MD5": "6TkDqp6fCtKBxeNNcOC64A==",
       "SHA1": "riiXo48Zfe31ZY4Yrr9XeD/hyMs=",
       "SHA256": "rGcyCiSDx2RqNZCkF3ahE1FKsrBeYqq9q7ZOrsCoRIs=",
-      "SHA512": "y2X38jWt38RiWywPTMgH28\u002BTxbRYPxzonVuGWqUWTYnYr9DGf2JXI16HPHqMN81FJ\u002Bwdk6FogthETCyyrdDiSA==",
-      "EntryHashes": [
-        {
-          "ActualCompressedLength": 528,
-          "SHA256": "I6qsEP1XMbEQ1osxWXV/HmWZr4I8hLE8VPkpFuvbL9I=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 1034,
-          "SHA256": "Ma/Xb0D4tVP0V5QGaKrh3a3CyjenQUQjOlCrvOznew4=",
-          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
-        },
-        {
-          "ActualCompressedLength": 9272,
-          "SHA256": "Osx3/yFUDZyUexZzpU1\u002B4tATtvzUI7LPxXbaFmdQ7j0=",
-          "First16Bytes": "QlNKQgEAAQAAAAAADAAAAA=="
-        },
-        {
-          "ActualCompressedLength": 459,
-          "SHA256": "ghd7vDkc9JjzYeqx/kRjNGFstOFD/nNQhUqCErfT\u002Bdw=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 721,
-          "SHA256": "hL1sHQiNfQawSufFMy6ran/aTgF0BFngqzCHR5KP/WA=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        }
-      ]
-    }
+      "SHA512": "y2X38jWt38RiWywPTMgH28\u002BTxbRYPxzonVuGWqUWTYnYr9DGf2JXI16HPHqMN81FJ\u002Bwdk6FogthETCyyrdDiSA=="
+    },
+    "PartitionKey": "nut.mediatr.behaviors.fluentvalidation",
+    "RowKey": "0.0.0-preview.0.44"
   },
   {
-    "PartitionKey": "nut.mediatr.servicelike.dependencyinjection",
-    "RowKey": "0.0.0-preview.0.44",
     "Entity": {
       "Available": true,
       "CommitTimestamp": "2020-12-20T02:37:52.9649363+00:00",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 533,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "LT\u002BtL3UfP5CR5Ueo\u002B/hGtaC0\u002BAGLKmnZwyL8Q5w4WbQ="
+        },
+        {
+          "ActualCompressedLength": 1118,
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg==",
+          "SHA256": "6DrW89yypNAZAVLPa2E/d/wfjp2QwtT5ssemN1I4xdM="
+        },
+        {
+          "ActualCompressedLength": 9476,
+          "First16Bytes": "QlNKQgEAAQAAAAAADAAAAA==",
+          "SHA256": "8jF9gQPIZIiNvyKcv5x31mruYSUVLpc5nQxk6p6MrUU="
+        },
+        {
+          "ActualCompressedLength": 459,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "ghd7vDkc9JjzYeqx/kRjNGFstOFD/nNQhUqCErfT\u002Bdw="
+        },
+        {
+          "ActualCompressedLength": 739,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "58AvVLAVVmNWxHXK3LkHVsKoEmiluxJg/PP7\u002BrP3T08="
+        }
+      ],
       "HttpHeaders": {
         "Content-Length": [
           "8147"
@@ -211,48 +208,16 @@
       "MD5": "JCD64IUPxyIPOXyMGwiZnw==",
       "SHA1": "KzzIsmKWFFpvSVp2BCdvv5\u002B\u002BWP4=",
       "SHA256": "Id/Htxee802wxcy6zzU7RiOTDsm3H7SkcmFsPSV3dtQ=",
-      "SHA512": "Gv6drkwzlLfGgmbkbJdNQyEDNeKLJ5VoG7x0Lzs5oGSfr7zZingJh/\u002BaQ\u002BGuvk7S3ldH3Avfj/33QUjT6cRM/A==",
-      "EntryHashes": [
-        {
-          "ActualCompressedLength": 533,
-          "SHA256": "LT\u002BtL3UfP5CR5Ueo\u002B/hGtaC0\u002BAGLKmnZwyL8Q5w4WbQ=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 1118,
-          "SHA256": "6DrW89yypNAZAVLPa2E/d/wfjp2QwtT5ssemN1I4xdM=",
-          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
-        },
-        {
-          "ActualCompressedLength": 9476,
-          "SHA256": "8jF9gQPIZIiNvyKcv5x31mruYSUVLpc5nQxk6p6MrUU=",
-          "First16Bytes": "QlNKQgEAAQAAAAAADAAAAA=="
-        },
-        {
-          "ActualCompressedLength": 459,
-          "SHA256": "ghd7vDkc9JjzYeqx/kRjNGFstOFD/nNQhUqCErfT\u002Bdw=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 739,
-          "SHA256": "58AvVLAVVmNWxHXK3LkHVsKoEmiluxJg/PP7\u002BrP3T08=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        }
-      ]
-    }
+      "SHA512": "Gv6drkwzlLfGgmbkbJdNQyEDNeKLJ5VoG7x0Lzs5oGSfr7zZingJh/\u002BaQ\u002BGuvk7S3ldH3Avfj/33QUjT6cRM/A=="
+    },
+    "PartitionKey": "nut.mediatr.servicelike.dependencyinjection",
+    "RowKey": "0.0.0-preview.0.44"
   },
   {
-    "PartitionKey": "servicelikesample",
-    "RowKey": "1.0.0",
     "Entity": {
-      "Available": false,
-      "CommitTimestamp": "2020-12-20T02:39:37.8102297+00:00",
-      "HttpHeaders": null,
-      "MD5": null,
-      "SHA1": null,
-      "SHA256": null,
-      "SHA512": null,
-      "EntryHashes": null
-    }
+      "CommitTimestamp": "2020-12-20T02:39:37.8102297+00:00"
+    },
+    "PartitionKey": "servicelikesample",
+    "RowKey": "1.0.0"
   }
 ]

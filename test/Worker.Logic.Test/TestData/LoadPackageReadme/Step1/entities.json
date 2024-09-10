@@ -1,19 +1,13 @@
 [
   {
-    "PartitionKey": "auxidus.framework.api",
-    "RowKey": "5.0.3322",
     "Entity": {
-      "ReadmeType": "None",
-      "CommitTimestamp": "2022-03-14T23:06:07.7549588+00:00",
-      "HttpHeaders": null,
-      "ReadmeHash": null
-    }
+      "CommitTimestamp": "2022-03-14T23:06:07.7549588+00:00"
+    },
+    "PartitionKey": "auxidus.framework.api",
+    "RowKey": "5.0.3322"
   },
   {
-    "PartitionKey": "syncfusion.shared.wpf.classic",
-    "RowKey": "19.4.0.56",
     "Entity": {
-      "ReadmeType": "Embedded",
       "CommitTimestamp": "2022-03-14T23:06:07.7549588+00:00",
       "HttpHeaders": {
         "Content-Length": [
@@ -35,14 +29,14 @@
           "unlocked"
         ]
       },
-      "ReadmeHash": "0a39afe990e24631584d1450edd25d1685a884a66195cd00d60071adbf8a3b48"
-    }
+      "ReadmeHash": "0a39afe990e24631584d1450edd25d1685a884a66195cd00d60071adbf8a3b48",
+      "ReadmeType": "Embedded"
+    },
+    "PartitionKey": "syncfusion.shared.wpf.classic",
+    "RowKey": "19.4.0.56"
   },
   {
-    "PartitionKey": "syncfusion.tools.wpf.classic",
-    "RowKey": "19.4.0.56",
     "Entity": {
-      "ReadmeType": "Embedded",
       "CommitTimestamp": "2022-03-14T23:06:07.7549588+00:00",
       "HttpHeaders": {
         "Content-Length": [
@@ -64,7 +58,10 @@
           "unlocked"
         ]
       },
-      "ReadmeHash": "7c6b9ca9d6178be6fce238ce5fd10240049777858df4ec4f1461a201b07d8e0d"
-    }
+      "ReadmeHash": "7c6b9ca9d6178be6fce238ce5fd10240049777858df4ec4f1461a201b07d8e0d",
+      "ReadmeType": "Embedded"
+    },
+    "PartitionKey": "syncfusion.tools.wpf.classic",
+    "RowKey": "19.4.0.56"
   }
 ]

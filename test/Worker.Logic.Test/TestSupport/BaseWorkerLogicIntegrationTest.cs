@@ -637,6 +637,22 @@ namespace NuGet.Insights.Worker
             AssertEqualWithDiff(testDataFile, actual);
         }
 
+        public static string SerializeTestJson(object obj)
+        {
+            var json = JsonSerializer.Serialize(obj, new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+                TypeInfoResolver = new DataContractResolver(),
+                Converters =
+                {
+                    new JsonStringEnumConverter(),
+                },
+            });
+
+            return json.Replace("\r\n", "\n", StringComparison.Ordinal);
+        }
+
         protected void AssertEqualWithDiff(string expectedPath, string actual)
         {
             if (OverwriteTestData)

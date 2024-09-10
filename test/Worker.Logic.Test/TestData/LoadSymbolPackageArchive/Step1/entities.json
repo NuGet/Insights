@@ -1,7 +1,5 @@
 [
   {
-    "PartitionKey": "newtonsoft.json",
-    "RowKey": "13.0.1",
     "Entity": {
       "Available": true,
       "CommitTimestamp": "2021-03-22T20:13:54.6075418+00:00",
@@ -29,6 +27,8 @@
         ]
       },
       "MZipHash": "7f60ee52e75640227bdcea907723c1b7d1c15b18de2700a79dd16d26f96b3ee1"
-    }
+    },
+    "PartitionKey": "newtonsoft.json",
+    "RowKey": "13.0.1"
   }
 ]

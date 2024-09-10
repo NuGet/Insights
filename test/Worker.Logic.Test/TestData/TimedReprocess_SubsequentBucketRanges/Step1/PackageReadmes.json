@@ -1,42 +1,40 @@
 [
   {
-    "PartitionKey": "dawnx.npoi",
-    "RowKey": "1.0.10",
     "Entity": {
-      "ReadmeType": "None",
-      "CommitTimestamp": null,
-      "HttpHeaders": null,
-      "ReadmeHash": null
-    }
+      "HttpHeaders": {
+        "Content-Length": [
+          "45"
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8DC64CD325F64F1\u0022"
+        ],
+        "Last-Modified": [
+          "Thu, 25 Apr 2024 02:12:45 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ]
+      },
+      "ReadmeHash": "50f2e493ca79a174ae000c0eced07788488ec72fed6519749065773e7fe92218",
+      "ReadmeType": "Embedded"
+    },
+    "PartitionKey": "mgcframework.blazor",
+    "RowKey": "1.2.0"
   },
   {
-    "PartitionKey": "dawnx.npoi",
-    "RowKey": "1.0.5.3",
-    "Entity": {
-      "ReadmeType": "None",
-      "CommitTimestamp": null,
-      "HttpHeaders": null,
-      "ReadmeHash": null
-    }
+    "Entity": {},
+    "PartitionKey": "rocket.surgery.launchpad.aspnetcore.blazor",
+    "RowKey": "2.0.0-beta.4"
   },
   {
-    "PartitionKey": "dawnx.npoi",
-    "RowKey": "1.0.9",
-    "Entity": {
-      "ReadmeType": "None",
-      "CommitTimestamp": null,
-      "HttpHeaders": null,
-      "ReadmeHash": null
-    }
-  },
-  {
-    "PartitionKey": "glr.afy.utils",
-    "RowKey": "1.1.0.13",
-    "Entity": {
-      "ReadmeType": "None",
-      "CommitTimestamp": null,
-      "HttpHeaders": null,
-      "ReadmeHash": null
-    }
+    "Entity": {},
+    "PartitionKey": "rocket.surgery.launchpad.foundation.newtonsoftjson",
+    "RowKey": "2.0.0-beta.4"
   }
 ]

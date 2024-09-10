@@ -1,100 +1,195 @@
 [
   {
-    "PartitionKey": "dawnx.npoi",
-    "RowKey": "1.0.10",
-    "Entity": {
-      "Available": false,
-      "CommitTimestamp": null,
-      "HttpHeaders": null,
-      "MD5": null,
-      "SHA1": null,
-      "SHA256": null,
-      "SHA512": null,
-      "EntryHashes": null
-    }
+    "Entity": {},
+    "PartitionKey": "mgcframework.blazor",
+    "RowKey": "1.2.0"
   },
   {
-    "PartitionKey": "dawnx.npoi",
-    "RowKey": "1.0.5.3",
-    "Entity": {
-      "Available": false,
-      "CommitTimestamp": null,
-      "HttpHeaders": null,
-      "MD5": null,
-      "SHA1": null,
-      "SHA256": null,
-      "SHA512": null,
-      "EntryHashes": null
-    }
+    "Entity": {},
+    "PartitionKey": "mgcframework.connectapi",
+    "RowKey": "1.2.0"
   },
   {
-    "PartitionKey": "dawnx.npoi",
-    "RowKey": "1.0.5",
     "Entity": {
-      "Available": false,
-      "CommitTimestamp": null,
-      "HttpHeaders": null,
-      "MD5": null,
-      "SHA1": null,
-      "SHA256": null,
-      "SHA512": null,
-      "EntryHashes": null
-    }
+      "Available": true,
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 532,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "E5qYPDdMDwwaZktbHRZqWadD/R\u002BTR8YgeSli5lRiUPI="
+        },
+        {
+          "ActualCompressedLength": 1051,
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg==",
+          "SHA256": "dQoma0j\u002B8QGgj7dii\u002BVyF/RvTCkTEbUKgmBVTahxPrQ="
+        },
+        {
+          "ActualCompressedLength": 31348,
+          "First16Bytes": "QlNKQgEAAQAAAAAADAAAAA==",
+          "SHA256": "Agy0W0gwj2rhFng6NgJdNf\u002B4tl\u002BaEa9/Z4gJqv05nM0="
+        },
+        {
+          "ActualCompressedLength": 459,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "ghd7vDkc9JjzYeqx/kRjNGFstOFD/nNQhUqCErfT\u002Bdw="
+        },
+        {
+          "ActualCompressedLength": 702,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "geNEMaLJgH6hbAb0AYHUn8j31glpuqjkTI611CtKm\u002BQ="
+        }
+      ],
+      "HttpHeaders": {
+        "Content-Length": [
+          "24361"
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8DC64CD2EAB1AF7\u0022"
+        ],
+        "Last-Modified": [
+          "Thu, 25 Apr 2024 02:12:39 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "6udnvhRZB1EhjXYjIMvqzwiW1cKGZIxR/28O2Qqi2iOl2OOF/a6uan4I6X0gWywLo4o5zatKWSAJZh0IeFhvBw=="
+        ]
+      },
+      "MD5": "X2SF7wxy/Tlj4jf20NVntA==",
+      "SHA1": "qjpCj3HfoVhRgj/RSvqnDqYsU1w=",
+      "SHA256": "AQ4RAlRwDMlnJpcWThxOo42zBIcRZrWajiWiRdQQuCI=",
+      "SHA512": "6udnvhRZB1EhjXYjIMvqzwiW1cKGZIxR/28O2Qqi2iOl2OOF/a6uan4I6X0gWywLo4o5zatKWSAJZh0IeFhvBw=="
+    },
+    "PartitionKey": "rocket.surgery.launchpad.aspnetcore.blazor",
+    "RowKey": "2.0.0-beta.4"
   },
   {
-    "PartitionKey": "dawnx.npoi",
-    "RowKey": "1.0.7.12",
     "Entity": {
-      "Available": false,
-      "CommitTimestamp": null,
-      "HttpHeaders": null,
-      "MD5": null,
-      "SHA1": null,
-      "SHA256": null,
-      "SHA512": null,
-      "EntryHashes": null
-    }
+      "Available": true,
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 540,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "T4/NdxbtOKlWqrevHpyhPN2eZgx\u002BBVzSTdYo0/rJHmI="
+        },
+        {
+          "ActualCompressedLength": 1053,
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg==",
+          "SHA256": "D4V1mkLbrca8MWfwb38tA6sAAMO/ByMqcRJmiT62sxs="
+        },
+        {
+          "ActualCompressedLength": 33060,
+          "First16Bytes": "QlNKQgEAAQAAAAAADAAAAA==",
+          "SHA256": "fZE0K0mOFVcwvQ9fGCzXCIX1QTLXjTlZTXqwscv/OEE="
+        },
+        {
+          "ActualCompressedLength": 459,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "ghd7vDkc9JjzYeqx/kRjNGFstOFD/nNQhUqCErfT\u002Bdw="
+        },
+        {
+          "ActualCompressedLength": 710,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "KtWbzmlCZDMqL823MIzznl/CVPpLDHqgOOLo/h2zGq0="
+        }
+      ],
+      "HttpHeaders": {
+        "Content-Length": [
+          "25390"
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8DC64CD7E68C198\u0022"
+        ],
+        "Last-Modified": [
+          "Thu, 25 Apr 2024 02:14:53 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "QhOrcoeIWjSJ1gPNauiQ0PZEmN38rYCeRrAn0Ow6M1X91Qs7hU6qcuaYzAGlZwxa3jyL3KgT4Ds/Qz/q\u002Bkc0Lw=="
+        ]
+      },
+      "MD5": "Zujkj9f8yX9KFjc8xTpbhg==",
+      "SHA1": "afnly1lucxUT2Eng0gjyWLYlf2c=",
+      "SHA256": "2PHIFSRfDIotNZG16yBgXQTgXvJPGRB61Y4MHGdrsXo=",
+      "SHA512": "QhOrcoeIWjSJ1gPNauiQ0PZEmN38rYCeRrAn0Ow6M1X91Qs7hU6qcuaYzAGlZwxa3jyL3KgT4Ds/Qz/q\u002Bkc0Lw=="
+    },
+    "PartitionKey": "rocket.surgery.launchpad.foundation.newtonsoftjson",
+    "RowKey": "2.0.0-beta.4"
   },
   {
-    "PartitionKey": "dawnx.npoi",
-    "RowKey": "1.0.7.6",
     "Entity": {
-      "Available": false,
-      "CommitTimestamp": null,
-      "HttpHeaders": null,
-      "MD5": null,
-      "SHA1": null,
-      "SHA256": null,
-      "SHA512": null,
-      "EntryHashes": null
-    }
-  },
-  {
-    "PartitionKey": "dawnx.npoi",
-    "RowKey": "1.0.9",
-    "Entity": {
-      "Available": false,
-      "CommitTimestamp": null,
-      "HttpHeaders": null,
-      "MD5": null,
-      "SHA1": null,
-      "SHA256": null,
-      "SHA512": null,
-      "EntryHashes": null
-    }
-  },
-  {
-    "PartitionKey": "glr.afy.utils",
-    "RowKey": "1.1.0.13",
-    "Entity": {
-      "Available": false,
-      "CommitTimestamp": null,
-      "HttpHeaders": null,
-      "MD5": null,
-      "SHA1": null,
-      "SHA256": null,
-      "SHA512": null,
-      "EntryHashes": null
-    }
+      "Available": true,
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 537,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "rUC2dXikP\u002B3coSkK2JTUVxxrkYKlS8xGSmkVi95xJ5I="
+        },
+        {
+          "ActualCompressedLength": 946,
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg==",
+          "SHA256": "SzNra5RDUysVL3Q0vdBYtLHVTCUNkMVGArjOoG4BABU="
+        },
+        {
+          "ActualCompressedLength": 28736,
+          "First16Bytes": "QlNKQgEAAQAAAAAADAAAAA==",
+          "SHA256": "poALOQLLSIpIL4ytDQ/3gL40i48C1yMFOih\u002Bm\u002BYeAas="
+        },
+        {
+          "ActualCompressedLength": 459,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "ghd7vDkc9JjzYeqx/kRjNGFstOFD/nNQhUqCErfT\u002Bdw="
+        },
+        {
+          "ActualCompressedLength": 707,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "mLRfB2dpBxhROiHiV\u002BIxFA6cGPIAHC5k5Dm8wbks6Ms="
+        }
+      ],
+      "HttpHeaders": {
+        "Content-Length": [
+          "23034"
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8DC64CD2F58F4EC\u0022"
+        ],
+        "Last-Modified": [
+          "Thu, 25 Apr 2024 02:12:40 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "e4C8bazHQjU/7qFP42i3wEjssrVfRYiU8Bj07nDI4fH01RhKmrLb444Hv\u002BDHWu8DvOruHgFHls56v3zx1tGVRQ=="
+        ]
+      },
+      "MD5": "6pyPyjO0/rQ6sWmDXNmv7Q==",
+      "SHA1": "8MJXrIOXrTcRl5AWAOE\u002BA0OpXm4=",
+      "SHA256": "s5ViWYtlzcPGizh86\u002B6m7RhvtsLoC2jLg27WKQi2kjQ=",
+      "SHA512": "e4C8bazHQjU/7qFP42i3wEjssrVfRYiU8Bj07nDI4fH01RhKmrLb444Hv\u002BDHWu8DvOruHgFHls56v3zx1tGVRQ=="
+    },
+    "PartitionKey": "rocket.surgery.launchpad.mapping.newtonsoftjson",
+    "RowKey": "2.0.0-beta.4"
   }
 ]

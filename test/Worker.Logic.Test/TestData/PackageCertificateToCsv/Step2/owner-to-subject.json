@@ -1,128 +1,202 @@
 [
   {
+    "Entity": {
+      "Committed": [
+        {
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
+        },
+        {
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
+        },
+        {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ],
+          "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
+          "RowKey": ""
+        },
+        {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ],
+          "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
+          "RowKey": ""
+        },
+        {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "IsRepositoryCodeSignedBy",
+            "RepositoryCodeSigningChainContains"
+          ],
+          "PartitionKey": "WikB1q2j0YJgucbf4hM8lddLnu9q4OXcM0yEVNFHffQ",
+          "RowKey": ""
+        },
+        {
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "IsRepositoryTimestampedBy",
+            "RepositoryTimestampingChainContains"
+          ],
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": ""
+        }
+      ],
+      "ToAdd": [],
+      "ToDelete": []
+    },
     "PartitionKey": "P$mathnet.numerics.mkl.win-x86$C",
-    "RowKey": "2.6.0-beta2",
-    "Entity": {
-      "Committed": [
-        {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
-          "Data": [
-            "RepositoryTimestampSignedCmsContains",
-            "RepositoryTimestampingChainContains"
-          ]
-        },
-        {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
-          "Data": [
-            "RepositoryTimestampSignedCmsContains",
-            "RepositoryTimestampingChainContains"
-          ]
-        },
-        {
-          "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
-          "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
-          "PartitionKey": "WikB1q2j0YJgucbf4hM8lddLnu9q4OXcM0yEVNFHffQ",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "IsRepositoryCodeSignedBy",
-            "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
-          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
-          "RowKey": "",
-          "Data": [
-            "RepositoryTimestampSignedCmsContains",
-            "IsRepositoryTimestampedBy",
-            "RepositoryTimestampingChainContains"
-          ]
-        }
-      ],
-      "ToAdd": [],
-      "ToDelete": []
-    }
+    "RowKey": "2.6.0-beta2"
   },
   {
-    "PartitionKey": "P$microsoft.applicationinsights$C",
-    "RowKey": "2.10.0-beta2",
     "Entity": {
       "Committed": [
         {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
             "RepositoryCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsAuthorCodeSignedBy",
             "AuthorCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
           "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "PrimarySignedCmsContains",
             "AuthorCodeSigningChainContains",
             "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
+          "Data": [
+            "AuthorTimestampSignedCmsContains",
+            "RepositoryTimestampSignedCmsContains",
+            "IsAuthorTimestampedBy",
+            "IsRepositoryTimestampedBy",
+            "AuthorTimestampingChainContains",
+            "RepositoryTimestampingChainContains"
+          ],
           "PartitionKey": "z3rBetBH7NX9w2giAxsS1O8Hi28rTF5rpB-P8s9LrWc",
-          "RowKey": "",
+          "RowKey": ""
+        }
+      ],
+      "ToAdd": [],
+      "ToDelete": []
+    },
+    "PartitionKey": "P$microsoft.applicationinsights$C",
+    "RowKey": "2.10.0-beta2"
+  },
+  {
+    "Entity": {
+      "Committed": [
+        {
+          "Data": [
+            "AuthorTimestampSignedCmsContains",
+            "RepositoryTimestampSignedCmsContains",
+            "AuthorTimestampingChainContains",
+            "RepositoryTimestampingChainContains"
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
+        },
+        {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "IsRepositoryCodeSignedBy",
+            "RepositoryCodeSigningChainContains"
+          ],
+          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
+          "RowKey": ""
+        },
+        {
+          "Data": [
+            "AuthorTimestampSignedCmsContains",
+            "RepositoryTimestampSignedCmsContains",
+            "AuthorTimestampingChainContains",
+            "RepositoryTimestampingChainContains"
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
+        },
+        {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "IsAuthorCodeSignedBy",
+            "AuthorCodeSigningChainContains"
+          ],
+          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
+          "RowKey": ""
+        },
+        {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
+          "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
+          "RowKey": ""
+        },
+        {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
+          "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
@@ -130,155 +204,77 @@
             "IsRepositoryTimestampedBy",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
-        }
-      ],
-      "ToAdd": [],
-      "ToDelete": []
-    }
-  },
-  {
-    "PartitionKey": "P$microsoft.applicationinsights$C",
-    "RowKey": "2.10.0-beta3",
-    "Entity": {
-      "Committed": [
-        {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
-          "Data": [
-            "AuthorTimestampSignedCmsContains",
-            "RepositoryTimestampSignedCmsContains",
-            "AuthorTimestampingChainContains",
-            "RepositoryTimestampingChainContains"
-          ]
-        },
-        {
-          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "IsRepositoryCodeSignedBy",
-            "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
-          "Data": [
-            "AuthorTimestampSignedCmsContains",
-            "RepositoryTimestampSignedCmsContains",
-            "AuthorTimestampingChainContains",
-            "RepositoryTimestampingChainContains"
-          ]
-        },
-        {
-          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "IsAuthorCodeSignedBy",
-            "AuthorCodeSigningChainContains"
-          ]
-        },
-        {
-          "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
-          "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "z3rBetBH7NX9w2giAxsS1O8Hi28rTF5rpB-P8s9LrWc",
-          "RowKey": "",
-          "Data": [
-            "AuthorTimestampSignedCmsContains",
-            "RepositoryTimestampSignedCmsContains",
-            "IsAuthorTimestampedBy",
-            "IsRepositoryTimestampedBy",
-            "AuthorTimestampingChainContains",
-            "RepositoryTimestampingChainContains"
-          ]
+          "RowKey": ""
         }
       ],
       "ToAdd": [],
       "ToDelete": []
-    }
+    },
+    "PartitionKey": "P$microsoft.applicationinsights$C",
+    "RowKey": "2.10.0-beta3"
   },
   {
-    "PartitionKey": "P$microsoft.applicationinsights$C",
-    "RowKey": "2.10.0-beta4",
     "Entity": {
       "Committed": [
         {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
             "RepositoryCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsAuthorCodeSignedBy",
             "AuthorCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
           "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "PrimarySignedCmsContains",
             "AuthorCodeSigningChainContains",
             "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
-          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
@@ -286,77 +282,77 @@
             "IsRepositoryTimestampedBy",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": ""
         }
       ],
       "ToAdd": [],
       "ToDelete": []
-    }
+    },
+    "PartitionKey": "P$microsoft.applicationinsights$C",
+    "RowKey": "2.10.0-beta4"
   },
   {
-    "PartitionKey": "P$microsoft.applicationinsights$C",
-    "RowKey": "2.11.0-beta1",
     "Entity": {
       "Committed": [
         {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
             "RepositoryCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsAuthorCodeSignedBy",
             "AuthorCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
           "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "PrimarySignedCmsContains",
             "AuthorCodeSigningChainContains",
             "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
-          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
@@ -364,77 +360,77 @@
             "IsRepositoryTimestampedBy",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": ""
         }
       ],
       "ToAdd": [],
       "ToDelete": []
-    }
+    },
+    "PartitionKey": "P$microsoft.applicationinsights$C",
+    "RowKey": "2.11.0-beta1"
   },
   {
-    "PartitionKey": "P$microsoft.applicationinsights$C",
-    "RowKey": "2.11.0-beta2",
     "Entity": {
       "Committed": [
         {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
             "RepositoryCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsAuthorCodeSignedBy",
             "AuthorCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
           "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "PrimarySignedCmsContains",
             "AuthorCodeSigningChainContains",
             "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
-          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
@@ -442,77 +438,77 @@
             "IsRepositoryTimestampedBy",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": ""
         }
       ],
       "ToAdd": [],
       "ToDelete": []
-    }
+    },
+    "PartitionKey": "P$microsoft.applicationinsights$C",
+    "RowKey": "2.11.0-beta2"
   },
   {
-    "PartitionKey": "P$microsoft.applicationinsights$C",
-    "RowKey": "2.12.0-beta1",
     "Entity": {
       "Committed": [
         {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
             "RepositoryCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsAuthorCodeSignedBy",
             "AuthorCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
           "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "PrimarySignedCmsContains",
             "AuthorCodeSigningChainContains",
             "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
-          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
@@ -520,77 +516,77 @@
             "IsRepositoryTimestampedBy",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": ""
         }
       ],
       "ToAdd": [],
       "ToDelete": []
-    }
+    },
+    "PartitionKey": "P$microsoft.applicationinsights$C",
+    "RowKey": "2.12.0-beta1"
   },
   {
-    "PartitionKey": "P$microsoft.applicationinsights$C",
-    "RowKey": "2.12.0-beta2",
     "Entity": {
       "Committed": [
         {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
             "RepositoryCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsAuthorCodeSignedBy",
             "AuthorCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
           "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "PrimarySignedCmsContains",
             "AuthorCodeSigningChainContains",
             "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
-          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
@@ -598,77 +594,77 @@
             "IsRepositoryTimestampedBy",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": ""
         }
       ],
       "ToAdd": [],
       "ToDelete": []
-    }
+    },
+    "PartitionKey": "P$microsoft.applicationinsights$C",
+    "RowKey": "2.12.0-beta2"
   },
   {
-    "PartitionKey": "P$microsoft.applicationinsights$C",
-    "RowKey": "2.12.0-beta3",
     "Entity": {
       "Committed": [
         {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
             "RepositoryCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsAuthorCodeSignedBy",
             "AuthorCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
           "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "PrimarySignedCmsContains",
             "AuthorCodeSigningChainContains",
             "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
-          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
@@ -676,77 +672,77 @@
             "IsRepositoryTimestampedBy",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": ""
         }
       ],
       "ToAdd": [],
       "ToDelete": []
-    }
+    },
+    "PartitionKey": "P$microsoft.applicationinsights$C",
+    "RowKey": "2.12.0-beta3"
   },
   {
-    "PartitionKey": "P$microsoft.applicationinsights$C",
-    "RowKey": "2.12.0-beta4",
     "Entity": {
       "Committed": [
         {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
             "RepositoryCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsAuthorCodeSignedBy",
             "AuthorCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
           "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "PrimarySignedCmsContains",
             "AuthorCodeSigningChainContains",
             "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
-          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
@@ -754,77 +750,77 @@
             "IsRepositoryTimestampedBy",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": ""
         }
       ],
       "ToAdd": [],
       "ToDelete": []
-    }
+    },
+    "PartitionKey": "P$microsoft.applicationinsights$C",
+    "RowKey": "2.12.0-beta4"
   },
   {
-    "PartitionKey": "P$microsoft.applicationinsights$C",
-    "RowKey": "2.13.0-beta1",
     "Entity": {
       "Committed": [
         {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
             "RepositoryCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsAuthorCodeSignedBy",
             "AuthorCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
           "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "PrimarySignedCmsContains",
             "AuthorCodeSigningChainContains",
             "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
-          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
@@ -832,77 +828,77 @@
             "IsRepositoryTimestampedBy",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": ""
         }
       ],
       "ToAdd": [],
       "ToDelete": []
-    }
+    },
+    "PartitionKey": "P$microsoft.applicationinsights$C",
+    "RowKey": "2.13.0-beta1"
   },
   {
-    "PartitionKey": "P$microsoft.applicationinsights$C",
-    "RowKey": "2.13.0-beta2",
     "Entity": {
       "Committed": [
         {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
             "RepositoryCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsAuthorCodeSignedBy",
             "AuthorCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
           "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "PrimarySignedCmsContains",
             "AuthorCodeSigningChainContains",
             "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
-          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
@@ -910,77 +906,77 @@
             "IsRepositoryTimestampedBy",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": ""
         }
       ],
       "ToAdd": [],
       "ToDelete": []
-    }
+    },
+    "PartitionKey": "P$microsoft.applicationinsights$C",
+    "RowKey": "2.13.0-beta2"
   },
   {
-    "PartitionKey": "P$microsoft.applicationinsights$C",
-    "RowKey": "2.14.0-beta1",
     "Entity": {
       "Committed": [
         {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
             "RepositoryCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsAuthorCodeSignedBy",
             "AuthorCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
           "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "PrimarySignedCmsContains",
             "AuthorCodeSigningChainContains",
             "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
-          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
@@ -988,77 +984,77 @@
             "IsRepositoryTimestampedBy",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": ""
         }
       ],
       "ToAdd": [],
       "ToDelete": []
-    }
+    },
+    "PartitionKey": "P$microsoft.applicationinsights$C",
+    "RowKey": "2.14.0-beta1"
   },
   {
-    "PartitionKey": "P$microsoft.applicationinsights$C",
-    "RowKey": "2.14.0-beta2",
     "Entity": {
       "Committed": [
         {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
             "RepositoryCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsAuthorCodeSignedBy",
             "AuthorCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
           "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "PrimarySignedCmsContains",
             "AuthorCodeSigningChainContains",
             "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
-          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
@@ -1066,77 +1062,77 @@
             "IsRepositoryTimestampedBy",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": ""
         }
       ],
       "ToAdd": [],
       "ToDelete": []
-    }
+    },
+    "PartitionKey": "P$microsoft.applicationinsights$C",
+    "RowKey": "2.14.0-beta2"
   },
   {
-    "PartitionKey": "P$microsoft.applicationinsights$C",
-    "RowKey": "2.14.0-beta3",
     "Entity": {
       "Committed": [
         {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
             "RepositoryCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsAuthorCodeSignedBy",
             "AuthorCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
           "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "PrimarySignedCmsContains",
             "AuthorCodeSigningChainContains",
             "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
-          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
@@ -1144,77 +1140,77 @@
             "IsRepositoryTimestampedBy",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": ""
         }
       ],
       "ToAdd": [],
       "ToDelete": []
-    }
+    },
+    "PartitionKey": "P$microsoft.applicationinsights$C",
+    "RowKey": "2.14.0-beta3"
   },
   {
-    "PartitionKey": "P$microsoft.applicationinsights$C",
-    "RowKey": "2.14.0-beta5",
     "Entity": {
       "Committed": [
         {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
             "RepositoryCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsAuthorCodeSignedBy",
             "AuthorCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
           "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "PrimarySignedCmsContains",
             "AuthorCodeSigningChainContains",
             "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
-          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
@@ -1222,77 +1218,77 @@
             "IsRepositoryTimestampedBy",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": ""
         }
       ],
       "ToAdd": [],
       "ToDelete": []
-    }
+    },
+    "PartitionKey": "P$microsoft.applicationinsights$C",
+    "RowKey": "2.14.0-beta5"
   },
   {
-    "PartitionKey": "P$microsoft.applicationinsights$C",
-    "RowKey": "2.15.0-beta1",
     "Entity": {
       "Committed": [
         {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
             "RepositoryCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsAuthorCodeSignedBy",
             "AuthorCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
           "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "PrimarySignedCmsContains",
             "AuthorCodeSigningChainContains",
             "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
-          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
@@ -1300,77 +1296,77 @@
             "IsRepositoryTimestampedBy",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": ""
         }
       ],
       "ToAdd": [],
       "ToDelete": []
-    }
+    },
+    "PartitionKey": "P$microsoft.applicationinsights$C",
+    "RowKey": "2.15.0-beta1"
   },
   {
-    "PartitionKey": "P$microsoft.applicationinsights$C",
-    "RowKey": "2.15.0-beta2",
     "Entity": {
       "Committed": [
         {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
             "RepositoryCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsAuthorCodeSignedBy",
             "AuthorCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
           "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "PrimarySignedCmsContains",
             "AuthorCodeSigningChainContains",
             "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
-          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
@@ -1378,77 +1374,77 @@
             "IsRepositoryTimestampedBy",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": ""
         }
       ],
       "ToAdd": [],
       "ToDelete": []
-    }
+    },
+    "PartitionKey": "P$microsoft.applicationinsights$C",
+    "RowKey": "2.15.0-beta2"
   },
   {
-    "PartitionKey": "P$microsoft.applicationinsights$C",
-    "RowKey": "2.15.0-beta3",
     "Entity": {
       "Committed": [
         {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
             "RepositoryCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsAuthorCodeSignedBy",
             "AuthorCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
           "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "PrimarySignedCmsContains",
             "AuthorCodeSigningChainContains",
             "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
-          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
@@ -1456,77 +1452,77 @@
             "IsRepositoryTimestampedBy",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": ""
         }
       ],
       "ToAdd": [],
       "ToDelete": []
-    }
+    },
+    "PartitionKey": "P$microsoft.applicationinsights$C",
+    "RowKey": "2.15.0-beta3"
   },
   {
-    "PartitionKey": "P$microsoft.applicationinsights$C",
-    "RowKey": "2.16.0-beta1",
     "Entity": {
       "Committed": [
         {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
             "RepositoryCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsAuthorCodeSignedBy",
             "AuthorCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
           "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "PrimarySignedCmsContains",
             "AuthorCodeSigningChainContains",
             "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
-          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
@@ -1534,77 +1530,77 @@
             "IsRepositoryTimestampedBy",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": ""
         }
       ],
       "ToAdd": [],
       "ToDelete": []
-    }
+    },
+    "PartitionKey": "P$microsoft.applicationinsights$C",
+    "RowKey": "2.16.0-beta1"
   },
   {
-    "PartitionKey": "P$microsoft.applicationinsights$C",
-    "RowKey": "2.17.0-beta1",
     "Entity": {
       "Committed": [
         {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
             "RepositoryCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
           "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "PrimarySignedCmsContains",
             "AuthorCodeSigningChainContains",
             "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "IsAuthorCodeSignedBy",
+            "AuthorCodeSigningChainContains"
+          ],
           "PartitionKey": "qhLaIqSbzn1cGuZMwfPYkvFQ2nYUDyEKvSy__KLBiic",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "IsAuthorCodeSignedBy",
-            "AuthorCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
-          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
@@ -1612,77 +1608,77 @@
             "IsRepositoryTimestampedBy",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": ""
         }
       ],
       "ToAdd": [],
       "ToDelete": []
-    }
+    },
+    "PartitionKey": "P$microsoft.applicationinsights$C",
+    "RowKey": "2.17.0-beta1"
   },
   {
-    "PartitionKey": "P$microsoft.applicationinsights$C",
-    "RowKey": "2.18.0-beta1",
     "Entity": {
       "Committed": [
         {
+          "Data": [
+            "AuthorTimestampSignedCmsContains",
+            "RepositoryTimestampSignedCmsContains",
+            "AuthorTimestampingChainContains",
+            "RepositoryTimestampingChainContains"
+          ],
           "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
-          "Data": [
-            "AuthorTimestampSignedCmsContains",
-            "RepositoryTimestampSignedCmsContains",
-            "AuthorTimestampingChainContains",
-            "RepositoryTimestampingChainContains"
-          ]
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
           "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "PrimarySignedCmsContains",
             "AuthorCodeSigningChainContains",
             "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "IsRepositoryCodeSignedBy",
+            "RepositoryCodeSigningChainContains"
+          ],
           "PartitionKey": "WikB1q2j0YJgucbf4hM8lddLnu9q4OXcM0yEVNFHffQ",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "IsRepositoryCodeSignedBy",
-            "RepositoryCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
-          "PartitionKey": "qhLaIqSbzn1cGuZMwfPYkvFQ2nYUDyEKvSy__KLBiic",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsAuthorCodeSignedBy",
             "AuthorCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "qhLaIqSbzn1cGuZMwfPYkvFQ2nYUDyEKvSy__KLBiic",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
@@ -1690,77 +1686,77 @@
             "IsRepositoryTimestampedBy",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": ""
         }
       ],
       "ToAdd": [],
       "ToDelete": []
-    }
+    },
+    "PartitionKey": "P$microsoft.applicationinsights$C",
+    "RowKey": "2.18.0-beta1"
   },
   {
-    "PartitionKey": "P$microsoft.applicationinsights$C",
-    "RowKey": "2.9.0-beta3",
     "Entity": {
       "Committed": [
         {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsRepositoryCodeSignedBy",
             "RepositoryCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "Dl849X3BvMgG2ElPT5D7zt2Yi0Z2BwnL7sb0IZqmFX0",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
         },
         {
-          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
-          "RowKey": "",
           "Data": [
             "PrimarySignedCmsContains",
             "IsAuthorCodeSignedBy",
             "AuthorCodeSigningChainContains"
-          ]
+          ],
+          "PartitionKey": "P5AB6oPFYNcSwkzyE8PTEss7_1HuiUNdNDC9BrXQ7s4",
+          "RowKey": ""
         },
         {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "AuthorCodeSigningChainContains",
+            "RepositoryCodeSigningChainContains"
+          ],
           "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
+          "RowKey": ""
+        },
+        {
           "Data": [
             "PrimarySignedCmsContains",
             "AuthorCodeSigningChainContains",
             "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
+          ],
           "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "AuthorCodeSigningChainContains",
-            "RepositoryCodeSigningChainContains"
-          ]
+          "RowKey": ""
         },
         {
-          "PartitionKey": "z3rBetBH7NX9w2giAxsS1O8Hi28rTF5rpB-P8s9LrWc",
-          "RowKey": "",
           "Data": [
             "AuthorTimestampSignedCmsContains",
             "RepositoryTimestampSignedCmsContains",
@@ -1768,71 +1764,75 @@
             "IsRepositoryTimestampedBy",
             "AuthorTimestampingChainContains",
             "RepositoryTimestampingChainContains"
-          ]
+          ],
+          "PartitionKey": "z3rBetBH7NX9w2giAxsS1O8Hi28rTF5rpB-P8s9LrWc",
+          "RowKey": ""
         }
       ],
       "ToAdd": [],
       "ToDelete": []
-    }
+    },
+    "PartitionKey": "P$microsoft.applicationinsights$C",
+    "RowKey": "2.9.0-beta3"
   },
   {
+    "Entity": {
+      "Committed": [
+        {
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ],
+          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
+          "RowKey": ""
+        },
+        {
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "RepositoryTimestampingChainContains"
+          ],
+          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
+          "RowKey": ""
+        },
+        {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ],
+          "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
+          "RowKey": ""
+        },
+        {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "RepositoryCodeSigningChainContains"
+          ],
+          "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
+          "RowKey": ""
+        },
+        {
+          "Data": [
+            "PrimarySignedCmsContains",
+            "IsRepositoryCodeSignedBy",
+            "RepositoryCodeSigningChainContains"
+          ],
+          "PartitionKey": "WikB1q2j0YJgucbf4hM8lddLnu9q4OXcM0yEVNFHffQ",
+          "RowKey": ""
+        },
+        {
+          "Data": [
+            "RepositoryTimestampSignedCmsContains",
+            "IsRepositoryTimestampedBy",
+            "RepositoryTimestampingChainContains"
+          ],
+          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
+          "RowKey": ""
+        }
+      ],
+      "ToAdd": [],
+      "ToDelete": []
+    },
     "PartitionKey": "P$sharphoundcommon$C",
-    "RowKey": "2.0.2",
-    "Entity": {
-      "Committed": [
-        {
-          "PartitionKey": "81Ft3MivyAh4i9iw6EC9orXiPGJEJSyjAAu2yHFwQCo",
-          "RowKey": "",
-          "Data": [
-            "RepositoryTimestampSignedCmsContains",
-            "RepositoryTimestampingChainContains"
-          ]
-        },
-        {
-          "PartitionKey": "I5lWESelcSXejO_qYQ3fL6B4tcgGf06CgpC_uGDoSzw",
-          "RowKey": "",
-          "Data": [
-            "RepositoryTimestampSignedCmsContains",
-            "RepositoryTimestampingChainContains"
-          ]
-        },
-        {
-          "PartitionKey": "PpCZtQFej0hsALzqnREe5yH6ujVaibzx32lWHj3GMlw",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
-          "PartitionKey": "UQRHBr0je5G4m3gTN-bWJlbGnw_P--jkN0E2eUgSeGI",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
-          "PartitionKey": "WikB1q2j0YJgucbf4hM8lddLnu9q4OXcM0yEVNFHffQ",
-          "RowKey": "",
-          "Data": [
-            "PrimarySignedCmsContains",
-            "IsRepositoryCodeSignedBy",
-            "RepositoryCodeSigningChainContains"
-          ]
-        },
-        {
-          "PartitionKey": "xHTOdgB9AjlODaXk3nwUxoD54oIBPP72U-9dtx_fYfg",
-          "RowKey": "",
-          "Data": [
-            "RepositoryTimestampSignedCmsContains",
-            "IsRepositoryTimestampedBy",
-            "RepositoryTimestampingChainContains"
-          ]
-        }
-      ],
-      "ToAdd": [],
-      "ToDelete": []
-    }
+    "RowKey": "2.0.2"
   }
 ]

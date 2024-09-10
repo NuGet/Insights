@@ -1,10 +1,40 @@
 [
   {
-    "PartitionKey": "akinzekeel.blazorgrid.abstractions",
-    "RowKey": "0.9.1-beta",
     "Entity": {
       "Available": true,
       "CommitTimestamp": "2020-11-27T22:09:02.7017175+00:00",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 524,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "j3QyWUvWm7Rs8GbsvDIeI5ksvKdS0VyGrTlR9dLnbxU="
+        },
+        {
+          "ActualCompressedLength": 883,
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg==",
+          "SHA256": "quRd3KdE\u002BQa\u002BELybSgCa7GlCSw8qX1\u002BRHeLR9fKN5q4="
+        },
+        {
+          "ActualCompressedLength": 12800,
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA==",
+          "SHA256": "TCNRDKcXXgarH53qQjRDA6/yRxCBHIbwYWXgw\u002BLxEBo="
+        },
+        {
+          "ActualCompressedLength": 459,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "Pa5U8eJ2H7QTefjQXn/bkDti7NDsHGX8aP0CyRw2cc8="
+        },
+        {
+          "ActualCompressedLength": 663,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "K5NBbaxmzveuO4s6fCMedl5F0ZvWUFNEac3yMZxuCJ0="
+        },
+        {
+          "ActualCompressedLength": 9466,
+          "First16Bytes": "MIIk9gYJKoZIhvcNAQcCoA==",
+          "SHA256": "9PVOpO5wl3i13uB7PfcHR0alekdwdV5U0Db\u002Bc0nTyLQ="
+        }
+      ],
       "HttpHeaders": {
         "Content-Length": [
           "17527"
@@ -34,47 +64,52 @@
       "MD5": "U0p9WJTJ66aqjyX32q8CZg==",
       "SHA1": "\u002B4lZgehBmYcCOSNxo\u002BQ3bjmrdtw=",
       "SHA256": "75JaFnVJhyVXHtiGej4XmtcPgS7nFX638LQljXZkc\u002BM=",
-      "SHA512": "ebIvElroYjlyZ8aqMW8SF8YRviEU82kx/wBJyzDwIEatLh7wyzgSWrVJYWwmpiMZK5A5Nsz07hO9tRwZGhgG0Q==",
-      "EntryHashes": [
-        {
-          "ActualCompressedLength": 524,
-          "SHA256": "j3QyWUvWm7Rs8GbsvDIeI5ksvKdS0VyGrTlR9dLnbxU=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 883,
-          "SHA256": "quRd3KdE\u002BQa\u002BELybSgCa7GlCSw8qX1\u002BRHeLR9fKN5q4=",
-          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
-        },
-        {
-          "ActualCompressedLength": 12800,
-          "SHA256": "TCNRDKcXXgarH53qQjRDA6/yRxCBHIbwYWXgw\u002BLxEBo=",
-          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
-        },
-        {
-          "ActualCompressedLength": 459,
-          "SHA256": "Pa5U8eJ2H7QTefjQXn/bkDti7NDsHGX8aP0CyRw2cc8=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 663,
-          "SHA256": "K5NBbaxmzveuO4s6fCMedl5F0ZvWUFNEac3yMZxuCJ0=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 9466,
-          "SHA256": "9PVOpO5wl3i13uB7PfcHR0alekdwdV5U0Db\u002Bc0nTyLQ=",
-          "First16Bytes": "MIIk9gYJKoZIhvcNAQcCoA=="
-        }
-      ]
-    }
+      "SHA512": "ebIvElroYjlyZ8aqMW8SF8YRviEU82kx/wBJyzDwIEatLh7wyzgSWrVJYWwmpiMZK5A5Nsz07hO9tRwZGhgG0Q=="
+    },
+    "PartitionKey": "akinzekeel.blazorgrid.abstractions",
+    "RowKey": "0.9.1-beta"
   },
   {
-    "PartitionKey": "ambientservices",
-    "RowKey": "3.1.49",
     "Entity": {
       "Available": true,
       "CommitTimestamp": "2020-11-27T22:01:44.950465+00:00",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 509,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "6njPNVluXUb\u002B93sEo\u002BwQG9KOIPr7RL9gAXL3EMUUCkY="
+        },
+        {
+          "ActualCompressedLength": 1221,
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg==",
+          "SHA256": "8fryBL2fC2DHiJZzxbUaBBgNkHx5rf9tsA9xrVm7GO0="
+        },
+        {
+          "ActualCompressedLength": 97792,
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA==",
+          "SHA256": "rhNhxk2Nv\u002B/4GO20cJk9hKFTQvnZzanCSgFPObtld04="
+        },
+        {
+          "ActualCompressedLength": 193968,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "bwmnwzJwWuXdnAvYdWiFa3qIMxZVxlUoUiZ7Cq79ipU="
+        },
+        {
+          "ActualCompressedLength": 528,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "6RpiErPAXuV\u002BLH2TaRd6R/aKCwV5BNHsAt\u002BPkLtDLkY="
+        },
+        {
+          "ActualCompressedLength": 1060,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "ThOoapq7pfhKfpx1hV69fxxpPEfyQeNihVekMku2VLY="
+        },
+        {
+          "ActualCompressedLength": 9466,
+          "First16Bytes": "MIIk9gYJKoZIhvcNAQcCoA==",
+          "SHA256": "VpLUvASm/DldMNotNgJYbylhRjOcPsfctwr0fiiQ5vY="
+        }
+      ],
       "HttpHeaders": {
         "Content-Length": [
           "80673"
@@ -104,52 +139,62 @@
       "MD5": "IJ3cHtteLtWlMFbV2da2Rw==",
       "SHA1": "KCBUhueVasNpFmNIynL\u002ByKsq1LA=",
       "SHA256": "xBPp0iAQlHmSgZUWPnU29M3DGmoJd3Ffkgy7gPK3qDU=",
-      "SHA512": "s9tYvS9Oj8/lw\u002BhAZ/rSOseFlbROPls48r8mQfYB4evYMz1RyJulBixTS4HFQE3N5Im91MFRmNKRDpA6WCA5Bw==",
-      "EntryHashes": [
-        {
-          "ActualCompressedLength": 509,
-          "SHA256": "6njPNVluXUb\u002B93sEo\u002BwQG9KOIPr7RL9gAXL3EMUUCkY=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 1221,
-          "SHA256": "8fryBL2fC2DHiJZzxbUaBBgNkHx5rf9tsA9xrVm7GO0=",
-          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
-        },
-        {
-          "ActualCompressedLength": 97792,
-          "SHA256": "rhNhxk2Nv\u002B/4GO20cJk9hKFTQvnZzanCSgFPObtld04=",
-          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
-        },
-        {
-          "ActualCompressedLength": 193968,
-          "SHA256": "bwmnwzJwWuXdnAvYdWiFa3qIMxZVxlUoUiZ7Cq79ipU=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 528,
-          "SHA256": "6RpiErPAXuV\u002BLH2TaRd6R/aKCwV5BNHsAt\u002BPkLtDLkY=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 1060,
-          "SHA256": "ThOoapq7pfhKfpx1hV69fxxpPEfyQeNihVekMku2VLY=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 9466,
-          "SHA256": "VpLUvASm/DldMNotNgJYbylhRjOcPsfctwr0fiiQ5vY=",
-          "First16Bytes": "MIIk9gYJKoZIhvcNAQcCoA=="
-        }
-      ]
-    }
+      "SHA512": "s9tYvS9Oj8/lw\u002BhAZ/rSOseFlbROPls48r8mQfYB4evYMz1RyJulBixTS4HFQE3N5Im91MFRmNKRDpA6WCA5Bw=="
+    },
+    "PartitionKey": "ambientservices",
+    "RowKey": "3.1.49"
   },
   {
-    "PartitionKey": "aptacode.pathfinder",
-    "RowKey": "1.0.4-ci-20201127-220435",
     "Entity": {
       "Available": true,
       "CommitTimestamp": "2020-11-27T22:07:03.4184021+00:00",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 513,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "r8yXTUotEj9WNsAijvf9aMXr8hM5L6JhOxWh9WxgrN8="
+        },
+        {
+          "ActualCompressedLength": 1765,
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg==",
+          "SHA256": "wT3xYWiaVhaCtQRxFIgn7WPYDjiKVGWGTAbxChpkhkk="
+        },
+        {
+          "ActualCompressedLength": 12288,
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA==",
+          "SHA256": "rbP6wg1/AuyjdHe944pKEXL9LpQRUlvOHoXIgCMdbak="
+        },
+        {
+          "ActualCompressedLength": 12288,
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA==",
+          "SHA256": "M5\u002B9Bpd/ABA7M0E4EPFcM\u002BvLvyX9vHfkfIuomE9s96U="
+        },
+        {
+          "ActualCompressedLength": 12288,
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA==",
+          "SHA256": "ikfmSg/UtD0Jq/Sa6s37MGjtjAgBSpdGcV4Ov0BUd84="
+        },
+        {
+          "ActualCompressedLength": 12288,
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA==",
+          "SHA256": "j2nXtg5FRg0Rrz8qhJHAddD1gRZnG0rbjwvc7H7N1Ek="
+        },
+        {
+          "ActualCompressedLength": 465,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "pZlrOm75NHkBx0F3V4ZX1tGJUxxhvGu\u002BeKANLHevbzo="
+        },
+        {
+          "ActualCompressedLength": 698,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "ZWejP/BdP\u002BRrYuwQDeeC8n5zM22oXwKVEudBrz6bwmI="
+        },
+        {
+          "ActualCompressedLength": 9464,
+          "First16Bytes": "MIIk9AYJKoZIhvcNAQcCoA==",
+          "SHA256": "hCmapGGno\u002BBAypEXjpblAhU1\u002BPtB/4odkGcIO4S7SvQ="
+        }
+      ],
       "HttpHeaders": {
         "Content-Length": [
           "34419"
@@ -179,62 +224,57 @@
       "MD5": "IrdRTZgQ82uV1fvH9xuuKg==",
       "SHA1": "fnyRszO9lrF2YOzMCkY2A4i90ZM=",
       "SHA256": "k93pyQyT7u2dZWgS3HlGMa2SoG73w3c3GqIX2qi7Vmc=",
-      "SHA512": "OYfbTs4wEdLHacRURd1N1A0QCYuq/LM75aAuHZ0NgBbSM7DzeOe7pS6fKGtBghS5d\u002BVn0bzrAnMyCgJCd4H9gw==",
-      "EntryHashes": [
-        {
-          "ActualCompressedLength": 513,
-          "SHA256": "r8yXTUotEj9WNsAijvf9aMXr8hM5L6JhOxWh9WxgrN8=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 1765,
-          "SHA256": "wT3xYWiaVhaCtQRxFIgn7WPYDjiKVGWGTAbxChpkhkk=",
-          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
-        },
-        {
-          "ActualCompressedLength": 12288,
-          "SHA256": "rbP6wg1/AuyjdHe944pKEXL9LpQRUlvOHoXIgCMdbak=",
-          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
-        },
-        {
-          "ActualCompressedLength": 12288,
-          "SHA256": "M5\u002B9Bpd/ABA7M0E4EPFcM\u002BvLvyX9vHfkfIuomE9s96U=",
-          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
-        },
-        {
-          "ActualCompressedLength": 12288,
-          "SHA256": "ikfmSg/UtD0Jq/Sa6s37MGjtjAgBSpdGcV4Ov0BUd84=",
-          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
-        },
-        {
-          "ActualCompressedLength": 12288,
-          "SHA256": "j2nXtg5FRg0Rrz8qhJHAddD1gRZnG0rbjwvc7H7N1Ek=",
-          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
-        },
-        {
-          "ActualCompressedLength": 465,
-          "SHA256": "pZlrOm75NHkBx0F3V4ZX1tGJUxxhvGu\u002BeKANLHevbzo=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 698,
-          "SHA256": "ZWejP/BdP\u002BRrYuwQDeeC8n5zM22oXwKVEudBrz6bwmI=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 9464,
-          "SHA256": "hCmapGGno\u002BBAypEXjpblAhU1\u002BPtB/4odkGcIO4S7SvQ=",
-          "First16Bytes": "MIIk9AYJKoZIhvcNAQcCoA=="
-        }
-      ]
-    }
+      "SHA512": "OYfbTs4wEdLHacRURd1N1A0QCYuq/LM75aAuHZ0NgBbSM7DzeOe7pS6fKGtBghS5d\u002BVn0bzrAnMyCgJCd4H9gw=="
+    },
+    "PartitionKey": "aptacode.pathfinder",
+    "RowKey": "1.0.4-ci-20201127-220435"
   },
   {
-    "PartitionKey": "dnt.deskly.efcore.services",
-    "RowKey": "1.1.3",
     "Entity": {
       "Available": true,
       "CommitTimestamp": "2020-11-27T22:01:44.950465+00:00",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 520,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "lhg4sDJtmsuiCULY4dQLNE6n6\u002ByQ4z2eet4sthCZ/qI="
+        },
+        {
+          "ActualCompressedLength": 1050,
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg==",
+          "SHA256": "ob2yxzQRkBt2QTyF2tR1\u002BHecbUzRLmQbOnqsz42L7Uk="
+        },
+        {
+          "ActualCompressedLength": 25600,
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA==",
+          "SHA256": "czByYtLhplRCELqAw7JP56JTidnaFM3bPqWZ6cEwnGI="
+        },
+        {
+          "ActualCompressedLength": 17,
+          "First16Bytes": "IyBNYXJrZG93biBGaWxlDQ==",
+          "SHA256": "9sjgiVjwGhRI6KW3xvf6OrcSHKnkEN3cSNEKS6sEf2U="
+        },
+        {
+          "ActualCompressedLength": 263319,
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg==",
+          "SHA256": "EreX9hm/WNSQ0jMIK7uFEbQclgD8ix6OAeK1mzfDBvs="
+        },
+        {
+          "ActualCompressedLength": 590,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "EVdBX1yvICzKoTy3W\u002BDQ2iP07cxRXPXWz3cTcqhJQ88="
+        },
+        {
+          "ActualCompressedLength": 812,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "mzLFQ78mLbw3dKJmuCkcmbn8/N65JvswHy8wo7UrdHM="
+        },
+        {
+          "ActualCompressedLength": 9467,
+          "First16Bytes": "MIIk9wYJKoZIhvcNAQcCoA==",
+          "SHA256": "mFHcf5N2QHIzuaglICw99n4\u002B2VU8ieCXfZnIIKonZWU="
+        }
+      ],
       "HttpHeaders": {
         "Content-Length": [
           "281432"
@@ -264,57 +304,57 @@
       "MD5": "VPAjZkaFnpP8/Q3vOxxxaA==",
       "SHA1": "rnXvmgEj8tGDg6xzdlCcp4oxpbA=",
       "SHA256": "nJnJLgXcFDPZDqxfiXmsm7/IIyTifQpKu\u002B4diB4meNM=",
-      "SHA512": "40TPBUtafm/EXUqIyigAI89\u002Bi0jyEFymMpoqeLx29YLUouK3zkSVz8Q3OVJc3f4XnuvmeoZD1N8leQx0tlx\u002BTQ==",
-      "EntryHashes": [
-        {
-          "ActualCompressedLength": 520,
-          "SHA256": "lhg4sDJtmsuiCULY4dQLNE6n6\u002ByQ4z2eet4sthCZ/qI=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 1050,
-          "SHA256": "ob2yxzQRkBt2QTyF2tR1\u002BHecbUzRLmQbOnqsz42L7Uk=",
-          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
-        },
-        {
-          "ActualCompressedLength": 25600,
-          "SHA256": "czByYtLhplRCELqAw7JP56JTidnaFM3bPqWZ6cEwnGI=",
-          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
-        },
-        {
-          "ActualCompressedLength": 17,
-          "SHA256": "9sjgiVjwGhRI6KW3xvf6OrcSHKnkEN3cSNEKS6sEf2U=",
-          "First16Bytes": "IyBNYXJrZG93biBGaWxlDQ=="
-        },
-        {
-          "ActualCompressedLength": 263319,
-          "SHA256": "EreX9hm/WNSQ0jMIK7uFEbQclgD8ix6OAeK1mzfDBvs=",
-          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
-        },
-        {
-          "ActualCompressedLength": 590,
-          "SHA256": "EVdBX1yvICzKoTy3W\u002BDQ2iP07cxRXPXWz3cTcqhJQ88=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 812,
-          "SHA256": "mzLFQ78mLbw3dKJmuCkcmbn8/N65JvswHy8wo7UrdHM=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 9467,
-          "SHA256": "mFHcf5N2QHIzuaglICw99n4\u002B2VU8ieCXfZnIIKonZWU=",
-          "First16Bytes": "MIIk9wYJKoZIhvcNAQcCoA=="
-        }
-      ]
-    }
+      "SHA512": "40TPBUtafm/EXUqIyigAI89\u002Bi0jyEFymMpoqeLx29YLUouK3zkSVz8Q3OVJc3f4XnuvmeoZD1N8leQx0tlx\u002BTQ=="
+    },
+    "PartitionKey": "dnt.deskly.efcore.services",
+    "RowKey": "1.1.3"
   },
   {
-    "PartitionKey": "dogged",
-    "RowKey": "0.1.0",
     "Entity": {
       "Available": true,
       "CommitTimestamp": "2020-11-27T22:09:56.3587144+00:00",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 500,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "wKrX/IUERlP6Ff1bBpLDjaeV7fdcCbGGLlKuK3HdbMw="
+        },
+        {
+          "ActualCompressedLength": 1267,
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg==",
+          "SHA256": "f/ChMkDfYnBwBHFtAVghIE6oZqZOUvjQ55coSr0Gd2k="
+        },
+        {
+          "ActualCompressedLength": 44032,
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA==",
+          "SHA256": "6c1cMKL6chZhT8sZHMJr6abr1ph3bO7lZ2\u002B\u002BwxP\u002BMpc="
+        },
+        {
+          "ActualCompressedLength": 44032,
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA==",
+          "SHA256": "vyMPATlzgbm7XsGcCWakcO\u002BZKFEYk9p2AN4ixjd07ZQ="
+        },
+        {
+          "ActualCompressedLength": 20335,
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg==",
+          "SHA256": "t/g0/fHU2GEv7LBJeS6rH4qO8241GMmzuMhzlQV5GQ0="
+        },
+        {
+          "ActualCompressedLength": 528,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "o3SWwcGYHUfT/TUT0rFnafAeFe3bsyiE/qt7EyNc2co="
+        },
+        {
+          "ActualCompressedLength": 661,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "54nZkbMc4nFfK6EjSx\u002BLNhXm2gOv/3NceRon66r1jTs="
+        },
+        {
+          "ActualCompressedLength": 9464,
+          "First16Bytes": "MIIk9AYJKoZIhvcNAQcCoA==",
+          "SHA256": "6RGdAE5x7esyM1rqM0jzrsgIjQd5M3WylWvUq\u002B4rPGU="
+        }
+      ],
       "HttpHeaders": {
         "Content-Length": [
           "71556"
@@ -344,57 +384,57 @@
       "MD5": "zIhPDWG\u002BkYNznYsPE5Adow==",
       "SHA1": "PmJmhmseYkI0UhwqHzPPum8sZYE=",
       "SHA256": "/s6BhPS9/DuFFxXjPpx7yMuLQtg21FGpwO/Gk0MIQ4o=",
-      "SHA512": "XnAn8XrmHhkx0WKnWccWY0bXwpaaANTLmSdezYkn0c7p8na4CftJykIpmaaExd4yT0AwDHieBRg/y4l5RssJTA==",
-      "EntryHashes": [
-        {
-          "ActualCompressedLength": 500,
-          "SHA256": "wKrX/IUERlP6Ff1bBpLDjaeV7fdcCbGGLlKuK3HdbMw=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 1267,
-          "SHA256": "f/ChMkDfYnBwBHFtAVghIE6oZqZOUvjQ55coSr0Gd2k=",
-          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
-        },
-        {
-          "ActualCompressedLength": 44032,
-          "SHA256": "6c1cMKL6chZhT8sZHMJr6abr1ph3bO7lZ2\u002B\u002BwxP\u002BMpc=",
-          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
-        },
-        {
-          "ActualCompressedLength": 44032,
-          "SHA256": "vyMPATlzgbm7XsGcCWakcO\u002BZKFEYk9p2AN4ixjd07ZQ=",
-          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
-        },
-        {
-          "ActualCompressedLength": 20335,
-          "SHA256": "t/g0/fHU2GEv7LBJeS6rH4qO8241GMmzuMhzlQV5GQ0=",
-          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
-        },
-        {
-          "ActualCompressedLength": 528,
-          "SHA256": "o3SWwcGYHUfT/TUT0rFnafAeFe3bsyiE/qt7EyNc2co=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 661,
-          "SHA256": "54nZkbMc4nFfK6EjSx\u002BLNhXm2gOv/3NceRon66r1jTs=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 9464,
-          "SHA256": "6RGdAE5x7esyM1rqM0jzrsgIjQd5M3WylWvUq\u002B4rPGU=",
-          "First16Bytes": "MIIk9AYJKoZIhvcNAQcCoA=="
-        }
-      ]
-    }
+      "SHA512": "XnAn8XrmHhkx0WKnWccWY0bXwpaaANTLmSdezYkn0c7p8na4CftJykIpmaaExd4yT0AwDHieBRg/y4l5RssJTA=="
+    },
+    "PartitionKey": "dogged",
+    "RowKey": "0.1.0"
   },
   {
-    "PartitionKey": "dogged.native",
-    "RowKey": "0.1.0",
     "Entity": {
       "Available": true,
       "CommitTimestamp": "2020-11-27T22:09:02.7017175+00:00",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 507,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "YrdbE94wdNq8UxgsNkN74CitaLAQJtcFlG46qDJ64Io="
+        },
+        {
+          "ActualCompressedLength": 1193,
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg==",
+          "SHA256": "x/\u002BOT//J/xSgVXL35UAaLlpgTNGGwRsOOZJHQv2hv3o="
+        },
+        {
+          "ActualCompressedLength": 19456,
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA==",
+          "SHA256": "gEBd5oRuOahFqtgjjnzcpS97UypqV4qTqCrFcXhBMgw="
+        },
+        {
+          "ActualCompressedLength": 19456,
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA==",
+          "SHA256": "xQcrhJhGpaKtFgtJSDcXcfw6XUtsjwgTUDC0p0hyNZM="
+        },
+        {
+          "ActualCompressedLength": 19054,
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg==",
+          "SHA256": "SMzddhr6p9AuFa/2fR9IUFnpic2W8pxHmvv3uqe0Rwo="
+        },
+        {
+          "ActualCompressedLength": 528,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "o3SWwcGYHUfT/TUT0rFnafAeFe3bsyiE/qt7EyNc2co="
+        },
+        {
+          "ActualCompressedLength": 642,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "LUJWJdOuQSt\u002BVvtdWWsbcRNv4g8AtZhiHjSpwm/ESPE="
+        },
+        {
+          "ActualCompressedLength": 9464,
+          "First16Bytes": "MIIk9AYJKoZIhvcNAQcCoA==",
+          "SHA256": "b/n/7KgJTGIWzp/HuCvwj3wBbcT5X8N8O0nAvKLEwg8="
+        }
+      ],
       "HttpHeaders": {
         "Content-Length": [
           "47622"
@@ -424,57 +464,72 @@
       "MD5": "WrD9rk2nPKi5OyiE1ys2Ow==",
       "SHA1": "Kvdm1XnanFD8nUl1NtxXJhDrCA8=",
       "SHA256": "sTQ01tpNaov05ekplJVjWdaD51KJNDYzhEQ69ozQTs4=",
-      "SHA512": "DvVD0sP87v7bCPz\u002BTfURCUlfJPFOIX2LEeBVl43CSrxM5csQidUMyxgO8P\u002B/7zPe44g2SaX1W0wLLrJbZUS2iw==",
-      "EntryHashes": [
-        {
-          "ActualCompressedLength": 507,
-          "SHA256": "YrdbE94wdNq8UxgsNkN74CitaLAQJtcFlG46qDJ64Io=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 1193,
-          "SHA256": "x/\u002BOT//J/xSgVXL35UAaLlpgTNGGwRsOOZJHQv2hv3o=",
-          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
-        },
-        {
-          "ActualCompressedLength": 19456,
-          "SHA256": "gEBd5oRuOahFqtgjjnzcpS97UypqV4qTqCrFcXhBMgw=",
-          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
-        },
-        {
-          "ActualCompressedLength": 19456,
-          "SHA256": "xQcrhJhGpaKtFgtJSDcXcfw6XUtsjwgTUDC0p0hyNZM=",
-          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
-        },
-        {
-          "ActualCompressedLength": 19054,
-          "SHA256": "SMzddhr6p9AuFa/2fR9IUFnpic2W8pxHmvv3uqe0Rwo=",
-          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
-        },
-        {
-          "ActualCompressedLength": 528,
-          "SHA256": "o3SWwcGYHUfT/TUT0rFnafAeFe3bsyiE/qt7EyNc2co=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 642,
-          "SHA256": "LUJWJdOuQSt\u002BVvtdWWsbcRNv4g8AtZhiHjSpwm/ESPE=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 9464,
-          "SHA256": "b/n/7KgJTGIWzp/HuCvwj3wBbcT5X8N8O0nAvKLEwg8=",
-          "First16Bytes": "MIIk9AYJKoZIhvcNAQcCoA=="
-        }
-      ]
-    }
+      "SHA512": "DvVD0sP87v7bCPz\u002BTfURCUlfJPFOIX2LEeBVl43CSrxM5csQidUMyxgO8P\u002B/7zPe44g2SaX1W0wLLrJbZUS2iw=="
+    },
+    "PartitionKey": "dogged.native",
+    "RowKey": "0.1.0"
   },
   {
-    "PartitionKey": "esolutions.alexandria.logic",
-    "RowKey": "1.0.0",
     "Entity": {
       "Available": true,
       "CommitTimestamp": "2020-11-27T22:00:05.4957339+00:00",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 521,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "CBuh61d4pQdXS/zP1Sp0c2MSnq4mUPLkYvJXdIUO9iw="
+        },
+        {
+          "ActualCompressedLength": 1179,
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg==",
+          "SHA256": "Vql3fEKJO69zv/16UlKPqpinOK8VaiodVFzQLUMI38o="
+        },
+        {
+          "ActualCompressedLength": 5632,
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA==",
+          "SHA256": "jUWiUnmaH7oAPNZdYM/6g9N/8eK7hhhdQyNBvcr/ixo="
+        },
+        {
+          "ActualCompressedLength": 9216,
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA==",
+          "SHA256": "w3sQv2kemc0uK1Mi3MrXrOhrMDBzGGsBMxvhXXa0XC0="
+        },
+        {
+          "ActualCompressedLength": 6144,
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA==",
+          "SHA256": "Kvs9QLLeZQ2LWzXw7fiAiNodBNTPyju0zFu3rgNhfO0="
+        },
+        {
+          "ActualCompressedLength": 19456,
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA==",
+          "SHA256": "BcE3gBS2b9XYvS5mtMrxofVeXmilLPzTKBkmi8eZ0FM="
+        },
+        {
+          "ActualCompressedLength": 4608,
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA==",
+          "SHA256": "GE7\u002BmcGeXPUBrCLXSkuRx7aq20K1ciGFjV13jD/eWEs="
+        },
+        {
+          "ActualCompressedLength": 57563,
+          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg==",
+          "SHA256": "lsGHIrjbMgZLaMZ\u002BO4PWrPjXztPd/YOsmZ437j8dXhA="
+        },
+        {
+          "ActualCompressedLength": 528,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "o3SWwcGYHUfT/TUT0rFnafAeFe3bsyiE/qt7EyNc2co="
+        },
+        {
+          "ActualCompressedLength": 660,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "f0LOVGZvpr8vLrcxSwRCIj5/6A4r9Qp51WiDIM7oK1s="
+        },
+        {
+          "ActualCompressedLength": 9466,
+          "First16Bytes": "MIIk9gYJKoZIhvcNAQcCoA==",
+          "SHA256": "FB7BUoIp5crqa\u002B8xZFxFoWV\u002BeTFzmLUSBuvczELLRZ0="
+        }
+      ],
       "HttpHeaders": {
         "Content-Length": [
           "75241"
@@ -504,72 +559,47 @@
       "MD5": "E/wATLHYAa/tDUdCnTWHsw==",
       "SHA1": "q3kGkeoIFJ\u002B7RefRxH8l7scroO4=",
       "SHA256": "Nq4YCpAjKGX\u002Boq43muUfiF8aslpdmOPk/AedyuR8ZA4=",
-      "SHA512": "a5QIkT5ONyAT/CTVG2jShoCzG6/p9U7owaMvhprIhEx4LdrU10OtSHjJ1fEXUfoesz0CuV68eEM/8ypxzvM/RQ==",
-      "EntryHashes": [
-        {
-          "ActualCompressedLength": 521,
-          "SHA256": "CBuh61d4pQdXS/zP1Sp0c2MSnq4mUPLkYvJXdIUO9iw=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 1179,
-          "SHA256": "Vql3fEKJO69zv/16UlKPqpinOK8VaiodVFzQLUMI38o=",
-          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
-        },
-        {
-          "ActualCompressedLength": 5632,
-          "SHA256": "jUWiUnmaH7oAPNZdYM/6g9N/8eK7hhhdQyNBvcr/ixo=",
-          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
-        },
-        {
-          "ActualCompressedLength": 9216,
-          "SHA256": "w3sQv2kemc0uK1Mi3MrXrOhrMDBzGGsBMxvhXXa0XC0=",
-          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
-        },
-        {
-          "ActualCompressedLength": 6144,
-          "SHA256": "Kvs9QLLeZQ2LWzXw7fiAiNodBNTPyju0zFu3rgNhfO0=",
-          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
-        },
-        {
-          "ActualCompressedLength": 19456,
-          "SHA256": "BcE3gBS2b9XYvS5mtMrxofVeXmilLPzTKBkmi8eZ0FM=",
-          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
-        },
-        {
-          "ActualCompressedLength": 4608,
-          "SHA256": "GE7\u002BmcGeXPUBrCLXSkuRx7aq20K1ciGFjV13jD/eWEs=",
-          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
-        },
-        {
-          "ActualCompressedLength": 57563,
-          "SHA256": "lsGHIrjbMgZLaMZ\u002BO4PWrPjXztPd/YOsmZ437j8dXhA=",
-          "First16Bytes": "iVBORw0KGgoAAAANSUhEUg=="
-        },
-        {
-          "ActualCompressedLength": 528,
-          "SHA256": "o3SWwcGYHUfT/TUT0rFnafAeFe3bsyiE/qt7EyNc2co=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 660,
-          "SHA256": "f0LOVGZvpr8vLrcxSwRCIj5/6A4r9Qp51WiDIM7oK1s=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 9466,
-          "SHA256": "FB7BUoIp5crqa\u002B8xZFxFoWV\u002BeTFzmLUSBuvczELLRZ0=",
-          "First16Bytes": "MIIk9gYJKoZIhvcNAQcCoA=="
-        }
-      ]
-    }
+      "SHA512": "a5QIkT5ONyAT/CTVG2jShoCzG6/p9U7owaMvhprIhEx4LdrU10OtSHjJ1fEXUfoesz0CuV68eEM/8ypxzvM/RQ=="
+    },
+    "PartitionKey": "esolutions.alexandria.logic",
+    "RowKey": "1.0.0"
   },
   {
-    "PartitionKey": "gosms.ge-sms-api",
-    "RowKey": "1.0.1",
     "Entity": {
       "Available": true,
       "CommitTimestamp": "2020-11-27T22:04:27.1811992+00:00",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 510,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "uoofU0rMhn\u002Bc9pp7pFGG\u002BBuDuoi/O6Jq7GRyBLaJRKs="
+        },
+        {
+          "ActualCompressedLength": 492,
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg==",
+          "SHA256": "h/cSqvSufl22bFRfOs7fJZhuZgHLW7txa3c6oJ\u002BFXZE="
+        },
+        {
+          "ActualCompressedLength": 4096,
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA==",
+          "SHA256": "9kP75xvVaoUKXSYV\u002BhulEkFETV2FzKhPo8zVjUZtCCw="
+        },
+        {
+          "ActualCompressedLength": 465,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "pZlrOm75NHkBx0F3V4ZX1tGJUxxhvGu\u002BeKANLHevbzo="
+        },
+        {
+          "ActualCompressedLength": 673,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "T2zeS2kYgZr8filvghZI\u002BXN\u002Bxwy7QMdCE8SJu5/aSH4="
+        },
+        {
+          "ActualCompressedLength": 9462,
+          "First16Bytes": "MIIk8gYJKoZIhvcNAQcCoA==",
+          "SHA256": "ghG/rDm6ChY7mIxXNXsYdhVKB2VO5lpYlT2PrQE9f9k="
+        }
+      ],
       "HttpHeaders": {
         "Content-Length": [
           "12928"
@@ -599,47 +629,52 @@
       "MD5": "fD1jwtn86zRhgA3\u002By1Pxnw==",
       "SHA1": "2tno8cNpHklw/sJFcyC2yqK69ig=",
       "SHA256": "I6CRO0rrh6kbOFoxHMFkIYhzK0ZT3/jpuLWNhIpTEzI=",
-      "SHA512": "2bCFQabDEA4LZUuTbwWtj7U5waT/xO/6mhVTtXHm/AHDpkVtm8Och6kkewyNZOjFIiRWb8yCER9CMmE11BIgFg==",
-      "EntryHashes": [
-        {
-          "ActualCompressedLength": 510,
-          "SHA256": "uoofU0rMhn\u002Bc9pp7pFGG\u002BBuDuoi/O6Jq7GRyBLaJRKs=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 492,
-          "SHA256": "h/cSqvSufl22bFRfOs7fJZhuZgHLW7txa3c6oJ\u002BFXZE=",
-          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
-        },
-        {
-          "ActualCompressedLength": 4096,
-          "SHA256": "9kP75xvVaoUKXSYV\u002BhulEkFETV2FzKhPo8zVjUZtCCw=",
-          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
-        },
-        {
-          "ActualCompressedLength": 465,
-          "SHA256": "pZlrOm75NHkBx0F3V4ZX1tGJUxxhvGu\u002BeKANLHevbzo=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 673,
-          "SHA256": "T2zeS2kYgZr8filvghZI\u002BXN\u002Bxwy7QMdCE8SJu5/aSH4=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 9462,
-          "SHA256": "ghG/rDm6ChY7mIxXNXsYdhVKB2VO5lpYlT2PrQE9f9k=",
-          "First16Bytes": "MIIk8gYJKoZIhvcNAQcCoA=="
-        }
-      ]
-    }
+      "SHA512": "2bCFQabDEA4LZUuTbwWtj7U5waT/xO/6mhVTtXHm/AHDpkVtm8Och6kkewyNZOjFIiRWb8yCER9CMmE11BIgFg=="
+    },
+    "PartitionKey": "gosms.ge-sms-api",
+    "RowKey": "1.0.1"
   },
   {
-    "PartitionKey": "p6m7g8.p6namer",
-    "RowKey": "0.2.1",
     "Entity": {
       "Available": true,
       "CommitTimestamp": "2020-11-27T22:00:54.8558302+00:00",
+      "EntryHashes": [
+        {
+          "ActualCompressedLength": 504,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "bRCVLxaKSrgFiIbCQ4Rsm/DsNiLjNdfYeSI4X9hAEiY="
+        },
+        {
+          "ActualCompressedLength": 1476,
+          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg==",
+          "SHA256": "RaQa/PuEV/LV/5d0lmgSZv/HRNUGxoZcqrd8RZSLLGs="
+        },
+        {
+          "ActualCompressedLength": 7449600,
+          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA==",
+          "SHA256": "yeRJ8ZO29ECU2iluNYvP2gM6DuWt0RbFnDLYDQKVtoQ="
+        },
+        {
+          "ActualCompressedLength": 4860,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "VGqtW2BKymK1tMMjNQK7TVp/2rKkywjdhb1XEolKXaQ="
+        },
+        {
+          "ActualCompressedLength": 521,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "o3FE4GurvvBteLgVZMGTSBLtEdjmw41tiXuppa0kTZ0="
+        },
+        {
+          "ActualCompressedLength": 711,
+          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ==",
+          "SHA256": "Tb5wLr92lm6VWorYVNCkek2qoQW7UE\u002BJ\u002B98M01y\u002BKGM="
+        },
+        {
+          "ActualCompressedLength": 9465,
+          "First16Bytes": "MIIk9QYJKoZIhvcNAQcCoA==",
+          "SHA256": "CB3K3tQxLqXCy5gA2i2sdUBh9rMRV00UyOV0mMOgfOQ="
+        }
+      ],
       "HttpHeaders": {
         "Content-Length": [
           "7453614"
@@ -669,44 +704,9 @@
       "MD5": "hk\u002B\u002BFE3loyu4UjGZ2/smFg==",
       "SHA1": "VSVty9a1z\u002BIvv1tmhZHDHiMBgws=",
       "SHA256": "uN\u002B0dOWK0v\u002BHeW6pl/0B2ZSNaxANYIx\u002BfsEeG6\u002BKDqM=",
-      "SHA512": "JjosxhIBYhPM42h7/3IGHnYzIKuMjZfDL/qGHBa4fyegBU/z6ephjTulqBuCvIbdtL1fRPVRxJ27vvDGpRH5vg==",
-      "EntryHashes": [
-        {
-          "ActualCompressedLength": 504,
-          "SHA256": "bRCVLxaKSrgFiIbCQ4Rsm/DsNiLjNdfYeSI4X9hAEiY=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 1476,
-          "SHA256": "RaQa/PuEV/LV/5d0lmgSZv/HRNUGxoZcqrd8RZSLLGs=",
-          "First16Bytes": "77u/PD94bWwgdmVyc2lvbg=="
-        },
-        {
-          "ActualCompressedLength": 7449600,
-          "SHA256": "yeRJ8ZO29ECU2iluNYvP2gM6DuWt0RbFnDLYDQKVtoQ=",
-          "First16Bytes": "TVqQAAMAAAAEAAAA//8AAA=="
-        },
-        {
-          "ActualCompressedLength": 4860,
-          "SHA256": "VGqtW2BKymK1tMMjNQK7TVp/2rKkywjdhb1XEolKXaQ=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 521,
-          "SHA256": "o3FE4GurvvBteLgVZMGTSBLtEdjmw41tiXuppa0kTZ0=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 711,
-          "SHA256": "Tb5wLr92lm6VWorYVNCkek2qoQW7UE\u002BJ\u002B98M01y\u002BKGM=",
-          "First16Bytes": "PD94bWwgdmVyc2lvbj0iMQ=="
-        },
-        {
-          "ActualCompressedLength": 9465,
-          "SHA256": "CB3K3tQxLqXCy5gA2i2sdUBh9rMRV00UyOV0mMOgfOQ=",
-          "First16Bytes": "MIIk9QYJKoZIhvcNAQcCoA=="
-        }
-      ]
-    }
+      "SHA512": "JjosxhIBYhPM42h7/3IGHnYzIKuMjZfDL/qGHBa4fyegBU/z6ephjTulqBuCvIbdtL1fRPVRxJ27vvDGpRH5vg=="
+    },
+    "PartitionKey": "p6m7g8.p6namer",
+    "RowKey": "0.2.1"
   }
 ]

@@ -20,15 +20,15 @@ namespace NuGet.Insights.Worker.TimedReprocess
         {
             // Arrange
             await CatalogScanService.InitializeAsync();
-            var min0 = DateTimeOffset.Parse("2018-12-06T03:17:32.1388561Z", CultureInfo.InvariantCulture);
-            var max1 = DateTimeOffset.Parse("2018-12-06T03:17:41.9986142Z", CultureInfo.InvariantCulture);
+            var min0 = DateTimeOffset.Parse("2024-04-25T02:12:34.0496440Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2024-04-25T02:13:04.3170295Z", CultureInfo.InvariantCulture);
             await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);
             var initialLbp = await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, max1);
             await SetCursorsForTimedProcessDriversAsync(max1);
 
             await TimedReprocessService.InitializeAsync();
 
-            var buckets = new[] { 375, 401, 826, 827, 828, 829 };
+            var buckets = new[] { 177, 178, 402, 541, 756 };
             await SetNextBucketsAsync(buckets);
 
             // Act
@@ -54,7 +54,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
                 var (reprocessScan, indexScan) = tuple;
                 Assert.True(reprocessScan.Completed);
                 Assert.Equal(CatalogIndexScanState.Complete, indexScan.State);
-                Assert.Equal("375,401,826-829", indexScan.BucketRanges);
+                Assert.Equal("177-178,402,541,756", indexScan.BucketRanges);
                 Assert.Equal(indexScan.DriverType, reprocessScan.DriverType);
                 Assert.Equal(indexScan.ScanId, reprocessScan.ScanId);
                 Assert.Equal(indexScan.StorageSuffix, reprocessScan.StorageSuffix);
@@ -121,8 +121,8 @@ namespace NuGet.Insights.Worker.TimedReprocess
         {
             // Arrange
             await CatalogScanService.InitializeAsync();
-            var min0 = DateTimeOffset.Parse("2018-12-06T03:17:32.1388561Z", CultureInfo.InvariantCulture);
-            var max1 = DateTimeOffset.Parse("2018-12-06T03:17:41.9986142Z", CultureInfo.InvariantCulture);
+            var min0 = DateTimeOffset.Parse("2024-04-25T02:12:34.0496440Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2024-04-25T02:13:04.3170295Z", CultureInfo.InvariantCulture);
             await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);
             var initialLbp = await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, max1);
 
@@ -133,7 +133,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
 
             await TimedReprocessService.InitializeAsync();
 
-            var buckets = new[] { 375, 401, 826, 827, 828, 829 };
+            var buckets = new[] { 177, 178, 402, 541, 756 };
             await SetNextBucketsAsync(buckets);
 
             // Act
@@ -160,7 +160,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
             Assert.Null(lspa[0].BucketRanges);
             Assert.Equal(CatalogClient.NuGetOrgMinDeleted, lspa[1].Min);
             Assert.Equal(max1, lspa[1].Max);
-            Assert.Equal("375,401,826-829", lspa[1].BucketRanges);
+            Assert.Equal("177-178,402,541,756", lspa[1].BucketRanges);
             Assert.True(lspa[0].Completed <= lspa[1].Created);
         }
 
@@ -174,15 +174,15 @@ namespace NuGet.Insights.Worker.TimedReprocess
             };
 
             await CatalogScanService.InitializeAsync();
-            var min0 = DateTimeOffset.Parse("2018-12-06T03:17:32.1388561Z", CultureInfo.InvariantCulture);
-            var max1 = DateTimeOffset.Parse("2018-12-06T03:17:41.9986142Z", CultureInfo.InvariantCulture);
+            var min0 = DateTimeOffset.Parse("2024-04-25T02:12:34.0496440Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2024-04-25T02:13:04.3170295Z", CultureInfo.InvariantCulture);
             await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);
             var initialLbp = await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, max1);
             await SetCursorAsync(CatalogScanDriverType.LoadPackageReadme, max1);
 
             await TimedReprocessService.InitializeAsync();
 
-            var buckets = new[] { 375, 401, 826, 827, 828, 829 };
+            var buckets = new[] { 177, 178, 402, 541, 756 };
 
             // Act
             var runA = await TimedReprocessService.StartAsync(buckets);
@@ -191,7 +191,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
             // Assert
             await AssertPackageReadmeTableAsync(TimedReprocess_SameBucketRangesDir, Step1, "PackageReadmes.json");
             await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_SameBucketRangesDir, Step1, "PackageReadmes.csv");
-            Assert.Equal("375,401,826-829", runA.BucketRanges);
+            Assert.Equal("177-178,402,541,756", runA.BucketRanges);
 
             var metric = TelemetryClient.Metrics[new("AppendResultStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
             var value = Assert.Single(metric.MetricValues);
@@ -205,7 +205,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
             // Assert
             await AssertPackageReadmeTableAsync(TimedReprocess_SameBucketRangesDir, Step1, "PackageReadmes.json"); // data is unchanged
             await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_SameBucketRangesDir, Step1, "PackageReadmes.csv"); // data is unchanged
-            Assert.Equal("375,401,826-829", runA.BucketRanges);
+            Assert.Equal("177-178,402,541,756", runA.BucketRanges);
 
             value = Assert.Single(metric.MetricValues);
             Assert.Equal(0, value.MetricValue);
@@ -221,16 +221,16 @@ namespace NuGet.Insights.Worker.TimedReprocess
             };
 
             await CatalogScanService.InitializeAsync();
-            var min0 = DateTimeOffset.Parse("2018-12-06T03:17:32.1388561Z", CultureInfo.InvariantCulture);
-            var max1 = DateTimeOffset.Parse("2018-12-06T03:17:41.9986142Z", CultureInfo.InvariantCulture);
+            var min0 = DateTimeOffset.Parse("2024-04-25T02:12:34.0496440Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2024-04-25T02:13:04.3170295Z", CultureInfo.InvariantCulture);
             await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);
             var initialLbp = await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, max1);
             await SetCursorAsync(CatalogScanDriverType.LoadPackageReadme, max1);
 
             await TimedReprocessService.InitializeAsync();
 
-            var bucketsA = new[] { 375, 401, 826 };
-            var bucketsB = new[] { 827, 828, 829 };
+            var bucketsA = new[] { 177, 178, 402 };
+            var bucketsB = new[] { 541, 756 };
 
             // Act
             var runA = await TimedReprocessService.StartAsync(bucketsA);
@@ -239,7 +239,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
             // Assert
             await AssertPackageReadmeTableAsync(TimedReprocess_SubsequentBucketRangesDir, Step1, "PackageReadmes.json");
             await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_SubsequentBucketRangesDir, Step1, "PackageReadmes.csv");
-            Assert.Equal("375,401,826", runA.BucketRanges);
+            Assert.Equal("177-178,402", runA.BucketRanges);
 
             // Act
             var runB = await TimedReprocessService.StartAsync(bucketsB);
@@ -248,7 +248,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
             // Assert
             await AssertPackageReadmeTableAsync(TimedReprocess_SubsequentBucketRangesDir, Step2, "PackageReadmes.json");
             await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_SubsequentBucketRangesDir, Step2, "PackageReadmes.csv");
-            Assert.Equal("827-829", runB.BucketRanges);
+            Assert.Equal("541,756", runB.BucketRanges);
         }
 
         [Fact]
@@ -261,15 +261,15 @@ namespace NuGet.Insights.Worker.TimedReprocess
             };
 
             await CatalogScanService.InitializeAsync();
-            var min0 = DateTimeOffset.Parse("2018-12-06T03:17:32.1388561Z", CultureInfo.InvariantCulture);
-            var max1 = DateTimeOffset.Parse("2018-12-06T03:17:41.9986142Z", CultureInfo.InvariantCulture);
+            var min0 = DateTimeOffset.Parse("2024-04-25T02:12:34.0496440Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2024-04-25T02:13:04.3170295Z", CultureInfo.InvariantCulture);
             await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);
             var initialLbp = await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, max1);
             await SetCursorAsync(CatalogScanDriverType.LoadPackageReadme, max1);
 
             await TimedReprocessService.InitializeAsync();
 
-            var buckets = new[] { 375 };
+            var buckets = new[] { 402 };
             var latestRun = await TimedReprocessService.StartAsync(buckets);
             latestRun = await UpdateAsync(latestRun);
 

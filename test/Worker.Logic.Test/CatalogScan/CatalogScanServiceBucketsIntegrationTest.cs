@@ -17,12 +17,12 @@ namespace NuGet.Insights.Worker
             public async Task CatalogScanService_UpdateWithBucketRanges()
             {
                 // Arrange
-                var min0 = DateTimeOffset.Parse("2018-12-06T03:17:32.1388561Z", CultureInfo.InvariantCulture);
-                var max1 = DateTimeOffset.Parse("2018-12-06T03:17:41.9986142Z", CultureInfo.InvariantCulture);
+                var min0 = DateTimeOffset.Parse("2024-04-25T02:12:34.0496440Z", CultureInfo.InvariantCulture);
+                var max1 = DateTimeOffset.Parse("2024-04-25T02:13:04.3170295Z", CultureInfo.InvariantCulture);
                 var driverType = CatalogScanDriverType.PackageSignatureToCsv;
                 var scanId = "my-scan-id";
                 var storageSuffix = "zz";
-                var buckets = new[] { 375, 401, 826, 827, 828, 829 };
+                var buckets = new[] { 177, 178, 402, 541, 756 };
 
                 await CatalogScanService.InitializeAsync();
                 await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);
@@ -58,9 +58,9 @@ namespace NuGet.Insights.Worker
                     .ToList();
                 var csvLines = csvContent.Split('\n').Select(x => x.Trim()).Where(x => x.Length > 0).Skip(1).ToList();
 
-                Assert.Equal(7, bucketedPackages.Count);
-                Assert.Equal(7, packageArchiveEntities.Count);
-                Assert.Equal(7, csvLines.Count);
+                Assert.Equal(5, bucketedPackages.Count);
+                Assert.Equal(5, packageArchiveEntities.Count);
+                Assert.Equal(5, csvLines.Count);
                 Assert.All(bucketedPackages.Zip(packageArchiveEntities, csvLines), tuple =>
                 {
                     var (bp, pa, csvLine) = tuple;

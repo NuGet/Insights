@@ -453,20 +453,6 @@ namespace NuGet.Insights
             Assert.Empty(logMessages);
         }
 
-        public static string SerializeTestJson(object obj)
-        {
-            var json = JsonSerializer.Serialize(obj, new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                Converters =
-                {
-                    new JsonStringEnumConverter(),
-                },
-            });
-
-            return json.Replace("\r\n", "\n", StringComparison.Ordinal);
-        }
-
         public static HttpRequestMessage Clone(HttpRequestMessage req)
         {
             var clone = new HttpRequestMessage(req.Method, req.RequestUri)

@@ -1,72 +1,105 @@
 [
   {
-    "PartitionKey": "dawnx.npoi",
-    "RowKey": "1.0.10",
-    "Entity": {
-      "Available": false,
-      "CommitTimestamp": null,
-      "HttpHeaders": null,
-      "MZipHash": null
-    }
+    "Entity": {},
+    "PartitionKey": "mgcframework.blazor",
+    "RowKey": "1.2.0"
   },
   {
-    "PartitionKey": "dawnx.npoi",
-    "RowKey": "1.0.5.3",
-    "Entity": {
-      "Available": false,
-      "CommitTimestamp": null,
-      "HttpHeaders": null,
-      "MZipHash": null
-    }
+    "Entity": {},
+    "PartitionKey": "mgcframework.connectapi",
+    "RowKey": "1.2.0"
   },
   {
-    "PartitionKey": "dawnx.npoi",
-    "RowKey": "1.0.5",
     "Entity": {
-      "Available": false,
-      "CommitTimestamp": null,
-      "HttpHeaders": null,
-      "MZipHash": null
-    }
+      "Available": true,
+      "HttpHeaders": {
+        "Content-Length": [
+          "24361"
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8DC64CD2EAB1AF7\u0022"
+        ],
+        "Last-Modified": [
+          "Thu, 25 Apr 2024 02:12:39 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "6udnvhRZB1EhjXYjIMvqzwiW1cKGZIxR/28O2Qqi2iOl2OOF/a6uan4I6X0gWywLo4o5zatKWSAJZh0IeFhvBw=="
+        ]
+      },
+      "MZipHash": "8283ff858b9f89d1c21a2535688d7dde8ad5c29672e1f3c913c4ca5a7b75a8b7"
+    },
+    "PartitionKey": "rocket.surgery.launchpad.aspnetcore.blazor",
+    "RowKey": "2.0.0-beta.4"
   },
   {
-    "PartitionKey": "dawnx.npoi",
-    "RowKey": "1.0.7.12",
     "Entity": {
-      "Available": false,
-      "CommitTimestamp": null,
-      "HttpHeaders": null,
-      "MZipHash": null
-    }
+      "Available": true,
+      "HttpHeaders": {
+        "Content-Length": [
+          "25390"
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8DC64CD7E68C198\u0022"
+        ],
+        "Last-Modified": [
+          "Thu, 25 Apr 2024 02:14:53 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "QhOrcoeIWjSJ1gPNauiQ0PZEmN38rYCeRrAn0Ow6M1X91Qs7hU6qcuaYzAGlZwxa3jyL3KgT4Ds/Qz/q\u002Bkc0Lw=="
+        ]
+      },
+      "MZipHash": "bcc6a91662b874671b173ac1d7f754223c9c0beb5cef1b7d713da515c12c98aa"
+    },
+    "PartitionKey": "rocket.surgery.launchpad.foundation.newtonsoftjson",
+    "RowKey": "2.0.0-beta.4"
   },
   {
-    "PartitionKey": "dawnx.npoi",
-    "RowKey": "1.0.7.6",
     "Entity": {
-      "Available": false,
-      "CommitTimestamp": null,
-      "HttpHeaders": null,
-      "MZipHash": null
-    }
-  },
-  {
-    "PartitionKey": "dawnx.npoi",
-    "RowKey": "1.0.9",
-    "Entity": {
-      "Available": false,
-      "CommitTimestamp": null,
-      "HttpHeaders": null,
-      "MZipHash": null
-    }
-  },
-  {
-    "PartitionKey": "glr.afy.utils",
-    "RowKey": "1.1.0.13",
-    "Entity": {
-      "Available": false,
-      "CommitTimestamp": null,
-      "HttpHeaders": null,
-      "MZipHash": null
-    }
+      "Available": true,
+      "HttpHeaders": {
+        "Content-Length": [
+          "23034"
+        ],
+        "Content-Type": [
+          "binary/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8DC64CD2F58F4EC\u0022"
+        ],
+        "Last-Modified": [
+          "Thu, 25 Apr 2024 02:12:40 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "e4C8bazHQjU/7qFP42i3wEjssrVfRYiU8Bj07nDI4fH01RhKmrLb444Hv\u002BDHWu8DvOruHgFHls56v3zx1tGVRQ=="
+        ]
+      },
+      "MZipHash": "5359bf7392a9aa35359f750577e1be5da327a7aec5374db5bbd8cb012c015632"
+    },
+    "PartitionKey": "rocket.surgery.launchpad.mapping.newtonsoftjson",
+    "RowKey": "2.0.0-beta.4"
   }
 ]

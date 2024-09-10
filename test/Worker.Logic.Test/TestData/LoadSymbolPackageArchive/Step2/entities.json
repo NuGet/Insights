@@ -1,7 +1,5 @@
 [
   {
-    "PartitionKey": "appany.hotchocolate.fluentvalidation",
-    "RowKey": "0.2.1",
     "Entity": {
       "Available": true,
       "CommitTimestamp": "2021-03-22T20:15:23.6403188+00:00",
@@ -29,21 +27,18 @@
         ]
       },
       "MZipHash": "658521341e269f947f5eba1ec87284de9a5827bb6bb590aca9529df77e304fb1"
-    }
+    },
+    "PartitionKey": "appany.hotchocolate.fluentvalidation",
+    "RowKey": "0.2.1"
   },
   {
-    "PartitionKey": "karcero.engine.core",
-    "RowKey": "1.0.0",
     "Entity": {
-      "Available": false,
-      "CommitTimestamp": "2021-03-22T20:15:23.6403188+00:00",
-      "HttpHeaders": null,
-      "MZipHash": null
-    }
+      "CommitTimestamp": "2021-03-22T20:15:23.6403188+00:00"
+    },
+    "PartitionKey": "karcero.engine.core",
+    "RowKey": "1.0.0"
   },
   {
-    "PartitionKey": "newtonsoft.json",
-    "RowKey": "13.0.1",
     "Entity": {
       "Available": true,
       "CommitTimestamp": "2021-03-22T20:13:54.6075418+00:00",
@@ -71,16 +66,15 @@
         ]
       },
       "MZipHash": "7f60ee52e75640227bdcea907723c1b7d1c15b18de2700a79dd16d26f96b3ee1"
-    }
+    },
+    "PartitionKey": "newtonsoft.json",
+    "RowKey": "13.0.1"
   },
   {
-    "PartitionKey": "pulumi.gcp",
-    "RowKey": "4.16.0",
     "Entity": {
-      "Available": false,
-      "CommitTimestamp": "2021-03-22T20:15:23.6403188+00:00",
-      "HttpHeaders": null,
-      "MZipHash": null
-    }
+      "CommitTimestamp": "2021-03-22T20:15:23.6403188+00:00"
+    },
+    "PartitionKey": "pulumi.gcp",
+    "RowKey": "4.16.0"
   }
 ]
