@@ -53,7 +53,7 @@
                                     @foreach ((var reprocessScan, var indexScan) in model.Scans)
                                     {
                                         <tr>
-                                            <td>@reprocessScan.DriverType.GetTitle()</td>
+                                            <td>@CatalogScanDriverMetadata.GetTitle(reprocessScan.DriverType)</td>
                                             <td>@reprocessScan.ScanId</td>
                                             <td>@(indexScan is null ? (reprocessScan.Completed ? "Complete" : "Running") : indexScan.State)</td>
                                             <td>@(indexScan?.Completed.GetRuntime(indexScan.Started))</td>

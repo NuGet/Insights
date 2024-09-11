@@ -91,6 +91,8 @@ namespace NuGet.Insights.Worker
 #if ENABLE_NPE
             Csv<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>(CatalogScanDriverType.NuGetPackageExplorerToCsv) with
             {
+                Title = "NuGet Package Explorer to CSV",
+
                 // Internally the NPE analysis APIs read symbols from the Microsoft and NuGet.org symbol servers. This
                 // means that the results are unstable for a similar reason as LoadSymbolPackageArchive. Additionally,
                 // some analysis times out (NuGetPackageExplorerResultType.Timeout). However this driver is relatively
@@ -210,6 +212,9 @@ namespace NuGet.Insights.Worker
             // The .NET type of the driver used for runtime processing. Implements ICatalogLeafScanBatchDriver or ICatalogLeafScanNonBatchDriver.
             Type RuntimeType,
 
+            // A more pretty title string for the driver. Used in the admin panel.
+            string Title,
+
             // Whether or not the runtime type is ICatalogLeafScanBatchDriver.
             bool IsBatchDriver,
 
@@ -246,25 +251,6 @@ namespace NuGet.Insights.Worker
 
             // The type of CSV records that this driver produces.
             IReadOnlyList<Type>? CsvRecordTypes);
-
-        /// <summary>
-        /// A driver that only supports catalog ranges and no bucket ranges. Typically this driver processes catalog
-        /// pages but not catalog leaves.
-        /// </summary>
-        private static DriverMetadata OnlyCatalogRange<T>(CatalogScanDriverType type) where T : ICatalogLeafScanBatchDriver
-        {
-            return new DriverMetadata(
-                Type: type,
-                RuntimeType: typeof(T),
-                IsBatchDriver: true,
-                OnlyLatestLeavesSupport: false,
-                BucketRangeSupport: false,
-                UpdatedOutsideOfCatalog: false,
-                DefaultMin: CatalogClient.NuGetOrgMinDeleted,
-                Dependencies: [],
-                GetBucketKey: null,
-                CsvRecordTypes: null);
-        }
 
         private static DriverMetadata Csv<T>(CatalogScanDriverType type)
             where T : IAggregatedCsvRecord<T> => Csv(
@@ -319,17 +305,23 @@ namespace NuGet.Insights.Worker
                 }
             }
 
-            return new DriverMetadata(
-                Type: type,
-                RuntimeType: runtimeType,
-                IsBatchDriver: true,
-                OnlyLatestLeavesSupport: null,
-                BucketRangeSupport: true,
-                UpdatedOutsideOfCatalog: false,
-                DefaultMin: CatalogClient.NuGetOrgMinDeleted,
-                Dependencies: [],
-                GetBucketKey: GetIdentityBucketKey,
-                CsvRecordTypes: csvRecordTypes);
+            return Default(type, runtimeType) with
+            {
+                CsvRecordTypes = csvRecordTypes,
+            };
+        }
+
+        /// <summary>
+        /// A driver that only supports catalog ranges and no bucket ranges. Typically this driver processes catalog
+        /// pages but not catalog leaves.
+        /// </summary>
+        private static DriverMetadata OnlyCatalogRange<T>(CatalogScanDriverType type) where T : ICatalogLeafScanBatchDriver
+        {
+            return Default(type, typeof(T)) with
+            {
+                OnlyLatestLeavesSupport = false,
+                BucketRangeSupport = false,
+            };
         }
 
         /// <summary>
@@ -339,9 +331,15 @@ namespace NuGet.Insights.Worker
         /// </summary>
         private static DriverMetadata Default<T>(CatalogScanDriverType type) where T : ICatalogLeafScanBatchDriver
         {
+            return Default(type, typeof(T));
+        }
+
+        private static DriverMetadata Default(CatalogScanDriverType type, Type runtimeType)
+        {
             return new DriverMetadata(
                 Type: type,
-                RuntimeType: typeof(T),
+                RuntimeType: runtimeType,
+                Title: GenerateTitleFromName(type),
                 IsBatchDriver: true,
                 OnlyLatestLeavesSupport: null,
                 BucketRangeSupport: true,
@@ -350,6 +348,42 @@ namespace NuGet.Insights.Worker
                 Dependencies: [],
                 GetBucketKey: GetIdentityBucketKey,
                 CsvRecordTypes: null);
+        }
+
+        private static string GenerateTitleFromName(CatalogScanDriverType type)
+        {
+            return HumanizeCodeName(type.ToString());
+        }
+
+        public static string HumanizeCodeName(string name)
+        {
+            // Add spaces between camel case boundaries.
+            var output = new StringBuilder();
+            for (var i = 0; i < name.Length; i++)
+            {
+                var c = name[i];
+                if (char.IsUpper(c))
+                {
+                    if (i > 0)
+                    {
+                        output.Append(' ');
+                        output.Append(char.ToLowerInvariant(c));
+                        continue;
+                    }
+                }
+
+                output.Append(c);
+            }
+
+            var title = output.ToString();
+
+            // leave CSV as an initialism
+            if (title.EndsWith(" Csv", StringComparison.OrdinalIgnoreCase))
+            {
+                title = title.Substring(0, title.Length - 3) + "CSV";
+            }
+
+            return title;
         }
 
         private static string GetIdentityBucketKey(string lowerId, string normalizedVersion)
@@ -547,6 +581,11 @@ namespace NuGet.Insights.Worker
             }
 
             return batches;
+        }
+
+        public static string GetTitle(CatalogScanDriverType driverType)
+        {
+            return GetValue(TypeToMetadata, driverType).Title;
         }
 
         public static IReadOnlyList<Type>? GetRecordTypes(CatalogScanDriverType driverType)

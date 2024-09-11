@@ -24,14 +24,14 @@
         statusTitle = "A catalog scan is running.";
     }
 
-    var title = Model.DriverType.GetTitle();
+    var title = CatalogScanDriverMetadata.GetTitle(Model.DriverType);
 }
 <CollapseCard IdPrefix="@Model.DriverType.ToString()" Title="@title" StatusText="@statusText" StatusTitle="@statusTitle" BorderClass="@borderClass">
     <ul class="list-group list-group-flush">
         <li class="list-group-item"><b>Cursor:</b> @Model.Cursor.Value.ToZulu()</li>
         <li class="list-group-item"><b>Cursor age:</b> @Model.CursorAge.Humanize(precision: 7, maxUnit: Humanizer.Localisation.TimeUnit.Year, minUnit: Humanizer.Localisation.TimeUnit.Second)</li>
         <li class="list-group-item">
-            <b>Driver dependencies:</b> @string.Join(", ", Model.Dependencies.Select(x => x.GetTitle()).DefaultIfEmpty("none"))
+            <b>Driver dependencies:</b> @string.Join(", ", Model.Dependencies.Select(x => CatalogScanDriverMetadata.GetTitle(x)).DefaultIfEmpty("none"))
         </li>
     </ul>
 

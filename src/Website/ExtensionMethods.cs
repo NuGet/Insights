@@ -1,9 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Humanizer;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using NuGet.Insights.Worker;
 
 namespace NuGet.Insights.Website
 {
@@ -39,17 +37,6 @@ namespace NuGet.Insights.Website
             }
 
             return runtimeStr;
-        }
-
-        public static string GetTitle(this CatalogScanDriverType type)
-        {
-            var title = type.ToString().Humanize();
-
-            title = title.Replace(" csv", " CSV", StringComparison.Ordinal);
-
-            title = title.Replace("Nu get package explorer", "NuGet Package Explorer", StringComparison.Ordinal);
-
-            return title;
         }
     }
 }

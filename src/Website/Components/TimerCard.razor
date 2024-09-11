@@ -1,5 +1,5 @@
 @{
-    var title = Model.Name.Humanize().Replace("csv", "CSV");
+    var title = CatalogScanDriverMetadata.HumanizeCodeName(Model.Name);
     var isEnabled = Model.IsEnabledInConfig && Model.IsEnabledInStorage != false;
 
     var error = TempData[Model.Name + ".Error"]?.ToString();

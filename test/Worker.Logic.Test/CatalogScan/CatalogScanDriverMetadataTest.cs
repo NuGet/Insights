@@ -135,6 +135,27 @@ namespace NuGet.Insights.Worker
             Assert.Empty(overlap);
         }
 
+        [Fact]
+        public void GetTitleReturnsTitleOverride()
+        {
+            var actual = CatalogScanDriverMetadata.GetTitle(CatalogScanDriverType.NuGetPackageExplorerToCsv);
+            Assert.Equal("NuGet Package Explorer to CSV", actual);
+        }
+
+        [Fact]
+        public void GetTitleReturnsUppercaseCSV()
+        {
+            var actual = CatalogScanDriverMetadata.GetTitle(CatalogScanDriverType.PackageAssetToCsv);
+            Assert.Equal("Package asset to CSV", actual);
+        }
+
+        [Fact]
+        public void GetTitleReturnsTitleCase()
+        {
+            var actual = CatalogScanDriverMetadata.GetTitle(CatalogScanDriverType.LoadPackageArchive);
+            Assert.Equal("Load package archive", actual);
+        }
+
         public static IEnumerable<object[]> LatestLeavesDriverTypesData => CatalogScanDriverMetadata
             .StartableDriverTypes
             .Where(x => CatalogScanDriverMetadata.GetOnlyLatestLeavesSupport(x) != false)
