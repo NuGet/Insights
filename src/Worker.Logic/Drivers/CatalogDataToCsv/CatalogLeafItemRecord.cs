@@ -99,6 +99,8 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         [KustoType("dynamic")]
         public string SignaturePackageEntry { get; set; }
 
+        public static string GetCsvCompactMessageSchemaName() => "cc.cl";
+
         public static List<CatalogLeafItemRecord> Prune(List<CatalogLeafItemRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return records

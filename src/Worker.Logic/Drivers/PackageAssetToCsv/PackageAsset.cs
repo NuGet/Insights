@@ -48,6 +48,8 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
         public string PlatformName { get; set; }
         public string PlatformVersion { get; set; }
 
+        public static string GetCsvCompactMessageSchemaName() => "cc.pat";
+
         public static List<PackageAsset> Prune(List<PackageAsset> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

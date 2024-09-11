@@ -100,6 +100,8 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
         public DateTimeOffset? Published { get; set; }
         public DateTimeOffset? LastEdited { get; set; }
 
+        public static string GetCsvCompactMessageSchemaName() => "cc.pv";
+
         public static List<PackageVersionRecord> Prune(List<PackageVersionRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

@@ -46,6 +46,8 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
         public string FileSHA256 { get; set; }
         public string FileContent { get; set; }
 
+        public static string GetCsvCompactMessageSchemaName() => "cc.pl";
+
         public static List<PackageLicense> Prune(List<PackageLicense> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

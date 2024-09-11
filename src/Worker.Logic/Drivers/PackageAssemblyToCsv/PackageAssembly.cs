@@ -57,6 +57,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         public int? CustomAttributesTotalCount { get; set; }
         public int? CustomAttributesTotalDataLength { get; set; }
 
+        public static string GetCsvCompactMessageSchemaName() => "cc.as";
+
         public static List<PackageAssembly> Prune(List<PackageAssembly> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

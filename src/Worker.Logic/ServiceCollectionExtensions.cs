@@ -416,7 +416,7 @@ namespace NuGet.Insights.Worker
 
         public static void AddCleanupOrphanRecordsService<TService, TRecord>(this IServiceCollection serviceCollection)
             where TService : class, ICleanupOrphanRecordsAdapter<TRecord>
-            where TRecord : IAggregatedCsvRecord<TRecord>
+            where TRecord : IAggregatedCsvRecord<TRecord>, ICleanupOrphanCsvRecord
         {
             var implementationType = typeof(TService);
             var dataType = typeof(TRecord);

@@ -81,6 +81,8 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         [KustoType("dynamic")]
         public string SplitTags { get; set; }
 
+        public static string GetCsvCompactMessageSchemaName() => "cc.pm";
+
         public static List<PackageManifestRecord> Prune(List<PackageManifestRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

@@ -42,6 +42,8 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
 
         public PdbType? PdbType { get; set; }
 
+        public static string GetCsvCompactMessageSchemaName() => "cc.npef";
+
         public static List<NuGetPackageExplorerFile> Prune(List<NuGetPackageExplorerFile> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

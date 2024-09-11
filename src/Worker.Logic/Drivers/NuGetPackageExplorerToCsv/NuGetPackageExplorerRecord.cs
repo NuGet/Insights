@@ -32,6 +32,8 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
         public HasCompilerFlagsResult? CompilerFlagsResult { get; set; }
         public bool? IsSignedByAuthor { get; set; }
 
+        public static string GetCsvCompactMessageSchemaName() => "cc.npe";
+
         public static List<NuGetPackageExplorerRecord> Prune(List<NuGetPackageExplorerRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NuGet.Insights.Worker.ReferenceTracking
 {
-    public partial record TestSubjectRecord : ICsvRecord, IAggregatedCsvRecord<TestSubjectRecord>
+    public partial record TestSubjectRecord : ICsvRecord, IAggregatedCsvRecord<TestSubjectRecord>, ICleanupOrphanCsvRecord
     {
         [KustoPartitionKey]
         public string BucketKey { get; set; }
@@ -14,6 +14,9 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 
         [Required]
         public bool IsOrphan { get; set; }
+
+        public static string GetCsvCompactMessageSchemaName() => "cc.ts";
+        public static string GetCleanupOrphanRecordsMessageSchemaName() => "co.ts";
 
         public static List<TestSubjectRecord> Prune(List<TestSubjectRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {

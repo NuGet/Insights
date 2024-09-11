@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker.ReferenceTracking
 {
-    public interface ICleanupOrphanRecordsService<T> : ICleanupOrphanRecordsService where T : ICsvRecord
+    public interface ICleanupOrphanRecordsService<T> : ICleanupOrphanRecordsService where T : ICleanupOrphanCsvRecord
     {
     }
 

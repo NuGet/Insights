@@ -5,7 +5,7 @@ using NuGet.Insights.ReferenceTracking;
 
 namespace NuGet.Insights.Worker.ReferenceTracking
 {
-    public class CleanupOrphanRecordsService<T> : ICleanupOrphanRecordsService<T> where T : IAggregatedCsvRecord<T>
+    public class CleanupOrphanRecordsService<T> : ICleanupOrphanRecordsService<T> where T : ICleanupOrphanCsvRecord
     {
         private static readonly string StorageSuffix = string.Empty;
 

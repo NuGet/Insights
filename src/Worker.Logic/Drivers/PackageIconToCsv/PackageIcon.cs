@@ -45,6 +45,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         [KustoType("dynamic")]
         public string FrameAttributeNames { get; set; }
 
+        public static string GetCsvCompactMessageSchemaName() => "cc.pi";
+
         public static List<PackageIcon> Prune(List<PackageIcon> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

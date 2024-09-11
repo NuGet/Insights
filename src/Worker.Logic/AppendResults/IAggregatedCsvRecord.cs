@@ -24,5 +24,7 @@ namespace NuGet.Insights.Worker
         /// <param name="logger">The logger, provided by the call site.</param>
         /// <returns>The records, after pruning out undesired records.</returns>
         static abstract List<T> Prune(List<T> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger);
+
+        static abstract string GetCsvCompactMessageSchemaName();
     }
 }

@@ -2,36 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
-using NuGet.Insights.Worker.CatalogDataToCsv;
-using NuGet.Insights.Worker.EnqueueCatalogLeafScan;
 using NuGet.Insights.Worker.CopyBucketRange;
+using NuGet.Insights.Worker.EnqueueCatalogLeafScan;
 using NuGet.Insights.Worker.KustoIngestion;
 using NuGet.Insights.Worker.LoadBucketedPackage;
 using NuGet.Insights.Worker.LoadLatestPackageLeaf;
-#if ENABLE_NPE
-using NuGet.Insights.Worker.NuGetPackageExplorerToCsv;
-#endif
-using NuGet.Insights.Worker.PackageArchiveToCsv;
-using NuGet.Insights.Worker.PackageAssemblyToCsv;
-using NuGet.Insights.Worker.PackageAssetToCsv;
-#if ENABLE_CRYPTOAPI
-using NuGet.Insights.Worker.PackageCertificateToCsv;
-#endif
-using NuGet.Insights.Worker.PackageCompatibilityToCsv;
-using NuGet.Insights.Worker.PackageContentToCsv;
-using NuGet.Insights.Worker.PackageIconToCsv;
-using NuGet.Insights.Worker.PackageLicenseToCsv;
-using NuGet.Insights.Worker.PackageManifestToCsv;
-using NuGet.Insights.Worker.PackageReadmeToCsv;
-using NuGet.Insights.Worker.PackageSignatureToCsv;
-using NuGet.Insights.Worker.PackageVersionToCsv;
 using NuGet.Insights.Worker.ReferenceTracking;
-using NuGet.Insights.Worker.SymbolPackageArchiveToCsv;
 using NuGet.Insights.Worker.TableCopy;
 using NuGet.Insights.Worker.TimedReprocess;
 using NuGet.Insights.Worker.Workflow;
-using NuGet.Insights.Worker.PackageFileToCsv;
-using NuGet.Insights.Worker.SymbolPackageFileToCsv;
 
 namespace NuGet.Insights.Worker
 {
@@ -55,38 +34,6 @@ namespace NuGet.Insights.Worker
 
             new SchemaV1<WorkflowRunMessage>("wr"),
 
-            new SchemaV1<CsvCompactMessage<CatalogLeafItemRecord>>("cc.fcli"),
-            new SchemaV1<CsvCompactMessage<PackageFileRecord>>("cc.pf2c"),
-            new SchemaV1<CsvCompactMessage<SymbolPackageFileRecord>>("cc.spf2c"),
-            new SchemaV1<CsvCompactMessage<PackageArchiveRecord>>("cc.pa2c"),
-            new SchemaV1<CsvCompactMessage<PackageArchiveEntry>>("cc.pae2c"),
-            new SchemaV1<CsvCompactMessage<SymbolPackageArchiveRecord>>("cc.sa2c"),
-            new SchemaV1<CsvCompactMessage<SymbolPackageArchiveEntry>>("cc.sae2c"),
-            new SchemaV1<CsvCompactMessage<PackageAsset>>("cc.fpa"),
-            new SchemaV1<CsvCompactMessage<PackageAssembly>>("cc.fpi"),
-            new SchemaV1<CsvCompactMessage<PackageManifestRecord>>("cc.pm2c"),
-            new SchemaV1<CsvCompactMessage<PackageReadme>>("cc.pmd2c"),
-            new SchemaV1<CsvCompactMessage<PackageLicense>>("cc.pl2c"),
-            new SchemaV1<CsvCompactMessage<PackageSignature>>("cc.fps"),
-            new SchemaV1<CsvCompactMessage<PackageVersionRecord>>("cc.pv2c"),
-            new SchemaV1<CsvCompactMessage<PackageDeprecationRecord>>("cc.pd2c"),
-            new SchemaV1<CsvCompactMessage<PackageVulnerabilityRecord>>("cc.pu2c"),
-            new SchemaV1<CsvCompactMessage<PackageIcon>>("cc.pi2c"),
-            new SchemaV1<CsvCompactMessage<PackageCompatibility>>("cc.pc2c"),
-            new SchemaV1<CsvCompactMessage<PackageContent>>("cc.pco2c"),
-
-#if ENABLE_CRYPTOAPI
-            new SchemaV1<CsvCompactMessage<CertificateRecord>>("cc.r2c"),
-            new SchemaV1<CsvCompactMessage<PackageCertificateRecord>>("cc.pr2c"),
-
-            new SchemaV1<CleanupOrphanRecordsMessage<CertificateRecord>>("co.r"),
-#endif
-
-#if ENABLE_NPE
-            new SchemaV1<CsvCompactMessage<NuGetPackageExplorerRecord>>("cc.npe2c"),
-            new SchemaV1<CsvCompactMessage<NuGetPackageExplorerFile>>("cc.npef2c"),
-#endif
-
             new SchemaV1<TableScanMessage<CatalogLeafScan>>("ts.cls"),
             new SchemaV1<TableScanMessage<BucketedPackage>>("ts.bp"),
             new SchemaV1<TableScanMessage<LatestPackageLeaf>>("ts.lpf"),
@@ -98,6 +45,9 @@ namespace NuGet.Insights.Worker
             new SchemaV1<AuxiliaryFileUpdaterMessage<AsOfData<VerifiedPackage>>>("vp2c"),
             new SchemaV1<AuxiliaryFileUpdaterMessage<AsOfData<ExcludedPackage>>>("ep2c"),
             new SchemaV1<AuxiliaryFileUpdaterMessage<AsOfData<PopularityTransfer>>>("pt2c"),
+
+            .. GetCsvCompactMessageSchemaForDrivers(),
+            .. GetCleanupOrphanRecordsMessageSchemaForDrivers(),
         ];
 
         public static IReadOnlyList<ISchemaDeserializer> DefaultParameterSchemas { get; } =
@@ -119,6 +69,63 @@ namespace NuGet.Insights.Worker
 
         private readonly List<ISchemaDeserializer> _schemas = new();
 
+        private static IEnumerable<ISchemaDeserializer> GetCsvCompactMessageSchemaForDrivers()
+        {
+            var method = typeof(SchemaCollectionBuilder).GetMethod(nameof(GetCsvCompactMessageSchemaName), BindingFlags.NonPublic | BindingFlags.Static);
+            foreach (var recordType in GetCsvRecordTypes())
+            {
+                if (recordType.IsAssignableTo(typeof(IAggregatedCsvRecord<>).MakeGenericType(recordType)))
+                {
+                    var schemaName = (string)method.MakeGenericMethod(recordType).Invoke(null, null);
+                    var messageType = typeof(CsvCompactMessage<>).MakeGenericType(recordType);
+                    var schemaType = typeof(SchemaV1<>).MakeGenericType(messageType);
+                    yield return (ISchemaDeserializer)Activator.CreateInstance(schemaType, schemaName);
+                }
+            }
+        }
+
+        private static string GetCsvCompactMessageSchemaName<T>() where T : IAggregatedCsvRecord<T>
+        {
+            return T.GetCsvCompactMessageSchemaName();
+        }
+
+        private static IEnumerable<ISchemaDeserializer> GetCleanupOrphanRecordsMessageSchemaForDrivers()
+        {
+            var method = typeof(SchemaCollectionBuilder).GetMethod(nameof(GetCleanupOrphanRecordsMessageSchemaName), BindingFlags.NonPublic | BindingFlags.Static);
+            foreach (var recordType in GetCsvRecordTypes())
+            {
+                if (recordType.IsAssignableTo(typeof(ICleanupOrphanCsvRecord)))
+                {
+                    var schemaName = (string)method.MakeGenericMethod(recordType).Invoke(null, null);
+                    var messageType = typeof(CleanupOrphanRecordsMessage<>).MakeGenericType(recordType);
+                    var schemaType = typeof(SchemaV1<>).MakeGenericType(messageType);
+                    yield return (ISchemaDeserializer)Activator.CreateInstance(schemaType, schemaName);
+                }
+            }
+        }
+
+        private static string GetCleanupOrphanRecordsMessageSchemaName<T>() where T : ICleanupOrphanCsvRecord
+        {
+            return T.GetCleanupOrphanRecordsMessageSchemaName();
+        }
+
+        private static IEnumerable<Type> GetCsvRecordTypes()
+        {
+            foreach (var type in CatalogScanDriverMetadata.StartableDriverTypes)
+            {
+                var recordTypes = CatalogScanDriverMetadata.GetRecordTypes(type);
+                if (recordTypes is null)
+                {
+                    continue;
+                }
+
+                foreach (var recordType in recordTypes)
+                {
+                    yield return recordType;
+                }
+            }
+        }
+
         public SchemaCollectionBuilder Add<T>(SchemaV1<T> schema)
         {
             _schemas.Add(schema);
@@ -129,6 +136,11 @@ namespace NuGet.Insights.Worker
         {
             _schemas.AddRange(schemas);
             return this;
+        }
+
+        public IEnumerable<ISchemaDeserializer> GetDeserializers()
+        {
+            return _schemas;
         }
 
         public SchemaCollection Build()

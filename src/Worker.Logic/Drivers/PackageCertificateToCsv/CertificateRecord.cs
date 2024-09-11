@@ -3,11 +3,12 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography.X509Certificates;
+using NuGet.Insights.Worker.ReferenceTracking;
 using NuGet.Services.Validation;
 
 namespace NuGet.Insights.Worker.PackageCertificateToCsv
 {
-    public partial record CertificateRecord : ICsvRecord, IAggregatedCsvRecord<CertificateRecord>
+    public partial record CertificateRecord : ICsvRecord, IAggregatedCsvRecord<CertificateRecord>, ICleanupOrphanCsvRecord
     {
         public CertificateRecord()
         {
@@ -137,6 +138,9 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
         [KustoType("dynamic")]
         public string Policies { get; set; }
+
+        public static string GetCsvCompactMessageSchemaName() => "cc.c";
+        public static string GetCleanupOrphanRecordsMessageSchemaName() => "co.c";
 
         public static List<CertificateRecord> Prune(List<CertificateRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {

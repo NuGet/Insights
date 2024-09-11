@@ -4,7 +4,7 @@
 namespace NuGet.Insights.Worker.ReferenceTracking
 {
     public class CleanupOrphanRecordsMessage<T> : ITaskStateMessage
-        where T : ICsvRecord
+        where T : ICleanupOrphanCsvRecord
     {
         [JsonPropertyName("ts")]
         public TaskStateKey TaskStateKey { get; set; }

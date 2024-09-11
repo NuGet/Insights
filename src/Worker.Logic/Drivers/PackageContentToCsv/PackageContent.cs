@@ -36,6 +36,8 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
         public string Content { get; set; }
         public bool? DuplicateContent { get; set; }
 
+        public static string GetCsvCompactMessageSchemaName() => "cc.pcn";
+
         public static List<PackageContent> Prune(List<PackageContent> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

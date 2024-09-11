@@ -5,7 +5,7 @@ using NuGet.Insights.ReferenceTracking;
 
 namespace NuGet.Insights.Worker.ReferenceTracking
 {
-    public interface ICleanupOrphanRecordsAdapter<T> where T : IAggregatedCsvRecord<T>
+    public interface ICleanupOrphanRecordsAdapter<T> where T : ICleanupOrphanCsvRecord
     {
         string OwnerToSubjectTableName { get; }
         string SubjectToOwnerTableName { get; }

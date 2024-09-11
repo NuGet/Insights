@@ -87,9 +87,7 @@ Ensure the driver can be activated by the catalog scan and admin interface. Upda
 1. Add your driver to the `AllMetadata` array at the top of [`CatalogScanDriverMetadata`](../src/Worker.Logic/CatalogScan/CatalogScanDriverMetadata.cs).
    - The establishes attributes for your driver that are needed for defaults and enabling/disabling features.
    - If you've mimicked another driver, consider look for how it is defined in that class an copy it.
-1. If your driver implements `ICatalogLeafToCsvDriver<T>`:
-   - Add a CSV compact message schema name to [`SchemaCollectionBuilder`](../src/Worker.Logic/Serialization/SchemaCollectionBuilder.cs) like `cc.<abbreviation for your driver>`.
-1. Add your driver to the `TypeToInfo` static in [`CatalogScanServiceTest.cs`](../test/Worker.Logic.Test/CatalogScan/CatalogScanServiceTest.cs).
+2. Add your driver to the `TypeToInfo` static in [`CatalogScanServiceTest.cs`](../test/Worker.Logic.Test/CatalogScan/CatalogScanServiceTest.cs).
    - This determines the default catalog timestamp min value for your driver and implements a test function that forces your driver's dependency cursors to a specific timestamp.
    - This essentially duplicates the information in `CatalogScanDriverMetadata` that you edited above.
 

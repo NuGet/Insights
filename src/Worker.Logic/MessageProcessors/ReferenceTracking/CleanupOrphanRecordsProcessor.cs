@@ -6,7 +6,7 @@ using NuGet.Insights.ReferenceTracking;
 namespace NuGet.Insights.Worker.ReferenceTracking
 {
     public class CleanupOrphanRecordsProcessor<T> : ITaskStateMessageProcessor<CleanupOrphanRecordsMessage<T>>
-        where T : class, IAggregatedCsvRecord<T>
+        where T : class, ICleanupOrphanCsvRecord, IAggregatedCsvRecord<T>
     {
         private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly ReferenceTracker _referenceTracker;

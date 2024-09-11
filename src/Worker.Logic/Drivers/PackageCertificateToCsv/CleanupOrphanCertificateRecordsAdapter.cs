@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Insights.ReferenceTracking;
-using NuGet.Insights.Worker.PackageCertificateToCsv;
+using NuGet.Insights.Worker.ReferenceTracking;
 
-namespace NuGet.Insights.Worker.ReferenceTracking
+namespace NuGet.Insights.Worker.PackageCertificateToCsv
 {
     public class CleanupOrphanCertificateRecordsAdapter : ICleanupOrphanRecordsAdapter<CertificateRecord>
     {

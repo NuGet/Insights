@@ -31,6 +31,8 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
         public string SHA256 { get; set; }
         public string Content { get; set; }
 
+        public static string GetCsvCompactMessageSchemaName() => "cc.pr";
+
         public static List<PackageReadme> Prune(List<PackageReadme> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

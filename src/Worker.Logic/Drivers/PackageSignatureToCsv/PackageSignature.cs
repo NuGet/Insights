@@ -67,6 +67,8 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
         [KustoType("dynamic")]
         public string PackageOwners { get; set; }
 
+        public static string GetCsvCompactMessageSchemaName() => "cc.ps";
+
         public static List<PackageSignature> Prune(List<PackageSignature> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

@@ -31,6 +31,8 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         public string AlternatePackageId { get; set; }
         public string AlternateVersionRange { get; set; }
 
+        public static string GetCsvCompactMessageSchemaName() => "cc.pd";
+
         public static List<PackageDeprecationRecord> Prune(List<PackageDeprecationRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

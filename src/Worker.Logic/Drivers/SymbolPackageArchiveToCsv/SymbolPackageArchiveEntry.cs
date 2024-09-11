@@ -19,6 +19,8 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
         {
         }
 
+        public static string GetCsvCompactMessageSchemaName() => "cc.spae";
+
         public static List<SymbolPackageArchiveEntry> Prune(List<SymbolPackageArchiveEntry> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

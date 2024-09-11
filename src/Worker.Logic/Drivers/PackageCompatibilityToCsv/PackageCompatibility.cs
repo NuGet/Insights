@@ -51,6 +51,8 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         [KustoType("dynamic")]
         public string NuGetGalleryBadges { get; set; }
 
+        public static string GetCsvCompactMessageSchemaName() => "cc.pco";
+
         public static List<PackageCompatibility> Prune(List<PackageCompatibility> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

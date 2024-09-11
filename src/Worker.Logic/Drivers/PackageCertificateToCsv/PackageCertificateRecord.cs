@@ -33,6 +33,8 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
         public CertificateRelationshipTypes? RelationshipTypes { get; set; }
 
+        public static string GetCsvCompactMessageSchemaName() => "cc.pc";
+
         public static List<PackageCertificateRecord> Prune(List<PackageCertificateRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);
