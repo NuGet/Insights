@@ -74,7 +74,16 @@ namespace NuGet.Insights.Worker
         public async Task UsesCorrectQueueByMessageType(Type messageType, QueueType queue)
         {
             var parameters = Array.CreateInstance(messageType, 1);
-            parameters.SetValue(Activator.CreateInstance(messageType), 0);
+            var message = Activator.CreateInstance(messageType);
+            parameters.SetValue(message, 0);
+
+            // required initialization for some message types
+            switch (message)
+            {
+                case CatalogIndexScanMessage cis:
+                    cis.DriverType = CatalogScanDriverType.PackageAssetToCsv;
+                    break;
+            }
 
             await (Task)Target
                 .GetType()

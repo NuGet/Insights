@@ -454,7 +454,7 @@ namespace NuGet.Insights.Worker
 
                 foreach (var scan in startedScans)
                 {
-                    await UpdateAsync(scan, parallel: false, visibilityTimeout: TimeSpan.FromSeconds(1));
+                    await UpdateAsync(scan, parallel: true);
                 }
             }
 

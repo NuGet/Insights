@@ -25,21 +25,22 @@ namespace NuGet.Insights.Worker
 
         public ICatalogLeafScanBatchDriver? CreateBatchDriverOrNull(CatalogScanDriverType driverType)
         {
-            switch (driverType)
+            if (driverType == CatalogScanDriverType.Internal_FindLatestCatalogLeafScan)
             {
-                case CatalogScanDriverType.Internal_FindLatestCatalogLeafScan:
-                    return _serviceProvider.GetRequiredService<FindLatestLeafDriver<CatalogLeafScan>>();
-                case CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId:
-                    return _serviceProvider.GetRequiredService<FindLatestLeafDriver<CatalogLeafScanPerId>>();
-
-                default:
-                    if (CatalogScanDriverMetadata.IsBatchDriver(driverType))
-                    {
-                        return (ICatalogLeafScanBatchDriver)_serviceProvider.GetRequiredService(CatalogScanDriverMetadata.GetRuntimeType(driverType));
-                    }
-
-                    return null;
+                return _serviceProvider.GetRequiredService<FindLatestLeafDriver<CatalogLeafScan>>();
             }
+
+            if (driverType == CatalogScanDriverType.Internal_FindLatestCatalogLeafScanPerId)
+            {
+                return _serviceProvider.GetRequiredService<FindLatestLeafDriver<CatalogLeafScanPerId>>();
+            }
+
+            if (CatalogScanDriverMetadata.IsBatchDriver(driverType))
+            {
+                return (ICatalogLeafScanBatchDriver)_serviceProvider.GetRequiredService(CatalogScanDriverMetadata.GetRuntimeType(driverType));
+            }
+
+            return null;
         }
 
         public ICatalogLeafScanNonBatchDriver CreateNonBatchDriver(CatalogScanDriverType driverType)
@@ -55,16 +56,12 @@ namespace NuGet.Insights.Worker
 
         public ICatalogLeafScanNonBatchDriver? CreateNonBatchDriverOrNull(CatalogScanDriverType driverType)
         {
-            switch (driverType)
+            if (!CatalogScanDriverMetadata.IsBatchDriver(driverType))
             {
-                default:
-                    if (!CatalogScanDriverMetadata.IsBatchDriver(driverType))
-                    {
-                        return (ICatalogLeafScanNonBatchDriver)_serviceProvider.GetRequiredService(CatalogScanDriverMetadata.GetRuntimeType(driverType));
-                    }
-
-                    return null;
+                return (ICatalogLeafScanNonBatchDriver)_serviceProvider.GetRequiredService(CatalogScanDriverMetadata.GetRuntimeType(driverType));
             }
+
+            return null;
         }
 
         private ICatalogLeafScanBatchDriver WrapNonBatchDriver(ICatalogLeafScanNonBatchDriver driver)

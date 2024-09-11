@@ -71,6 +71,7 @@ namespace NuGet.Insights.Worker
                         nameof(CatalogIndexScan.PartitionKey),
                         nameof(CatalogIndexScan.RowKey),
                         nameof(CatalogIndexScan.Timestamp),
+                        nameof(CatalogIndexScan.ParentDriverTypeName),
                     })
                     .Order(StringComparer.Ordinal);
                 Assert.Equal(expectedKeys, actualKeys);

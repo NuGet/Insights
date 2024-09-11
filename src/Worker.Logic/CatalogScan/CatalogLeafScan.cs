@@ -39,7 +39,17 @@ namespace NuGet.Insights.Worker
 
         public string StorageSuffix { get; set; }
         public DateTimeOffset Created { get; set; }
+
+        [IgnoreDataMember]
         public CatalogScanDriverType DriverType { get; set; }
+
+        [DataMember(Name = nameof(DriverType))]
+        public string DriverTypeName
+        {
+            get => DriverType.ToString();
+            set => DriverType = CatalogScanDriverType.Parse(value);
+        }
+
         public DateTimeOffset Min { get; set; }
         public DateTimeOffset Max { get; set; }
         public string BucketRanges { get; set; }

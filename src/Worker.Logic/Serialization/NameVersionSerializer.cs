@@ -11,6 +11,7 @@ namespace NuGet.Insights.Worker
             Converters =
             {
                 new JsonStringEnumConverter(),
+                new CatalogScanDriverTypeConverter(),
             },
         };
 

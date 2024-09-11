@@ -28,7 +28,11 @@ namespace NuGet.Insights.Worker.TimedReprocess
         }
 
         [IgnoreDataMember]
-        public CatalogScanDriverType DriverType => Enum.Parse<CatalogScanDriverType>(RowKey);
+        public CatalogScanDriverType DriverType
+        {
+            get => CatalogScanDriverType.Parse(RowKey);
+            set => RowKey = value.ToString();
+        }
 
         public string RunId { get; set; }
         public string ScanId { get; set; }

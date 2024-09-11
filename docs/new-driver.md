@@ -50,7 +50,7 @@ and how it fetches and persists data about packages.
    In short, this is great if you want to process each package individually and you want to write the results to CSV.
 
    When implementing the class for your CSV rows, considering inheriting from `PackageRecord`. This provides some nice
-   default columns in your CSV. Also, your CSV row class must implement `ICsvRecord<T>`. This is a good thing since this
+   default columns in your CSV. Also, your CSV row class must implement `IAggregatedCsvRecord<T>`. This is a good thing since this
    allows your class to be automatically serializable to CSV using a built-in source generator.
 
    You'll need to add a Azure Blob Storage container name to
@@ -68,12 +68,6 @@ and how it fetches and persists data about packages.
    information in a catalog leaf item (package ID + version + leaf URL + type). You can do whatever you want to process
    that package. It's up to you to fetch the data about the package you care about and persist the results.
 
-   - Example implementation: [`BuildVersionSet`](../src/Worker.Logic/Drivers/BuildVersionSet/BuildVersionSetDriver.cs).
-     This driver operates that this level since it doesn't even need to process each leaf item individually. Instead, it
-     can just observe the data at the [catalog page](https://docs.microsoft.com/en-us/nuget/api/catalog-resource#catalog-page)
-     level and drive each leaf item to CSV.
-
-
 1. [`ICatalogLeafScanBatchDriver`](../src/Worker.Logic/CatalogScan/ICatalogLeafScanBatchDriver.cs) -
    This is the lowest level driver interface. Same as the previous `ICatalogLeafScanNonBatchDriver` but allows
    operating on multiple package leaves at once. The only reason you'd use this is for performance reasons. You can
@@ -88,23 +82,16 @@ and how it fetches and persists data about packages.
 
 Ensure the driver can be activated by the catalog scan and admin interface. Update these places to help this work out:
 
-1. Add your driver to the [`CatalogScanDriverType`](../src/Worker.Logic/CatalogScan/CatalogScanDriverType.cs) enum.
+1. Add your driver to the [`CatalogScanDriverType`](../src/Worker.Logic/CatalogScan/CatalogScanDriverType.Drivers.cs) enum.
    - This provides a uniquely identifiable enum value for your driver.
 1. Add your driver to the `AllMetadata` array at the top of [`CatalogScanDriverMetadata`](../src/Worker.Logic/CatalogScan/CatalogScanDriverMetadata.cs).
    - The establishes attributes for your driver that are needed for defaults and enabling/disabling features.
    - If you've mimicked another driver, consider look for how it is defined in that class an copy it.
-1. Add your driver to the [`CatalogScanDriverFactory`](../src/Worker.Logic/CatalogScan/CatalogScanDriverFactory.cs) switch.
-   - This allows your driver to be activated given a `CatalogScanDriverType` value.
-   - You may need to add new classes to [dependency injection](../src/Worker.Logic/ServiceCollectionExtensions.cs) depending on what your driver needs.
 1. If your driver implements `ICatalogLeafToCsvDriver<T>`:
    - Add a CSV compact message schema name to [`SchemaCollectionBuilder`](../src/Worker.Logic/Serialization/SchemaCollectionBuilder.cs) like `cc.<abbreviation for your driver>`.
 1. Add your driver to the `TypeToInfo` static in [`CatalogScanServiceTest.cs`](../test/Worker.Logic.Test/CatalogScan/CatalogScanServiceTest.cs).
    - This determines the default catalog timestamp min value for your driver and implements a test function that forces your driver's dependency cursors to a specific timestamp.
    - This essentially duplicates the information in `CatalogScanDriverMetadata` that you edited above.
-1. If you had to add a table or blob container for your driver (e.g. a blob container for your CSV output), initialize
-   the container name in [`BaseWorkerLogicIntegrationTest`](../test/Worker.Logic.Test/TestSupport/BaseWorkerLogicIntegrationTest.cs)
-   in `ConfigureWorkerDefaultsAndSettings` to have a unique value starting with `StoragePrefix` like the other existing container names.
-1. If your table produces CSV output, add your Kusto table name to [ImportTo-Kusto.ps1](../scripts/Kusto/ImportTo-Kusto.ps1) and [compare.kql](../scripts/Kusto/compare.kql).
 
 ### Add tests for your driver
 
