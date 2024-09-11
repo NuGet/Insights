@@ -7,8 +7,10 @@ namespace NuGet.Insights.Worker
     {
         [Theory]
         [MemberData(nameof(StartabledDriverTypesData))]
-        public void Create_SupportsAllDriverTypes(CatalogScanDriverType type)
+        public void Create_SupportsAllDriverTypes(string typeName)
         {
+            var type = CatalogScanDriverType.Parse(typeName);
+
             var target = Host.Services.GetRequiredService<ICatalogScanDriverFactory>();
 
             target.Create(type);

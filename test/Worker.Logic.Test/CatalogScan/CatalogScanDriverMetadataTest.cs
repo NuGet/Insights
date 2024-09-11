@@ -11,8 +11,9 @@ namespace NuGet.Insights.Worker
     {
         [Theory]
         [MemberData(nameof(StartabledDriverTypesData))]
-        public void StartableDriverTypes_TopologicalOrder_ReturnsAllDependenciesBeforeType(CatalogScanDriverType type)
+        public void StartableDriverTypes_TopologicalOrder_ReturnsAllDependenciesBeforeType(string typeName)
         {
+            var type = CatalogScanDriverType.Parse(typeName);
             var beforeTypes = CatalogScanDriverMetadata.StartableDriverTypes.TakeWhile(x => x != type).ToList();
             var dependencies = CatalogScanDriverMetadata.GetDependencies(type);
             Assert.All(dependencies, x => Assert.Contains(x, beforeTypes));
@@ -20,8 +21,9 @@ namespace NuGet.Insights.Worker
 
         [Theory]
         [MemberData(nameof(StartabledDriverTypesData))]
-        public void StartableDriverTypes_TopologicalOrder_ReturnsAllDependentsAfterType(CatalogScanDriverType type)
+        public void StartableDriverTypes_TopologicalOrder_ReturnsAllDependentsAfterType(string typeName)
         {
+            var type = CatalogScanDriverType.Parse(typeName);
             var afterTypes = CatalogScanDriverMetadata.StartableDriverTypes.SkipWhile(x => x != type).Skip(1).ToList();
             var dependents = CatalogScanDriverMetadata.GetDependents(type);
             Assert.All(dependents, x => Assert.Contains(x, afterTypes));
@@ -29,8 +31,9 @@ namespace NuGet.Insights.Worker
 
         [Theory]
         [MemberData(nameof(LatestLeavesDriverTypesData))]
-        public void GetBucketKeyFactory_ReturnsBucketKeyMatchingRecords(CatalogScanDriverType type)
+        public void GetBucketKeyFactory_ReturnsBucketKeyMatchingRecords(string typeName)
         {
+            var type = CatalogScanDriverType.Parse(typeName);
             var id = "NuGet.Protocol";
             var version = "6.11.0.0-BETA";
             var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
@@ -91,8 +94,9 @@ namespace NuGet.Insights.Worker
 
         [Theory]
         [MemberData(nameof(StartabledDriverTypesData))]
-        public void GetRuntimeType_ReturnsBatchOrNonBatchDriver(CatalogScanDriverType type)
+        public void GetRuntimeType_ReturnsBatchOrNonBatchDriver(string typeName)
         {
+            var type = CatalogScanDriverType.Parse(typeName);
             var runtimeType = CatalogScanDriverMetadata.GetRuntimeType(type);
 
             if (CatalogScanDriverMetadata.IsBatchDriver(type))
@@ -107,8 +111,9 @@ namespace NuGet.Insights.Worker
 
         [Theory]
         [MemberData(nameof(StartabledDriverTypesData))]
-        public void NoDriverHasRedundantDependencies(CatalogScanDriverType type)
+        public void NoDriverHasRedundantDependencies(string typeName)
         {
+            var type = CatalogScanDriverType.Parse(typeName);
             var directDependencies = CatalogScanDriverMetadata.GetDependencies(type);
 
             var transitiveDependencies = new HashSet<CatalogScanDriverType>();
@@ -133,7 +138,7 @@ namespace NuGet.Insights.Worker
         public static IEnumerable<object[]> LatestLeavesDriverTypesData => CatalogScanDriverMetadata
             .StartableDriverTypes
             .Where(x => CatalogScanDriverMetadata.GetOnlyLatestLeavesSupport(x) != false)
-            .Select(x => new object[] { x });
+            .Select(x => new object[] { x.ToString() });
 
         public CatalogScanDriverMetadataTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {

@@ -93,7 +93,7 @@ namespace NuGet.Insights.Worker
         public Mock<ICslQueryProvider> MockCslQueryProvider { get; }
 
         public static IEnumerable<object[]> StartabledDriverTypesData => CatalogScanDriverMetadata.StartableDriverTypes
-            .Select(x => new object[] { x });
+            .Select(x => new object[] { x.ToString() });
 
         protected bool RetryFailedMessages { get; set; } = false;
 

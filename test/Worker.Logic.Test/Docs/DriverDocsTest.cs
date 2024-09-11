@@ -137,9 +137,10 @@ namespace NuGet.Insights.Worker
 
         [DocsTheory]
         [MemberData(nameof(StartabledDriverTypesData))]
-        public async Task FirstTableIsGeneralDriverProperties(CatalogScanDriverType driverType)
+        public async Task FirstTableIsGeneralDriverProperties(string typeName)
         {
-            var info = await GetDriverInfoAsync(driverType);
+            var type = CatalogScanDriverType.Parse(typeName);
+            var info = await GetDriverInfoAsync(type);
             var rows = info.GetFirstTableRows();
 
             var i = 0;
@@ -150,7 +151,7 @@ namespace NuGet.Insights.Worker
             Assert.Equal("CatalogScanDriverType enum value", info.ToPlainText(rows[i][0]));
             Assert.NotEmpty(info.ToPlainText(rows[i][0]));
             var driverTypeValue = info.ToPlainText(rows[i][1]);
-            Assert.Contains(driverTypeValue, driverType.ToString(), StringComparison.Ordinal);
+            Assert.Contains(driverTypeValue, type.ToString(), StringComparison.Ordinal);
 
             i++;
             Assert.Equal("Driver implementation", info.ToPlainText(rows[i][0]));
@@ -179,9 +180,10 @@ namespace NuGet.Insights.Worker
 
         [DocsTheory]
         [MemberData(nameof(StartabledDriverTypesData))]
-        public async Task CsvTablesMatchesMetadata(CatalogScanDriverType driverType)
+        public async Task CsvTablesMatchesMetadata(string typeName)
         {
-            var driverInfo = await GetDriverInfoAsync(driverType);
+            var type = CatalogScanDriverType.Parse(typeName);
+            var driverInfo = await GetDriverInfoAsync(type);
 
             foreach (var csvTable in driverInfo.CsvTables)
             {
@@ -189,15 +191,16 @@ namespace NuGet.Insights.Worker
                 var rows = info.GetFirstTableRows();
                 var driverRow = rows.FirstOrDefault(x => info.ToPlainText(x[0]) == "Driver");
                 Assert.NotNull(driverRow);
-                Assert.Equal($"[`{driverType}`](../drivers/{driverType}.md)", info.ToMarkdown(driverRow[1]));
+                Assert.Equal($"[`{type}`](../drivers/{type}.md)", info.ToMarkdown(driverRow[1]));
             }
         }
 
         [DocsTheory]
         [MemberData(nameof(StartabledDriverTypesData))]
-        public async Task IsMentionedByTableDocument(CatalogScanDriverType driverType)
+        public async Task IsMentionedByTableDocument(string typeName)
         {
-            var info = await GetDriverInfoAsync(driverType);
+            var type = CatalogScanDriverType.Parse(typeName);
+            var info = await GetDriverInfoAsync(type);
             var rows = info.GetFirstTableRows();
             var row = rows.SingleOrDefault(row => info.ToPlainText(row[0]) == "Output CSV tables");
             Assert.NotNull(row);
@@ -208,9 +211,10 @@ namespace NuGet.Insights.Worker
 
         [DocsTheory]
         [MemberData(nameof(StartabledDriverTypesData))]
-        public async Task DependenciesRowMatchesMetadata(CatalogScanDriverType driverType)
+        public async Task DependenciesRowMatchesMetadata(string typeName)
         {
-            var info = await GetDriverInfoAsync(driverType);
+            var type = CatalogScanDriverType.Parse(typeName);
+            var info = await GetDriverInfoAsync(type);
             var rows = info.GetFirstTableRows();
             var row = rows.SingleOrDefault(row => info.ToPlainText(row[0]) == "Cursor dependencies");
             Assert.NotNull(row);
@@ -222,7 +226,7 @@ namespace NuGet.Insights.Worker
                 .Where(x => !string.IsNullOrWhiteSpace(x))
                 .ToList();
 
-            var (directPrefixes, transitiveLines) = DriverDocInitializer.GetDriverDependencyLines(driverType);
+            var (directPrefixes, transitiveLines) = DriverDocInitializer.GetDriverDependencyLines(type);
 
             for (var i = 0; i < directPrefixes.Count; i++)
             {
@@ -239,16 +243,17 @@ namespace NuGet.Insights.Worker
 
         [DocsTheory]
         [MemberData(nameof(StartabledDriverTypesData))]
-        public async Task DriverDependentsInUsingRow(CatalogScanDriverType driverType)
+        public async Task DriverDependentsInUsingRow(string typeName)
         {
-            var dependentsMarkdown = await GetDependentsLines(driverType);
+            var type = CatalogScanDriverType.Parse(typeName);
+            var dependentsMarkdown = await GetDependentsLines(type);
 
             // ignore lines that don't refer to a driver
             var driverLines = dependentsMarkdown
                 .Where(x => CatalogScanDriverMetadata.StartableDriverTypes.Any(y => x.Contains(y.ToString(), StringComparison.OrdinalIgnoreCase)))
                 .ToList();
             var dependents = CatalogScanDriverMetadata
-                .GetDependents(driverType)
+                .GetDependents(type)
                 .OrderBy(x => x.ToString())
                 .ToList();
 
@@ -277,10 +282,11 @@ namespace NuGet.Insights.Worker
 
         [DocsTheory]
         [MemberData(nameof(StartabledDriverTypesData))]
-        public async Task KustoInUsingRowIfDriverProducesCsv(CatalogScanDriverType driverType)
+        public async Task KustoInUsingRowIfDriverProducesCsv(string typeName)
         {
-            var info = await GetDriverInfoAsync(driverType);
-            var dependentsMarkdown = await GetDependentsLines(driverType);
+            var type = CatalogScanDriverType.Parse(typeName);
+            var info = await GetDriverInfoAsync(type);
+            var dependentsMarkdown = await GetDependentsLines(type);
 
             if (info.CsvTables.Any())
             {

@@ -185,42 +185,46 @@ namespace NuGet.Insights.Worker
 
             [Theory]
             [MemberData(nameof(FailsToStartWithBucketsData))]
-            public async Task FailsToStartWithBuckets(CatalogScanDriverType driverType)
+            public async Task FailsToStartWithBuckets(string typeName)
             {
+                // Arrange
+                var type = CatalogScanDriverType.Parse(typeName);
+
                 // Arrange & Act & Assert
                 var ex = await Assert.ThrowsAsync<ArgumentException>(() => CatalogScanService.UpdateAsync(
                     ScanId,
                     StorageSuffix,
-                    driverType,
+                    type,
                     Buckets));
                 Assert.StartsWith(
-                    $"The driver {driverType} is not supported for bucket range processing.",
+                    $"The driver {type} is not supported for bucket range processing.",
                     ex.Message,
                     StringComparison.Ordinal);
             }
 
             public static IEnumerable<object[]> FailsToStartWithBucketsData => TypeToInfo
                 .Where(x => !x.Value.SupportsBucketRangeProcessing)
-                .Select(x => new object[] { x.Key });
+                .Select(x => new object[] { x.Key.ToString() });
 
             [Theory]
             [MemberData(nameof(StartsWithBucketsData))]
-            public async Task StartsWithBuckets(CatalogScanDriverType driverType)
+            public async Task StartsWithBuckets(string typeName)
             {
                 // Arrange
+                var type = CatalogScanDriverType.Parse(typeName);
                 await CatalogScanService.InitializeAsync();
                 var expectedMax = new DateTimeOffset(2023, 11, 22, 9, 37, 13, TimeSpan.Zero);
-                await SetDependencyCursorsAsync(driverType, expectedMax);
+                await SetDependencyCursorsAsync(type, expectedMax);
                 await SetCursorsAsync(
-                    CatalogScanDriverMetadata.GetTransitiveClosure(driverType).Append(CatalogScanDriverType.LoadBucketedPackage),
+                    CatalogScanDriverMetadata.GetTransitiveClosure(type).Append(CatalogScanDriverType.LoadBucketedPackage),
                     expectedMax);
 
                 // Act
-                var result = await CatalogScanService.UpdateAsync(ScanId, StorageSuffix, driverType, Buckets);
+                var result = await CatalogScanService.UpdateAsync(ScanId, StorageSuffix, type, Buckets);
 
                 // Assert
                 Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
-                Assert.Equal(driverType, result.Scan.DriverType);
+                Assert.Equal(type, result.Scan.DriverType);
                 Assert.Equal(ScanId, result.Scan.ScanId);
                 Assert.Equal("23-25,42", result.Scan.BucketRanges);
                 Assert.Equal(CatalogClient.NuGetOrgMinDeleted, result.Scan.Min);
@@ -234,7 +238,7 @@ namespace NuGet.Insights.Worker
 
             public static IEnumerable<object[]> StartsWithBucketsData => TypeToInfo
                 .Where(x => x.Value.SupportsBucketRangeProcessing)
-                .Select(x => new object[] { x.Key });
+                .Select(x => new object[] { x.Key.ToString() });
 
             public string ScanId { get; }
             public string StorageSuffix { get; }
@@ -422,9 +426,12 @@ namespace NuGet.Insights.Worker
 
             [Theory]
             [MemberData(nameof(RejectsUnsupportedOnlyLatestLeavesData))]
-            public async Task RejectsUnsupportedOnlyLatestLeaves(CatalogScanDriverType type, bool badOnlyLatestLeaves)
+            public async Task RejectsUnsupportedOnlyLatestLeaves(string typeName, bool badOnlyLatestLeaves)
             {
-                // Arrange & Act & Assert
+                // Arrange
+                var type = CatalogScanDriverType.Parse(typeName);
+
+                // Act & Assert
                 var ex = await Assert.ThrowsAsync<ArgumentException>(() => CatalogScanService.UpdateAsync(type, max: null, badOnlyLatestLeaves));
                 Assert.StartsWith(
                     badOnlyLatestLeaves
@@ -436,13 +443,14 @@ namespace NuGet.Insights.Worker
 
             public static IEnumerable<object[]> RejectsUnsupportedOnlyLatestLeavesData => TypeToInfo
                 .Where(x => x.Value.OnlyLatestLeavesSupport.HasValue)
-                .Select(x => new object[] { x.Key, !x.Value.OnlyLatestLeavesSupport.Value });
+                .Select(x => new object[] { x.Key.ToString(), !x.Value.OnlyLatestLeavesSupport.Value });
 
             [Theory]
             [MemberData(nameof(SetsDefaultMin_WithAllLeavesData))]
-            public async Task SetsDefaultMin_WithAllLeaves(CatalogScanDriverType type, DateTimeOffset min)
+            public async Task SetsDefaultMin_WithAllLeaves(string typeName, DateTimeOffset min)
             {
                 // Arrange
+                var type = CatalogScanDriverType.Parse(typeName);
                 await CatalogScanService.InitializeAsync();
                 await SetDependencyCursorsAsync(type, CursorValue);
 
@@ -458,13 +466,14 @@ namespace NuGet.Insights.Worker
 
             public static IEnumerable<object[]> SetsDefaultMin_WithAllLeavesData => TypeToInfo
                 .Where(x => !x.Value.OnlyLatestLeavesSupport.GetValueOrDefault(false))
-                .Select(x => new object[] { x.Key, x.Value.DefaultMin });
+                .Select(x => new object[] { x.Key.ToString(), x.Value.DefaultMin });
 
             [Theory]
             [MemberData(nameof(SetsDefaultMin_WithOnlyLatestLeavesData))]
-            public async Task SetsDefaultMin_WithOnlyLatestLeaves(CatalogScanDriverType type, DateTimeOffset min)
+            public async Task SetsDefaultMin_WithOnlyLatestLeaves(string typeName, DateTimeOffset min)
             {
                 // Arrange
+                var type = CatalogScanDriverType.Parse(typeName);
                 await CatalogScanService.InitializeAsync();
                 await SetDependencyCursorsAsync(type, CursorValue);
 
@@ -480,13 +489,14 @@ namespace NuGet.Insights.Worker
 
             public static IEnumerable<object[]> SetsDefaultMin_WithOnlyLatestLeavesData => TypeToInfo
                 .Where(x => x.Value.OnlyLatestLeavesSupport.GetValueOrDefault(true))
-                .Select(x => new object[] { x.Key, x.Value.DefaultMin });
+                .Select(x => new object[] { x.Key.ToString(), x.Value.DefaultMin });
 
             [Theory]
             [MemberData(nameof(SetsDefaultMin_WithDefaultFindLatestData))]
-            public async Task SetsDefaultMin_WithDefaultFindLatest(CatalogScanDriverType type, DateTimeOffset min, bool onlyLatestLeaves)
+            public async Task SetsDefaultMin_WithDefaultFindLatest(string typeName, DateTimeOffset min, bool onlyLatestLeaves)
             {
                 // Arrange
+                var type = CatalogScanDriverType.Parse(typeName);
                 await CatalogScanService.InitializeAsync();
                 await SetDependencyCursorsAsync(type, CursorValue);
 
@@ -501,13 +511,14 @@ namespace NuGet.Insights.Worker
             }
 
             public static IEnumerable<object[]> SetsDefaultMin_WithDefaultFindLatestData => TypeToInfo
-                .Select(x => new object[] { x.Key, x.Value.DefaultMin, x.Value.OnlyLatestLeavesSupport.GetValueOrDefault(true), });
+                .Select(x => new object[] { x.Key.ToString(), x.Value.DefaultMin, x.Value.OnlyLatestLeavesSupport.GetValueOrDefault(true), });
 
             [Theory]
             [MemberData(nameof(StartabledDriverTypesData))]
-            public async Task MaxAlignsWithDependency(CatalogScanDriverType type)
+            public async Task MaxAlignsWithDependency(string typeName)
             {
                 // Arrange
+                var type = CatalogScanDriverType.Parse(typeName);
                 await CatalogScanService.InitializeAsync();
                 await SetDependencyCursorsAsync(type, CursorValue);
 
@@ -609,9 +620,10 @@ namespace NuGet.Insights.Worker
 
             [Theory]
             [MemberData(nameof(StartabledDriverTypesData))]
-            public async Task SetDependencyCursorAsyncMatchesDeclaredDependencies(CatalogScanDriverType type)
+            public async Task SetDependencyCursorAsyncMatchesDeclaredDependencies(string typeName)
             {
                 // Arrange
+                var type = CatalogScanDriverType.Parse(typeName);
                 var min = new DateTimeOffset(2024, 8, 13, 11, 50, 0, TimeSpan.Zero);
                 FlatContainerCursor = CursorTableEntity.Min;
                 await CatalogScanCursorService.InitializeAsync();
