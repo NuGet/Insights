@@ -79,7 +79,10 @@ namespace NuGet.Insights.Worker
             GetBucketKey? GetBucketKey,
 
             // The type of CSV records that this driver produces.
-            IReadOnlyList<Type>? CsvRecordTypes);
+            IReadOnlyList<Type>? CsvRecordTypes,
+
+            // The batch size to use for leaf scan messages of this driver type.
+            int LeafScanBatchSize);
 
         private static DriverMetadata Csv<T>(CatalogScanDriverType type)
             where T : IAggregatedCsvRecord<T> => Csv(
@@ -177,7 +180,8 @@ namespace NuGet.Insights.Worker
                 DefaultMin: CatalogClient.NuGetOrgMinDeleted,
                 Dependencies: [],
                 GetBucketKey: GetIdentityBucketKey,
-                CsvRecordTypes: null);
+                CsvRecordTypes: null,
+                LeafScanBatchSize: 30);
         }
 
         private static string GenerateTitleFromName(CatalogScanDriverType type)
@@ -494,6 +498,11 @@ namespace NuGet.Insights.Worker
         public static IReadOnlyList<CatalogScanDriverType> GetDependencies(CatalogScanDriverType driverType)
         {
             return GetValue(TypeToMetadata, driverType).Dependencies;
+        }
+
+        public static int GetLeafScanBatchSize(CatalogScanDriverType driverType)
+        {
+            return GetValue(TypeToMetadata, driverType).LeafScanBatchSize;
         }
 
         public static IReadOnlyList<CatalogScanDriverType> GetDependents(CatalogScanDriverType driverType)

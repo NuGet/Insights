@@ -44,32 +44,7 @@ namespace NuGet.Insights.Worker
                         return null;
                     }
 
-#if ENABLE_NPE
-                    if (catalogLeafScan.DriverType == CatalogScanDriverType.NuGetPackageExplorerToCsv)
-                    {
-                        batchSize = 1;
-                        break;
-                    }
-#endif
-
-                    if (catalogLeafScan.DriverType == CatalogScanDriverType.PackageAssemblyToCsv
-                        || catalogLeafScan.DriverType == CatalogScanDriverType.PackageFileToCsv
-                        || catalogLeafScan.DriverType == CatalogScanDriverType.SymbolPackageFileToCsv
-                        || catalogLeafScan.DriverType == CatalogScanDriverType.PackageContentToCsv)
-                    {
-                        batchSize = 10;
-                        break;
-                    }
-
-#if ENABLE_CRYPTOAPI
-                    if (catalogLeafScan.DriverType == CatalogScanDriverType.PackageCertificateToCsv)
-                    {
-                        batchSize = 100;
-                        break;
-                    }
-#endif
-
-                    batchSize = 30;
+                    batchSize = CatalogScanDriverMetadata.GetLeafScanBatchSize(catalogLeafScan.DriverType);
                     break;
             }
 

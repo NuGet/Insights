@@ -17,6 +17,9 @@ namespace NuGet.Insights.Worker
                     Title = "NuGet Package Explorer to CSV",
                     DownloadedPackageAssets = DownloadedPackageAssets.Nupkg | DownloadedPackageAssets.Snupkg,
 
+                    // This is a slow driver. Reduce batch size to avoid message timeouts.
+                    LeafScanBatchSize = 1,
+
                     // Internally the NPE analysis APIs read symbols from the Microsoft and NuGet.org symbol servers. This
                     // means that the results are unstable for a similar reason as LoadSymbolPackageArchive. Additionally,
                     // some analysis times out (NuGetPackageExplorerResultType.Timeout). However this driver is relatively

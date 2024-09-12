@@ -103,6 +103,7 @@ namespace NuGet.Insights.Worker
                 {
                     DownloadedPackageAssets = DownloadedPackageAssets.Nupkg,
                     Dependencies = [CatalogScanDriverType.LoadPackageArchive],
+                    LeafScanBatchSize = 10,
                 };
 
             public static DriverMetadata PackageAssetToCsv =>
@@ -134,6 +135,7 @@ namespace NuGet.Insights.Worker
                 {
                     DownloadedPackageAssets = DownloadedPackageAssets.Nupkg,
                     Dependencies = [CatalogScanDriverType.LoadPackageArchive],
+                    LeafScanBatchSize = 10,
                 };
 
             public static DriverMetadata PackageFileToCsv =>
@@ -141,6 +143,7 @@ namespace NuGet.Insights.Worker
                 {
                     DownloadedPackageAssets = DownloadedPackageAssets.Nupkg,
                     Dependencies = [CatalogScanDriverType.LoadPackageArchive],
+                    LeafScanBatchSize = 10,
                 };
 
             public static DriverMetadata PackageIconToCsv =>
@@ -204,6 +207,7 @@ namespace NuGet.Insights.Worker
                 {
                     DownloadedPackageAssets = DownloadedPackageAssets.Snupkg,
                     Dependencies = [CatalogScanDriverType.LoadSymbolPackageArchive],
+                    LeafScanBatchSize = 10,
                 };
         }
     }

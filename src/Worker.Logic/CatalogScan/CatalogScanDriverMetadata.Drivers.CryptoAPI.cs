@@ -19,6 +19,7 @@ namespace NuGet.Insights.Worker
                     // time. Despite this, the changes are not to significant over time so we won't reprocess.
                     UpdatedOutsideOfCatalog = false,
                     Dependencies = [CatalogScanDriverType.LoadPackageArchive],
+                    LeafScanBatchSize = 100,
                 };
         }
     }
