@@ -1,4 +1,0 @@
-[submodule "submodules/NuGetPackageExplorer"]
-	path = submodules/NuGetPackageExplorer
-	url = https://github.com/NuGetPackageExplorer/NuGetPackageExplorer.git
-	branch = main

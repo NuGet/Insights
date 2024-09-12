@@ -24,6 +24,7 @@
     <PackageReference Include="Microsoft.Extensions.ObjectPool" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     <PackageReference Include="Microsoft.NET.StringTools" />
+    <PackageReference Include="NuGetPackageExplorer.Core" Condition="'$(EnableNPE)' == 'true'" />
     <PackageReference Include="System.Interactive.Async" />
     <PackageReference Include="System.Net.Http" />
     <PackageReference Include="System.Text.Encodings.Web" />
@@ -33,7 +34,6 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\submodules\NuGetPackageExplorer\Core\Core.csproj" Condition="'$(EnableNPE)' == 'true'" />
     <ProjectReference Include="..\Forks\Forks.csproj" />
   </ItemGroup>
 </Project>
