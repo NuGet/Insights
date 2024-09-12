@@ -26,15 +26,15 @@ trap { [Console]::OutputEncoding = $originalOutputEncoding }
 $hasError = @()
 
 if ($Files -and $Files.Length -gt 0) {
-    $documents = $Files
+    $documents = $Files | ForEach-Object { (Resolve-Path $_).ToString() }
 }
 else {
-    $documents = Get-ChildItem (Join-Path $RootDirectory "*.md") -Recurse
+    $documents = Get-ChildItem (Join-Path $RootDirectory "*.md") -Recurse | ForEach-Object { $_.FullName }
 }
 
 $documents = $documents | `
-    Where-Object { !$_.FullName.StartsWith((Join-Path $RootDirectory "submodules")) } | `
-    Where-Object { !$_.FullName.StartsWith((Join-Path $RootDirectory "artifacts")) }
+    Where-Object { !$_.StartsWith((Join-Path $RootDirectory "submodules")) } | `
+    Where-Object { !$_.StartsWith((Join-Path $RootDirectory "artifacts")) }
 
 foreach ($md in $documents) {
     $failed = $true
