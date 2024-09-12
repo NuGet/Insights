@@ -120,6 +120,12 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient<KustoIngestionStorageService>();
             serviceCollection.AddTransient<KustoDataValidator>();
             serviceCollection.AddTransient<KustoIngestionTimer>();
+
+            foreach (var serviceType in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementing<IKustoValidationProvider>())
+            {
+                serviceCollection.AddTransient(typeof(IKustoValidationProvider), serviceType);
+            }
+
             serviceCollection.AddTransient(x =>
             {
                 var options = x.GetRequiredService<IOptions<NuGetInsightsWorkerSettings>>();
