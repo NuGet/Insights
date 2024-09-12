@@ -3,12 +3,9 @@
 
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.KustoIngestion;
+using NuGet.Insights.Worker.ReferenceTracking;
 using NuGet.Insights.Worker.TimedReprocess;
 using NuGet.Insights.Worker.Workflow;
-#if ENABLE_CRYPTOAPI
-using NuGet.Insights.Worker.PackageCertificateToCsv;
-using NuGet.Insights.Worker.ReferenceTracking;
-#endif
 
 namespace NuGet.Insights.Worker
 {
@@ -17,6 +14,14 @@ namespace NuGet.Insights.Worker
         [Fact]
         public void TimersAreInProperOrder()
         {
+            var cleanupOrphanRecordsTimers = typeof(CleanupOrphanRecordsTimer<>).Assembly
+                .GetTypes()
+                .Where(x => x.IsAssignableTo(typeof(ICleanupOrphanCsvRecord)))
+                .Where(x => x.IsClass && !x.IsAbstract)
+                .OrderBy(x => x.FullName)
+                .Select(x => typeof(CleanupOrphanRecordsTimer<>).MakeGenericType(x))
+                .ToList();
+
             var expectedGroups = new List<List<Type>>
             {
                 new List<Type>
@@ -34,12 +39,7 @@ namespace NuGet.Insights.Worker
                     typeof(CatalogScanUpdateTimer),
                 },
 
-#if ENABLE_CRYPTOAPI
-                new List<Type>
-                {
-                    typeof(CleanupOrphanRecordsTimer<CertificateRecord>),
-                },
-#endif
+                cleanupOrphanRecordsTimers,
 
                 new List<Type>
                 {
@@ -55,6 +55,8 @@ namespace NuGet.Insights.Worker
                     typeof(KustoIngestionTimer),
                 },
             };
+
+            expectedGroups.RemoveAll(x => x.Count == 0);
 
             var timers = Host.Services.GetServices<ITimer>();
             var actualGroups = SpecificTimerExecutionService

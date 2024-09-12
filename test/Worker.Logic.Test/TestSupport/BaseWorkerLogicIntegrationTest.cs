@@ -171,6 +171,35 @@ namespace NuGet.Insights.Worker
             return await UpdateAsync(result);
         }
 
+        protected async Task UpdateInBatchesAsync(IEnumerable<CatalogScanDriverType> drivers, DateTimeOffset max)
+        {
+            var batches = CatalogScanDriverMetadata.GetParallelBatches(drivers.ToHashSet(), new HashSet<CatalogScanDriverType>());
+
+            foreach (var batch in batches)
+            {
+                var scans = new List<CatalogScanServiceResult>();
+                foreach (var type in batch)
+                {
+                    var scan = await CatalogScanService.UpdateAsync(type, max);
+                    if (scan.Type == CatalogScanServiceResultType.FullyCaughtUpWithMax)
+                    {
+                        continue;
+                    }
+
+                    scans.Add(scan);
+                }
+
+                Output.WriteHorizontalRule();
+                Output.WriteLine($"Drivers: {string.Join(", ", scans.Select(x => x.Scan.DriverType))}");
+                Output.WriteHorizontalRule();
+
+                foreach (var scan in scans)
+                {
+                    await UpdateAsync(scan);
+                }
+            }
+        }
+
         protected async Task<TimedReprocessRun> UpdateAsync(TimedReprocessRun run)
         {
             Assert.NotNull(run);
@@ -1051,6 +1080,44 @@ namespace NuGet.Insights.Worker
             }
 
             return tables;
+        }
+
+        protected int GetNuspecRequestCount()
+        {
+            return HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith(".nuspec", StringComparison.Ordinal));
+        }
+
+        protected int GetNupkgRequestCount()
+        {
+            return HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith(".nupkg", StringComparison.Ordinal));
+        }
+
+        protected int GetReadmeRequestCount()
+        {
+            var count = HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith("/readme", StringComparison.Ordinal));
+
+            if (Options.Value.LegacyReadmeUrlPattern is not null)
+            {
+                Assert.EndsWith(".md", Options.Value.LegacyReadmeUrlPattern, StringComparison.Ordinal);
+                count += HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith(".md", StringComparison.Ordinal));
+            }
+
+            return count;
+        }
+
+        protected int GetSnupkgRequestCount()
+        {
+            return HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith(".snupkg", StringComparison.Ordinal));
+        }
+
+        protected int GetIconRequestCount()
+        {
+            return HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith("/icon", StringComparison.Ordinal));
+        }
+
+        protected int GetLicenseRequestCount()
+        {
+            return HttpMessageHandlerFactory.Responses.Count(x => x.RequestMessage.RequestUri.AbsolutePath.EndsWith("/license", StringComparison.Ordinal));
         }
 
         private class TableReportIngestionResult : IKustoIngestionResult

@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker
 {
-    public class NuGetInsightsWorkerSettings : NuGetInsightsSettings
+    public partial class NuGetInsightsWorkerSettings : NuGetInsightsSettings
     {
         public bool UseBulkEnqueueStrategy { get; set; } = true;
         public int BulkEnqueueThreshold { get; set; } = 10;
@@ -124,16 +124,10 @@ namespace NuGet.Insights.Worker
         public string SymbolPackageFileContainerName { get; set; } = "symbolpackagefiles";
         public string PackageVersionTableName { get; set; } = "packageversions";
         public string PackageVersionContainerName { get; set; } = "packageversions";
-        public string NuGetPackageExplorerContainerName { get; set; } = "nugetpackageexplorer";
-        public string NuGetPackageExplorerFileContainerName { get; set; } = "nugetpackageexplorerfiles";
         public string PackageDeprecationContainerName { get; set; } = "packagedeprecations";
         public string PackageVulnerabilityContainerName { get; set; } = "packagevulnerabilities";
         public string PackageIconContainerName { get; set; } = "packageicons";
         public string PackageCompatibilityContainerName { get; set; } = "packagecompatibilities";
-        public string PackageToCertificateTableName { get; set; } = "packagetocertificates";
-        public string CertificateToPackageTableName { get; set; } = "certificatetopackages";
-        public string PackageCertificateContainerName { get; set; } = "packagecertificates";
-        public string CertificateContainerName { get; set; } = "certificates";
         public string PackageContentContainerName { get; set; } = "packagecontents";
 
         public string KustoConnectionString { get; set; } = null;

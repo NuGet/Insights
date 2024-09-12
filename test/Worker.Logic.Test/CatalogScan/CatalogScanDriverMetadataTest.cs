@@ -1,13 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if ENABLE_CRYPTOAPI
-using NuGet.Insights.Worker.PackageCertificateToCsv;
-#endif
-
 namespace NuGet.Insights.Worker
 {
-    public class CatalogScanDriverMetadataTest : BaseWorkerLogicIntegrationTest
+    public partial class CatalogScanDriverMetadataTest : BaseWorkerLogicIntegrationTest
     {
         [Theory]
         [MemberData(nameof(StartabledDriverTypesData))]
@@ -29,19 +25,40 @@ namespace NuGet.Insights.Worker
             Assert.All(dependents, x => Assert.Contains(x, afterTypes));
         }
 
+        private static List<CatalogScanDriverType> PackageRecordDriverTypes { get; } = CatalogScanDriverMetadata
+            .StartableDriverTypes
+            .Where(x => CatalogScanDriverMetadata.GetOnlyLatestLeavesSupport(x) != false)
+            .ToList();
+
+        public static IEnumerable<object[]> GetBucketKeyFactory_ReturnsBucketKeyMatchingRecordsData => PackageRecordDriverTypes
+            .Select(x => new object[] { x.ToString() });
+
         [Theory]
-        [MemberData(nameof(LatestLeavesDriverTypesData))]
+        [MemberData(nameof(GetBucketKeyFactory_ReturnsBucketKeyMatchingRecordsData))]
         public void GetBucketKeyFactory_ReturnsBucketKeyMatchingRecords(string typeName)
         {
             var type = CatalogScanDriverType.Parse(typeName);
+
+            VerifyBucketKeyMatchesRecords(type, VerifyPackageRecordBucketKey);
+        }
+
+        private static void VerifyPackageRecordBucketKey(Type recordType, string bucketKey, IAggregatedCsvRecord record)
+        {
+            // By default the driver's bucket key should match the bucket key of all of the records produced by the driver.
+            var recordBucketKey = record.GetBucketKey();
+            Assert.NotNull(recordBucketKey);
+            Assert.NotEmpty(recordBucketKey);
+            Assert.Equal(bucketKey, recordBucketKey);
+        }
+
+        private static void VerifyBucketKeyMatchesRecords(
+            CatalogScanDriverType type,
+            Action<Type, string, IAggregatedCsvRecord> verifyRecordBucketKey)
+        {
             var id = "NuGet.Protocol";
             var version = "6.11.0.0-BETA";
             var normalizedVersion = NuGetVersion.Parse(version).ToNormalizedString();
             var lowerId = id.ToLowerInvariant();
-
-#if ENABLE_CRYPTOAPI
-            var fingerpint = "WZwhyq+aBTSc7liizyZSlTOr2/v+/vNEqmA5uMp/Ulk=";
-#endif
 
             var bucketKey = CatalogScanDriverMetadata.GetBucketKeyFactory(type)(lowerId, normalizedVersion);
             var recordTypes = CatalogScanDriverMetadata.GetRecordTypes(type);
@@ -63,31 +80,7 @@ namespace NuGet.Insights.Worker
                     recordType.GetProperty(nameof(PackageRecord.Version), typeof(string))?.SetValue(record, version);
                     recordType.GetProperty(nameof(PackageRecord.Identity))?.SetValue(record, PackageRecord.GetIdentity(lowerId, normalizedVersion));
 
-#if ENABLE_CRYPTOAPI
-                    recordType.GetProperty(nameof(CertificateRecord.Fingerprint))?.SetValue(record, fingerpint);
-#endif
-
-                    var recordBucketKey = record.GetBucketKey();
-                    switch (record)
-                    {
-
-#if ENABLE_CRYPTOAPI
-                        // This record type is produced along with with PackageCertificateRecord.
-                        // These two records have different bucket strategies. We have to pick one of them so we
-                        // prefer the bucket key of the PackageCertificateRecord, which has more records per package.
-                        case CertificateRecord:
-                            Assert.Equal(fingerpint, recordBucketKey);
-                            Assert.NotEqual(bucketKey, recordBucketKey);
-                            break;
-#endif
-
-                        // By default the driver's bucket key should match the bucket key of all of the records produced by the driver.
-                        default:
-                            Assert.NotNull(recordBucketKey);
-                            Assert.NotEmpty(recordBucketKey);
-                            Assert.Equal(bucketKey, record.GetBucketKey());
-                            break;
-                    }
+                    verifyRecordBucketKey(recordType, bucketKey, record);
                 }
             }
         }
@@ -136,13 +129,6 @@ namespace NuGet.Insights.Worker
         }
 
         [Fact]
-        public void GetTitleReturnsTitleOverride()
-        {
-            var actual = CatalogScanDriverMetadata.GetTitle(CatalogScanDriverType.NuGetPackageExplorerToCsv);
-            Assert.Equal("NuGet Package Explorer to CSV", actual);
-        }
-
-        [Fact]
         public void GetTitleReturnsUppercaseCSV()
         {
             var actual = CatalogScanDriverMetadata.GetTitle(CatalogScanDriverType.PackageAssetToCsv);
@@ -155,11 +141,6 @@ namespace NuGet.Insights.Worker
             var actual = CatalogScanDriverMetadata.GetTitle(CatalogScanDriverType.LoadPackageArchive);
             Assert.Equal("Load package archive", actual);
         }
-
-        public static IEnumerable<object[]> LatestLeavesDriverTypesData => CatalogScanDriverMetadata
-            .StartableDriverTypes
-            .Where(x => CatalogScanDriverMetadata.GetOnlyLatestLeavesSupport(x) != false)
-            .Select(x => new object[] { x.ToString() });
 
         public CatalogScanDriverMetadataTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {

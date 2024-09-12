@@ -92,15 +92,6 @@ namespace NuGet.Insights.Worker
         /// </summary>
         public static CatalogScanDriverType PackageAssetToCsv { get; } = new CatalogScanDriverType(nameof(PackageAssetToCsv));
 
-#if ENABLE_CRYPTOAPI
-        /// <summary>
-        /// Implemented by <see cref="PackageCertificateToCsv.PackageCertificateToCsvDriver"/>. Loads all certificate
-        /// chain information from the package signature into storage and tracks the many-to-many relationship between
-        /// packages and certificates.
-        /// </summary>
-        public static CatalogScanDriverType PackageCertificateToCsv { get; } = new CatalogScanDriverType(nameof(PackageCertificateToCsv));
-#endif
-
         /// <summary>
         /// Implemented by <see cref="PackageSignatureToCsv.PackageSignatureToCsvDriver"/>. Extracts information from each
         /// NuGet package signature, determining things like certificate issuers and whether the package is author signed.
@@ -131,14 +122,6 @@ namespace NuGet.Insights.Worker
         /// latest version per package ID by using the data set up by <see cref="LoadPackageVersion"/>.
         /// </summary>
         public static CatalogScanDriverType PackageVersionToCsv { get; } = new CatalogScanDriverType(nameof(PackageVersionToCsv));
-
-#if ENABLE_NPE
-        /// <summary>
-        /// Implemented by <see cref="NuGetPackageExplorerToCsv.NuGetPackageExplorerToCsvDriver"/>. This driver runs
-        /// NuGet Package Explorer (NPE) assembly and symbol verification logic.
-        /// </summary>
-        public static CatalogScanDriverType NuGetPackageExplorerToCsv { get; } = new CatalogScanDriverType(nameof(NuGetPackageExplorerToCsv));
-#endif
 
         /// <summary>
         /// Implemented by <see cref="PackageCompatibilityToCsv.PackageCompatibilityToCsvDriver"/>. This driver uses

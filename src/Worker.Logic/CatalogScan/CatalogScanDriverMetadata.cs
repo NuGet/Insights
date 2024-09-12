@@ -40,6 +40,18 @@ namespace NuGet.Insights.Worker
 {
     public delegate string GetBucketKey(string lowerId, string normalizedVersion);
 
+    [Flags]
+    public enum DownloadedPackageAssets
+    {
+        None = 0,
+        Nupkg = 1 << 0,
+        Snupkg = 1 << 1,
+        Nuspec = 1 << 2,
+        Readme = 1 << 3,
+        Icon = 1 << 4,
+        License = 1 << 5,
+    }
+
     public static class CatalogScanDriverMetadata
     {
         /// <summary>
@@ -66,12 +78,20 @@ namespace NuGet.Insights.Worker
             // uses find latest driver, only reads catalog pages
             OnlyCatalogRange<FindLatestLeafDriver<LatestPackageLeaf>>(CatalogScanDriverType.LoadLatestPackageLeaf),
 
-            Default<LoadPackageArchiveDriver>(CatalogScanDriverType.LoadPackageArchive),
+            Default<LoadPackageArchiveDriver>(CatalogScanDriverType.LoadPackageArchive) with
+            {
+                DownloadedPackageAssets = DownloadedPackageAssets.Nupkg,
+            },
 
-            Default<LoadPackageManifestDriver>(CatalogScanDriverType.LoadPackageManifest),
+            Default<LoadPackageManifestDriver>(CatalogScanDriverType.LoadPackageManifest) with
+            {
+                DownloadedPackageAssets = DownloadedPackageAssets.Nuspec,
+            },
 
             Default<LoadPackageReadmeDriver>(CatalogScanDriverType.LoadPackageReadme) with
             {
+                DownloadedPackageAssets = DownloadedPackageAssets.Readme,
+
                 // README is not always embedded in the package and can be updated without a catalog update.
                 UpdatedOutsideOfCatalog = true,
             },
@@ -84,6 +104,8 @@ namespace NuGet.Insights.Worker
 
             Default<LoadSymbolPackageArchiveDriver>(CatalogScanDriverType.LoadSymbolPackageArchive) with
             {
+                DownloadedPackageAssets = DownloadedPackageAssets.Snupkg,
+
                 // Symbol package files (.snupkg) can be replaced and removed without a catalog update.
                 UpdatedOutsideOfCatalog = true,
             },
@@ -92,6 +114,7 @@ namespace NuGet.Insights.Worker
             Csv<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>(CatalogScanDriverType.NuGetPackageExplorerToCsv) with
             {
                 Title = "NuGet Package Explorer to CSV",
+                DownloadedPackageAssets = DownloadedPackageAssets.Nupkg | DownloadedPackageAssets.Snupkg,
 
                 // Internally the NPE analysis APIs read symbols from the Microsoft and NuGet.org symbol servers. This
                 // means that the results are unstable for a similar reason as LoadSymbolPackageArchive. Additionally,
@@ -108,6 +131,7 @@ namespace NuGet.Insights.Worker
 
             Csv<PackageAssembly>(CatalogScanDriverType.PackageAssemblyToCsv) with
             {
+                DownloadedPackageAssets = DownloadedPackageAssets.Nupkg,
                 Dependencies = [CatalogScanDriverType.LoadPackageArchive],
             },
 
@@ -146,16 +170,20 @@ namespace NuGet.Insights.Worker
 
             Csv<PackageContent>(CatalogScanDriverType.PackageContentToCsv) with
             {
+                DownloadedPackageAssets = DownloadedPackageAssets.Nupkg,
                 Dependencies = [CatalogScanDriverType.LoadPackageArchive],
             },
 
             Csv<PackageFileRecord>(CatalogScanDriverType.PackageFileToCsv) with
             {
+                DownloadedPackageAssets = DownloadedPackageAssets.Nupkg,
                 Dependencies = [CatalogScanDriverType.LoadPackageArchive],
             },
 
             Csv<PackageIcon>(CatalogScanDriverType.PackageIconToCsv) with
             {
+                DownloadedPackageAssets = DownloadedPackageAssets.Icon,
+
                 // Changes to the hosted icon for a package occur along with a catalog update, even package with icon
                 // URL (non-embedded icon) because the Catalog2Icon job follows the catalog. The data could be unstable
                 // if NuGet Insights runs before Catalog2Icon does (unlikely) or if the Magick.NET dependency is
@@ -165,6 +193,8 @@ namespace NuGet.Insights.Worker
 
             Csv<PackageLicense>(CatalogScanDriverType.PackageLicenseToCsv) with
             {
+                DownloadedPackageAssets = DownloadedPackageAssets.License,
+
                 // If an SPDX support license becomes deprecated, the results of this driver will change when the
                 // NuGet.Package dependency is updated. This is rare, so we won't reprocess.
                 UpdatedOutsideOfCatalog = false,
@@ -201,6 +231,7 @@ namespace NuGet.Insights.Worker
 
             Csv<SymbolPackageFileRecord>(CatalogScanDriverType.SymbolPackageFileToCsv) with
             {
+                DownloadedPackageAssets = DownloadedPackageAssets.Snupkg,
                 Dependencies = [CatalogScanDriverType.LoadSymbolPackageArchive],
             },
         };
@@ -235,6 +266,10 @@ namespace NuGet.Insights.Worker
             // - true: the data tracked by the driver can change without a catalog leaf being emitted, a periodic check
             //         for changed data is desired
             bool UpdatedOutsideOfCatalog,
+
+            // A flags enum that represents which assets are downloaded by the driver. It does not mean that the driver
+            // always downloads these assets, but that it can download them.
+            DownloadedPackageAssets DownloadedPackageAssets,
 
             // The default minimum value to initialize this driver's cursor to. Most of the time this is
             // CatalogClient.NuGetOrgMinDeleted since this allows all deleted packages to be seen. If the driver needs
@@ -344,6 +379,7 @@ namespace NuGet.Insights.Worker
                 OnlyLatestLeavesSupport: null,
                 BucketRangeSupport: true,
                 UpdatedOutsideOfCatalog: false,
+                DownloadedPackageAssets: DownloadedPackageAssets.None,
                 DefaultMin: CatalogClient.NuGetOrgMinDeleted,
                 Dependencies: [],
                 GetBucketKey: GetIdentityBucketKey,
@@ -504,10 +540,8 @@ namespace NuGet.Insights.Worker
                 return (IReadOnlyList<CatalogScanDriverType>)output;
             });
 
-        private static readonly IReadOnlyList<CatalogScanDriverType> FlatContainerDependents = AllMetadata
-            .Where(x => x.Dependencies.Count == 0)
-            .Select(x => x.Type)
-            .Order()
+        public static IReadOnlyList<CatalogScanDriverType> DriverTypesWithNoDependencies { get; } = StartableDriverTypes
+            .Where(x => GetDependencies(x).Count == 0)
             .ToList();
 
         private static T GetValue<T>(FrozenDictionary<CatalogScanDriverType, T> lookup, CatalogScanDriverType driverType)
@@ -634,6 +668,25 @@ namespace NuGet.Insights.Worker
             return GetValue(TypeToMetadata, driverType).UpdatedOutsideOfCatalog;
         }
 
+        public static DownloadedPackageAssets GetDownloadedPackageAssets(CatalogScanDriverType driverType)
+        {
+            return GetValue(TypeToMetadata, driverType).DownloadedPackageAssets;
+        }
+
+        public static IReadOnlyList<CatalogScanDriverType> GetDriversThatDownloadPackageAssets(DownloadedPackageAssets downloadedPackageAsset)
+        {
+            var output = new List<CatalogScanDriverType>();
+            foreach (var type in StartableDriverTypes)
+            {
+                if ((GetDownloadedPackageAssets(type) & downloadedPackageAsset) == downloadedPackageAsset)
+                {
+                    output.Add(type);
+                }
+            }
+
+            return output;
+        }
+
         public static DateTimeOffset GetDefaultMin(CatalogScanDriverType driverType)
         {
             return GetValue(TypeToMetadata, driverType).DefaultMin;
@@ -652,11 +705,6 @@ namespace NuGet.Insights.Worker
         public static IReadOnlyList<CatalogScanDriverType> GetDependents(CatalogScanDriverType driverType)
         {
             return GetValue(TypeToDependents, driverType);
-        }
-
-        public static IReadOnlyList<CatalogScanDriverType> GetFlatContainerDependents()
-        {
-            return FlatContainerDependents;
         }
     }
 }

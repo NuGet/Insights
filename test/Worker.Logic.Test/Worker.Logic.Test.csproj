@@ -10,11 +10,19 @@
     <Compile Remove="$(CompilerGeneratedFilesOutputPath)\**\*.cs" />
     <None Include="$(CompilerGeneratedFilesOutputPath)\**\*.cs" />
   </ItemGroup>
+  <ItemGroup Condition="'$(EnableNPE)' != 'true' or '$(EnableCryptoAPI)' != 'true'">
+    <Compile Remove="Docs\DriverDocsTest.AllDrivers.cs" />
+    <Compile Remove="Docs\TableDocsTest.AllTables.cs" />
+  </ItemGroup>
   <ItemGroup Condition="'$(EnableNPE)' != 'true'">
     <Compile Remove="Drivers\NuGetPackageExplorerToCsv\*" />
+    <Compile Remove="CatalogScan\CatalogScanServiceTest.DriverInfo.NPE.cs" />
+    <Compile Remove="CatalogScan\CatalogScanDriverMetadataTest.NPE.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(EnableCryptoAPI)' != 'true'">
     <Compile Remove="Drivers\PackageCertificateToCsv\*" />
+    <Compile Remove="CatalogScan\CatalogScanServiceTest.DriverInfo.CryptoApi.cs" />
+    <Compile Remove="CatalogScan\CatalogScanDriverMetadataTest.CryptoApi.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="DiffPlex" />
