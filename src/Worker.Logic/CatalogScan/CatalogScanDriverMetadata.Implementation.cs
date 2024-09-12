@@ -2,37 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Frozen;
-using NuGet.Insights.Worker.BuildVersionSet;
-using NuGet.Insights.Worker.CatalogDataToCsv;
-using NuGet.Insights.Worker.LoadBucketedPackage;
-using NuGet.Insights.Worker.LoadLatestPackageLeaf;
-using NuGet.Insights.Worker.LoadPackageArchive;
-using NuGet.Insights.Worker.LoadPackageManifest;
-using NuGet.Insights.Worker.LoadPackageReadme;
-using NuGet.Insights.Worker.LoadPackageVersion;
-using NuGet.Insights.Worker.LoadSymbolPackageArchive;
-using NuGet.Insights.Worker.PackageArchiveToCsv;
-using NuGet.Insights.Worker.PackageAssemblyToCsv;
-using NuGet.Insights.Worker.PackageAssetToCsv;
-using NuGet.Insights.Worker.PackageCompatibilityToCsv;
-using NuGet.Insights.Worker.PackageContentToCsv;
-using NuGet.Insights.Worker.PackageFileToCsv;
-using NuGet.Insights.Worker.PackageIconToCsv;
-using NuGet.Insights.Worker.PackageLicenseToCsv;
-using NuGet.Insights.Worker.PackageManifestToCsv;
-using NuGet.Insights.Worker.PackageReadmeToCsv;
-using NuGet.Insights.Worker.PackageSignatureToCsv;
-using NuGet.Insights.Worker.PackageVersionToCsv;
-using NuGet.Insights.Worker.SymbolPackageArchiveToCsv;
-using NuGet.Insights.Worker.SymbolPackageFileToCsv;
-
-#if ENABLE_CRYPTOAPI
-using NuGet.Insights.Worker.PackageCertificateToCsv;
-#endif
-
-#if ENABLE_NPE
-using NuGet.Insights.Worker.NuGetPackageExplorerToCsv;
-#endif
 
 #nullable enable
 
@@ -52,191 +21,16 @@ namespace NuGet.Insights.Worker
         License = 1 << 5,
     }
 
-    public static class CatalogScanDriverMetadata
+    public static partial class CatalogScanDriverMetadata
     {
-        /// <summary>
-        /// Add a new item in this array when you introduce a new driver. Consider looking at the definition for a
-        /// similar driver and 
-        /// </summary>
-        private static readonly IReadOnlyList<DriverMetadata> AllMetadata = new[]
-        {
-            // only needs catalog pages, not leaves
-            OnlyCatalogRange<BuildVersionSetDriver>(CatalogScanDriverType.BuildVersionSet),
+        private static readonly IReadOnlyList<DriverMetadata> AllMetadata = typeof(DriverMetadata)
+            .GetProperties(BindingFlags.Public | BindingFlags.Static | BindingFlags.GetProperty)
+            .Where(x => x.PropertyType == typeof(DriverMetadata))
+            .Select(x => (DriverMetadata)x.GetValue(null)!)
+            .OrderBy(x => x.Type)
+            .ToList();
 
-            // needs all catalog leaves
-            Csv<PackageDeprecationRecord, PackageVulnerabilityRecord, CatalogLeafItemRecord>(CatalogScanDriverType.CatalogDataToCsv) with
-            {
-                DefaultMin = CatalogClient.NuGetOrgMin,
-                OnlyLatestLeavesSupport = false,
-                BucketRangeSupport = false,
-                GetBucketKey = null,
-            },
-
-            // uses find latest driver, only reads catalog pages
-            OnlyCatalogRange<FindLatestLeafDriver<BucketedPackage>>(CatalogScanDriverType.LoadBucketedPackage),
-
-            // uses find latest driver, only reads catalog pages
-            OnlyCatalogRange<FindLatestLeafDriver<LatestPackageLeaf>>(CatalogScanDriverType.LoadLatestPackageLeaf),
-
-            Default<LoadPackageArchiveDriver>(CatalogScanDriverType.LoadPackageArchive) with
-            {
-                DownloadedPackageAssets = DownloadedPackageAssets.Nupkg,
-            },
-
-            Default<LoadPackageManifestDriver>(CatalogScanDriverType.LoadPackageManifest) with
-            {
-                DownloadedPackageAssets = DownloadedPackageAssets.Nuspec,
-            },
-
-            Default<LoadPackageReadmeDriver>(CatalogScanDriverType.LoadPackageReadme) with
-            {
-                DownloadedPackageAssets = DownloadedPackageAssets.Readme,
-
-                // README is not always embedded in the package and can be updated without a catalog update.
-                UpdatedOutsideOfCatalog = true,
-            },
-
-            // internally uses find latest driver
-            Default<LoadPackageVersionDriver>(CatalogScanDriverType.LoadPackageVersion) with
-            {
-                OnlyLatestLeavesSupport = false,
-            },
-
-            Default<LoadSymbolPackageArchiveDriver>(CatalogScanDriverType.LoadSymbolPackageArchive) with
-            {
-                DownloadedPackageAssets = DownloadedPackageAssets.Snupkg,
-
-                // Symbol package files (.snupkg) can be replaced and removed without a catalog update.
-                UpdatedOutsideOfCatalog = true,
-            },
-
-#if ENABLE_NPE
-            Csv<NuGetPackageExplorerRecord, NuGetPackageExplorerFile>(CatalogScanDriverType.NuGetPackageExplorerToCsv) with
-            {
-                Title = "NuGet Package Explorer to CSV",
-                DownloadedPackageAssets = DownloadedPackageAssets.Nupkg | DownloadedPackageAssets.Snupkg,
-
-                // Internally the NPE analysis APIs read symbols from the Microsoft and NuGet.org symbol servers. This
-                // means that the results are unstable for a similar reason as LoadSymbolPackageArchive. Additionally,
-                // some analysis times out (NuGetPackageExplorerResultType.Timeout). However this driver is relatively
-                // costly and slow to run. Therefore we won't consider it for reprocessing.
-                UpdatedOutsideOfCatalog = false,
-            },
-#endif
-
-            Csv<PackageArchiveRecord, PackageArchiveEntry>(CatalogScanDriverType.PackageArchiveToCsv) with
-            {
-                Dependencies = [CatalogScanDriverType.PackageFileToCsv],
-            },
-
-            Csv<PackageAssembly>(CatalogScanDriverType.PackageAssemblyToCsv) with
-            {
-                DownloadedPackageAssets = DownloadedPackageAssets.Nupkg,
-                Dependencies = [CatalogScanDriverType.LoadPackageArchive],
-            },
-
-            Csv<PackageAsset>(CatalogScanDriverType.PackageAssetToCsv) with
-            {
-                // Similar to PackageCompatibilityToCsv, an unsupported framework (or an existing framework) can become
-                // supported or change its interpretion over time. This is pretty unlikely so we don't reprocess
-                // this driver.
-                UpdatedOutsideOfCatalog = false,
-                Dependencies = [CatalogScanDriverType.LoadPackageArchive],
-            },
-
-#if ENABLE_CRYPTOAPI
-            BatchCsv<PackageCertificateRecord, CertificateRecord>(CatalogScanDriverType.PackageCertificateToCsv) with
-            {
-                // Certificate data is not stable because certificates can expire or be revoked. Also, certificate
-                // chain resolution is non-deterministic, so different intermediate certificates can be resolved over
-                // time. Despite this, the changes are not to significant over time so we won't reprocess.
-                UpdatedOutsideOfCatalog = false,
-                Dependencies = [CatalogScanDriverType.LoadPackageArchive],
-            },
-#endif
-
-            Csv<PackageCompatibility>(CatalogScanDriverType.PackageCompatibilityToCsv) with
-            {
-                // This driver uses a compatibility map baked into NuGet/NuGetGallery which uses the NuGet.Frameworks
-                // package for framework compatibility. We could choose to periodically reprocess package compatibility
-                // so that changes in TFM mapping and computed frameworks automatically get picked up. For now, we won't
-                // do that and force a manual "Reset" operation from the admin panel to recompute all compatibilities.
-                // The main part of this data that changes is computed compatibility. Newly supported frameworks can
-                // also lead to changes in results, but this would take a package owner guessing or colliding with this
-                // new framework in advance, leading to an "unsupported" framework reparsing as a supported framework.
-                UpdatedOutsideOfCatalog = false,
-                Dependencies = [CatalogScanDriverType.LoadPackageArchive, CatalogScanDriverType.LoadPackageManifest],
-            },
-
-            Csv<PackageContent>(CatalogScanDriverType.PackageContentToCsv) with
-            {
-                DownloadedPackageAssets = DownloadedPackageAssets.Nupkg,
-                Dependencies = [CatalogScanDriverType.LoadPackageArchive],
-            },
-
-            Csv<PackageFileRecord>(CatalogScanDriverType.PackageFileToCsv) with
-            {
-                DownloadedPackageAssets = DownloadedPackageAssets.Nupkg,
-                Dependencies = [CatalogScanDriverType.LoadPackageArchive],
-            },
-
-            Csv<PackageIcon>(CatalogScanDriverType.PackageIconToCsv) with
-            {
-                DownloadedPackageAssets = DownloadedPackageAssets.Icon,
-
-                // Changes to the hosted icon for a package occur along with a catalog update, even package with icon
-                // URL (non-embedded icon) because the Catalog2Icon job follows the catalog. The data could be unstable
-                // if NuGet Insights runs before Catalog2Icon does (unlikely) or if the Magick.NET dependency is
-                // updated. In that case, the driver can be manually rerun with the "Reset" button on the admin panel.
-                UpdatedOutsideOfCatalog = false,
-            },
-
-            Csv<PackageLicense>(CatalogScanDriverType.PackageLicenseToCsv) with
-            {
-                DownloadedPackageAssets = DownloadedPackageAssets.License,
-
-                // If an SPDX support license becomes deprecated, the results of this driver will change when the
-                // NuGet.Package dependency is updated. This is rare, so we won't reprocess.
-                UpdatedOutsideOfCatalog = false,
-            },
-
-            Csv<PackageManifestRecord>(CatalogScanDriverType.PackageManifestToCsv) with
-            {
-                Dependencies = [CatalogScanDriverType.LoadPackageManifest],
-            },
-
-            Csv<PackageReadme>(CatalogScanDriverType.PackageReadmeToCsv) with
-            {
-                Dependencies = [CatalogScanDriverType.LoadPackageReadme],
-            },
-
-            Csv<PackageSignature>(CatalogScanDriverType.PackageSignatureToCsv) with
-            {
-                Dependencies = [CatalogScanDriverType.LoadPackageArchive],
-            },
-            
-            // processes individual IDs not versions, needs a "latest leaves" step to dedupe versions
-            Csv<PackageVersionRecord>(CatalogScanDriverType.PackageVersionToCsv) with
-            {
-                OnlyLatestLeavesSupport = true,
-                BucketRangeSupport = false,
-                Dependencies = [CatalogScanDriverType.LoadPackageVersion],
-                GetBucketKey = GetIdBucketKey,
-            },
-
-            Csv<SymbolPackageArchiveRecord, SymbolPackageArchiveEntry>(CatalogScanDriverType.SymbolPackageArchiveToCsv) with
-            {
-                Dependencies = [CatalogScanDriverType.SymbolPackageFileToCsv],
-            },
-
-            Csv<SymbolPackageFileRecord>(CatalogScanDriverType.SymbolPackageFileToCsv) with
-            {
-                DownloadedPackageAssets = DownloadedPackageAssets.Snupkg,
-                Dependencies = [CatalogScanDriverType.LoadSymbolPackageArchive],
-            },
-        };
-
-        private record DriverMetadata(
+        private partial record DriverMetadata(
             // The type value, used for fast runtime comparisons
             CatalogScanDriverType Type,
 

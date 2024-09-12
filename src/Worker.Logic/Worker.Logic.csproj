@@ -10,11 +10,13 @@
     <None Include="$(CompilerGeneratedFilesOutputPath)\**\*.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(EnableNPE)' != 'true'">
+    <Compile Remove="CatalogScan\CatalogScanDriverMetadata.Drivers.NPE.cs" />
     <Compile Remove="CatalogScan\CatalogScanDriverType.Drivers.NPE.cs" />
     <Compile Remove="Drivers\NuGetPackageExplorerToCsv\*" />
     <Compile Remove="NuGetInsightsWorkerSettings.NPE.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(EnableCryptoAPI)' != 'true'">
+    <Compile Remove="CatalogScan\CatalogScanDriverMetadata.Drivers.CryptoAPI.cs" />
     <Compile Remove="CatalogScan\CatalogScanDriverType.Drivers.CryptoAPI.cs" />
     <Compile Remove="Drivers\PackageCertificateToCsv\*" />
     <Compile Remove="NuGetInsightsWorkerSettings.CryptoAPI.cs" />

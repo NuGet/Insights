@@ -5,6 +5,12 @@ namespace NuGet.Insights.Worker
 {
     public partial class CatalogScanDriverMetadataTest : BaseWorkerLogicIntegrationTest
     {
+        [Fact]
+        public void AllStartableDriverTypesHaveMetadata()
+        {
+            Assert.All(CatalogScanDriverMetadata.StartableDriverTypes, x => Assert.NotNull(CatalogScanDriverMetadata.GetDependencies(x)));
+        }
+
         [Theory]
         [MemberData(nameof(StartabledDriverTypesData))]
         public void StartableDriverTypes_TopologicalOrder_ReturnsAllDependenciesBeforeType(string typeName)
