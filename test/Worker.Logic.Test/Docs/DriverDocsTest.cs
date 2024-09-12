@@ -138,11 +138,12 @@ namespace NuGet.Insights.Worker
         public async Task DriverDependentsInUsingRow(string typeName)
         {
             var type = CatalogScanDriverType.Parse(typeName);
-            var dependentsMarkdown = await GetDependentsLines(type);
+            var info = await GetDriverInfoAsync(type);
+            var dependentsMarkdown = GetDependentsLines(type, info);
 
             // ignore lines that don't refer to a driver
             var driverLines = dependentsMarkdown
-                .Where(x => CatalogScanDriverMetadata.StartableDriverTypes.Any(y => x.Contains(y.ToString(), StringComparison.OrdinalIgnoreCase)))
+                .Where(x => CatalogScanDriverMetadata.StartableDriverTypes.Any(y => info.ToPlainText(DocInfo.ReadMarkdown(x)).Contains(y.ToString(), StringComparison.OrdinalIgnoreCase)))
                 .ToList();
             var dependents = CatalogScanDriverMetadata
                 .GetDependents(type)
@@ -156,9 +157,8 @@ namespace NuGet.Insights.Worker
             Assert.Equal(dependents.Count, driverLines.Count);
         }
 
-        private async Task<List<string>> GetDependentsLines(CatalogScanDriverType driverType)
+        private List<string> GetDependentsLines(CatalogScanDriverType driverType, DriverDocInfo info)
         {
-            var info = await GetDriverInfoAsync(driverType);
             var rows = info.GetFirstTableRows();
             var row = rows.SingleOrDefault(row => info.ToPlainText(row[0]) == "Components using driver output");
             Assert.NotNull(row);
@@ -169,6 +169,7 @@ namespace NuGet.Insights.Worker
                 .Select(x => x.Trim())
                 .Where(x => !string.IsNullOrWhiteSpace(x))
                 .ToList();
+
             return dependentsMarkdown;
         }
 
@@ -178,7 +179,7 @@ namespace NuGet.Insights.Worker
         {
             var type = CatalogScanDriverType.Parse(typeName);
             var info = await GetDriverInfoAsync(type);
-            var dependentsMarkdown = await GetDependentsLines(type);
+            var dependentsMarkdown = GetDependentsLines(type, info);
 
             if (info.CsvTables.Any())
             {

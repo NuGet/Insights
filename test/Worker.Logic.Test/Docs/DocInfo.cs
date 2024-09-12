@@ -17,17 +17,21 @@ namespace NuGet.Insights.Worker
 
         public string DocPath { get; }
         public string UnparsedMarkdown { get; private set; }
-        public MarkdownPipeline Pipeline { get; private set; }
+        public static MarkdownPipeline Pipeline { get; } = new MarkdownPipelineBuilder()
+            .UsePipeTables()
+            .EnableTrackTrivia()
+            .Build();
         public MarkdownDocument MarkdownDocument { get; private set; }
 
         public virtual void ReadMarkdown()
         {
             UnparsedMarkdown = File.ReadAllText(DocPath);
-            Pipeline = new MarkdownPipelineBuilder()
-                .UsePipeTables()
-                .EnableTrackTrivia()
-                .Build();
-            MarkdownDocument = Markdown.Parse(UnparsedMarkdown, Pipeline);
+            MarkdownDocument = ReadMarkdown(UnparsedMarkdown);
+        }
+
+        public static MarkdownDocument ReadMarkdown(string unparsedMarkdown)
+        {
+            return Markdown.Parse(unparsedMarkdown, Pipeline);
         }
 
         public string ToMarkdown(MarkdownObject obj)
