@@ -1,6 +1,6 @@
 # Adding a new driver
 
-So the data produced by the [existing drivers](../README.md#drivers) don't cut it and you want to discover something
+So the data produced by the [existing drivers](../docs/drivers/README.md) don't cut it and you want to discover something
 new about NuGet packages?
 
 Follow these steps to write a new catalog scan **driver**.
@@ -14,8 +14,7 @@ These can all be done locally without deploying to Azure.
 1. Complete the catalog scan by running the worker
 1. Verify the results in Azure Storage (likely Azurite)
 1. Add integration tests
-1. Update the [drivers list](../README.md#drivers) to mention your driver
-2. If outputting CSVs, update [ImportTo-Kusto.ps1](../scripts/Kusto/ImportTo-Kusto.ps1) and [compare.kql](../scripts/Kusto/compare.kql) with your new tables
+2. Update the [drivers list](../docs/drivers/README.md) to mention your driver
 3. Submit a 🆒 PR
 
 ## "Figure it out yourself" flow
@@ -54,7 +53,7 @@ and how it fetches and persists data about packages.
    allows your class to be automatically serializable to CSV using a built-in source generator.
 
    You'll need to add a Azure Blob Storage container name to
-   [`NuGetInsightsWorkerSettings.cs`](../src/Worker.Logic/NuGetInsightsWorkerSettings.cs) to store the CSV files.
+   [`NuGetInsightsWorkerSettings.Drivers.cs`](../src/Worker.Logic/NuGetInsightsWorkerSettings.Drivers.cs) to store the CSV files.
 
    - Example implementation: [`PackageAssetToCsvDriver`](../src/Worker.Logic/Drivers/PackageAssetToCsv/PackageAssetToCsvDriver.cs) -
      For each catalog leaf item, this driver fetches the list of file in the .nupkg and execute's NuGet client tooling's
@@ -82,14 +81,14 @@ and how it fetches and persists data about packages.
 
 Ensure the driver can be activated by the catalog scan and admin interface. Update these places to help this work out:
 
-1. Add your driver to the [`CatalogScanDriverType`](../src/Worker.Logic/CatalogScan/CatalogScanDriverType.Drivers.cs) enum.
+1. Add your driver to the [`CatalogScanDriverType.Drivers.cs`](../src/Worker.Logic/CatalogScan/CatalogScanDriverType.Drivers.cs) enum.
    - This provides a uniquely identifiable enum value for your driver.
-1. Add your driver to the `AllMetadata` array at the top of [`CatalogScanDriverMetadata`](../src/Worker.Logic/CatalogScan/CatalogScanDriverMetadata.cs).
+2. Add your driver as a static property in [`CatalogScanDriverMetadata.Drivers.cs`](../src/Worker.Logic/CatalogScan/CatalogScanDriverMetadata.Drivers.cs).
    - The establishes attributes for your driver that are needed for defaults and enabling/disabling features.
    - If you've mimicked another driver, consider look for how it is defined in that class an copy it.
-2. Add your driver to the `TypeToInfo` static in [`CatalogScanServiceTest.cs`](../test/Worker.Logic.Test/CatalogScan/CatalogScanServiceTest.cs).
+3. Add your driver as a static proeprty in [`CatalogScanServiceTest.DriverInfo.cs`](../test/Worker.Logic.Test/CatalogScan/CatalogScanServiceTest.DriverInfo.cs).
    - This determines the default catalog timestamp min value for your driver and implements a test function that forces your driver's dependency cursors to a specific timestamp.
-   - This essentially duplicates the information in `CatalogScanDriverMetadata` that you edited above.
+   - This essentially duplicates the information in `CatalogScanDriverMetadata` that you edited above to testing purposes.
 
 ### Add tests for your driver
 
@@ -124,6 +123,8 @@ When you run the [`DriverDocTest`](../test/Worker.Logic.Test/Docs/DriverDocsTest
 
 If your driver produces a CSV, the CSV schema must be documented similar to the existing CSV tables, in
 [`docs/tables`](tables). The easiest way to get started is to run the `AllTablesAreListedInREADME` test in
-[`TableDocsTest`](../test/Worker.Logic.Test/Docs/TableDocsTest.cs) suite to write out an initial version of the document
+[`TableDocsTest.AllTables.cs`](../test/Worker.Logic.Test/Docs/TableDocsTest.AllTables.cs) suite to write out an initial version of the document
 matching the patterns of the existing documents. Just fill in the TODOs and make sure all of the tests in
-[`TableDocsTest`](../test/Worker.Logic.Test/Docs/TableDocsTest.cs) suite pass after you are done with your document. Finally, update the [tables list](tables/README.md) to mention your table.
+[`TableDocsTest`](../test/Worker.Logic.Test/Docs/TableDocsTest.cs) suite pass after you are done with your document.
+
+Finally, update the [tables list](tables/README.md) to mention your table.
