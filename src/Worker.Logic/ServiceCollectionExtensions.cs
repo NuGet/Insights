@@ -9,35 +9,15 @@ using Kusto.Data.Net.Client;
 using Kusto.Ingest;
 using NuGet.Insights.StorageNoOpRetry;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
-using NuGet.Insights.Worker.BuildVersionSet;
-using NuGet.Insights.Worker.FindLatestCatalogLeafScan;
-using NuGet.Insights.Worker.FindLatestCatalogLeafScanPerId;
 using NuGet.Insights.Worker.KustoIngestion;
-using NuGet.Insights.Worker.LoadBucketedPackage;
-using NuGet.Insights.Worker.LoadLatestPackageLeaf;
-using NuGet.Insights.Worker.LoadPackageArchive;
-using NuGet.Insights.Worker.LoadPackageManifest;
-using NuGet.Insights.Worker.LoadPackageReadme;
-using NuGet.Insights.Worker.LoadPackageVersion;
-using NuGet.Insights.Worker.LoadSymbolPackageArchive;
-using NuGet.Insights.Worker.PackageVersionToCsv;
 using NuGet.Insights.Worker.ReferenceTracking;
 using NuGet.Insights.Worker.TableCopy;
 using NuGet.Insights.Worker.TimedReprocess;
 using NuGet.Insights.Worker.Workflow;
-using NuGetGallery.Frameworks;
-
-#if ENABLE_CRYPTOAPI
-using NuGet.Insights.Worker.PackageCertificateToCsv;
-#endif
-
-#if ENABLE_NPE
-using NuGet.Insights.Worker.NuGetPackageExplorerToCsv;
-#endif
 
 namespace NuGet.Insights.Worker
 {
-    public static class ServiceCollectionExtensions
+    public static partial class ServiceCollectionExtensions
     {
         private class Marker
         {
@@ -86,6 +66,14 @@ namespace NuGet.Insights.Worker
 
         private static readonly object TraceListenersLock = new object();
 
+        private static IReadOnlyList<Action<IServiceCollection>> AdditionalSetupActions = typeof(ServiceCollectionExtensions)
+            .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
+            .Where(x => x.Name.StartsWith("Setup", StringComparison.Ordinal)
+                        && x.GetParameters().Length == 1
+                        && x.GetParameters()[0].ParameterType == typeof(IServiceCollection))
+            .Select(x => (Action<IServiceCollection>)(y => x.Invoke(null, [y])))
+            .ToList();
+
         public static IServiceCollection AddNuGetInsightsWorker(this IServiceCollection serviceCollection)
         {
             // Avoid re-adding all the services.
@@ -95,6 +83,11 @@ namespace NuGet.Insights.Worker
             }
 
             serviceCollection.AddSingleton<Marker>();
+
+            foreach (var setup in AdditionalSetupActions)
+            {
+                setup(serviceCollection);
+            }
 
             serviceCollection.AddTransient<IRawMessageEnqueuer, QueueStorageEnqueuer>();
             serviceCollection.AddTransient<IWorkerQueueFactory, WorkerQueueFactory>();
@@ -121,13 +114,7 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient<CatalogScanService>();
             serviceCollection.AddTransient<CatalogScanExpandService>();
             serviceCollection.AddTransient<CsvTemporaryStorageFactory>();
-            AddTableScan<LatestPackageLeaf>(serviceCollection);
             AddTableScan<CatalogLeafScan>(serviceCollection);
-            AddTableScan<BucketedPackage>(serviceCollection);
-
-#if ENABLE_NPE
-            serviceCollection.AddTransient<TemporaryFileProvider>();
-#endif
 
             serviceCollection.AddTransient<KustoIngestionService>();
             serviceCollection.AddTransient<KustoIngestionStorageService>();
@@ -206,17 +193,6 @@ namespace NuGet.Insights.Worker
                 return ingestClient;
             });
 
-            serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<CatalogLeafScan>, LatestCatalogLeafScanStorageFactory>();
-            serviceCollection.AddTransient<FindLatestLeafDriver<CatalogLeafScan>>();
-
-            serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<CatalogLeafScanPerId>, LatestCatalogLeafScanPerIdStorageFactory>();
-            serviceCollection.AddTransient<FindLatestLeafDriver<CatalogLeafScanPerId>>();
-
-            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ITableScanDriver<>)))
-            {
-                serviceCollection.AddTransient(implementationType);
-            }
-
             serviceCollection.AddTransient<CursorStorageService>();
 
             serviceCollection.AddSingleton<IComparer<ITimer>>(TimerComparer.Instance);
@@ -227,26 +203,21 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient<ICsvReader, CsvReaderAdapter>();
             serviceCollection.AddSingleton<CsvRecordContainers>();
 
-            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICleanupOrphanRecordsAdapter<>)))
+            serviceCollection.AddTransient(typeof(TableCopyDriver<>));
+
+            serviceCollection.AddTransient<TimedReprocessService>();
+            serviceCollection.AddTransient<TimedReprocessStorageService>();
+            serviceCollection.AddTransient<TimedReprocessTimer>();
+
+            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ITableScanDriver<>)))
             {
-                serviceCollection.AddCleanupOrphanRecordsService(serviceType, implementationType);
+                serviceCollection.AddTransient(implementationType);
             }
 
-            serviceCollection.AddSingleton<IPackageFrameworkCompatibilityFactory>(new PackageFrameworkCompatibilityFactory());
-
-            serviceCollection.AddLoadLatestPackageLeaf();
-            serviceCollection.AddLoadBucketedPackage();
-            serviceCollection.AddLoadPackageArchive();
-            serviceCollection.AddLoadSymbolPackageArchive();
-#if ENABLE_CRYPTOAPI
-            serviceCollection.AddLoadPackageCertificate();
-#endif
-            serviceCollection.AddLoadPackageManifest();
-            serviceCollection.AddLoadPackageReadme();
-            serviceCollection.AddLoadPackageVersion();
-            serviceCollection.AddTableCopy();
-            serviceCollection.AddBuildVersionSet();
-            serviceCollection.AddTimedReprocess();
+            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICleanupOrphanRecordsAdapter<>)))
+            {
+                AddCleanupOrphanRecordsService(serviceCollection, serviceType, implementationType);
+            }
 
             foreach (var serviceType in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementing<ITimer>())
             {
@@ -332,7 +303,7 @@ namespace NuGet.Insights.Worker
 
                 // Add the generic CSV storage
                 var recordType = serviceType.GenericTypeArguments.Single();
-                var getContainerName = serviceType.GetProperty(nameof(ICsvResultStorage<PackageVersionRecord>.ResultContainerName));
+                var getContainerName = serviceType.GetProperty("ResultContainerName");
                 serviceCollection.AddTransient<ICsvRecordStorage>(x =>
                 {
                     var storage = x.GetRequiredService(serviceType);
@@ -421,10 +392,10 @@ namespace NuGet.Insights.Worker
             var implementationType = typeof(TService);
             var dataType = typeof(TRecord);
             var serviceType = typeof(ICleanupOrphanRecordsAdapter<>).MakeGenericType(dataType);
-            serviceCollection.AddCleanupOrphanRecordsService(serviceType, implementationType);
+            AddCleanupOrphanRecordsService(serviceCollection, serviceType, implementationType);
         }
 
-        private static void AddCleanupOrphanRecordsService(this IServiceCollection serviceCollection, Type serviceType, Type implementationType)
+        private static void AddCleanupOrphanRecordsService(IServiceCollection serviceCollection, Type serviceType, Type implementationType)
         {
             var dataType = serviceType.GenericTypeArguments.Single();
             var messageType = typeof(CleanupOrphanRecordsMessage<>).MakeGenericType(dataType);
@@ -459,11 +430,6 @@ namespace NuGet.Insights.Worker
                 typeof(CleanupOrphanRecordsTimer<>).MakeGenericType(dataType));
         }
 
-        private static void AddTableCopy(this IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddTransient(typeof(TableCopyDriver<>));
-        }
-
         private static void AddTableScan<T>(IServiceCollection serviceCollection) where T : ITableEntityWithClientRequestId, new()
         {
             var entityType = typeof(T);
@@ -473,70 +439,6 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddTransient(
                 typeof(IMessageProcessor<>).MakeGenericType(typeof(TableRowCopyMessage<>).MakeGenericType(entityType)),
                 typeof(TableRowCopyMessageProcessor<>).MakeGenericType(entityType));
-        }
-
-        private static void AddBuildVersionSet(this IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddTransient<BuildVersionSetDriver>();
-            serviceCollection.AddTransient<VersionSetAggregateStorageService>();
-            serviceCollection.AddSingleton<VersionSetService>();
-            serviceCollection.AddSingleton<IVersionSetProvider>(s => s.GetRequiredService<VersionSetService>());
-        }
-
-        private static void AddLoadLatestPackageLeaf(this IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddTransient<LatestPackageLeafService>();
-            serviceCollection.AddTransient<LatestPackageLeafStorageFactory>();
-            serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<LatestPackageLeaf>, LatestPackageLeafStorageFactory>();
-            serviceCollection.AddTransient<FindLatestLeafDriver<LatestPackageLeaf>>();
-        }
-
-        private static void AddLoadBucketedPackage(this IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddTransient<BucketedPackageService>();
-            serviceCollection.AddTransient<BucketedPackageStorageFactory>();
-            serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<BucketedPackage>, BucketedPackageStorageFactory>();
-            serviceCollection.AddTransient<FindLatestLeafDriver<BucketedPackage>>();
-        }
-
-        private static void AddLoadPackageArchive(this IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddTransient<LoadPackageArchiveDriver>();
-        }
-
-        private static void AddLoadSymbolPackageArchive(this IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddTransient<LoadSymbolPackageArchiveDriver>();
-        }
-
-#if ENABLE_CRYPTOAPI
-        private static void AddLoadPackageCertificate(this IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddTransient<PackageCertificateToCsvDriver>();
-        }
-#endif
-
-        private static void AddLoadPackageManifest(this IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddTransient<LoadPackageManifestDriver>();
-        }
-
-        private static void AddLoadPackageReadme(this IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddTransient<LoadPackageReadmeDriver>();
-        }
-
-        private static void AddLoadPackageVersion(this IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddTransient<LoadPackageVersionDriver>();
-            serviceCollection.AddTransient<PackageVersionStorageService>();
-        }
-
-        private static void AddTimedReprocess(this IServiceCollection serviceCollection)
-        {
-            serviceCollection.AddTransient<TimedReprocessService>();
-            serviceCollection.AddTransient<TimedReprocessStorageService>();
-            serviceCollection.AddTransient<TimedReprocessTimer>();
         }
     }
 }

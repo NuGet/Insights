@@ -13,13 +13,15 @@
     <Compile Remove="CatalogScan\CatalogScanDriverMetadata.Drivers.NPE.cs" />
     <Compile Remove="CatalogScan\CatalogScanDriverType.Drivers.NPE.cs" />
     <Compile Remove="Drivers\NuGetPackageExplorerToCsv\*" />
-    <Compile Remove="NuGetInsightsWorkerSettings.NPE.cs" />
+    <Compile Remove="NuGetInsightsWorkerSettings.Drivers.NPE.cs" />
+    <Compile Remove="ServiceCollectionExtensions.Drivers.NPE.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(EnableCryptoAPI)' != 'true'">
     <Compile Remove="CatalogScan\CatalogScanDriverMetadata.Drivers.CryptoAPI.cs" />
     <Compile Remove="CatalogScan\CatalogScanDriverType.Drivers.CryptoAPI.cs" />
     <Compile Remove="Drivers\PackageCertificateToCsv\*" />
-    <Compile Remove="NuGetInsightsWorkerSettings.CryptoAPI.cs" />
+    <Compile Remove="NuGetInsightsWorkerSettings.Drivers.CryptoAPI.cs" />
+    <Compile Remove="ServiceCollectionExtensions.Drivers.CryptoAPI.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Magick.NET-Q16-AnyCPU" />

@@ -79,15 +79,6 @@ namespace NuGet.Insights.Worker
         /// </summary>
         public TimeSpan LeafLevelTelemetryThreshold { get; set; } = TimeSpan.FromHours(12);
 
-        /// <summary>
-        /// The types of package content to index in <see cref="PackageContentToCsv.PackageContentToCsvDriver"/>. The
-        /// order of this list is significant (entries are processed in the matching order). The values are treated as
-        /// file path suffixes so be sure to include a dot (".") if you want file extension behavior.
-        /// </summary>
-        public List<string> PackageContentFileExtensions { get; set; } = new List<string>();
-        public int PackageContentMaxSizePerPackage { get; set; } = 1024 * 16;
-        public int PackageContentMaxSizePerFile { get; set; } = 1024 * 16;
-
         public string WorkQueueName { get; set; } = "work";
         public string ExpandQueueName { get; set; } = "expand";
         public string CursorTableName { get; set; } = "cursors";
@@ -96,39 +87,15 @@ namespace NuGet.Insights.Worker
         public string CatalogLeafScanTableName { get; set; } = "catalogleafscans";
         public string TaskStateTableName { get; set; } = "taskstate";
         public string CsvRecordTableName { get; set; } = "csvrecords";
-        public string VersionSetAggregateTableName { get; set; } = "versionset";
-        public string VersionSetContainerName { get; set; } = "versionset";
         public string KustoIngestionTableName { get; set; } = "kustoingestions";
         public string WorkflowRunTableName { get; set; } = "workflowruns";
-        public string BucketedPackageTableName { get; set; } = "bucketedpackages";
         public string TimedReprocessTableName { get; set; } = "timedreprocess";
 
-        public string LatestPackageLeafTableName { get; set; } = "latestpackageleaves";
-        public string PackageAssetContainerName { get; set; } = "packageassets";
-        public string PackageAssemblyContainerName { get; set; } = "packageassemblies";
-        public string PackageManifestContainerName { get; set; } = "packagemanifests";
-        public string PackageReadmeContainerName { get; set; } = "packagereadmes";
-        public string PackageLicenseContainerName { get; set; } = "packagelicenses";
-        public string PackageSignatureContainerName { get; set; } = "packagesignatures";
-        public string CatalogLeafItemContainerName { get; set; } = "catalogleafitems";
         public string PackageDownloadContainerName { get; set; } = "packagedownloads";
         public string PackageOwnerContainerName { get; set; } = "packageowners";
         public string VerifiedPackageContainerName { get; set; } = "verifiedpackages";
         public string ExcludedPackageContainerName { get; set; } = "excludedpackages";
         public string PopularityTransferContainerName { get; set; } = "popularitytransfers";
-        public string PackageArchiveContainerName { get; set; } = "packagearchives";
-        public string PackageArchiveEntryContainerName { get; set; } = "packagearchiveentries";
-        public string SymbolPackageArchiveContainerName { get; set; } = "symbolpackagearchives";
-        public string SymbolPackageArchiveEntryContainerName { get; set; } = "symbolpackagearchiveentries";
-        public string PackageFileContainerName { get; set; } = "packagefiles";
-        public string SymbolPackageFileContainerName { get; set; } = "symbolpackagefiles";
-        public string PackageVersionTableName { get; set; } = "packageversions";
-        public string PackageVersionContainerName { get; set; } = "packageversions";
-        public string PackageDeprecationContainerName { get; set; } = "packagedeprecations";
-        public string PackageVulnerabilityContainerName { get; set; } = "packagevulnerabilities";
-        public string PackageIconContainerName { get; set; } = "packageicons";
-        public string PackageCompatibilityContainerName { get; set; } = "packagecompatibilities";
-        public string PackageContentContainerName { get; set; } = "packagecontents";
 
         public string KustoConnectionString { get; set; } = null;
         public string KustoDatabaseName { get; set; } = null;
