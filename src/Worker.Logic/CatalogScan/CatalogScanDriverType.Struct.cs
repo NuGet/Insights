@@ -4,9 +4,11 @@
 #nullable enable
 
 using System.Collections.Frozen;
+using System.ComponentModel;
 
 namespace NuGet.Insights.Worker
 {
+    [TypeConverter(typeof(CatalogScanDriverTypeConverter))]
     public partial struct CatalogScanDriverType : IEquatable<CatalogScanDriverType>, IComparable<CatalogScanDriverType>
     {
         private static readonly FrozenDictionary<string, CatalogScanDriverType> NameToDriverType = typeof(CatalogScanDriverType)

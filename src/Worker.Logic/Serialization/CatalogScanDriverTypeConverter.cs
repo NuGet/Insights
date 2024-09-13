@@ -3,24 +3,30 @@
 
 #nullable enable
 
+using System.ComponentModel;
+
 namespace NuGet.Insights.Worker
 {
-    public class CatalogScanDriverTypeConverter : JsonConverter<CatalogScanDriverType>
+    public class CatalogScanDriverTypeConverter : TypeConverter
     {
-        public override CatalogScanDriverType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
         {
-            var str = reader.GetString();
-            if (str is null)
-            {
-                throw new FormatException($"A string was expected when parsing a {nameof(CatalogScanDriverType)} from JSON.");
-            }
-
-            return CatalogScanDriverType.Parse(str);
+            return sourceType == typeof(string);
         }
 
-        public override void Write(Utf8JsonWriter writer, CatalogScanDriverType value, JsonSerializerOptions options)
+        public override bool CanConvertTo(ITypeDescriptorContext? context, [NotNullWhen(true)] Type? destinationType)
         {
-            writer.WriteStringValue(value.ToString());
+            return destinationType == typeof(CatalogScanDriverType);
+        }
+
+        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
+        {
+            if (value is string str)
+            {
+                return CatalogScanDriverType.Parse(str);
+            }
+
+            throw new NotSupportedException();
         }
     }
 }
