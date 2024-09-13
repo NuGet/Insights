@@ -21,7 +21,7 @@ namespace NuGet.Insights.Worker.Workflow
                 x.KustoDatabaseName = "fake database name";
                 x.KustoValidationMaxAttempts = 1;
                 x.DisabledDrivers = CatalogScanDriverMetadata.StartableDriverTypes
-                    .Except(new[] { CatalogScanDriverType.LoadPackageManifest, CatalogScanDriverType.PackageManifestToCsv, CatalogScanDriverType.CatalogDataToCsv })
+                    .Except([CatalogScanDriverType.LoadBucketedPackage, CatalogScanDriverType.LoadPackageReadme, CatalogScanDriverType.PackageReadmeToCsv, CatalogScanDriverType.CatalogDataToCsv])
                     .ToList();
             };
 
@@ -63,8 +63,8 @@ namespace NuGet.Insights.Worker.Workflow
                 .ReturnsAsync(max1);
 
             await CatalogScanService.InitializeAsync();
-            await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, max1);
-            await SetCursorsAsync([CatalogScanDriverType.PackageManifestToCsv, CatalogScanDriverType.CatalogDataToCsv], min0);
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageReadme, max1);
+            await SetCursorsAsync([CatalogScanDriverType.LoadBucketedPackage, CatalogScanDriverType.PackageReadmeToCsv, CatalogScanDriverType.CatalogDataToCsv], min0);
 
             // Act
             var workflow = await WorkflowService.StartAsync();
@@ -87,7 +87,7 @@ namespace NuGet.Insights.Worker.Workflow
                 x.KustoValidationMaxAttempts = 1;
                 x.WorkflowMaxAttempts = 3;
                 x.DisabledDrivers = CatalogScanDriverMetadata.StartableDriverTypes
-                    .Except(new[] { CatalogScanDriverType.LoadPackageManifest, CatalogScanDriverType.PackageManifestToCsv, CatalogScanDriverType.CatalogDataToCsv })
+                    .Except([CatalogScanDriverType.LoadBucketedPackage, CatalogScanDriverType.LoadPackageReadme, CatalogScanDriverType.PackageReadmeToCsv, CatalogScanDriverType.CatalogDataToCsv])
                     .ToList();
             };
 
@@ -118,8 +118,9 @@ namespace NuGet.Insights.Worker.Workflow
                 .ReturnsAsync(max1);
 
             await CatalogScanService.InitializeAsync();
-            await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, max1);
-            await SetCursorAsync(CatalogScanDriverType.PackageManifestToCsv, min0);
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageReadme, max1);
+            await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);
+            await SetCursorAsync(CatalogScanDriverType.PackageReadmeToCsv, min0);
             await SetCursorAsync(CatalogScanDriverType.CatalogDataToCsv, min0);
 
             // Act & Assert
@@ -143,7 +144,7 @@ namespace NuGet.Insights.Worker.Workflow
                 x.KustoValidationMaxAttempts = 1;
                 x.WorkflowMaxAttempts = 3;
                 x.DisabledDrivers = CatalogScanDriverMetadata.StartableDriverTypes
-                    .Except(new[] { CatalogScanDriverType.LoadPackageManifest, CatalogScanDriverType.PackageManifestToCsv, CatalogScanDriverType.CatalogDataToCsv })
+                    .Except([CatalogScanDriverType.LoadBucketedPackage, CatalogScanDriverType.LoadPackageReadme, CatalogScanDriverType.PackageReadmeToCsv, CatalogScanDriverType.CatalogDataToCsv])
                     .ToList();
             };
 
@@ -156,8 +157,9 @@ namespace NuGet.Insights.Worker.Workflow
                 .ReturnsAsync(max1);
 
             await CatalogScanService.InitializeAsync();
-            await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, max1);
-            await SetCursorAsync(CatalogScanDriverType.PackageManifestToCsv, min0);
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageReadme, max1);
+            await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);
+            await SetCursorAsync(CatalogScanDriverType.PackageReadmeToCsv, min0);
             await SetCursorAsync(CatalogScanDriverType.CatalogDataToCsv, min0);
 
             var catalogScanResult = await CatalogScanService.UpdateAsync(CatalogScanDriverType.CatalogDataToCsv);
@@ -168,7 +170,7 @@ namespace NuGet.Insights.Worker.Workflow
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => UpdateAsync(workflow));
             Assert.Equal("The CatalogScanUpdate timer could not be started.", ex.Message);
             workflow = await WorkflowStorageService.GetRunAsync(workflow.RunId);
-            Assert.Equal(WorkflowRunState.TimedReprocessWorking, workflow.State);
+            Assert.Equal(WorkflowRunState.Created, workflow.State);
             Assert.Equal(1, workflow.AttemptCount);
             var scans = await CatalogScanStorageService.GetIndexScansAsync();
             var onlyScan = Assert.Single(scans);
@@ -188,7 +190,7 @@ namespace NuGet.Insights.Worker.Workflow
                 x.KustoValidationMaxAttempts = 1;
                 x.WorkflowMaxAttempts = 3;
                 x.DisabledDrivers = CatalogScanDriverMetadata.StartableDriverTypes
-                    .Except(new[] { CatalogScanDriverType.LoadPackageManifest, CatalogScanDriverType.PackageManifestToCsv, CatalogScanDriverType.CatalogDataToCsv })
+                    .Except([CatalogScanDriverType.LoadBucketedPackage, CatalogScanDriverType.LoadPackageReadme, CatalogScanDriverType.PackageReadmeToCsv, CatalogScanDriverType.CatalogDataToCsv])
                     .ToList();
             };
 
@@ -201,8 +203,9 @@ namespace NuGet.Insights.Worker.Workflow
                 .ReturnsAsync(max1);
 
             await CatalogScanService.InitializeAsync();
-            await SetCursorAsync(CatalogScanDriverType.LoadPackageManifest, max1);
-            await SetCursorAsync(CatalogScanDriverType.PackageManifestToCsv, max1);
+            await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, max1);
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageReadme, max1);
+            await SetCursorAsync(CatalogScanDriverType.PackageReadmeToCsv, max1);
             await SetCursorAsync(CatalogScanDriverType.CatalogDataToCsv, max1);
 
             // Act
@@ -212,7 +215,7 @@ namespace NuGet.Insights.Worker.Workflow
             // Assert
             Assert.Equal(WorkflowRunState.Complete, workflow.State);
             Assert.Equal(1, workflow.AttemptCount);
-            Assert.Empty(await CatalogScanStorageService.GetIndexScansAsync());
+            Assert.All(await CatalogScanStorageService.GetIndexScansAsync(), x => Assert.NotNull(x.BucketRanges));
         }
 
         protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)

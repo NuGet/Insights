@@ -306,13 +306,13 @@ namespace NuGet.Insights.Worker
 
             var cursors = (await _cursorService.GetCursorsAsync()).ToDictionary(x => x.Key, x => x.Value.Value);
             var loadBucketedPackageCursor = cursors[CatalogScanDriverType.LoadBucketedPackage];
-            var dependencies = CatalogScanDriverMetadata.GetTransitiveClosure(driverType).Where(x => x != driverType);
-            foreach (var dependency in dependencies)
+            foreach (var dependency in CatalogScanDriverMetadata.GetTransitiveClosure(driverType))
             {
-                // If a dependency hasn't caught up with LoadBucketedPackage, that means there may be packages that
-                // haven't been processed by the dependency, but have been loaded in to the bucketed packages table.
-                // If we were to process the provided buckets with this driver, it may encounter packages that have
-                // never seen by a dependency.
+                // If a driver or its dependencies hasn't caught up with LoadBucketedPackage, that means there may be
+                // packages that haven't been processed, but have been loaded in to the bucketed packages table. If we
+                // were to process the provided buckets with this driver, it may encounter packages that have never been
+                // processed at all. The bucket-based processing is meant for reprocessing packages, not processing them
+                // for the very first time.
                 if (loadBucketedPackageCursor > cursors[dependency])
                 {
                     return new CatalogScanServiceResult(

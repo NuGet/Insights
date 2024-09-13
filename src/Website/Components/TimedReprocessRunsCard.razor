@@ -55,7 +55,7 @@
                                         <tr>
                                             <td>@CatalogScanDriverMetadata.GetTitle(reprocessScan.DriverType)</td>
                                             <td>@reprocessScan.ScanId</td>
-                                            <td>@(indexScan is null ? (reprocessScan.Completed ? "Complete" : "Running") : indexScan.State)</td>
+                                            <td>@(indexScan is null ? (reprocessScan.Completed ? "Complete" : "Creating") : indexScan.State)</td>
                                             <td>@(indexScan?.Completed.GetRuntime(indexScan.Started))</td>
                                         </tr>
                                     }

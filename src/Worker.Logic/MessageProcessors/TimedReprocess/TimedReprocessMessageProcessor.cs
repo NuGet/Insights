@@ -152,7 +152,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
                                 }
                                 else
                                 {
-                                    throw new InvalidOperationException($"Unexpected catalog scan service result of type {result.Type}.");
+                                    throw new InvalidOperationException($"Unexpected catalog scan service result of type {result.Type} for driver {timedScan.DriverType}.");
                                 }
                             }
                         }

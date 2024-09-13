@@ -14,15 +14,6 @@ namespace NuGet.Insights.Worker.Workflow
                 IsIncompleteAsync: self => Task.FromResult(false),
                 TransitionAsync: async (self, run) =>
                 {
-                    await self._workflowService.StartTimedReprocessAsync();
-                    return WorkflowRunState.TimedReprocessWorking;
-                }),
-
-            new WorkflowStateTransition(
-                CurrentState: WorkflowRunState.TimedReprocessWorking,
-                IsIncompleteAsync: self => self._workflowService.IsTimedReprocessRunningAsync(),
-                TransitionAsync: async (self, run) =>
-                {
                     await self._workflowService.StartCatalogScansAsync();
                     return WorkflowRunState.CatalogScanWorking;
                 }),
@@ -39,6 +30,15 @@ namespace NuGet.Insights.Worker.Workflow
             new WorkflowStateTransition(
                 CurrentState: WorkflowRunState.CleanupOrphanRecordsWorking,
                 IsIncompleteAsync: self => self._workflowService.AreCleanupOrphanRecordsRunningAsync(),
+                TransitionAsync: async (self, run) =>
+                {
+                    await self._workflowService.StartTimedReprocessAsync();
+                    return WorkflowRunState.TimedReprocessWorking;
+                }),
+
+            new WorkflowStateTransition(
+                CurrentState: WorkflowRunState.TimedReprocessWorking,
+                IsIncompleteAsync: self => self._workflowService.IsTimedReprocessRunningAsync(),
                 TransitionAsync: async (self, run) =>
                 {
                     await self._workflowService.StartAuxiliaryFilesAsync();

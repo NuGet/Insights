@@ -129,7 +129,14 @@ namespace NuGet.Insights.Worker.TimedReprocess
             await SetCursorAsync(CatalogScanDriverType.LoadSymbolPackageArchive, min0);
             var parallelLspaResult = await CatalogScanService.UpdateAsync(CatalogScanDriverType.LoadSymbolPackageArchive, max1);
 
-            await SetCursorsAsync([CatalogScanDriverType.LoadPackageReadme, CatalogScanDriverType.SymbolPackageFileToCsv, CatalogScanDriverType.LoadSymbolPackageArchive], max1);
+            await SetCursorsAsync([
+                    CatalogScanDriverType.LoadPackageReadme,
+                CatalogScanDriverType.PackageReadmeToCsv,
+                CatalogScanDriverType.LoadSymbolPackageArchive,
+                CatalogScanDriverType.SymbolPackageFileToCsv,
+                CatalogScanDriverType.SymbolPackageArchiveToCsv
+                ],
+                max1);
 
             await TimedReprocessService.InitializeAsync();
 
@@ -177,8 +184,8 @@ namespace NuGet.Insights.Worker.TimedReprocess
             var min0 = DateTimeOffset.Parse("2024-04-25T02:12:34.0496440Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2024-04-25T02:13:04.3170295Z", CultureInfo.InvariantCulture);
             await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);
-            var initialLbp = await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, max1);
-            await SetCursorAsync(CatalogScanDriverType.LoadPackageReadme, max1);
+            await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, max1);
+            await SetCursorsAsync([CatalogScanDriverType.LoadPackageReadme, CatalogScanDriverType.PackageReadmeToCsv], max1);
 
             await TimedReprocessService.InitializeAsync();
 
@@ -224,8 +231,8 @@ namespace NuGet.Insights.Worker.TimedReprocess
             var min0 = DateTimeOffset.Parse("2024-04-25T02:12:34.0496440Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2024-04-25T02:13:04.3170295Z", CultureInfo.InvariantCulture);
             await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);
-            var initialLbp = await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, max1);
-            await SetCursorAsync(CatalogScanDriverType.LoadPackageReadme, max1);
+            await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, max1);
+            await SetCursorsAsync([CatalogScanDriverType.LoadPackageReadme, CatalogScanDriverType.PackageReadmeToCsv], max1);
 
             await TimedReprocessService.InitializeAsync();
 
@@ -263,9 +270,12 @@ namespace NuGet.Insights.Worker.TimedReprocess
             await CatalogScanService.InitializeAsync();
             var min0 = DateTimeOffset.Parse("2024-04-25T02:12:34.0496440Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2024-04-25T02:13:04.3170295Z", CultureInfo.InvariantCulture);
-            await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);
-            var initialLbp = await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, max1);
-            await SetCursorAsync(CatalogScanDriverType.LoadPackageReadme, max1);
+            await SetCursorsAsync(
+                [CatalogScanDriverType.LoadBucketedPackage, CatalogScanDriverType.LoadPackageReadme, CatalogScanDriverType.PackageReadmeToCsv],
+                min0);
+            await UpdateInBatchesAsync(
+                [CatalogScanDriverType.LoadBucketedPackage, CatalogScanDriverType.LoadPackageReadme, CatalogScanDriverType.PackageReadmeToCsv],
+                max1);
 
             await TimedReprocessService.InitializeAsync();
 
@@ -281,6 +291,34 @@ namespace NuGet.Insights.Worker.TimedReprocess
             // Assert
             Assert.Equal(TimedReprocessState.Complete, started.State);
             Assert.Equal(latestRun.RunId, started.RunId);
+        }
+
+        [Fact]
+        public async Task TimedReprocess_BlocksWhenCursorsAreNotAligned()
+        {
+            // Arrange
+            AssertLogLevel = LogLevel.Error;
+            ConfigureWorkerSettings = x =>
+            {
+                x.DisabledDrivers = [CatalogScanDriverType.LoadSymbolPackageArchive, CatalogScanDriverType.SymbolPackageFileToCsv, CatalogScanDriverType.SymbolPackageArchiveToCsv];
+            };
+
+            await CatalogScanService.InitializeAsync();
+            var min0 = DateTimeOffset.Parse("2024-04-25T02:12:34.0496440Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2024-04-25T02:13:04.3170295Z", CultureInfo.InvariantCulture);
+            await SetCursorAsync(CatalogScanDriverType.LoadBucketedPackage, min0);
+            var initialLbp = await UpdateAsync(CatalogScanDriverType.LoadBucketedPackage, max1);
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageReadme, min0);
+            await SetCursorAsync(CatalogScanDriverType.PackageReadmeToCsv, min0);
+
+            await TimedReprocessService.InitializeAsync();
+
+            // Act
+            var run = await TimedReprocessService.StartAsync();
+
+            // Assert
+            Assert.Null(run);
+            Assert.Contains(LogMessages, x => x.Contains("The drivers to reprocess do not have aligned cursors.", StringComparison.Ordinal));
         }
 
         private async Task SetCursorsForTimedProcessDriversAsync(DateTimeOffset min)
