@@ -76,8 +76,24 @@ namespace NuGet.Insights.Worker
                 while (csvReader.Read())
                 {
                     var i = 0;
-                    var record = (T)factory.ReadNew(() => csvReader.GetString(i++));
-                    allRecords.Add(record);
+                    ICsvRecord record;
+                    try
+                    {
+                        record = factory.ReadNew(() => csvReader.GetString(i++));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(
+                            ex,
+                            $"Could not read CSV on row {{RowNumber}} and field ordinal {{FieldOrdinal}}.{Environment.NewLine}Field: {{Field}}{Environment.NewLine}Line: {{Line}}",
+                            csvReader.RowNumber,
+                            i - 1,
+                            csvReader[i - 1],
+                            new string(csvReader.GetRawRecordSpan()));
+                        throw;
+                    }
+
+                    allRecords.Add((T)record);
                 }
 
                 return new CsvReaderResult<T>(CsvReaderResultType.Success, allRecords);
@@ -116,6 +132,7 @@ namespace NuGet.Insights.Worker
             return CsvDataReader.Create(reader, buffer, new CsvDataReaderOptions
             {
                 HasHeaders = false,
+                Delimiter = ',',
                 StringFactory = StringFactory,
             });
         }
