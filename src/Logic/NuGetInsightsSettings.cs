@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights
 {
-    public class NuGetInsightsSettings : StorageAccountSettings
+    public class NuGetInsightsSettings : StorageSettings
     {
         public const string DefaultSectionName = "NuGetInsights";
 
@@ -56,14 +56,5 @@ namespace NuGet.Insights
         public int HttpClientMaxRetries { get; set; } = 4;
         public TimeSpan HttpClientMaxRetryDelay { get; set; } = TimeSpan.FromSeconds(30);
         public bool HttpClientAddRetryJitter { get; set; } = true;
-
-        public int AzureServiceClientMaxRetries { get; set; } = 2;
-
-        /// <summary>
-        /// This should be longer than the Azure Storage server-side timeouts (30 seconds).
-        /// Source: https://learn.microsoft.com/en-us/rest/api/storageservices/setting-timeouts-for-table-service-operations
-        /// Source: https://learn.microsoft.com/en-us/rest/api/storageservices/query-timeout-and-pagination
-        /// </summary>
-        public TimeSpan AzureServiceClientNetworkTimeout { get; set; } = TimeSpan.FromSeconds(35);
     }
 }
