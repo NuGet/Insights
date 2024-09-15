@@ -22,7 +22,15 @@ namespace NuGet.Insights.Worker
 
         public string PackageLicenseContainerName { get; set; } = "packagelicenses";
 
+        public bool RecordCertificateStatus { get; set; } = true;
+
         public string PackageSignatureContainerName { get; set; } = "packagesignatures";
+
+        /// <summary>
+        /// Don't set the Content-MD5 header in output CSVs (e.g. for <see cref="PackageArchiveToCsv"/>). The header
+        /// appears to be returned inconsistently from some CDN endpoints leading to test flakiness.
+        /// </summary>
+        public bool SkipContentMD5HeaderInCsv { get; set; } = false;
 
         public string PackageArchiveContainerName { get; set; } = "packagearchives";
         public string PackageArchiveEntryContainerName { get; set; } = "packagearchiveentries";

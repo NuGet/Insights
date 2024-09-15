@@ -156,7 +156,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
 
             var oldRunsToDelete = oldRuns
                 .OrderByDescending(x => x.Created)
-                .Skip(_options.Value.OldWorkflowRunsToKeep)
+                .Skip(_options.Value.OldTimedReprocessRunsToKeep)
                 .OrderBy(x => x.Created)
                 .Where(x => x.State == TimedReprocessState.Complete)
                 .ToList();

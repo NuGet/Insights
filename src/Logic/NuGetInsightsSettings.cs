@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights
 {
-    public class NuGetInsightsSettings
+    public class NuGetInsightsSettings : StorageAccountSettings
     {
         public const string DefaultSectionName = "NuGetInsights";
 
@@ -36,17 +36,6 @@ namespace NuGet.Insights
         public TimeSpan PopularityTransfersV1AgeLimit { get; set; } = TimeSpan.FromDays(365 * 10);
         public string LegacyReadmeUrlPattern { get; set; } = null;
 
-        public string StorageAccountName { get; set; } = null;
-        public string StorageClientApplicationId { get; set; } = null;
-        public string StorageClientTenantId { get; set; } = null;
-        public string StorageClientCertificatePath { get; set; } = null;
-        public string StorageClientCertificateKeyVault { get; set; } = null;
-        public string StorageClientCertificateKeyVaultCertificateName { get; set; } = null;
-        public string StorageBlobReadSharedAccessSignature { get; set; } = null;
-        public string StorageConnectionString { get; set; } = null;
-        public TimeSpan ServiceClientRefreshPeriod { get; set; } = TimeSpan.FromMinutes(30);
-        public TimeSpan ServiceClientSasDuration { get; set; } = TimeSpan.FromHours(12);
-
         public string LeaseContainerName { get; set; } = "leases";
         public string PackageArchiveTableName { get; set; } = "packagearchives";
         public string SymbolPackageArchiveTableName { get; set; } = "symbolpackagearchives";
@@ -55,7 +44,13 @@ namespace NuGet.Insights
         public string PackageHashesTableName { get; set; } = "packagehashes";
         public string SymbolPackageHashesTableName { get; set; } = "symbolpackagehashes";
         public string TimerTableName { get; set; } = "timers";
+
         public int MaxTempMemoryStreamSize { get; set; } = 1024 * 1024 * 196;
+
+        public List<TempStreamDirectory> TempDirectories { get; set; } = new List<TempStreamDirectory>
+        {
+            Path.Combine(Path.GetTempPath(), "NuGet.Insights"),
+        };
 
         public TimeSpan HttpClientNetworkTimeout { get; set; } = TimeSpan.FromSeconds(10);
         public int HttpClientMaxRetries { get; set; } = 4;
@@ -70,11 +65,5 @@ namespace NuGet.Insights
         /// Source: https://learn.microsoft.com/en-us/rest/api/storageservices/query-timeout-and-pagination
         /// </summary>
         public TimeSpan AzureServiceClientNetworkTimeout { get; set; } = TimeSpan.FromSeconds(35);
-
-        public string UserManagedIdentityClientId { get; set; } = null;
-        public List<TempStreamDirectory> TempDirectories { get; set; } = new List<TempStreamDirectory>
-        {
-            Path.Combine(Path.GetTempPath(), "NuGet.Insights"),
-        };
     }
 }
