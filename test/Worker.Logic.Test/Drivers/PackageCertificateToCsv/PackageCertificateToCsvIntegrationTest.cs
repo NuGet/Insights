@@ -292,7 +292,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         private void SetupCleanupOrphans()
         {
             AdditionalLeaseNames.Add($"CleanupOrphans-{ReferenceTypes.Package}-{ReferenceTypes.Certificate}");
-            AdditionalTableNames.Add(Options.Value.TaskStateTableName);
+            AdditionalTableNames.Add(Options.Value.SingletonTaskStateTableName);
         }
 
         protected async Task CleanupOrphansAsync()

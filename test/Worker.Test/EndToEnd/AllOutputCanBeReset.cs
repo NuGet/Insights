@@ -34,21 +34,10 @@ namespace NuGet.Insights.Worker
 
             // Get all table names and blob storage container names in the configuration
             var options = Options.Value;
-            var properties = options.GetType().GetProperties();
-            SortedDictionary<string, string> GetNames(IEnumerable<PropertyInfo> properties)
-            {
-                return new SortedDictionary<string, string>(
-                    properties.ToDictionary(x => x.Name, x => (string)x.GetValue(options)),
-                    StringComparer.Ordinal);
-            }
-            var tables = GetNames(properties.Where(x => x.Name.EndsWith("TableName", StringComparison.Ordinal)));
-            var blobContainers = GetNames(properties.Where(x => x.Name.EndsWith("ContainerName", StringComparison.Ordinal)));
-
-            // Remove transient tables
-            tables.Remove(nameof(NuGetInsightsWorkerSettings.CatalogLeafScanTableName));
-            tables.Remove(nameof(NuGetInsightsWorkerSettings.CatalogPageScanTableName));
-            tables.Remove(nameof(NuGetInsightsWorkerSettings.CsvRecordTableName));
-            tables.Remove(nameof(NuGetInsightsWorkerSettings.VersionSetAggregateTableName));
+            var properties = GetStorageNameProperties(options);
+            var tables = properties.Where(x => x.StorageType == StorageType.Table).ToDictionary(x => x.Name, x => x.Value);
+            var tablePrefixes = properties.Where(x => x.StorageType == StorageType.TablePrefix).ToDictionary(x => x.Name, x => x.Value);
+            var blobContainers = properties.Where(x => x.StorageType == StorageType.Blob).ToDictionary(x => x.Name, x => x.Value);
 
             // Verify all table and blob storage container names are created
             var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
@@ -84,7 +73,7 @@ namespace NuGet.Insights.Worker
             tables.Remove(nameof(NuGetInsightsWorkerSettings.CatalogIndexScanTableName));
             tables.Remove(nameof(NuGetInsightsWorkerSettings.CursorTableName));
             tables.Remove(nameof(NuGetInsightsWorkerSettings.KustoIngestionTableName));
-            tables.Remove(nameof(NuGetInsightsWorkerSettings.TaskStateTableName));
+            tables.Remove(nameof(NuGetInsightsWorkerSettings.SingletonTaskStateTableName));
             tables.Remove(nameof(NuGetInsightsWorkerSettings.TimedReprocessTableName));
             tables.Remove(nameof(NuGetInsightsWorkerSettings.TimerTableName));
             tables.Remove(nameof(NuGetInsightsWorkerSettings.WorkflowRunTableName));
@@ -97,6 +86,15 @@ namespace NuGet.Insights.Worker
             {
                 var table = tableServiceClient.GetTableClient(tableName);
                 Assert.True(await WaitForAsync(async () => !await table.ExistsAsync()), $"The table for {key} ('{tableName}') should have been deleted.");
+            }
+
+            foreach ((var key, var tableNamePrefix) in tablePrefixes)
+            {
+                Assert.True(await WaitForAsync(async () =>
+                {
+                    var existingTables = await tableServiceClient.QueryAsync(prefix: tableNamePrefix).ToListAsync();
+                    return existingTables.Count == 0;
+                }), $"The tables for {key} (starting with '{tableNamePrefix}') should have been deleted.");
             }
 
             foreach ((var key, var containerName) in blobContainers)

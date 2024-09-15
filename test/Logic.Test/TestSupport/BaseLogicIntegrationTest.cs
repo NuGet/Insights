@@ -201,7 +201,22 @@ namespace NuGet.Insights
             }
         }
 
-        private static List<(string Name, string Value, Action<string> SetValue, bool DirectProperty)> GetStorageNameProperties<T>(T settings) where T : NuGetInsightsSettings
+        protected enum StorageType
+        {
+            Blob,
+            Queue,
+            Table,
+            TablePrefix,
+        }
+
+        protected record StorageProperty(
+            string Name,
+            string Value,
+            Action<string> SetValue,
+            StorageType StorageType,
+            bool DirectProperty);
+
+        protected static List<StorageProperty> GetStorageNameProperties<T>(T settings) where T : NuGetInsightsSettings
         {
             int CountBaseTypes(Type type)
             {
@@ -215,18 +230,43 @@ namespace NuGet.Insights
                 return count;
             }
 
+            StorageType? GetStorageType(string propertyName)
+            {
+                if (propertyName.EndsWith("ContainerName", StringComparison.Ordinal))
+                {
+                    return StorageType.Blob;
+                }
+
+                if (propertyName.EndsWith("QueueName", StringComparison.Ordinal))
+                {
+                    return StorageType.Queue;
+                }
+
+                if (propertyName.EndsWith("TableName", StringComparison.Ordinal))
+                {
+                    return StorageType.Table;
+                }
+
+                if (propertyName.EndsWith("TableNamePrefix", StringComparison.Ordinal))
+                {
+                    return StorageType.TablePrefix;
+                }
+
+                return null;
+            }
+
             return typeof(T)
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .Where(x => x.Name.EndsWith("QueueName", StringComparison.Ordinal)
-                            || x.Name.EndsWith("TableName", StringComparison.Ordinal)
-                            || x.Name.EndsWith("ContainerName", StringComparison.Ordinal))
-                .OrderBy(x => CountBaseTypes(x.DeclaringType))
-                .ThenBy(x => x.Name)
-                .Select(x => (
-                    x.Name,
-                    Value: (string)x.GetMethod.Invoke(settings, null),
-                    SetValue: (Action<string>)(v => x.SetMethod.Invoke(settings, [v])),
-                    DirectProperty: x.DeclaringType == typeof(T)))
+                .Select(x => (PropertyInfo: x, StorageType: GetStorageType(x.Name)!))
+                .Where(x => x.StorageType.HasValue)
+                .OrderBy(x => CountBaseTypes(x.PropertyInfo.DeclaringType))
+                .ThenBy(x => x.PropertyInfo.Name)
+                .Select(x => new StorageProperty(
+                    x.PropertyInfo.Name,
+                    Value: (string)x.PropertyInfo.GetMethod.Invoke(settings, null),
+                    SetValue: v => x.PropertyInfo.SetMethod.Invoke(settings, [v]),
+                    StorageType: x.StorageType.Value,
+                    DirectProperty: x.PropertyInfo.DeclaringType == typeof(T)))
                 .ToList();
         }
 

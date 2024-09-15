@@ -5,7 +5,7 @@ namespace NuGet.Insights.Worker
 {
     public partial class NuGetInsightsWorkerSettings
     {
-        public string VersionSetAggregateTableName { get; set; } = "versionset";
+        public string VersionSetAggregateTableNamePrefix { get; set; } = "versionset";
         public string VersionSetContainerName { get; set; } = "versionset";
 
         public string BucketedPackageTableName { get; set; } = "bucketedpackages";

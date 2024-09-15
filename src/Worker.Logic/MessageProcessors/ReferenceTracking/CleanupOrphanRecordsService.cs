@@ -7,8 +7,6 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 {
     public class CleanupOrphanRecordsService<T> : ICleanupOrphanRecordsService<T> where T : ICleanupOrphanCsvRecord
     {
-        private static readonly string StorageSuffix = string.Empty;
-
         private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly ICleanupOrphanRecordsAdapter<T> _adapter;
         private readonly IMessageEnqueuer _messageEnqueuer;
@@ -36,7 +34,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
         {
             await _leaseService.InitializeAsync();
             await _messageEnqueuer.InitializeAsync();
-            await _taskStateStorageService.InitializeAsync(StorageSuffix);
+            await _taskStateStorageService.InitializeAsync(TaskStateStorageService.SingletonStorageSuffix);
             await _referenceTracker.InitializeAsync(
                 _adapter.OwnerToSubjectTableName,
                 _adapter.SubjectToOwnerTableName);
@@ -62,7 +60,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
                 var cleanupIdStr = cleanupId.ToString();
                 var storageSuffix = cleanupId.Unique;
                 var parameters = _schemaSerializer.Serialize(new CleanupOrphanRecordsParameters()).AsString();
-                var taskState = new TaskState(StorageSuffix, OperationName, cleanupIdStr)
+                var taskState = new TaskState(TaskStateStorageService.SingletonStorageSuffix, OperationName, cleanupIdStr)
                 {
                     Parameters = parameters,
                 };
@@ -85,7 +83,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 
         public async Task<bool> IsRunningAsync()
         {
-            var countLowerBound = await _taskStateStorageService.GetCountLowerBoundAsync(StorageSuffix, OperationName);
+            var countLowerBound = await _taskStateStorageService.GetCountLowerBoundAsync(TaskStateStorageService.SingletonStorageSuffix, OperationName);
             return countLowerBound > 0;
         }
     }

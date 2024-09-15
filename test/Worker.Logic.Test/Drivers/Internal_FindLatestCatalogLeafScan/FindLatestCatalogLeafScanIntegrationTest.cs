@@ -55,7 +55,7 @@ namespace NuGet.Insights.Worker.FindLatestCatalogLeafScan
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {
-            yield return Options.Value.CatalogLeafScanTableName + ParentStorageSuffix;
+            yield return Options.Value.CatalogLeafScanTableNamePrefix + ParentStorageSuffix;
         }
 
         protected override IEnumerable<string> GetExpectedCursorNames()

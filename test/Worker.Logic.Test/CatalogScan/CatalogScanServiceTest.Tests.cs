@@ -67,12 +67,12 @@ namespace NuGet.Insights.Worker
 
                 Assert.Contains(Options.Value.CursorTableName, tablesBefore);
                 Assert.Contains(Options.Value.CatalogIndexScanTableName, tablesBefore);
-                Assert.Contains($"{Options.Value.CatalogPageScanTableName}{scan.StorageSuffix}", tablesBefore);
-                Assert.Contains($"{Options.Value.CatalogLeafScanTableName}{scan.StorageSuffix}", tablesBefore);
-                Assert.Contains($"{Options.Value.CsvRecordTableName}{scan.StorageSuffix}0", tablesBefore);
-                Assert.Contains($"{Options.Value.CsvRecordTableName}{scan.StorageSuffix}1", tablesBefore);
-                Assert.Contains($"{Options.Value.CsvRecordTableName}{scan.StorageSuffix}2", tablesBefore);
-                Assert.Contains($"{Options.Value.TaskStateTableName}{scan.StorageSuffix}", tablesBefore);
+                Assert.Contains($"{Options.Value.CatalogPageScanTableNamePrefix}{scan.StorageSuffix}", tablesBefore);
+                Assert.Contains($"{Options.Value.CatalogLeafScanTableNamePrefix}{scan.StorageSuffix}", tablesBefore);
+                Assert.Contains($"{Options.Value.CsvRecordTableNamePrefix}{scan.StorageSuffix}0", tablesBefore);
+                Assert.Contains($"{Options.Value.CsvRecordTableNamePrefix}{scan.StorageSuffix}1", tablesBefore);
+                Assert.Contains($"{Options.Value.CsvRecordTableNamePrefix}{scan.StorageSuffix}2", tablesBefore);
+                Assert.Contains($"{Options.Value.TaskStateTableNamePrefix}{scan.StorageSuffix}", tablesBefore);
                 Assert.Equal(8, tablesBefore.Count);
 
                 var tablesAfter = await GetTableNamesAsync();

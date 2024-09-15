@@ -9,7 +9,9 @@ namespace NuGet.Insights.Worker
 
         public bool MoveTempToHome { get; set; } = false;
 
-        public string TaskStateTableName { get; set; } = "taskstate";
+        public string SingletonTaskStateTableName { get; set; } = "singletontaskstates";
+
+        public string TaskStateTableNamePrefix { get; set; } = "taskstate";
 
         public bool EnableDiagnosticTracingToLogger { get; set; } = false;
     }

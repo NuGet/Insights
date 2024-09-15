@@ -523,12 +523,12 @@ namespace NuGet.Insights.Worker
         private async Task<TableClientWithRetryContext> GetPageScanTableAsync(string suffix)
         {
             return (await _serviceClientFactory.GetTableServiceClientAsync())
-                .GetTableClient($"{_options.Value.CatalogPageScanTableName}{suffix}");
+                .GetTableClient($"{_options.Value.CatalogPageScanTableNamePrefix}{suffix}");
         }
 
         public string GetLeafScanTableName(string suffix)
         {
-            return $"{_options.Value.CatalogLeafScanTableName}{suffix}";
+            return $"{_options.Value.CatalogLeafScanTableNamePrefix}{suffix}";
         }
 
         public async Task<TableClientWithRetryContext> GetLeafScanTableAsync(string suffix)

@@ -56,14 +56,14 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             // 3 batches of 5 leaf scans each
             Assert.True(TelemetryClient.Metrics.TryGetValue(new("TableClient.EntityChangeCount", "TableName", "OperationName"), out var entityChangeCountMetric));
-            var leafScanOperations = entityChangeCountMetric.MetricValues.Where(x => x.DimensionValues[0].StartsWith(Options.Value.CatalogLeafScanTableName, StringComparison.Ordinal)).ToList();
+            var leafScanOperations = entityChangeCountMetric.MetricValues.Where(x => x.DimensionValues[0].StartsWith(Options.Value.CatalogLeafScanTableNamePrefix, StringComparison.Ordinal)).ToList();
             Assert.Equal(3, leafScanOperations.Count);
             Assert.All(leafScanOperations, x => Assert.Equal(5, x.MetricValue)); // 5 leaf scans
             Assert.All(leafScanOperations, x => Assert.Equal("SubmitTransactionAsync", x.DimensionValues[1]));
 
             // 15 individual entity operations (5 per batch)
             Assert.True(TelemetryClient.Metrics.TryGetValue(new("TableClient.BatchActionTypeCount", "TableName", "ActionType"), out var batchActionTypeCountMetric));
-            var leafScanBatchActions = batchActionTypeCountMetric.MetricValues.Where(x => x.DimensionValues[0].StartsWith(Options.Value.CatalogLeafScanTableName, StringComparison.Ordinal)).ToList();
+            var leafScanBatchActions = batchActionTypeCountMetric.MetricValues.Where(x => x.DimensionValues[0].StartsWith(Options.Value.CatalogLeafScanTableNamePrefix, StringComparison.Ordinal)).ToList();
             Assert.Equal(15, leafScanBatchActions.Count);
             Assert.Equal(5, leafScanBatchActions.Where(x => x.DimensionValues[1] == "Add").Count());
             Assert.Equal(5, leafScanBatchActions.Where(x => x.DimensionValues[1] == "UpdateReplace").Count());

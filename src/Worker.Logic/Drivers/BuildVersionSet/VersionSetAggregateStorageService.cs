@@ -61,7 +61,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
         private string GetTableName(string storageSuffix)
         {
-            return $"{_options.Value.VersionSetAggregateTableName}{storageSuffix}";
+            return $"{_options.Value.VersionSetAggregateTableNamePrefix}{storageSuffix}";
         }
     }
 }

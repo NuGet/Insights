@@ -26,7 +26,7 @@ namespace NuGet.Insights.Worker
         public string CursorTableName { get; set; } = "cursors";
 
         public string CatalogIndexScanTableName { get; set; } = "catalogindexscans";
-        public string CatalogPageScanTableName { get; set; } = "catalogpagescans";
-        public string CatalogLeafScanTableName { get; set; } = "catalogleafscans";
+        public string CatalogPageScanTableNamePrefix { get; set; } = "catalogpagescan";
+        public string CatalogLeafScanTableNamePrefix { get; set; } = "catalogleafscan";
     }
 }

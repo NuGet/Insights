@@ -8,6 +8,8 @@ namespace NuGet.Insights.Worker
 {
     public class TaskStateStorageService
     {
+        public const string SingletonStorageSuffix = "";
+
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -176,8 +178,22 @@ namespace NuGet.Insights.Worker
 
         private async Task<TableClientWithRetryContext> GetTableAsync(string suffix)
         {
-            return (await _serviceClientFactory.GetTableServiceClientAsync())
-                .GetTableClient($"{_options.Value.TaskStateTableName}{suffix}");
+            if (suffix is null)
+            {
+                throw new ArgumentNullException(nameof(suffix));
+            }
+
+            string tableName;
+            if (suffix == SingletonStorageSuffix)
+            {
+                tableName = _options.Value.SingletonTaskStateTableName;
+            }
+            else
+            {
+                tableName = $"{_options.Value.TaskStateTableNamePrefix}{suffix}";
+            }
+
+            return (await _serviceClientFactory.GetTableServiceClientAsync()).GetTableClient(tableName);
         }
     }
 }

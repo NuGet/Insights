@@ -271,10 +271,10 @@ namespace NuGet.Insights.Worker
                 // simulate an error while writing out CSV records, using cached data should reproduce the records
                 if (appendCsvError
                     && r.Method != HttpMethod.Get
-                    && r.RequestUri.AbsolutePath.Contains("/" + Options.Value.CsvRecordTableName, StringComparison.Ordinal))
+                    && r.RequestUri.AbsolutePath.Contains("/" + Options.Value.CsvRecordTableNamePrefix, StringComparison.Ordinal))
                 {
                     // CSV record table format: CsvRecordTableName + storage suffix + set index (digit)
-                    var storageSuffix = r.RequestUri.AbsolutePath.Split(Options.Value.CsvRecordTableName)[1];
+                    var storageSuffix = r.RequestUri.AbsolutePath.Split(Options.Value.CsvRecordTableNamePrefix)[1];
                     storageSuffix = storageSuffix.Substring(0, storageSuffix.Length - 1);
                     if (await GetMinimumLeafAttemptCount(storageSuffix) == 1)
                     {

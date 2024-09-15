@@ -322,7 +322,7 @@ namespace NuGet.Insights.Worker
                 Options = new Mock<IOptions<NuGetInsightsWorkerSettings>>();
                 Settings = new NuGetInsightsWorkerSettings
                 {
-                    TaskStateTableName = LogicTestSettings.NewStoragePrefix() + "1ts1",
+                    TaskStateTableNamePrefix = LogicTestSettings.NewStoragePrefix() + "1ts1",
                 }.WithTestStorageSettings();
                 Options.Setup(x => x.Value).Returns(() => Settings);
                 StorageSuffix = "suffix";
@@ -350,7 +350,7 @@ namespace NuGet.Insights.Worker
             public async Task<TableClientWithRetryContext> GetTableAsync(ILoggerFactory loggerFactory)
             {
                 var table = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync())
-                    .GetTableClient(Options.Object.Value.TaskStateTableName + StorageSuffix);
+                    .GetTableClient(Options.Object.Value.TaskStateTableNamePrefix + StorageSuffix);
 
                 if (!_created)
                 {

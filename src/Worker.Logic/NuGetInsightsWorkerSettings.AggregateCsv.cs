@@ -9,6 +9,6 @@ namespace NuGet.Insights.Worker
         public int AppendResultBigModeRecordThreshold { get; set; } = 25_000;
         public int AppendResultBigModeSubdivisionSize { get; set; } = 10_000;
 
-        public string CsvRecordTableName { get; set; } = "csvrecords";
+        public string CsvRecordTableNamePrefix { get; set; } = "csvrecord";
     }
 }

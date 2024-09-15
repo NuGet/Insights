@@ -154,7 +154,7 @@ namespace NuGet.Insights.Worker
 
             private string GetTableName(string suffix)
             {
-                return $"{_parent._options.Value.CsvRecordTableName}{suffix}{_setIndex}";
+                return $"{_parent._options.Value.CsvRecordTableNamePrefix}{suffix}{_setIndex}";
             }
         }
     }
