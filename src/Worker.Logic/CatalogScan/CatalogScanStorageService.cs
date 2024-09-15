@@ -516,13 +516,13 @@ namespace NuGet.Insights.Worker
 
         private async Task<TableClientWithRetryContext> GetIndexScanTableAsync()
         {
-            return (await _serviceClientFactory.GetTableServiceClientAsync())
+            return (await _serviceClientFactory.GetTableServiceClientAsync(_options.Value))
                 .GetTableClient(_options.Value.CatalogIndexScanTableName);
         }
 
         private async Task<TableClientWithRetryContext> GetPageScanTableAsync(string suffix)
         {
-            return (await _serviceClientFactory.GetTableServiceClientAsync())
+            return (await _serviceClientFactory.GetTableServiceClientAsync(_options.Value))
                 .GetTableClient($"{_options.Value.CatalogPageScanTableNamePrefix}{suffix}");
         }
 
@@ -533,7 +533,7 @@ namespace NuGet.Insights.Worker
 
         public async Task<TableClientWithRetryContext> GetLeafScanTableAsync(string suffix)
         {
-            return (await _serviceClientFactory.GetTableServiceClientAsync())
+            return (await _serviceClientFactory.GetTableServiceClientAsync(_options.Value))
                 .GetTableClient(GetLeafScanTableName(suffix));
         }
     }

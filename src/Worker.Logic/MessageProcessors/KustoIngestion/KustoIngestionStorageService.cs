@@ -332,13 +332,13 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
         private async Task<TableClientWithRetryContext> GetKustoIngestionTableAsync()
         {
-            return (await _serviceClientFactory.GetTableServiceClientAsync())
+            return (await _serviceClientFactory.GetTableServiceClientAsync(_options.Value))
                 .GetTableClient(_options.Value.KustoIngestionTableName);
         }
 
         private async Task<TableClientWithRetryContext> GetKustoIngestionTableAsync(string storageSuffix)
         {
-            return (await _serviceClientFactory.GetTableServiceClientAsync())
+            return (await _serviceClientFactory.GetTableServiceClientAsync(_options.Value))
                 .GetTableClient(_options.Value.KustoIngestionTableName + storageSuffix);
         }
     }

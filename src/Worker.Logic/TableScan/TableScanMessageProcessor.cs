@@ -19,6 +19,7 @@ namespace NuGet.Insights.Worker
         private readonly TablePrefixScanner _prefixScanner;
         private readonly TableScanDriverFactory<T> _driverFactory;
         private readonly ITelemetryClient _telemetryClient;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<TableScanMessageProcessor<T>> _logger;
         private readonly IMetric _sinceStarted;
         private readonly IMetric _messageProcessed;
@@ -37,6 +38,7 @@ namespace NuGet.Insights.Worker
             TablePrefixScanner prefixScanner,
             TableScanDriverFactory<T> driverFactory,
             ITelemetryClient telemetryClient,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<TableScanMessageProcessor<T>> logger)
         {
             _taskStateStorageService = taskStateStorageService;
@@ -46,6 +48,7 @@ namespace NuGet.Insights.Worker
             _prefixScanner = prefixScanner;
             _driverFactory = driverFactory;
             _telemetryClient = telemetryClient;
+            _options = options;
             _logger = logger;
 
             _sinceStarted = _telemetryClient
@@ -328,7 +331,7 @@ namespace NuGet.Insights.Worker
 
         private async Task<TableClientWithRetryContext> GetTableAsync(string name)
         {
-            return (await _serviceClientFactory.GetTableServiceClientAsync()).GetTableClient(name);
+            return (await _serviceClientFactory.GetTableServiceClientAsync(_options.Value)).GetTableClient(name);
         }
     }
 }

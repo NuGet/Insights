@@ -12,9 +12,10 @@ namespace NuGet.Insights.Worker
             IReadOnlyList<ICsvTemporaryStorage> storage,
             ICatalogLeafToCsvDriver driver,
             ServiceClientFactory serviceClientFactory,
-            IReadOnlyList<string> resultContainerNames,
-            ILogger logger)
-            : base(storageFactory, storage, driver, serviceClientFactory, resultContainerNames)
+            IOptions<NuGetInsightsWorkerSettings> options,
+            ILogger logger,
+            IReadOnlyList<string> resultContainerNames)
+            : base(storageFactory, storage, driver, serviceClientFactory, options, resultContainerNames)
         {
             _logger = logger;
         }

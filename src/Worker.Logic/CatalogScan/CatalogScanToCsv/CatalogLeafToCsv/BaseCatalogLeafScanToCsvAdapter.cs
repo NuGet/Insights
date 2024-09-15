@@ -9,6 +9,7 @@ namespace NuGet.Insights.Worker
         protected readonly IReadOnlyList<ICsvTemporaryStorage> _storage;
         private readonly ICatalogLeafToCsvDriver _driver;
         private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly IReadOnlyList<string> _resultContainerNames;
 
         public BaseCatalogLeafScanToCsvAdapter(
@@ -16,12 +17,14 @@ namespace NuGet.Insights.Worker
             IReadOnlyList<ICsvTemporaryStorage> storage,
             ICatalogLeafToCsvDriver driver,
             ServiceClientFactory serviceClientFactory,
+            IOptions<NuGetInsightsWorkerSettings> options,
             IReadOnlyList<string> resultContainerNames)
         {
             _storageFactory = storageFactory;
             _storage = storage;
             _driver = driver;
             _serviceClientFactory = serviceClientFactory;
+            _options = options;
             _resultContainerNames = resultContainerNames;
         }
 
@@ -98,7 +101,7 @@ namespace NuGet.Insights.Worker
 
         public async Task DestroyOutputAsync()
         {
-            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
+            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync(_options.Value);
             foreach (var container in _resultContainerNames)
             {
                 var containerClient = serviceClient.GetBlobContainerClient(container);

@@ -40,14 +40,14 @@ namespace NuGet.Insights.Worker
             var blobContainers = properties.Where(x => x.StorageType == StorageType.Blob).ToDictionary(x => x.Name, x => x.Value);
 
             // Verify all table and blob storage container names are created
-            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
+            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync(options);
             foreach ((var key, var tableName) in tables)
             {
                 var table = tableServiceClient.GetTableClient(tableName);
                 Assert.True(await table.ExistsAsync(), $"The table for {key} ('{tableName}') should have been created.");
             }
 
-            var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
+            var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync(options);
             foreach ((var key, var containerName) in blobContainers)
             {
                 var container = blobServiceClient.GetBlobContainerClient(containerName);

@@ -29,13 +29,13 @@ namespace NuGet.Insights.Worker
 
         public async Task<QueueClient> GetQueueAsync(QueueType type)
         {
-            return (await _serviceClientFactory.GetQueueServiceClientAsync())
+            return (await _serviceClientFactory.GetQueueServiceClientAsync(_options.Value))
                 .GetQueueClient(GetQueueName(type));
         }
 
         public async Task<QueueClient> GetPoisonQueueAsync(QueueType type)
         {
-            return (await _serviceClientFactory.GetQueueServiceClientAsync())
+            return (await _serviceClientFactory.GetQueueServiceClientAsync(_options.Value))
                 .GetQueueClient(GetQueueName(type) + "-poison");
         }
 

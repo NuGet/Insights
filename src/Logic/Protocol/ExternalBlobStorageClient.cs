@@ -212,7 +212,7 @@ namespace NuGet.Insights
 
                 if (useBlobClient != false)
                 {
-                    storageTokenCredential = await _serviceClientFactory.GetStorageTokenCredentialAsync();
+                    storageTokenCredential = await _serviceClientFactory.GetStorageTokenCredentialAsync(_options.Value);
                     useBlobClient = storageTokenCredential is not null;
 
                     if (useBlobClient == true)
@@ -229,7 +229,7 @@ namespace NuGet.Insights
                 {
                     if (storageTokenCredential is null)
                     {
-                        var storageCredentialType = await _serviceClientFactory.GetStorageCredentialTypeAsync();
+                        var storageCredentialType = await _serviceClientFactory.GetStorageCredentialTypeAsync(_options.Value);
                         throw new InvalidOperationException(
                             $"The {nameof(NuGetInsightsSettings.UseBlobClientForExternalData)} setting is only supported when a storage token credential is used. " +
                             $"The storage credential type is {storageCredentialType}.");
@@ -254,7 +254,7 @@ namespace NuGet.Insights
 
         private async Task<ExternalBlobResponse?> GetResponseWithBlobClientAsync(ExternalBlobRequest request, Uri lastUrl, TokenCredential storageTokenCredential)
         {
-            var blobClient = await _serviceClientFactory.GetBlobClientAsync(lastUrl);
+            var blobClient = await _serviceClientFactory.GetBlobClientAsync(_options.Value, lastUrl);
             Response<BlobDownloadStreamingResult>? streamingResponse = null;
             Response? rawResponse = null;
             try

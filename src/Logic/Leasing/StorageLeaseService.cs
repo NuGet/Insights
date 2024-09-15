@@ -226,7 +226,7 @@ namespace NuGet.Insights
 
         private async Task<BlobContainerClient> GetContainerAsync()
         {
-            return (await _serviceClientFactory.GetBlobServiceClientAsync())
+            return (await _serviceClientFactory.GetBlobServiceClientAsync(_options.Value))
                 .GetBlobContainerClient(_options.Value.LeaseContainerName);
         }
     }

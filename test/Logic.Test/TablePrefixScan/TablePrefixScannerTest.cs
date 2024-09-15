@@ -442,11 +442,10 @@ namespace NuGet.Insights.TablePrefixScan
                         .Returns(() => NullLogger.Instance);
 
                     var serviceClientFactory = new ServiceClientFactory(
-                        options.Object,
                         loggerFactory.Object.GetLoggerTelemetryClient(),
                         loggerFactory.Object);
 
-                    var client = await serviceClientFactory.GetTableServiceClientAsync();
+                    var client = await serviceClientFactory.GetTableServiceClientAsync(options.Object.Value);
 
                     table = client.GetTableClient(LogicTestSettings.NewStoragePrefix() + "1ts1");
                     await table.CreateIfNotExistsAsync();

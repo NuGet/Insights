@@ -1069,14 +1069,12 @@ namespace NuGet.Insights.ReferenceTracking
             ServiceClientFactoryA = new TestServiceClientFactory(
                 () => new LoggingHttpHandler(output.GetLogger<LoggingHttpHandler>()),
                 _fixture.HttpClientHandler,
-                _fixture.Options.Object,
                 telemetryClient,
                 loggerFactory);
 
             ServiceClientFactoryB = new TestServiceClientFactory(
                 () => new LoggingHttpHandler(output.GetLogger<LoggingHttpHandler>()),
                 _fixture.HttpClientHandler,
-                _fixture.Options.Object,
                 telemetryClient,
                 loggerFactory);
 
@@ -1141,7 +1139,7 @@ namespace NuGet.Insights.ReferenceTracking
 
             public ServiceClientFactory GetServiceClientFactory(ILoggerFactory loggerFactory)
             {
-                return new ServiceClientFactory(Options.Object, loggerFactory.GetLoggerTelemetryClient(), loggerFactory);
+                return new ServiceClientFactory(loggerFactory.GetLoggerTelemetryClient(), loggerFactory);
             }
 
             public async Task DisposeAsync()
@@ -1153,9 +1151,9 @@ namespace NuGet.Insights.ReferenceTracking
 
             public async Task<(TableClientWithRetryContext OwnerToSubject, TableClientWithRetryContext SubjectToOwner)> GetTablesAsync(ILoggerFactory loggerFactory)
             {
-                var ownerToSubject = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync())
+                var ownerToSubject = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync(Settings))
                     .GetTableClient(OwnerToSubjectTableName);
-                var subjectToOwner = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync())
+                var subjectToOwner = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync(Settings))
                     .GetTableClient(SubjectToOwnerTableName);
 
                 if (!_created)

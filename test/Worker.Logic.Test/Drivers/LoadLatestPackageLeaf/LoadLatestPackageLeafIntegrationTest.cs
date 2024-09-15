@@ -65,7 +65,7 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
 
         private async Task AssertOutputAsync(string dir, string step)
         {
-            var table = (await ServiceClientFactory.GetTableServiceClientAsync())
+            var table = (await ServiceClientFactory.GetTableServiceClientAsync(Options.Value))
                 .GetTableClient(Options.Value.LatestPackageLeafTableName);
             await AssertEntityOutputAsync<LatestPackageLeaf>(table, Path.Combine(dir, step));
         }

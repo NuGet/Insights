@@ -339,7 +339,7 @@ namespace NuGet.Insights.Worker
 
             public ServiceClientFactory GetServiceClientFactory(ILoggerFactory loggerFactory)
             {
-                return new ServiceClientFactory(Options.Object, loggerFactory.GetLoggerTelemetryClient(), loggerFactory);
+                return new ServiceClientFactory(loggerFactory.GetLoggerTelemetryClient(), loggerFactory);
             }
 
             public async Task DisposeAsync()
@@ -349,7 +349,7 @@ namespace NuGet.Insights.Worker
 
             public async Task<TableClientWithRetryContext> GetTableAsync(ILoggerFactory loggerFactory)
             {
-                var table = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync())
+                var table = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync(Settings))
                     .GetTableClient(Options.Object.Value.TaskStateTableNamePrefix + StorageSuffix);
 
                 if (!_created)

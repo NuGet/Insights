@@ -30,7 +30,7 @@ namespace NuGet.Insights.Worker.LoadBucketedPackage
 
         internal async Task<TableClientWithRetryContext> GetTableAsync()
         {
-            return (await _serviceClientFactory.GetTableServiceClientAsync())
+            return (await _serviceClientFactory.GetTableServiceClientAsync(_options.Value))
                 .GetTableClient(_options.Value.BucketedPackageTableName);
         }
     }

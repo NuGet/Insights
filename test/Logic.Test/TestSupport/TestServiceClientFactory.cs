@@ -10,9 +10,8 @@ namespace NuGet.Insights
         public TestServiceClientFactory(
             Func<LoggingHttpHandler> loggingHandlerFactory,
             HttpClientHandler httpClientHandler,
-            IOptions<NuGetInsightsSettings> options,
             ITelemetryClient telemetryClient,
-            ILoggerFactory logger) : base(options, telemetryClient, logger)
+            ILoggerFactory logger) : base(telemetryClient, logger)
         {
             LoggingHandlerFactory = loggingHandlerFactory;
             HttpClientHandler = httpClientHandler;

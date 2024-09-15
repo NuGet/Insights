@@ -216,7 +216,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             }
             _logger.LogInformation("Done writing the version set to the temporary blob.");
 
-            var tempBlobUrlWithSas = await _serviceClientFactory.GetBlobReadUrlAsync(tempBlob.BlobContainerName, tempBlob.Name);
+            var tempBlobUrlWithSas = await _serviceClientFactory.GetBlobReadUrlAsync(_options.Value, tempBlob.BlobContainerName, tempBlob.Name);
 
             _logger.LogInformation("Copying the temp version set to destination blob...");
             var blob = await GetBlobAsync();
@@ -239,7 +239,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
         private async Task<BlobContainerClient> GetContainerAsync()
         {
-            return (await _serviceClientFactory.GetBlobServiceClientAsync())
+            return (await _serviceClientFactory.GetBlobServiceClientAsync(_options.Value))
                 .GetBlobContainerClient(_options.Value.VersionSetContainerName);
         }
 

@@ -355,7 +355,6 @@ namespace NuGet.Insights
                 ServiceClientFactory = new TestServiceClientFactory(
                     () => new LoggingHttpHandler(output.GetLogger<LoggingHttpHandler>()),
                     HttpClientHandler,
-                    Options.Object,
                     output.GetTelemetryClient(),
                     output.GetLoggerFactory());
                 Target = new StorageLeaseService(
@@ -420,7 +419,7 @@ namespace NuGet.Insights
             {
                 Output.WriteTestCleanup();
 
-                await (await ServiceClientFactory.GetBlobServiceClientAsync())
+                await (await ServiceClientFactory.GetBlobServiceClientAsync(Settings))
                     .GetBlobContainerClient(ContainerName)
                     .DeleteIfExistsAsync();
 

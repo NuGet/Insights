@@ -201,7 +201,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 
         private async Task<BlobContainerClient> GetContainerAsync()
         {
-            return (await _serviceClientFactory.GetBlobServiceClientAsync()).GetBlobContainerClient(_updater.ContainerName);
+            return (await _serviceClientFactory.GetBlobServiceClientAsync(_options.Value)).GetBlobContainerClient(_updater.ContainerName);
         }
     }
 }

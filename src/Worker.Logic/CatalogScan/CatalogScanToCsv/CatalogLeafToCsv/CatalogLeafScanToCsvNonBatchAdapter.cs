@@ -12,13 +12,15 @@ namespace NuGet.Insights.Worker
             ICsvResultStorage<T> resultStorage,
             ICatalogLeafToCsvDriver<T> driver,
             ServiceClientFactory serviceClientFactory,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<CatalogLeafScanToCsvNonBatchAdapter<T>> logger) : base(
                 intermediateStorageFactory,
                 intermediateStorageFactory.Create(resultStorage),
                 driver,
                 serviceClientFactory,
-                [resultStorage.ResultContainerName],
-                logger)
+                options,
+                logger,
+                [resultStorage.ResultContainerName])
         {
             _driver = driver;
         }
@@ -49,13 +51,15 @@ namespace NuGet.Insights.Worker
             ICsvResultStorage<T2> resultStorage2,
             ICatalogLeafToCsvDriver<T1, T2> driver,
             ServiceClientFactory serviceClientFactory,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<CatalogLeafScanToCsvNonBatchAdapter<T1, T2>> logger) : base(
                 intermediateStorageFactory,
                 intermediateStorageFactory.Create(resultStorage1, resultStorage2),
                 driver,
                 serviceClientFactory,
-                [resultStorage1.ResultContainerName, resultStorage2.ResultContainerName],
-                logger)
+                options,
+                logger,
+                [resultStorage1.ResultContainerName, resultStorage2.ResultContainerName])
         {
             _driver = driver;
         }
@@ -88,13 +92,15 @@ namespace NuGet.Insights.Worker
             ICsvResultStorage<T3> resultStorage3,
             ICatalogLeafToCsvDriver<T1, T2, T3> driver,
             ServiceClientFactory serviceClientFactory,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<CatalogLeafScanToCsvNonBatchAdapter<T1, T2, T3>> logger) : base(
                 intermediateStorageFactory,
                 intermediateStorageFactory.Create(resultStorage1, resultStorage2, resultStorage3),
                 driver,
                 serviceClientFactory,
-                [resultStorage1.ResultContainerName, resultStorage2.ResultContainerName, resultStorage3.ResultContainerName],
-                logger)
+                options,
+                logger,
+                [resultStorage1.ResultContainerName, resultStorage2.ResultContainerName, resultStorage3.ResultContainerName])
         {
             _driver = driver;
         }

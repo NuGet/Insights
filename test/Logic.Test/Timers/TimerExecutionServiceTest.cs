@@ -422,7 +422,7 @@ namespace NuGet.Insights
             public async Task<TableClientWithRetryContext> GetTableAsync(ILoggerFactory loggerFactory)
             {
                 var serviceClientFactory = GetServiceClientFactory(loggerFactory);
-                var table = (await serviceClientFactory.GetTableServiceClientAsync())
+                var table = (await serviceClientFactory.GetTableServiceClientAsync(Settings))
                     .GetTableClient(Options.Object.Value.TimerTableName);
 
                 if (!_created)
@@ -446,12 +446,12 @@ namespace NuGet.Insights
 
             public ServiceClientFactory GetServiceClientFactory(ILoggerFactory loggerFactory)
             {
-                return new ServiceClientFactory(Options.Object, loggerFactory.GetLoggerTelemetryClient(), loggerFactory);
+                return new ServiceClientFactory(loggerFactory.GetLoggerTelemetryClient(), loggerFactory);
             }
 
             public async Task DisposeAsync()
             {
-                var blobServiceClient = await GetServiceClientFactory(NullLoggerFactory.Instance).GetBlobServiceClientAsync();
+                var blobServiceClient = await GetServiceClientFactory(NullLoggerFactory.Instance).GetBlobServiceClientAsync(Settings);
                 await blobServiceClient
                     .GetBlobContainerClient(Options.Object.Value.LeaseContainerName)
                     .DeleteIfExistsAsync();

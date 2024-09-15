@@ -193,7 +193,7 @@ namespace NuGet.Insights.Worker
                 tableName = $"{_options.Value.TaskStateTableNamePrefix}{suffix}";
             }
 
-            return (await _serviceClientFactory.GetTableServiceClientAsync()).GetTableClient(tableName);
+            return (await _serviceClientFactory.GetTableServiceClientAsync(_options.Value)).GetTableClient(tableName);
         }
     }
 }

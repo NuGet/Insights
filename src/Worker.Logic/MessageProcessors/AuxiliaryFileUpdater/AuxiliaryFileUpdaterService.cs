@@ -14,19 +14,22 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
         private readonly TaskStateStorageService _taskStateStorageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
         public AuxiliaryFileUpdaterService(
             IAuxiliaryFileUpdater<T> updater,
             IMessageEnqueuer messageEnqueuer,
             TaskStateStorageService taskStateStorageService,
             AutoRenewingStorageLeaseService leaseService,
-            ServiceClientFactory serviceClientFactory)
+            ServiceClientFactory serviceClientFactory,
+            IOptions<NuGetInsightsWorkerSettings> options)
         {
             _updater = updater;
             _messageEnqueuer = messageEnqueuer;
             _taskStateStorageService = taskStateStorageService;
             _leaseService = leaseService;
             _serviceClientFactory = serviceClientFactory;
+            _options = options;
         }
 
         public async Task InitializeAsync()
@@ -52,7 +55,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 
         private async Task<BlobContainerClient> GetContainerAsync()
         {
-            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
+            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync(_options.Value);
             var container = serviceClient.GetBlobContainerClient(_updater.ContainerName);
             return container;
         }

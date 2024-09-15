@@ -10,10 +10,9 @@ namespace NuGet.Insights
         {
             // Arrange
             var serviceClientFactory = new ServiceClientFactory(
-                Microsoft.Extensions.Options.Options.Create(new NuGetInsightsSettings().WithTestStorageSettings()),
                 TelemetryClient,
                 Output.GetLoggerFactory());
-            var blobClient = await serviceClientFactory.GetBlobServiceClientAsync();
+            var blobClient = await serviceClientFactory.GetBlobServiceClientAsync(new NuGetInsightsSettings().WithTestStorageSettings());
             var container = blobClient.GetBlobContainerClient($"{StoragePrefix}1b1");
             await container.CreateIfNotExistsAsync();
             var blob = container.GetBlobClient("downloads.v1.json");

@@ -113,7 +113,6 @@ namespace NuGet.Insights
                 var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
                 return new ServiceClientFactory(
                     () => httpClientFactory.CreateClient(ServiceClientHttpClient),
-                    provider.GetRequiredService<IOptions<NuGetInsightsSettings>>(),
                     provider.GetRequiredService<ITelemetryClient>(),
                     provider.GetRequiredService<ILoggerFactory>());
             });
