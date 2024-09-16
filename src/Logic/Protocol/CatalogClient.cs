@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using NuGet.Protocol;
-
 #nullable enable
 
 namespace NuGet.Insights
@@ -61,37 +59,38 @@ namespace NuGet.Insights
             .Parse("2015-10-28T10:22:26.4686283Z", CultureInfo.InvariantCulture)
             .Subtract(TimeSpan.FromTicks(1));
 
-        private readonly HttpSource _httpSource;
+        private readonly Func<HttpClient> _httpClientFactory;
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly ILogger<CatalogClient> _logger;
 
         public CatalogClient(
-            HttpSource httpSource,
+            Func<HttpClient> httpClientFactory,
             ServiceIndexCache serviceIndexCache,
             ILogger<CatalogClient> logger)
         {
-            _httpSource = httpSource;
+            _httpClientFactory = httpClientFactory;
             _serviceIndexCache = serviceIndexCache;
             _logger = logger;
         }
 
         public async Task<CatalogIndex> GetCatalogIndexAsync(string url)
         {
-            return await _httpSource.DeserializeUrlAsync<CatalogIndex>(url, logger: _logger);
+            var httpClient = _httpClientFactory();
+            return await httpClient.DeserializeUrlAsync<CatalogIndex>(url, _logger);
         }
 
         public async Task<DateTimeOffset> GetCommitTimestampAsync()
         {
             var url = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.Catalog);
             var length = 512;
-            var nuGetLogger = _logger.ToNuGetLogger();
-            var commitTimestamp = await _httpSource.ProcessResponseWithRetryAsync(
-                new HttpSourceRequest(() =>
+            var httpClient = _httpClientFactory();
+            var commitTimestamp = await httpClient.ProcessResponseWithRetriesAsync(
+                () =>
                 {
-                    var request = HttpRequestMessageFactory.Create(HttpMethod.Get, url, nuGetLogger);
+                    var request = new HttpRequestMessage(HttpMethod.Get, url);
                     request.Headers.Range = new RangeHeaderValue(0, length);
                     return request;
-                }),
+                },
                 async response =>
                 {
                     if (response.StatusCode != HttpStatusCode.PartialContent
@@ -150,7 +149,8 @@ namespace NuGet.Insights
 
         public async Task<CatalogPage> GetCatalogPageAsync(string url)
         {
-            return await _httpSource.DeserializeUrlAsync<CatalogPage>(url, _logger);
+            var httpClient = _httpClientFactory();
+            return await httpClient.DeserializeUrlAsync<CatalogPage>(url, _logger);
         }
 
         public async Task<IReadOnlyList<CatalogPageItem>> GetCatalogPageItemsAsync(
@@ -168,12 +168,13 @@ namespace NuGet.Insights
 
         public async Task<CatalogLeaf> GetCatalogLeafAsync(CatalogLeafType type, string url)
         {
+            var httpClient = _httpClientFactory();
             switch (type)
             {
                 case CatalogLeafType.PackageDelete:
-                    return await _httpSource.DeserializeUrlAsync<PackageDeleteCatalogLeaf>(url, _logger);
+                    return await httpClient.DeserializeUrlAsync<PackageDeleteCatalogLeaf>(url, _logger);
                 case CatalogLeafType.PackageDetails:
-                    return await _httpSource.DeserializeUrlAsync<PackageDetailsCatalogLeaf>(url, _logger);
+                    return await httpClient.DeserializeUrlAsync<PackageDetailsCatalogLeaf>(url, _logger);
                 default:
                     throw new NotImplementedException($"Catalog leaf type {type} is not supported.");
             }

@@ -11,6 +11,7 @@ namespace NuGet.Insights.Worker
         public static bool ShouldIgnoreMetricLog(LoggerTelemetryClient.MetricKey key)
         {
             return Insights.TestOutputHelperExtensions.ShouldIgnoreMetricLog(key)
+                || key.MetricId.StartsWith(AppendResultStorageService.MetricIdPrefix, StringComparison.Ordinal)
                 || key.MetricId.StartsWith(TableScanMessageProcessor<LatestPackageLeaf>.MetricIdPrefix, StringComparison.Ordinal)
                 || key.MetricId.StartsWith(LatestLeafStorageService<LatestPackageLeaf>.MetricIdPrefix, StringComparison.Ordinal)
                 || key.MetricId.StartsWith(QueueStorageEnqueuer.MetricIdPrefix, StringComparison.Ordinal)

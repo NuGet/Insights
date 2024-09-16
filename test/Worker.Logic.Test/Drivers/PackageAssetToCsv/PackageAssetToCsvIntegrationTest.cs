@@ -297,7 +297,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             {
                 if (req.Method == HttpMethod.Get && req.Headers.Range is not null)
                 {
-                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                    return Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest)
                     {
                         RequestMessage = req,
                     });

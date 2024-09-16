@@ -2,9 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Extensions.Caching.Memory;
-using NuGet.Configuration;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Insights
 {
@@ -74,21 +71,14 @@ namespace NuGet.Insights
             };
             Options = new Mock<IOptions<NuGetInsightsSettings>>();
             Options.Setup(x => x.Value).Returns(() => Settings);
-            HttpSource = new HttpSource(
-                new PackageSource(Settings.V3ServiceIndex),
-                () =>
-                {
-                    var httpMessageHandler = HttpMessageHandlerFactory.Create();
-                    httpMessageHandler.InnerHandler = RealHttpClientHandler;
-                    var resource = new HttpMessageHandlerResource(httpMessageHandler);
-                    return Task.FromResult<HttpHandlerResource>(resource);
-                },
-                NullThrottle.Instance);
+            var httpMessageHandler = HttpMessageHandlerFactory.Create();
+            httpMessageHandler.InnerHandler = RealHttpClientHandler;
+            HttpClient = new HttpClient(httpMessageHandler);
             MemoryCache = new MemoryCache(
                 Microsoft.Extensions.Options.Options.Create(new MemoryCacheOptions()),
                 Output.GetLoggerFactory());
             Target = new ServiceIndexCache(
-                HttpSource,
+                () => HttpClient,
                 MemoryCache,
                 Options.Object,
                 Output.GetLogger<ServiceIndexCache>());
@@ -97,6 +87,7 @@ namespace NuGet.Insights
         public void Dispose()
         {
             RealHttpClientHandler.Dispose();
+            HttpClient.Dispose();
         }
 
         public ITestOutputHelper Output { get; }
@@ -104,7 +95,7 @@ namespace NuGet.Insights
         public TestHttpMessageHandlerFactory HttpMessageHandlerFactory { get; }
         public NuGetInsightsSettings Settings { get; }
         public Mock<IOptions<NuGetInsightsSettings>> Options { get; }
-        public HttpSource HttpSource { get; }
+        public HttpClient HttpClient { get; }
         public MemoryCache MemoryCache { get; }
         public ServiceIndexCache Target { get; }
     }

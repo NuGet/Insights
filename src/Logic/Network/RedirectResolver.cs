@@ -7,21 +7,22 @@ namespace NuGet.Insights
 {
     public class RedirectResolver
     {
-        private readonly HttpClient _httpClient;
+        private readonly Func<HttpClient> _httpClientFactory;
         private readonly ILogger<RedirectResolver> _logger;
 
         public RedirectResolver(
-            HttpClient httpClient,
+            Func<HttpClient> httpClientFactory,
             ILogger<RedirectResolver> logger)
         {
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _logger = logger;
         }
 
         public async Task<Uri> FollowRedirectsAsync(Uri url)
         {
             using var request = new HttpRequestMessage(HttpMethod.Head, url);
-            using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            var httpClient = _httpClientFactory();
+            using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
 
             var lastUrl = response.RequestMessage?.RequestUri;
             if (lastUrl is null)

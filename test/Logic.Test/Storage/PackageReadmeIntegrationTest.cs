@@ -63,7 +63,7 @@ namespace NuGet.Insights
         {
             // Arrange
             var serviceClientFactory = new ServiceClientFactory(
-                Options.Create(new NuGetInsightsSettings().WithTestStorageSettings()),
+                Microsoft.Extensions.Options.Options.Create(new NuGetInsightsSettings().WithTestStorageSettings()),
                 TelemetryClient,
                 Output.GetLoggerFactory());
             var blobClient = await serviceClientFactory.GetBlobServiceClientAsync();

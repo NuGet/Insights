@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using MessagePack;
-using NuGet.Protocol;
 
 #nullable enable
 
@@ -12,7 +11,7 @@ namespace NuGet.Insights
     {
         private readonly PackageWideEntityService _wideEntityService;
         private readonly FlatContainerClient _flatContainerClient;
-        private readonly HttpSource _httpSource;
+        private readonly Func<HttpClient> _httpClientFactory;
         private readonly ExternalBlobStorageClient _storageClient;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<NuGetInsightsSettings> _options;
@@ -21,7 +20,7 @@ namespace NuGet.Insights
         public PackageReadmeService(
             PackageWideEntityService wideEntityService,
             FlatContainerClient flatContainerClient,
-            HttpSource httpSource,
+            Func<HttpClient> httpClientFactory,
             ExternalBlobStorageClient storageClient,
             ITelemetryClient telemetryClient,
             IOptions<NuGetInsightsSettings> options,
@@ -29,7 +28,7 @@ namespace NuGet.Insights
         {
             _wideEntityService = wideEntityService;
             _flatContainerClient = flatContainerClient;
-            _httpSource = httpSource;
+            _httpClientFactory = httpClientFactory;
             _storageClient = storageClient;
             _telemetryClient = telemetryClient;
             _options = options;
@@ -110,7 +109,7 @@ namespace NuGet.Insights
                     }
                     else
                     {
-                        var result = await GetPackageReadmeInfoWithHttpSourceAsync(item, readmeType, url);
+                        var result = await GetPackageReadmeInfoWithHttpClientAsync(item, readmeType, url);
                         if (result is not null)
                         {
                             return result;
@@ -151,15 +150,11 @@ namespace NuGet.Insights
             };
         }
 
-        private async Task<PackageReadmeInfoV1?> GetPackageReadmeInfoWithHttpSourceAsync(IPackageIdentityCommit item, ReadmeType readmeType, string url)
+        private async Task<PackageReadmeInfoV1?> GetPackageReadmeInfoWithHttpClientAsync(IPackageIdentityCommit item, ReadmeType readmeType, string url)
         {
-            var nuGetLog = _logger.ToNuGetLogger();
-
-            return await _httpSource.ProcessResponseWithRetryAsync(
-                new HttpSourceRequest(() => HttpRequestMessageFactory.Create(HttpMethod.Get, url, nuGetLog))
-                {
-                    IgnoreNotFounds = true
-                },
+            var httpClient = _httpClientFactory();
+            return await httpClient.ProcessResponseWithRetriesAsync(
+                () => new HttpRequestMessage(HttpMethod.Get, url),
                 async response =>
                 {
                     if (response.StatusCode == HttpStatusCode.NotFound)

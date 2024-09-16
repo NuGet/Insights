@@ -93,7 +93,7 @@ namespace NuGet.Insights
 
     public class ExternalBlobStorageClient
     {
-        private readonly HttpClient _httpClient;
+        private readonly Func<HttpClient> _httpClientFactory;
         private readonly RedirectResolver _redirectResolver;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IThrottle _throttle;
@@ -102,7 +102,7 @@ namespace NuGet.Insights
         private readonly ILogger<ExternalBlobStorageClient> _logger;
 
         public ExternalBlobStorageClient(
-            HttpClient httpClient,
+            Func<HttpClient> httpClientFactory,
             RedirectResolver redirectResolver,
             ServiceClientFactory serviceClientFactory,
             IThrottle throttle,
@@ -110,7 +110,7 @@ namespace NuGet.Insights
             IOptions<NuGetInsightsSettings> options,
             ILogger<ExternalBlobStorageClient> logger)
         {
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _redirectResolver = redirectResolver;
             _serviceClientFactory = serviceClientFactory;
             _throttle = throttle;
@@ -329,7 +329,8 @@ namespace NuGet.Insights
                 // Prior to this version, Azure Blob Storage did not put quotes around etag headers...
                 httpRequest.Headers.TryAddWithoutValidation("x-ms-version", "2017-04-17");
 
-                response = await _httpClient.SendAsync(httpRequest, httpCompletionOption);
+                var httpClient = _httpClientFactory();
+                response = await httpClient.SendAsync(httpRequest, httpCompletionOption);
 
                 if (request.AllowNotFound && response.StatusCode == HttpStatusCode.NotFound)
                 {

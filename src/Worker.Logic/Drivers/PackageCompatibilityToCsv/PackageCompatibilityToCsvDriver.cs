@@ -18,6 +18,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         private readonly IPackageFrameworkCompatibilityFactory _compatibilityFactory;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<PackageCompatibilityToCsvDriver> _logger;
+        private readonly Common.ILogger _nuGetLogger;
 
         public PackageCompatibilityToCsvDriver(
             CatalogClient catalogClient,
@@ -33,6 +34,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             _compatibilityFactory = compatibilityFactory;
             _options = options;
             _logger = logger;
+            _nuGetLogger = _logger.ToNuGetLogger();
         }
 
         public bool SingleMessagePerId => false;
@@ -177,10 +179,9 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                         result.Value.NuspecReader.GetPackageTypes(),
                         escapedFiles));
 
-                var nuGetLogger = _logger.ToNuGetLogger();
                 output.NU1202 = GetAndSerializeNested(
                     nameof(output.NU1202),
-                    () => CompatibilityChecker.GetPackageFrameworks(files, nuGetLogger));
+                    () => CompatibilityChecker.GetPackageFrameworks(files, _nuGetLogger));
 
                 output.HasError = hasError;
                 output.DoesNotRoundTrip = doesNotRoundTrip;

@@ -1,17 +1,19 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 namespace NuGet.Insights
 {
     public delegate Task<HttpResponseMessage> GetResponseAsync(CancellationToken token);
     public delegate Task<HttpResponseMessage> SendMessageAsync(HttpRequestMessage request, CancellationToken token);
-    public delegate Task<HttpResponseMessage> SendMessageWithBaseAsync(HttpRequestMessage request, SendMessageAsync baseSendAsync, CancellationToken token);
+    public delegate Task<HttpResponseMessage?> SendMessageWithBaseAsync(HttpRequestMessage request, SendMessageAsync baseSendAsync, CancellationToken token);
 
     public class TestHttpMessageHandlerFactory : INuGetInsightsHttpMessageHandlerFactory
     {
-        public SendMessageWithBaseAsync OnSendAsync { get; set; }
+        public SendMessageWithBaseAsync? OnSendAsync { get; set; }
 
-        private ConcurrentQueue<HttpRequestMessage> Requests { get; } = new ConcurrentQueue<HttpRequestMessage>();
+        public ConcurrentQueue<HttpRequestMessage> Requests { get; } = new ConcurrentQueue<HttpRequestMessage>();
 
         public ConcurrentQueue<(HttpRequestMessage OriginalRequest, HttpResponseMessage Response)> RequestAndResponses { get; } = new ConcurrentQueue<(HttpRequestMessage OriginalRequest, HttpResponseMessage Response)>();
 
@@ -20,7 +22,7 @@ namespace NuGet.Insights
 
         public IEnumerable<HttpRequestMessage> SuccessRequests => Responses
             .Where(x => x.IsSuccessStatusCode && x.RequestMessage is not null)
-            .Select(x => x.RequestMessage);
+            .Select(x => x.RequestMessage!);
 
         public void LogResponses(ITestOutputHelper output)
         {
@@ -32,7 +34,7 @@ namespace NuGet.Insights
                     "  - HTTP/{RequestVersion} {Method} {Url} -> HTTP/{ResponseVersion} {StatusCode} {ReasonPhrase}",
                     response.RequestMessage?.Version,
                     response.RequestMessage?.Method,
-                    response.RequestMessage?.RequestUri.AbsoluteUri,
+                    response.RequestMessage?.RequestUri?.AbsoluteUri,
                     response.Version,
                     (int)response.StatusCode,
                     response.ReasonPhrase);
@@ -49,9 +51,10 @@ namespace NuGet.Insights
         {
             return new TestHttpMessageHandler(async (req, baseSendAsync, token) =>
             {
-                if (OnSendAsync != null)
+                var onSendAsync = OnSendAsync;
+                if (onSendAsync is not null)
                 {
-                    return await OnSendAsync(req, baseSendAsync, token);
+                    return await onSendAsync(req, baseSendAsync, token);
                 }
 
                 return null;

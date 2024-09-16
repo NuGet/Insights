@@ -4,7 +4,6 @@
 using CommunityToolkit.HighPerformance;
 using MessagePack;
 using NuGet.Packaging;
-using NuGet.Protocol;
 
 #nullable enable
 
@@ -14,7 +13,7 @@ namespace NuGet.Insights
     {
         private readonly PackageWideEntityService _wideEntityService;
         private readonly FlatContainerClient _flatContainerClient;
-        private readonly HttpSource _httpSource;
+        private readonly Func<HttpClient> _httpClientFactory;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<NuGetInsightsSettings> _options;
         private readonly ILogger<PackageManifestService> _logger;
@@ -22,14 +21,14 @@ namespace NuGet.Insights
         public PackageManifestService(
             PackageWideEntityService wideEntityService,
             FlatContainerClient flatContainerClient,
-            HttpSource httpSource,
+            Func<HttpClient> httpClientFactory,
             ITelemetryClient telemetryClient,
             IOptions<NuGetInsightsSettings> options,
             ILogger<PackageManifestService> logger)
         {
             _wideEntityService = wideEntityService;
             _flatContainerClient = flatContainerClient;
-            _httpSource = httpSource;
+            _httpClientFactory = httpClientFactory;
             _telemetryClient = telemetryClient;
             _options = options;
             _logger = logger;
@@ -98,15 +97,12 @@ namespace NuGet.Insights
             var url = await _flatContainerClient.GetPackageManifestUrlAsync(leafItem.PackageId, leafItem.PackageVersion);
             var metric = _telemetryClient.GetMetric($"{nameof(PackageManifestService)}.{nameof(GetInfoAsync)}.DurationMs");
             var sw = Stopwatch.StartNew();
-            var nuGetLog = _logger.ToNuGetLogger();
 
             try
             {
-                return await _httpSource.ProcessResponseWithRetryAsync(
-                    new HttpSourceRequest(() => HttpRequestMessageFactory.Create(HttpMethod.Get, url, nuGetLog))
-                    {
-                        IgnoreNotFounds = true
-                    },
+                var httpClient = _httpClientFactory();
+                return await httpClient.ProcessResponseWithRetriesAsync(
+                    () => new HttpRequestMessage(HttpMethod.Get, url),
                     async response =>
                     {
                         if (response.StatusCode == HttpStatusCode.NotFound)

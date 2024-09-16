@@ -69,16 +69,16 @@ namespace NuGet.Insights
                     case ServiceIndexUrl:
                         return await b(r, t);
                     case CatalogIndexUrl:
-                        json = JsonSerializer.Serialize(Index, HttpSourceExtensions.JsonSerializerOptions);
+                        json = JsonSerializer.Serialize(Index, HttpClientExtensions.JsonSerializerOptions);
                         break;
                     case Page0Url:
-                        json = Page0 == null ? null : JsonSerializer.Serialize(Page0, HttpSourceExtensions.JsonSerializerOptions);
+                        json = Page0 == null ? null : JsonSerializer.Serialize(Page0, HttpClientExtensions.JsonSerializerOptions);
                         break;
                     case Page1Url:
-                        json = Page1 == null ? null : JsonSerializer.Serialize(Page1, HttpSourceExtensions.JsonSerializerOptions);
+                        json = Page1 == null ? null : JsonSerializer.Serialize(Page1, HttpClientExtensions.JsonSerializerOptions);
                         break;
                     case Page2Url:
-                        json = Page2 == null ? null : JsonSerializer.Serialize(Page2, HttpSourceExtensions.JsonSerializerOptions);
+                        json = Page2 == null ? null : JsonSerializer.Serialize(Page2, HttpClientExtensions.JsonSerializerOptions);
                         break;
                     default:
                         json = null;

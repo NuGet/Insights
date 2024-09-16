@@ -14,6 +14,7 @@ namespace NuGet.Insights.Worker
 {
     public class AppendResultStorageService
     {
+        public const string MetricIdPrefix = $"{nameof(AppendResultStorageService)}.";
         private const string ContentType = "text/plain";
         public const string CompactPrefix = "compact_";
 
@@ -66,93 +67,93 @@ namespace NuGet.Insights.Worker
             _logger = logger;
 
             _appendRecordCount = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(AppendToTableAsync)}.RecordCount",
+                $"{MetricIdPrefix}{nameof(AppendToTableAsync)}.RecordCount",
                 "RecordType");
             _appendSize = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(AppendToTableAsync)}.SizeInBytes",
+                $"{MetricIdPrefix}{nameof(AppendToTableAsync)}.SizeInBytes",
                 "RecordType");
             _appendBucketsInBatch = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(AppendToTableAsync)}.BucketsInBatch",
+                $"{MetricIdPrefix}{nameof(AppendToTableAsync)}.BucketsInBatch",
                 "RecordType");
             _tooLargeRecordCount = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(AppendToTableAsync)}.TooLarge.RecordCount",
+                $"{MetricIdPrefix}{nameof(AppendToTableAsync)}.TooLarge.RecordCount",
                 "RecordType");
             _tooLargeSizeInBytes = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(AppendToTableAsync)}.TooLarge.SizeInBytes",
+                $"{MetricIdPrefix}{nameof(AppendToTableAsync)}.TooLarge.SizeInBytes",
                 "RecordType");
             _compactDurationMs = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.DurationMs",
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.DurationMs",
                 "DestContainer",
                 "RecordType");
             _pruneRecordCount = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.PruneRecordCount",
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.PruneRecordCount",
                 "DestContainer",
                 "RecordType",
                 "IsFinalPrune");
             _pruneRecordDelta = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.PruneRecordDelta",
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.PruneRecordDelta",
                 "DestContainer",
                 "RecordType",
                 "IsFinalPrune");
             _recordCount = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.RecordCount",
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.RecordCount",
                 "DestContainer",
                 "RecordType");
             _pruneEntityCount = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.EntityCount",
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.EntityCount",
                 "DestContainer",
                 "RecordType");
             _compressedSize = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.CompressedSizeInBytes",
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.CompressedSizeInBytes",
                 "DestContainer",
                 "RecordType");
             _uncompressedSize = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.UncompressedSizeInBytes",
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.UncompressedSizeInBytes",
                 "DestContainer",
                 "RecordType");
             _blobChange = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.BlobChange",
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.BlobChange",
                 "DestContainer",
                 "RecordType");
             _bigModeSplitAppendedDurationMs = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.BigMode.SplitAppendedDurationMs",
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.BigMode.SplitAppendedDurationMs",
                 "DestContainer",
                 "RecordType");
             _bigModeSplitExistingDurationMs = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.BigMode.SplitExistingDurationMs",
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.BigMode.SplitExistingDurationMs",
                 "DestContainer",
                 "RecordType");
             _bigModeSplitSerializeDurationMs = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.BigMode.SplitSerializeDurationMs",
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.BigMode.SplitSerializeDurationMs",
                 "DestContainer",
                 "RecordType");
             _bigModeSplitFileSize = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.BigMode.SplitFileSize",
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.BigMode.SplitFileSize",
                 "DestContainer",
                 "RecordType");
             _bigModeSplitFileSizeDelta = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.BigMode.SplitFileSizeDelta",
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.BigMode.SplitFileSizeDelta",
                 "DestContainer",
                 "RecordType");
             _bigModeMergeSplitDurationMs = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.BigMode.MergeSplitDurationMs",
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.BigMode.MergeSplitDurationMs",
                 "DestContainer",
                 "RecordType");
             _bigModeSwitch = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.BigMode.Switch",
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.BigMode.Switch",
                 "DestContainer",
                 "RecordType",
                 "Reason");
             _bigModeSubdivisions = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.BigMode.Subdivisions",
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.BigMode.Subdivisions",
                 "DestContainer",
                 "RecordType");
             _bigModePreallocateOutputFileSize = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.BigMode.PreallocateOutputFileSize",
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.BigMode.PreallocateOutputFileSize",
                 "DestContainer",
                 "RecordType");
             _bigModeOutputFileSizeDelta = _telemetryClient.GetMetric(
-                $"{nameof(AppendResultStorageService)}.{nameof(CompactAsync)}.BigMode.OutputFileSizeDelta",
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.BigMode.OutputFileSizeDelta",
                 "DestContainer",
                 "RecordType");
         }

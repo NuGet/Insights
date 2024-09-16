@@ -256,6 +256,10 @@ namespace NuGet.Insights
         {
             x.WithTestStorageSettings();
 
+            x.HttpClientAddRetryJitter = false;
+            x.HttpClientMaxRetries = 2;
+            x.HttpClientMaxRetryDelay = TimeSpan.FromMilliseconds(500);
+
             x.DownloadsV1AgeLimit = TimeSpan.MaxValue;
             x.DownloadsV2AgeLimit = TimeSpan.MaxValue;
             x.OwnersV2AgeLimit = TimeSpan.MaxValue;
@@ -282,6 +286,7 @@ namespace NuGet.Insights
         public ServiceClientFactory ServiceClientFactory => Host.Services.GetRequiredService<ServiceClientFactory>();
         public LoggerTelemetryClient TelemetryClient => Host.Services.GetRequiredService<LoggerTelemetryClient>();
         public ILogger Logger => Host.Services.GetRequiredService<ILogger<BaseLogicIntegrationTest>>();
+        public IOptions<NuGetInsightsSettings> Options => Host.Services.GetRequiredService<IOptions<NuGetInsightsSettings>>();
         public ConcurrentQueue<string> LogMessages { get; } = new ConcurrentQueue<string>();
 
         protected async Task<List<T>> GetEntitiesAsync<T>(string tableName) where T : class, ITableEntity

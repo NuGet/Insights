@@ -3,7 +3,6 @@
 
 using System.Xml;
 using NuGet.Packaging.Core;
-using NuGet.Protocol;
 using NuGetPe;
 
 namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
@@ -17,8 +16,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
 
         private readonly CatalogClient _catalogClient;
         private readonly FlatContainerClient _flatContainerClient;
-        private readonly HttpSource _httpSource;
-        private readonly HttpClient _httpClient;
+        private readonly Func<HttpClient> _httpClientFactory;
         private readonly TemporaryFileProvider _temporaryFileProvider;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<NuGetPackageExplorerToCsvDriver> _logger;
@@ -26,16 +24,14 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
         public NuGetPackageExplorerToCsvDriver(
             CatalogClient catalogClient,
             FlatContainerClient flatContainerClient,
-            HttpSource httpSource,
-            HttpClient httpClient,
+            Func<HttpClient> httpClientFactory,
             TemporaryFileProvider temporaryFileProvider,
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<NuGetPackageExplorerToCsvDriver> logger)
         {
             _catalogClient = catalogClient;
             _flatContainerClient = flatContainerClient;
-            _httpSource = httpSource;
-            _httpClient = httpClient;
+            _httpClientFactory = httpClientFactory;
             _temporaryFileProvider = temporaryFileProvider;
             _options = options;
             _logger = logger;
@@ -129,7 +125,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
 
                     using (zipPackage)
                     {
-                        var symbolValidator = new SymbolValidator(zipPackage, zipPackage.Source, rootFolder: null, _httpClient, _temporaryFileProvider);
+                        var symbolValidator = new SymbolValidator(zipPackage, zipPackage.Source, rootFolder: null, _httpClientFactory(), _temporaryFileProvider);
 
                         SymbolValidatorResult symbolValidatorResult;
                         using (var cts = new CancellationTokenSource())
@@ -253,7 +249,6 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
         private async Task<bool> DownloadToFileAsync(PackageDetailsCatalogLeaf leaf, int attemptCount, string path)
         {
             var contentUrl = await _flatContainerClient.GetPackageContentUrlAsync(leaf.PackageId, leaf.PackageVersion);
-            var nuGetLogger = _logger.ToNuGetLogger();
 
             _logger.LogInformation(
                 "Downloading .nupkg for {Id} {Version} on attempt {AttemptCount}.",
@@ -261,8 +256,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                 leaf.PackageVersion,
                 attemptCount);
 
-            return await _httpSource.ProcessResponseWithRetryAsync(
-                new HttpSourceRequest(contentUrl, nuGetLogger) { IgnoreNotFounds = true },
+            var httpClient = _httpClientFactory();
+            return await httpClient.ProcessResponseWithRetriesAsync(
+                () => new HttpRequestMessage(HttpMethod.Get, contentUrl),
                 async response =>
                 {
                     if (response.StatusCode == HttpStatusCode.NotFound)

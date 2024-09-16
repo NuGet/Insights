@@ -56,8 +56,21 @@ namespace NuGet.Insights
         public string SymbolPackageHashesTableName { get; set; } = "symbolpackagehashes";
         public string TimerTableName { get; set; } = "timers";
         public int MaxTempMemoryStreamSize { get; set; } = 1024 * 1024 * 196;
+
+        public TimeSpan HttpClientNetworkTimeout { get; set; } = TimeSpan.FromSeconds(10);
+        public int HttpClientMaxRetries { get; set; } = 4;
+        public TimeSpan HttpClientMaxRetryDelay { get; set; } = TimeSpan.FromSeconds(30);
+        public bool HttpClientAddRetryJitter { get; set; } = true;
+
         public int AzureServiceClientMaxRetries { get; set; } = 2;
-        public TimeSpan AzureServiceClientNetworkTimeout { get; set; } = ServiceCollectionExtensions.HttpClientTimeout;
+
+        /// <summary>
+        /// This should be longer than the Azure Storage server-side timeouts (30 seconds).
+        /// Source: https://learn.microsoft.com/en-us/rest/api/storageservices/setting-timeouts-for-table-service-operations
+        /// Source: https://learn.microsoft.com/en-us/rest/api/storageservices/query-timeout-and-pagination
+        /// </summary>
+        public TimeSpan AzureServiceClientNetworkTimeout { get; set; } = TimeSpan.FromSeconds(35);
+
         public string UserManagedIdentityClientId { get; set; } = null;
         public List<TempStreamDirectory> TempDirectories { get; set; } = new List<TempStreamDirectory>
         {

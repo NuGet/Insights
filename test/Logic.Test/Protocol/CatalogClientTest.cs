@@ -2,9 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Extensions.Caching.Memory;
-using NuGet.Configuration;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Insights
 {
@@ -183,25 +180,19 @@ namespace NuGet.Insights
             };
             Options = new Mock<IOptions<NuGetInsightsSettings>>();
             Options.Setup(x => x.Value).Returns(() => Settings);
-            HttpSource = new HttpSource(
-                new PackageSource(Settings.V3ServiceIndex),
-                () =>
-                {
-                    var httpMessageHandler = HttpMessageHandlerFactory.Create();
-                    httpMessageHandler.InnerHandler = RealHttpClientHandler;
-                    var resource = new HttpMessageHandlerResource(httpMessageHandler);
-                    return Task.FromResult<HttpHandlerResource>(resource);
-                },
-                NullThrottle.Instance);
+
+            var httpMessageHandler = HttpMessageHandlerFactory.Create();
+            httpMessageHandler.InnerHandler = RealHttpClientHandler;
+            HttpClient = new HttpClient(httpMessageHandler);
             ServiceIndexCache = new ServiceIndexCache(
-                HttpSource,
+                () => HttpClient,
                 new MemoryCache(
                     Microsoft.Extensions.Options.Options.Create(new MemoryCacheOptions()),
                     Output.GetLoggerFactory()),
                 Options.Object,
                 Output.GetLogger<ServiceIndexCache>());
             Target = new CatalogClient(
-                HttpSource,
+                () => HttpClient,
                 ServiceIndexCache,
                 Output.GetLogger<CatalogClient>());
         }
@@ -211,7 +202,7 @@ namespace NuGet.Insights
         public TestHttpMessageHandlerFactory HttpMessageHandlerFactory { get; }
         public NuGetInsightsSettings Settings { get; }
         public Mock<IOptions<NuGetInsightsSettings>> Options { get; }
-        public HttpSource HttpSource { get; }
+        public HttpClient HttpClient { get; }
         public ServiceIndexCache ServiceIndexCache { get; }
         public CatalogClient Target { get; }
     }

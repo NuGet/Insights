@@ -10,6 +10,8 @@ namespace NuGet.Insights
 {
     public class PackageWideEntityService
     {
+        public const string MetricIdPrefix = $"{nameof(PackageWideEntityService)}.";
+
         private readonly WideEntityService _wideEntityService;
         private readonly ITelemetryClient _telemetryClient;
 
@@ -187,7 +189,7 @@ namespace NuGet.Insights
             void EmitMetric(CommitTimestampComparison comparison, bool useExisting)
             {
                 var metric = _telemetryClient.GetMetric(
-                    $"{nameof(PackageWideEntityService)}.{nameof(GetExistingAsync)}.Outcome",
+                    $"{MetricIdPrefix}GetExistingAsync.Outcome",
                     "Type",
                     "ForceUpdate",
                     "TimestampComparison",

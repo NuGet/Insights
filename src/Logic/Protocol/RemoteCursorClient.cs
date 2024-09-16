@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using NuGet.Protocol;
-
 #nullable enable
 
 namespace NuGet.Insights
@@ -11,18 +9,18 @@ namespace NuGet.Insights
     {
         private readonly CatalogClient _catalogClient;
         private readonly ServiceIndexCache _serviceIndexCache;
-        private readonly HttpSource _httpSource;
+        private readonly Func<HttpClient> _httpClientFactory;
         private readonly ILogger<RemoteCursorClient> _logger;
 
         public RemoteCursorClient(
             CatalogClient catalogClient,
             ServiceIndexCache serviceIndexCache,
-            HttpSource httpSource,
+            Func<HttpClient> httpClientFactory,
             ILogger<RemoteCursorClient> logger)
         {
             _catalogClient = catalogClient;
             _serviceIndexCache = serviceIndexCache;
-            _httpSource = httpSource;
+            _httpClientFactory = httpClientFactory;
             _logger = logger;
         }
 
@@ -40,7 +38,8 @@ namespace NuGet.Insights
 
         private async Task<DateTimeOffset> GetJsonCursorAsync(string url, CancellationToken token = default)
         {
-            var cursor = await _httpSource.DeserializeUrlAsync<JsonCursor>(
+            var httpClient = _httpClientFactory();
+            var cursor = await httpClient.DeserializeUrlAsync<JsonCursor>(
                 url,
                 logger: _logger,
                 token: token);

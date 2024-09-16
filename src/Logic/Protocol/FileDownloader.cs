@@ -3,7 +3,6 @@
 
 using Knapcode.MiniZip;
 using Microsoft.AspNetCore.WebUtilities;
-using NuGet.Protocol;
 
 #nullable enable
 
@@ -17,22 +16,22 @@ namespace NuGet.Insights
 
     public class FileDownloader
     {
-        private readonly HttpSource _httpSource;
+        private readonly Func<HttpClient> _httpClientFactory;
         private readonly TempStreamService _tempStreamService;
-        private readonly HttpZipProvider _httpZipProvider;
+        private readonly Func<HttpZipProvider> _httpZipProviderFactory;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<FileDownloader> _logger;
 
         public FileDownloader(
-            HttpSource httpSource,
+            Func<HttpClient> httpClientFactory,
             TempStreamService tempStreamService,
-            HttpZipProvider httpZipProvider,
+            Func<HttpZipProvider> httpZipProviderFactory,
             ITelemetryClient telemetryClient,
             ILogger<FileDownloader> logger)
         {
-            _httpSource = httpSource;
+            _httpClientFactory = httpClientFactory;
             _tempStreamService = tempStreamService;
-            _httpZipProvider = httpZipProvider;
+            _httpZipProviderFactory = httpZipProviderFactory;
             _telemetryClient = telemetryClient;
             _logger = logger;
         }
@@ -53,7 +52,6 @@ namespace NuGet.Insights
             bool allowNotFound,
             CancellationToken token)
         {
-            var nuGetLogger = _logger.ToNuGetLogger();
             var writer = _tempStreamService.GetWriter();
 
             ILookup<string, string>? headers = null;
@@ -62,8 +60,9 @@ namespace NuGet.Insights
             {
                 do
                 {
-                    result = await _httpSource.ProcessResponseWithRetryAsync(
-                        new HttpSourceRequest(url, nuGetLogger),
+                    var httpClient = _httpClientFactory();
+                    result = await httpClient.ProcessResponseWithRetriesAsync(
+                        () => new HttpRequestMessage(HttpMethod.Get, url),
                         async response =>
                         {
                             if (allowNotFound && response.StatusCode == HttpStatusCode.NotFound)
@@ -192,7 +191,8 @@ namespace NuGet.Insights
 
                     try
                     {
-                        var reader = await _httpZipProvider.GetReaderAsync(new Uri(url));
+                        var httpZipProvider = _httpZipProviderFactory();
+                        var reader = await httpZipProvider.GetReaderAsync(new Uri(url));
 
                         // Read the ZIP reader proactively to warm the cache to find any HTTP exceptions that might occur.
                         await reader.ReadAsync();

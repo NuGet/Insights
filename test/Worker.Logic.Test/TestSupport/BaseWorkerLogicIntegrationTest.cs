@@ -70,7 +70,7 @@ namespace NuGet.Insights.Worker
         }
 
         public Action<NuGetInsightsWorkerSettings> ConfigureWorkerSettings { get; set; }
-        public IOptions<NuGetInsightsWorkerSettings> Options => Host.Services.GetRequiredService<IOptions<NuGetInsightsWorkerSettings>>();
+        public new IOptions<NuGetInsightsWorkerSettings> Options => Host.Services.GetRequiredService<IOptions<NuGetInsightsWorkerSettings>>();
         public CatalogScanService CatalogScanService => Host.Services.GetRequiredService<CatalogScanService>();
         public CatalogScanCursorService CatalogScanCursorService => Host.Services.GetRequiredService<CatalogScanCursorService>();
         public CursorStorageService CursorStorageService => Host.Services.GetRequiredService<CursorStorageService>();

@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NuGet.Protocol;
 
 #nullable enable
@@ -12,24 +14,22 @@ namespace NuGet.Insights
     {
         private const string TypeToUrlsKey = $"{nameof(ServiceIndexCache)}.TypeToUrls";
 
-        private readonly HttpSource _httpSource;
+        private readonly Func<HttpClient> _httpClientFactory;
         private readonly IMemoryCache _memoryCache;
         private readonly IOptions<NuGetInsightsSettings> _options;
         private readonly ILogger<ServiceIndexCache> _logger;
-        private readonly Common.ILogger _nugetLogger;
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
         public ServiceIndexCache(
-            HttpSource httpSource,
+            Func<HttpClient> httpClientFactory,
             IMemoryCache memoryCache,
             IOptions<NuGetInsightsSettings> options,
             ILogger<ServiceIndexCache> logger)
         {
-            _httpSource = httpSource;
+            _httpClientFactory = httpClientFactory;
             _memoryCache = memoryCache;
             _options = options;
             _logger = logger;
-            _nugetLogger = logger.ToNuGetLogger();
         }
 
         private async Task<ServiceIndexResourceV3> GetServiceIndexAsync()
@@ -46,9 +46,20 @@ namespace NuGet.Insights
                     {
                         attemptCount++;
                         var requestTime = DateTime.UtcNow;
-                        var serviceIndexJson = await _httpSource.GetJObjectAsync(
-                            new HttpSourceRequest(_options.Value.V3ServiceIndex, _nugetLogger) { MaxTries = 1 },
-                            _nugetLogger,
+                        var httpClient = _httpClientFactory();
+                        var serviceIndexJson = await httpClient.ProcessResponseWithRetriesAsync(
+                            () => new HttpRequestMessage(HttpMethod.Get, _options.Value.V3ServiceIndex),
+                            async response =>
+                            {
+                                response.EnsureSuccessStatusCode();
+
+                                using var stream = await response.Content.ReadAsStreamAsync(CancellationToken.None);
+                                using var streamReader = new StreamReader(stream);
+                                using var jsonReader = new JsonTextReader(streamReader);
+
+                                return JObject.Load(jsonReader);
+                            },
+                            _logger,
                             CancellationToken.None);
                         return new ServiceIndexResourceV3(serviceIndexJson, requestTime);
                     }

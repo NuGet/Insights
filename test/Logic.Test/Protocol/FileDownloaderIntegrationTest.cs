@@ -20,7 +20,7 @@ namespace NuGet.Insights
                     {
                         if (r.Method != HttpMethod.Get || r.Headers.Range is not null)
                         {
-                            return new HttpResponseMessage(HttpStatusCode.InternalServerError) { RequestMessage = r };
+                            return new HttpResponseMessage(HttpStatusCode.BadRequest) { RequestMessage = r };
                         }
 
                         var newReq = Clone(r);

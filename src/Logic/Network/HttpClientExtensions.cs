@@ -1,13 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using NuGet.Protocol;
-
 #nullable enable
 
 namespace NuGet.Insights
 {
-    public static class HttpSourceExtensions
+    public static class HttpClientExtensions
     {
         private const int DefaultMaxTries = 3;
 
@@ -21,21 +19,17 @@ namespace NuGet.Insights
         };
 
         public static async Task<T> DeserializeUrlAsync<T>(
-            this HttpSource httpSource,
+            this HttpClient httpClient,
             string url,
             ILogger logger,
             CancellationToken token = default) where T : notnull
         {
-            var nuGetLogger = logger.ToNuGetLogger();
-            return await httpSource.ProcessResponseWithRetryAsync(
-                new HttpSourceRequest(url, nuGetLogger)
-                {
-                    IgnoreNotFounds = false,
-                    MaxTries = DefaultMaxTries,
-                    RequestTimeout = TimeSpan.FromSeconds(30),
-                },
+            return await httpClient.ProcessResponseWithRetriesAsync(
+                () => new HttpRequestMessage(HttpMethod.Get, url),
                 async response =>
                 {
+                    response.EnsureSuccessStatusCode();
+
                     using var stream = await response.Content.ReadAsStreamAsync(token);
 
                     T? result;
@@ -61,14 +55,13 @@ namespace NuGet.Insights
                 token);
         }
 
-        public static async Task<T> ProcessResponseWithRetryAsync<T>(
-            this HttpSource httpSource,
-            HttpSourceRequest request,
+        public static async Task<T> ProcessResponseWithRetriesAsync<T>(
+            this HttpClient httpClient,
+            Func<HttpRequestMessage> getRequest,
             Func<HttpResponseMessage, Task<T>> processAsync,
             ILogger logger,
             CancellationToken token)
         {
-            var nuGetLogger = logger.ToNuGetLogger();
             var attempt = 0;
             while (true)
             {
@@ -77,16 +70,12 @@ namespace NuGet.Insights
                 attempt++;
                 try
                 {
-                    return await httpSource.ProcessResponseAsync(
-                        request,
-                        async (response) =>
-                        {
-                            url = response.RequestMessage?.RequestUri?.Obfuscate();
-                            fetchedHeaders = true;
-                            return await processAsync(response);
-                        },
-                        nuGetLogger,
-                        token);
+                    using var request = getRequest();
+                    url = request.RequestUri?.Obfuscate();
+                    using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token);
+                    fetchedHeaders = true;
+
+                    return await processAsync(response);
                 }
                 catch (Exception ex) when (ShouldRetryStreamException(attempt, fetchedHeaders, ex, token))
                 {

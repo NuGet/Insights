@@ -282,11 +282,11 @@ namespace NuGet.Insights
             HttpMessageHandlerFactory = new TestHttpMessageHandlerFactory();
             HttpClient = new HttpClient(HttpMessageHandlerFactory.Create());
             Throttle = new SemaphoreSlimThrottle(new SemaphoreSlim(1));
-            RedirectResolver = new RedirectResolver(HttpClient, output.GetLogger<RedirectResolver>());
+            RedirectResolver = new RedirectResolver(() => HttpClient, output.GetLogger<RedirectResolver>());
             TelemetryClient = output.GetTelemetryClient();
             ServiceClientFactory = new ServiceClientFactory(Options.Object, TelemetryClient, output.GetLoggerFactory());
             StorageClient = new ExternalBlobStorageClient(
-                HttpClient,
+                () => HttpClient,
                 RedirectResolver,
                 ServiceClientFactory,
                 Throttle,

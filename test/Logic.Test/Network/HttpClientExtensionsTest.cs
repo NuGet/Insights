@@ -1,17 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using NuGet.Configuration;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
-
 namespace NuGet.Insights
 {
-    public class HttpSourceExtensionsTest
+    public class HttpClientExtensionsTest : BaseLogicIntegrationTest
     {
-        public class TheProcessResponseWithRetryAsyncMethod : HttpSourceExtensionsTest
+        public class TheProcessResponseWithRetryAsyncMethod : HttpClientExtensionsTest
         {
-            public TheProcessResponseWithRetryAsyncMethod(ITestOutputHelper output) : base(output)
+            public TheProcessResponseWithRetryAsyncMethod(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {
             }
 
@@ -84,8 +80,8 @@ namespace NuGet.Insights
 
             private async Task<T> AssertThrowsAfterReadAsStringAsync<T>() where T : Exception
             {
-                return await Assert.ThrowsAsync<T>(() => Target.ProcessResponseWithRetryAsync(
-                    new HttpSourceRequest("https://example.com/v3/index.json", Logger.ToNuGetLogger()),
+                return await Assert.ThrowsAsync<T>(() => Target.ProcessResponseWithRetriesAsync(
+                    () => new HttpRequestMessage(HttpMethod.Get, "https://example.com/v3/index.json"),
                     response => response.Content.ReadAsStringAsync(),
                     Logger,
                     CancellationToken.None));
@@ -93,8 +89,8 @@ namespace NuGet.Insights
 
             private async Task<T> AssertThrowsAfterReadAsStreamAsync<T>() where T : Exception
             {
-                return await Assert.ThrowsAsync<T>(() => Target.ProcessResponseWithRetryAsync(
-                    new HttpSourceRequest("https://example.com/v3/index.json", Logger.ToNuGetLogger()),
+                return await Assert.ThrowsAsync<T>(() => Target.ProcessResponseWithRetriesAsync(
+                    () => new HttpRequestMessage(HttpMethod.Get, "https://example.com/v3/index.json"),
                     async response =>
                     {
                         using var stream = response.Content.ReadAsStream();
@@ -107,7 +103,7 @@ namespace NuGet.Insights
             }
         }
 
-        public class TheDeserializeUrlAsyncMethod : HttpSourceExtensionsTest
+        public class TheDeserializeUrlAsyncMethod : HttpClientExtensionsTest
         {
             [Theory]
             [InlineData("", "00:00:00")]
@@ -165,35 +161,21 @@ namespace NuGet.Insights
                 };
             }
 
-            public TheDeserializeUrlAsyncMethod(ITestOutputHelper output) : base(output)
+            public TheDeserializeUrlAsyncMethod(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {
             }
         }
 
-        public HttpSourceExtensionsTest(ITestOutputHelper output)
-        {
-            Output = output;
-            Logger = output.GetLogger<HttpSource>();
-            HttpMessageHandlerFactory = new TestHttpMessageHandlerFactory();
-            TestUrl = "https://api.example.com/v3/test";
-            IgnoreNotFounds = false;
-            Target = new HttpSource(
-                new PackageSource("https://api.example.com/v3/index.json"),
-                () =>
-                {
-                    var httpMessageHandler = HttpMessageHandlerFactory.Create();
-                    var resource = new HttpMessageHandlerResource(httpMessageHandler);
-                    return Task.FromResult<HttpHandlerResource>(resource);
-                },
-                NullThrottle.Instance);
-        }
-
-        public ITestOutputHelper Output { get; }
-        public ILogger<HttpSource> Logger { get; }
-        public TestHttpMessageHandlerFactory HttpMessageHandlerFactory { get; }
         public string TestUrl { get; }
         public bool IgnoreNotFounds { get; }
-        public HttpSource Target { get; }
+        public HttpClient Target { get; }
+
+        public HttpClientExtensionsTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
+        {
+            TestUrl = "https://api.example.com/v3/test";
+            IgnoreNotFounds = false;
+            Target = new HttpClient(HttpMessageHandlerFactory.Create());
+        }
 
         private void SetStreamException(Func<Exception> getException)
         {
@@ -207,6 +189,11 @@ namespace NuGet.Insights
                         () => throw getException())),
                 });
             };
+        }
+
+        public void Dispose()
+        {
+            Target.Dispose();
         }
 
         private class PersonWithDateTimeOffset
