@@ -207,9 +207,6 @@ namespace NuGet.Insights
             serviceCollection.AddTransient<MZipFormat>();
             serviceCollection.AddTransient<FileDownloader>();
 
-            serviceCollection.AddTransient<SearchServiceCursorReader>();
-            serviceCollection.AddTransient<IProgressReporter, NullProgressReporter>();
-            serviceCollection.AddTransient<LatestCatalogCommitFetcher>();
             serviceCollection.AddTransient<StorageLeaseService>();
             serviceCollection.AddTransient<AutoRenewingStorageLeaseService>();
             serviceCollection.AddTransient<StorageSemaphoreLeaseService>();
@@ -231,14 +228,8 @@ namespace NuGet.Insights
             serviceCollection.AddTransient<TempStreamWriter>();
             serviceCollection.AddScoped<TempStreamLeaseScope>();
 
-            serviceCollection.AddTransient<V2Parser>();
             serviceCollection.AddSingleton<ServiceIndexCache>();
-            serviceCollection.AddTransient<GalleryClient>();
-            serviceCollection.AddTransient<V2Client>();
-            serviceCollection.AddTransient<PackagesContainerClient>();
             serviceCollection.AddTransient<FlatContainerClient>();
-            serviceCollection.AddTransient<RegistrationClient>();
-            serviceCollection.AddTransient<SearchClient>();
             serviceCollection.AddTransient<ExternalBlobStorageClient>();
             serviceCollection.AddTransient<PackageDownloadsClient>();
             serviceCollection.AddTransient<PackageOwnersClient>();
@@ -248,18 +239,6 @@ namespace NuGet.Insights
             serviceCollection.AddTransient<CatalogClient>();
             serviceCollection.AddSingleton<CatalogCommitTimestampProvider>();
             serviceCollection.AddTransient<IRemoteCursorClient, RemoteCursorClient>();
-
-            serviceCollection.AddTransient<PackageConsistencyContextBuilder>();
-            serviceCollection.AddTransient<GalleryConsistencyService>();
-            serviceCollection.AddTransient<V2ConsistencyService>();
-            serviceCollection.AddTransient<FlatContainerConsistencyService>();
-            serviceCollection.AddTransient<PackagesContainerConsistencyService>();
-            serviceCollection.AddTransient<RegistrationOriginalConsistencyService>();
-            serviceCollection.AddTransient<RegistrationGzippedConsistencyService>();
-            serviceCollection.AddTransient<RegistrationSemVer2ConsistencyService>();
-            serviceCollection.AddTransient<SearchConsistencyService>();
-            serviceCollection.AddTransient<PackageConsistencyService>();
-            serviceCollection.AddTransient<CrossCheckConsistencyService>();
 
             serviceCollection.AddTransient<ICertificateVerifier, OnlineCertificateVerifier>();
 

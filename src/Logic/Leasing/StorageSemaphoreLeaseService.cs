@@ -55,7 +55,7 @@ namespace NuGet.Insights
             var leaseNames = Enumerable
                 .Range(0, count)
                 .Select(i => $"{name}-Semaphore-{i}")
-                .OrderBy(x => ThreadLocalRandom.Next())
+                .OrderBy(x => Random.Shared.Next())
                 .ToList();
 
             foreach (var leaseName in leaseNames)

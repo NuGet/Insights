@@ -107,60 +107,6 @@ namespace NuGet.Insights
             }
         }
 
-        public class TheProcessStreamWithRetryAsyncMethod : HttpSourceExtensionsTest
-        {
-            public TheProcessStreamWithRetryAsyncMethod(ITestOutputHelper output) : base(output)
-            {
-            }
-
-            [Fact]
-            public async Task DoesNotRetryForOtherException()
-            {
-                SetStreamException(() => new InvalidOperationException("It's not a big truck!"));
-
-                var ex = await AssertThrowsAfterReadAsStreamAsync<InvalidOperationException>();
-
-                Assert.Equal("It's not a big truck!", ex.Message);
-                Assert.Single(HttpMessageHandlerFactory.Responses);
-            }
-
-            [Fact]
-            public async Task RetriesForIOException()
-            {
-                SetStreamException(() => new IOException("It's not a big truck!"));
-
-                var ex = await AssertThrowsAfterReadAsStreamAsync<IOException>();
-
-                Assert.Equal("It's not a big truck!", ex.Message);
-                Assert.Equal(3, HttpMessageHandlerFactory.Responses.Count());
-            }
-
-            [Fact]
-            public async Task RetriesForOperationCanceledException()
-            {
-                SetStreamException(() => new OperationCanceledException("It's not a big truck!"));
-
-                var ex = await AssertThrowsAfterReadAsStreamAsync<OperationCanceledException>();
-
-                Assert.Equal("It's not a big truck!", ex.Message);
-                Assert.Equal(3, HttpMessageHandlerFactory.Responses.Count());
-            }
-
-            private async Task<T> AssertThrowsAfterReadAsStreamAsync<T>() where T : Exception
-            {
-                return await Assert.ThrowsAsync<T>(() => Target.ProcessStreamWithRetryAsync(
-                    new HttpSourceRequest("https://example.com/v3/index.json", Logger.ToNuGetLogger()),
-                    async stream =>
-                    {
-                        using var destination = new MemoryStream();
-                        await stream.CopyToAsync(destination);
-                        return destination;
-                    },
-                    Logger,
-                    CancellationToken.None));
-            }
-        }
-
         public class TheDeserializeUrlAsyncMethod : HttpSourceExtensionsTest
         {
             [Theory]
@@ -174,7 +120,7 @@ namespace NuGet.Insights
             {
                 SetTestUrlContent(@$"{{""Name"": ""Bill Gates"", ""DateOfBirth"": ""1955-10-28T00:00:00{suffix}""}}");
 
-                var result = await Target.DeserializeUrlAsync<PersonWithDateTimeOffset>(TestUrl, IgnoreNotFounds, Logger);
+                var result = await Target.DeserializeUrlAsync<PersonWithDateTimeOffset>(TestUrl, Logger);
 
                 Assert.Equal(TimeSpan.Parse(expected, CultureInfo.InvariantCulture), result.DateOfBirth.Offset);
                 Assert.Equal(DateTimeKind.Unspecified, result.DateOfBirth.DateTime.Kind);
@@ -192,7 +138,7 @@ namespace NuGet.Insights
             {
                 SetTestUrlContent(@$"{{""Name"": ""Bill Gates"", ""DateOfBirth"": ""1955-10-28T00:00:00{suffix}""}}");
 
-                var result = await Target.DeserializeUrlAsync<PersonWithDateTime>(TestUrl, IgnoreNotFounds, Logger);
+                var result = await Target.DeserializeUrlAsync<PersonWithDateTime>(TestUrl, Logger);
 
                 Assert.Equal(DateTimeKind.Utc, result.DateOfBirth.Kind);
                 Assert.Equal(expected, result.DateOfBirth.ToString("O"));

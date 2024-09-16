@@ -14,7 +14,7 @@ namespace NuGet.Insights
         public async Task CachesServiceIndex()
         {
             var urlA = await Target.GetUrlAsync(ServiceIndexTypes.FlatContainer);
-            var urlB = await Target.GetUrlAsync(ServiceIndexTypes.RegistrationSemVer2);
+            var urlB = await Target.GetUrlAsync(ServiceIndexTypes.Catalog);
 
             var session = Assert.Single(HttpMessageHandlerFactory.RequestAndResponses);
             Assert.Equal(Settings.V3ServiceIndex, session.Response.RequestMessage.RequestUri.AbsoluteUri);

@@ -463,7 +463,7 @@ namespace NuGet.Insights.Worker
             const int msPerMinute = 60 * 1000;
             if (attemptCount <= 1)
             {
-                return TimeSpan.FromMilliseconds(ThreadLocalRandom.Next(0, msPerMinute));
+                return TimeSpan.FromMilliseconds(Random.Shared.Next(0, msPerMinute));
             }
 
             // Then try in increments of more minutes.
@@ -474,7 +474,7 @@ namespace NuGet.Insights.Worker
             var minMs = minMinutes * msPerMinute;
             var maxMs = maxMinutes * msPerMinute;
 
-            return TimeSpan.FromMilliseconds(ThreadLocalRandom.Next((int)minMs, (int)maxMs));
+            return TimeSpan.FromMilliseconds(Random.Shared.Next((int)minMs, (int)maxMs));
         }
     }
 }

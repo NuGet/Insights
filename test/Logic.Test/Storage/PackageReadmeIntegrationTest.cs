@@ -5,6 +5,8 @@ namespace NuGet.Insights
 {
     public class PackageReadmeIntegrationTest : BaseLogicIntegrationTest
     {
+        public const string WindowsAzure_Storage_9_3_3 = "WindowsAzure.Storage.9.3.3.md";
+
         [Fact]
         public async Task ReturnsEmbeddedReadmeContent()
         {
@@ -68,7 +70,7 @@ namespace NuGet.Insights
             var container = blobClient.GetBlobContainerClient($"{StoragePrefix}1lr1");
             await container.CreateIfNotExistsAsync();
             var blob = container.GetBlobClient("windowsazure.storage/9.3.3/legacy-readme");
-            await blob.UploadAsync(Resources.LoadMemoryStream(Resources.READMEs.WindowsAzure_Storage_9_3_3));
+            await blob.UploadAsync(Resources.LoadMemoryStream(WindowsAzure_Storage_9_3_3));
 
             ConfigureSettings = x =>
             {
@@ -76,7 +78,7 @@ namespace NuGet.Insights
                 x.LegacyReadmeUrlPattern = container.Uri.AbsoluteUri + "/{0}/{1}/legacy-readme";
             };
 
-            var expected = await Resources.LoadStringReader(Resources.READMEs.WindowsAzure_Storage_9_3_3).ReadToEndAsync();
+            var expected = await Resources.LoadStringReader(WindowsAzure_Storage_9_3_3).ReadToEndAsync();
 
             // Arrange
             await Target.InitializeAsync();
@@ -112,7 +114,7 @@ namespace NuGet.Insights
             {
                 if (r.RequestUri.LocalPath.EndsWith("/legacy-readme", StringComparison.Ordinal))
                 {
-                    var stream = Resources.LoadMemoryStream(Resources.READMEs.WindowsAzure_Storage_9_3_3);
+                    var stream = Resources.LoadMemoryStream(WindowsAzure_Storage_9_3_3);
                     return new HttpResponseMessage(HttpStatusCode.OK)
                     {
                         RequestMessage = r,
