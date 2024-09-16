@@ -26,45 +26,22 @@ namespace NuGet.Insights
             ILogger logger,
             CancellationToken token = default) where T : notnull
         {
-            return (await httpSource.DeserializeUrlAsync<T>(
-                url,
-                ignoreNotFounds: false,
-                maxTries: DefaultMaxTries,
-                options: JsonSerializerOptions,
-                logger: logger,
-                token: token))!;
-        }
-
-        public static async Task<T?> DeserializeUrlAsync<T>(
-            this HttpSource httpSource,
-            string url,
-            bool ignoreNotFounds,
-            int maxTries,
-            JsonSerializerOptions options,
-            ILogger logger,
-            CancellationToken token = default) where T : notnull
-        {
             var nuGetLogger = logger.ToNuGetLogger();
             return await httpSource.ProcessResponseWithRetryAsync(
                 new HttpSourceRequest(url, nuGetLogger)
                 {
-                    IgnoreNotFounds = ignoreNotFounds,
-                    MaxTries = maxTries,
+                    IgnoreNotFounds = false,
+                    MaxTries = DefaultMaxTries,
                     RequestTimeout = TimeSpan.FromSeconds(30),
                 },
                 async response =>
                 {
-                    if (ignoreNotFounds && response.StatusCode == HttpStatusCode.NotFound)
-                    {
-                        return default;
-                    }
-
                     using var stream = await response.Content.ReadAsStreamAsync(token);
 
                     T? result;
                     try
                     {
-                        result = await JsonSerializer.DeserializeAsync<T>(stream, options, token);
+                        result = await JsonSerializer.DeserializeAsync<T>(stream, JsonSerializerOptions, token);
                     }
                     catch (JsonException ex)
                     {
