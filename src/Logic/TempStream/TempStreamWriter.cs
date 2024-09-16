@@ -27,7 +27,7 @@ namespace NuGet.Insights
         private const int GB = 1024 * MB;
         private const string Memory = "memory";
 
-        private readonly TempStreamLeaseScope _leaseScope;
+        private readonly TempStreamDirectoryLeaseService _leaseService;
         private readonly int _maxInMemorySize;
         private readonly int _maxInMemoryMB;
         private readonly IReadOnlyList<TempStreamDirectory> _tempDirs;
@@ -63,9 +63,9 @@ namespace NuGet.Insights
             return () => $"{Guid.NewGuid().ToByteArray().ToTrimmedBase32()}_{suffix}";
         }
 
-        public TempStreamWriter(TempStreamLeaseScope leaseScope, IOptions<NuGetInsightsSettings> options, ILogger<TempStreamWriter> logger)
+        public TempStreamWriter(TempStreamDirectoryLeaseService leaseService, IOptions<NuGetInsightsSettings> options, ILogger<TempStreamWriter> logger)
         {
-            _leaseScope = leaseScope;
+            _leaseService = leaseService;
             _maxInMemorySize = Math.Min(options.Value.MaxTempMemoryStreamSize, GB);
             _maxInMemoryMB = (_maxInMemorySize / MB) + (_maxInMemorySize % MB > 0 ? 1 : 0);
             _tempDirs = options
@@ -133,7 +133,7 @@ namespace NuGet.Insights
 
                     if (dest != null)
                     {
-                        return await CopyAndSeekAsync(src, length, hashAlgorithm, dest, Memory, TempStreamDirectory.DefaultBufferSize);
+                        return await CopyAndSeekAsync(src, length, hashAlgorithm, dest, Memory, TempStreamDirectory.DefaultBufferSize, NullAsyncDisposable.Instance);
                     }
                 }
 
@@ -189,7 +189,8 @@ namespace NuGet.Insights
                     }
 
                     var tempPath = Path.Combine(tempDir, getTempFileName());
-                    if (!await _leaseScope.WaitAsync(tempDir))
+                    var tempDirLease = await _leaseService.WaitForLeaseAsync(tempDir);
+                    if (tempDirLease is null)
                     {
                         return TempStreamResult.SemaphoreNotAvailable();
                     }
@@ -213,13 +214,19 @@ namespace NuGet.Insights
                         }
 
                         consumedSource = true;
-                        return await CopyAndSeekAsync(src, length, hashAlgorithm, dest, tempPath, tempDir.BufferSize);
+                        return await CopyAndSeekAsync(src, length, hashAlgorithm, dest, tempPath, tempDir.BufferSize, tempDirLease);
                     }
                     catch (IOException ex)
                     {
                         SafeDispose(dest);
                         _tempDirIndex++;
                         _logger.LogWarning(ex, "Could not buffer a {TypeName} stream with length {LengthBytes} bytes to temp file {TempFile}.", src.GetType().FullName, length, tempPath);
+                        await SafeDisposeAsync(tempDirLease);
+                    }
+                    catch
+                    {
+                        await SafeDisposeAsync(tempDirLease);
+                        throw;
                     }
                 }
 
@@ -245,6 +252,23 @@ namespace NuGet.Insights
             }
 
             return $"{tempDir.Path} (max writers: {tempDir.MaxConcurrentWriters.Value})";
+        }
+
+        private async ValueTask SafeDisposeAsync(IAsyncDisposable disposable)
+        {
+            if (disposable is null)
+            {
+                return;
+            }
+
+            try
+            {
+                await disposable.DisposeAsync();
+            }
+            catch
+            {
+                // Best effort.
+            }
         }
 
         private static void SafeDispose(Stream dest)
@@ -285,7 +309,7 @@ namespace NuGet.Insights
             }
         }
 
-        private async Task<TempStreamResult> CopyAndSeekAsync(Stream src, long length, IIncrementalHash hashAlgorithm, Stream dest, string location, int bufferSize)
+        private async Task<TempStreamResult> CopyAndSeekAsync(Stream src, long length, IIncrementalHash hashAlgorithm, Stream dest, string location, int bufferSize, IAsyncDisposable lease)
         {
             _logger.LogInformation(
                 "Starting copy of a {TypeName} stream with length {LengthBytes} bytes to {Location}.",
@@ -304,7 +328,7 @@ namespace NuGet.Insights
                 location,
                 sw.Elapsed.TotalMilliseconds);
 
-            return TempStreamResult.Success(dest, hashAlgorithm.Output);
+            return TempStreamResult.Success(dest, hashAlgorithm.Output, lease);
         }
     }
 }

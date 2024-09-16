@@ -17,18 +17,15 @@ namespace NuGet.Insights.Worker
         private static bool IsTimerFunctionInitialized = false;
 
         private readonly MetricsTimer _metricsTimer;
-        private readonly TempStreamLeaseScope _tempStreamLeaseScope;
         private readonly TimerExecutionService _timerExecutionService;
         private readonly IGenericMessageProcessor _messageProcessor;
 
         public Functions(
             MetricsTimer metricsTimer,
-            TempStreamLeaseScope tempStreamLeaseScope,
             TimerExecutionService timerExecutionService,
             IGenericMessageProcessor messageProcessor)
         {
             _metricsTimer = metricsTimer;
-            _tempStreamLeaseScope = tempStreamLeaseScope;
             _timerExecutionService = timerExecutionService;
             _messageProcessor = messageProcessor;
         }
@@ -59,7 +56,6 @@ namespace NuGet.Insights.Worker
         public async Task TimerAsync(
             [TimerTrigger("0 * * * * *")] TimerInfo timerInfo)
         {
-            await using var scopeOwnership = _tempStreamLeaseScope.TakeOwnership();
             if (!IsTimerFunctionInitialized)
             {
                 await _timerExecutionService.InitializeAsync();
@@ -84,7 +80,6 @@ namespace NuGet.Insights.Worker
 
         private async Task ProcessMessageAsync(QueueType queue, QueueMessage message)
         {
-            await using var scopeOwnership = _tempStreamLeaseScope.TakeOwnership();
             await _messageProcessor.ProcessSingleAsync(queue, message.Body.ToMemory(), message.DequeueCount);
         }
     }

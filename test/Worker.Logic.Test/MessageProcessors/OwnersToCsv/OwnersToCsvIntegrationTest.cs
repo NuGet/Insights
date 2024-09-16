@@ -238,7 +238,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
 
             hostBuilder.ConfigureServices(serviceCollection =>
             {
-                serviceCollection.AddTransient(s => MockVersionSetProvider.Object);
+                serviceCollection.AddSingleton(s => MockVersionSetProvider.Object);
             });
         }
     }

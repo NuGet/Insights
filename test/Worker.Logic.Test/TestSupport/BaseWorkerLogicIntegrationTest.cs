@@ -467,8 +467,6 @@ namespace NuGet.Insights.Worker
 
         protected virtual async Task ProcessMessageAsync(IServiceProvider serviceProvider, QueueType queue, QueueMessage message)
         {
-            var leaseScope = serviceProvider.GetRequiredService<TempStreamLeaseScope>();
-            await using var scopeOwnership = leaseScope.TakeOwnership();
             var messageProcessor = serviceProvider.GetRequiredService<IGenericMessageProcessor>();
             await messageProcessor.ProcessSingleAsync(queue, message.Body.ToMemory(), message.DequeueCount);
         }

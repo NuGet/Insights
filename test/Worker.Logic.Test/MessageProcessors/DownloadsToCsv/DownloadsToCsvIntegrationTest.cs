@@ -26,7 +26,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
 
             hostBuilder.ConfigureServices(serviceCollection =>
             {
-                serviceCollection.AddTransient(s => MockVersionSetProvider.Object);
+                serviceCollection.AddSingleton(s => MockVersionSetProvider.Object);
             });
         }
 

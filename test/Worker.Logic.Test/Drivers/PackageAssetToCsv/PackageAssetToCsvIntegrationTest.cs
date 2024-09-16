@@ -142,7 +142,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             Assert.All(metric.MetricValues, x => Assert.Equal(Options.Value.PackageAssetContainerName, x.DimensionValues[0]));
             Assert.All(metric.MetricValues, x => Assert.Equal("PackageAsset", x.DimensionValues[1]));
             Assert.All(metric.MetricValues, x => Assert.Equal("EstimatedRecordCount", x.DimensionValues[2]));
-            TelemetryClient.Metrics.Clear();
+            TelemetryClient.Clear();
 
             // Act
             await UpdateAsync(max2);

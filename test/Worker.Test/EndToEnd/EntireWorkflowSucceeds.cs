@@ -56,9 +56,9 @@ namespace NuGet.Insights.Worker
 
             hostBuilder.ConfigureServices(serviceCollection =>
             {
-                serviceCollection.AddTransient(x => MockCslAdminProvider.Object);
-                serviceCollection.AddTransient(x => MockKustoQueueIngestClient.Object);
-                serviceCollection.AddTransient(x => MockCslQueryProvider.Object);
+                serviceCollection.AddSingleton(x => MockCslAdminProvider.Object);
+                serviceCollection.AddSingleton(x => MockKustoQueueIngestClient.Object);
+                serviceCollection.AddSingleton(x => MockCslQueryProvider.Object);
             });
         }
 

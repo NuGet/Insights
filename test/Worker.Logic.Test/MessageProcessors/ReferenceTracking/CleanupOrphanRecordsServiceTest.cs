@@ -223,9 +223,9 @@ namespace NuGet.Insights.Worker.ReferenceTracking
                     .Add(new SchemaV1<CleanupOrphanRecordsMessage<TestSubjectRecord>>(TestSubjectRecord.GetCleanupOrphanRecordsMessageSchemaName()))
                     .Build());
                 serviceCollection.AddCleanupOrphanRecordsService<TestCleanupOrphanRecordsAdapter, TestSubjectRecord>();
-                serviceCollection.AddTransient<ICsvResultStorage<TestSubjectRecord>, TestSubjectRecordStorage>();
-                serviceCollection.AddTransient<IMessageProcessor<CsvCompactMessage<TestSubjectRecord>>, CsvCompactorProcessor<TestSubjectRecord>>();
-                serviceCollection.AddTransient<ICsvRecordStorage>(x =>
+                serviceCollection.AddSingleton<ICsvResultStorage<TestSubjectRecord>, TestSubjectRecordStorage>();
+                serviceCollection.AddSingleton<IMessageProcessor<CsvCompactMessage<TestSubjectRecord>>, CsvCompactorProcessor<TestSubjectRecord>>();
+                serviceCollection.AddSingleton<ICsvRecordStorage>(x =>
                 {
                     var resultStorage = x.GetRequiredService<ICsvResultStorage<TestSubjectRecord>>();
                     return new CsvRecordStorage(

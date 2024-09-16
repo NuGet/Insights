@@ -12,7 +12,7 @@ namespace NuGet.Insights.Worker
         /// </summary>
         private static void SetupNuGetPackageExplorerToCsv(IServiceCollection serviceCollection)
         {
-            serviceCollection.AddTransient<TemporaryFileProvider>();
+            serviceCollection.AddSingleton<TemporaryFileProvider>();
         }
     }
 }

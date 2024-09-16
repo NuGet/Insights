@@ -7,6 +7,7 @@ namespace NuGet.Insights
     {
         private readonly Func<MetricKey, bool> _shouldIgnore;
         private readonly ILogger<LoggerTelemetryClient> _logger;
+        private readonly ConcurrentDictionary<MetricKey, LoggerMetric> _metrics = new();
 
         public LoggerTelemetryClient(Func<MetricKey, bool> shouldIgnore, ILogger<LoggerTelemetryClient> logger)
         {
@@ -24,39 +25,47 @@ namespace NuGet.Insights
             return _shouldIgnore(k) ? NullLogger.Instance : _logger;
         }
 
-        public ConcurrentDictionary<MetricKey, LoggerMetric> Metrics { get; } = new();
+        public IReadOnlyDictionary<MetricKey, LoggerMetric> Metrics => _metrics;
+
+        public void Clear()
+        {
+            foreach (var metric in _metrics)
+            {
+                metric.Value.MetricValues.Clear();
+            }
+        }
 
         public IMetric GetMetric(string metricId)
         {
-            return Metrics.GetOrAdd(
+            return _metrics.GetOrAdd(
                 new MetricKey(metricId),
                 k => new LoggerMetric(metricId, [], GetLogger(k)));
         }
 
         public IMetric GetMetric(string metricId, string dimension1Name)
         {
-            return Metrics.GetOrAdd(
+            return _metrics.GetOrAdd(
                 new MetricKey(metricId, dimension1Name),
                 k => new LoggerMetric(metricId, [dimension1Name], GetLogger(k)));
         }
 
         public IMetric GetMetric(string metricId, string dimension1Name, string dimension2Name)
         {
-            return Metrics.GetOrAdd(
+            return _metrics.GetOrAdd(
                 new MetricKey(metricId, dimension1Name, dimension2Name),
                 k => new LoggerMetric(metricId, [dimension1Name, dimension2Name], GetLogger(k)));
         }
 
         public IMetric GetMetric(string metricId, string dimension1Name, string dimension2Name, string dimension3Name)
         {
-            return Metrics.GetOrAdd(
+            return _metrics.GetOrAdd(
                 new MetricKey(metricId, dimension1Name, dimension2Name, dimension3Name),
                 k => new LoggerMetric(metricId, [dimension1Name, dimension2Name, dimension3Name], GetLogger(k)));
         }
 
         public IMetric GetMetric(string metricId, string dimension1Name, string dimension2Name, string dimension3Name, string dimension4Name)
         {
-            return Metrics.GetOrAdd(
+            return _metrics.GetOrAdd(
                 new MetricKey(metricId, dimension1Name, dimension2Name, dimension3Name, dimension4Name),
                 k => new LoggerMetric(metricId, [dimension1Name, dimension2Name, dimension3Name, dimension4Name], GetLogger(k)));
         }

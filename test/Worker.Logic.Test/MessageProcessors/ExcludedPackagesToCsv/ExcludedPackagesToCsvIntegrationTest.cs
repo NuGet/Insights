@@ -240,7 +240,7 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
 
             hostBuilder.ConfigureServices(serviceCollection =>
             {
-                serviceCollection.AddTransient(s => MockVersionSetProvider.Object);
+                serviceCollection.AddSingleton(s => MockVersionSetProvider.Object);
             });
         }
     }

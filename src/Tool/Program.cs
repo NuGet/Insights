@@ -196,7 +196,7 @@ namespace NuGet.Insights.Tool
 
             foreach (var pair in Commands)
             {
-                serviceCollection.AddTransient(pair.Value);
+                serviceCollection.AddSingleton(pair.Value);
             }
 
             return serviceCollection;

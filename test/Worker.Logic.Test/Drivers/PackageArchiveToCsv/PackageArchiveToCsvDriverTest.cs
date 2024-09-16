@@ -49,7 +49,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
                 PackageVersion = "1.0.0",
             };
             await InitializeAsync(leaf);
-            TelemetryClient.Metrics.Clear();
+            TelemetryClient.Clear();
 
             var output = await Target.ProcessLeafAsync(leaf);
 

@@ -10,6 +10,7 @@ namespace NuGet.Insights
         private readonly StorageLeaseService? _service;
         private readonly CancellationTokenSource? _cts;
         private readonly Task? _renewTask;
+        private bool _disposed;
 
         private AutoRenewingStorageLeaseResult(StorageLeaseService? service, StorageLeaseResult? lease, bool acquired, CancellationTokenSource? cts, Task? renewTask)
             : base(lease, lease?.ETag, acquired)
@@ -19,14 +20,20 @@ namespace NuGet.Insights
             _renewTask = renewTask;
         }
 
+        public bool IsLeaseActive => !_disposed && _renewTask is not null && !_renewTask.IsCompleted;
+
         public async ValueTask DisposeAsync()
         {
             if (Acquired)
             {
-                _cts!.Cancel();
-                await _renewTask!;
-                _cts.Dispose();
-                await _service!.ReleaseAsync(Lease);
+                if (!_disposed)
+                {
+                    _cts!.Cancel();
+                    await _renewTask!;
+                    _cts.Dispose();
+                    await _service!.ReleaseAsync(Lease);
+                    _disposed = true;
+                }
             }
         }
 

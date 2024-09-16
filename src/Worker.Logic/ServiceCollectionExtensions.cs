@@ -89,44 +89,44 @@ namespace NuGet.Insights.Worker
                 setup(serviceCollection);
             }
 
-            serviceCollection.AddTransient<IRawMessageEnqueuer, QueueStorageEnqueuer>();
-            serviceCollection.AddTransient<IWorkerQueueFactory, WorkerQueueFactory>();
+            serviceCollection.AddSingleton<IRawMessageEnqueuer, QueueStorageEnqueuer>();
+            serviceCollection.AddSingleton<IWorkerQueueFactory, WorkerQueueFactory>();
 
-            serviceCollection.AddTransient<MetricsTimer>();
+            serviceCollection.AddSingleton<MetricsTimer>();
 
-            serviceCollection.AddTransient<IGenericMessageProcessor, GenericMessageProcessor>();
+            serviceCollection.AddSingleton<IGenericMessageProcessor, GenericMessageProcessor>();
             serviceCollection.AddSingleton(x => SchemaCollectionBuilder.Default.Build());
-            serviceCollection.AddTransient<SchemaSerializer>();
-            serviceCollection.AddTransient<IMessageBatcher, MessageBatcher>();
-            serviceCollection.AddTransient<IMessageEnqueuer, MessageEnqueuer>();
+            serviceCollection.AddSingleton<SchemaSerializer>();
+            serviceCollection.AddSingleton<IMessageBatcher, MessageBatcher>();
+            serviceCollection.AddSingleton<IMessageEnqueuer, MessageEnqueuer>();
 
-            serviceCollection.AddTransient<TableScanService>();
-            serviceCollection.AddTransient(typeof(TableScanDriverFactory<>));
-            serviceCollection.AddTransient(typeof(LatestLeafStorageService<>));
+            serviceCollection.AddSingleton<TableScanService>();
+            serviceCollection.AddSingleton(typeof(TableScanDriverFactory<>));
+            serviceCollection.AddSingleton(typeof(LatestLeafStorageService<>));
 
-            serviceCollection.AddTransient<WorkflowStorageService>();
-            serviceCollection.AddTransient<WorkflowService>();
+            serviceCollection.AddSingleton<WorkflowStorageService>();
+            serviceCollection.AddSingleton<WorkflowService>();
 
-            serviceCollection.AddTransient<CatalogScanStorageService>();
-            serviceCollection.AddTransient<CatalogScanCursorService>();
-            serviceCollection.AddTransient<CatalogScanUpdateTimer>();
-            serviceCollection.AddTransient<ICatalogScanDriverFactory, CatalogScanDriverFactory>();
-            serviceCollection.AddTransient<CatalogScanService>();
-            serviceCollection.AddTransient<CatalogScanExpandService>();
-            serviceCollection.AddTransient<CsvTemporaryStorageFactory>();
+            serviceCollection.AddSingleton<CatalogScanStorageService>();
+            serviceCollection.AddSingleton<CatalogScanCursorService>();
+            serviceCollection.AddSingleton<CatalogScanUpdateTimer>();
+            serviceCollection.AddSingleton<ICatalogScanDriverFactory, CatalogScanDriverFactory>();
+            serviceCollection.AddSingleton<CatalogScanService>();
+            serviceCollection.AddSingleton<CatalogScanExpandService>();
+            serviceCollection.AddSingleton<CsvTemporaryStorageFactory>();
             AddTableScan<CatalogLeafScan>(serviceCollection);
 
-            serviceCollection.AddTransient<KustoIngestionService>();
-            serviceCollection.AddTransient<KustoIngestionStorageService>();
-            serviceCollection.AddTransient<KustoDataValidator>();
-            serviceCollection.AddTransient<KustoIngestionTimer>();
+            serviceCollection.AddSingleton<KustoIngestionService>();
+            serviceCollection.AddSingleton<KustoIngestionStorageService>();
+            serviceCollection.AddSingleton<KustoDataValidator>();
+            serviceCollection.AddSingleton<KustoIngestionTimer>();
 
             foreach (var serviceType in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementing<IKustoValidationProvider>())
             {
-                serviceCollection.AddTransient(typeof(IKustoValidationProvider), serviceType);
+                serviceCollection.AddSingleton(typeof(IKustoValidationProvider), serviceType);
             }
 
-            serviceCollection.AddTransient(x =>
+            serviceCollection.AddSingleton(x =>
             {
                 var options = x.GetRequiredService<IOptions<NuGetInsightsWorkerSettings>>();
 
@@ -199,25 +199,25 @@ namespace NuGet.Insights.Worker
                 return ingestClient;
             });
 
-            serviceCollection.AddTransient<CursorStorageService>();
+            serviceCollection.AddSingleton<CursorStorageService>();
 
             serviceCollection.AddSingleton<IComparer<ITimer>>(TimerComparer.Instance);
-            serviceCollection.AddTransient<TimerExecutionService>();
-            serviceCollection.AddTransient<SpecificTimerExecutionService>();
-            serviceCollection.AddTransient<AppendResultStorageService>();
-            serviceCollection.AddTransient<TaskStateStorageService>();
-            serviceCollection.AddTransient<ICsvReader, CsvReaderAdapter>();
+            serviceCollection.AddSingleton<TimerExecutionService>();
+            serviceCollection.AddSingleton<SpecificTimerExecutionService>();
+            serviceCollection.AddSingleton<AppendResultStorageService>();
+            serviceCollection.AddSingleton<TaskStateStorageService>();
+            serviceCollection.AddSingleton<ICsvReader, CsvReaderAdapter>();
             serviceCollection.AddSingleton<CsvRecordContainers>();
 
-            serviceCollection.AddTransient(typeof(TableCopyDriver<>));
+            serviceCollection.AddSingleton(typeof(TableCopyDriver<>));
 
-            serviceCollection.AddTransient<TimedReprocessService>();
-            serviceCollection.AddTransient<TimedReprocessStorageService>();
-            serviceCollection.AddTransient<TimedReprocessTimer>();
+            serviceCollection.AddSingleton<TimedReprocessService>();
+            serviceCollection.AddSingleton<TimedReprocessStorageService>();
+            serviceCollection.AddSingleton<TimedReprocessTimer>();
 
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ITableScanDriver<>)))
             {
-                serviceCollection.AddTransient(implementationType);
+                serviceCollection.AddSingleton(implementationType);
             }
 
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICleanupOrphanRecordsAdapter<>)))
@@ -227,33 +227,33 @@ namespace NuGet.Insights.Worker
 
             foreach (var serviceType in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementing<ITimer>())
             {
-                serviceCollection.AddTransient(typeof(ITimer), serviceType);
+                serviceCollection.AddSingleton(typeof(ITimer), serviceType);
             }
 
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IMessageProcessor<>)))
             {
-                serviceCollection.AddTransient(serviceType, implementationType);
+                serviceCollection.AddSingleton(serviceType, implementationType);
             }
 
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IBatchMessageProcessor<>)))
             {
-                serviceCollection.AddTransient(serviceType, implementationType);
+                serviceCollection.AddSingleton(serviceType, implementationType);
             }
 
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IAuxiliaryFileUpdater<>)))
             {
-                serviceCollection.AddTransient(serviceType, implementationType);
-                serviceCollection.AddTransient(typeof(IAuxiliaryFileUpdater), implementationType);
+                serviceCollection.AddSingleton(serviceType, implementationType);
+                serviceCollection.AddSingleton(typeof(IAuxiliaryFileUpdater), implementationType);
 
                 var dataType = serviceType.GenericTypeArguments.Single();
                 var messageType = typeof(AuxiliaryFileUpdaterMessage<>).MakeGenericType(dataType);
 
                 // Add the service
-                serviceCollection.AddTransient(
+                serviceCollection.AddSingleton(
                     typeof(IAuxiliaryFileUpdaterService<>).MakeGenericType(dataType),
                     typeof(AuxiliaryFileUpdaterService<>).MakeGenericType(dataType));
 
-                serviceCollection.AddTransient(
+                serviceCollection.AddSingleton(
                     typeof(IAuxiliaryFileUpdaterService),
                     typeof(AuxiliaryFileUpdaterService<>).MakeGenericType(dataType));
 
@@ -261,7 +261,7 @@ namespace NuGet.Insights.Worker
                 var getContainerName = typeof(IAuxiliaryFileUpdater).GetProperty(nameof(IAuxiliaryFileUpdater.ContainerName));
                 var getRecordType = typeof(IAuxiliaryFileUpdater).GetProperty(nameof(IAuxiliaryFileUpdater.RecordType));
                 var getBlobName = typeof(IAuxiliaryFileUpdater).GetProperty(nameof(IAuxiliaryFileUpdater.BlobName));
-                serviceCollection.AddTransient<ICsvRecordStorage>(x =>
+                serviceCollection.AddSingleton<ICsvRecordStorage>(x =>
                 {
                     var updater = x.GetRequiredService(serviceType);
                     var blobName = AuxiliaryFileUpdaterProcessor<IAsOfData>.GetLatestBlobName((string)getBlobName.GetValue(updater));
@@ -272,20 +272,20 @@ namespace NuGet.Insights.Worker
                 });
 
                 // Add the message processor
-                serviceCollection.AddTransient(
+                serviceCollection.AddSingleton(
                     typeof(IMessageProcessor<>).MakeGenericType(messageType),
                     typeof(TaskStateMessageProcessor<>).MakeGenericType(messageType));
 
                 // Add the task state message processor
-                serviceCollection.AddTransient(
+                serviceCollection.AddSingleton(
                     typeof(ITaskStateMessageProcessor<>).MakeGenericType(messageType),
                     typeof(AuxiliaryFileUpdaterProcessor<>).MakeGenericType(dataType));
 
                 // Add the timer
-                serviceCollection.AddTransient(
+                serviceCollection.AddSingleton(
                     typeof(ITimer),
                     typeof(AuxiliaryFileUpdaterTimer<>).MakeGenericType(dataType));
-                serviceCollection.AddTransient(
+                serviceCollection.AddSingleton(
                     typeof(IAuxiliaryFileUpdaterTimer),
                     typeof(AuxiliaryFileUpdaterTimer<>).MakeGenericType(dataType));
             }
@@ -293,11 +293,11 @@ namespace NuGet.Insights.Worker
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ITaskStateMessageProcessor<>)))
             {
                 // Add the task state message processor
-                serviceCollection.AddTransient(serviceType, implementationType);
+                serviceCollection.AddSingleton(serviceType, implementationType);
 
                 // Add the message processor
                 var messageType = serviceType.GenericTypeArguments.Single();
-                serviceCollection.AddTransient(
+                serviceCollection.AddSingleton(
                     typeof(IMessageProcessor<>).MakeGenericType(messageType),
                     typeof(TaskStateMessageProcessor<>).MakeGenericType(messageType));
             }
@@ -305,12 +305,12 @@ namespace NuGet.Insights.Worker
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICsvResultStorage<>)))
             {
                 // Add the CSV storage
-                serviceCollection.AddTransient(serviceType, implementationType);
+                serviceCollection.AddSingleton(serviceType, implementationType);
 
                 // Add the generic CSV storage
                 var recordType = serviceType.GenericTypeArguments.Single();
                 var getContainerName = serviceType.GetProperty("ResultContainerName");
-                serviceCollection.AddTransient<ICsvRecordStorage>(x =>
+                serviceCollection.AddSingleton<ICsvRecordStorage>(x =>
                 {
                     var storage = x.GetRequiredService(serviceType);
                     return new CsvRecordStorage(
@@ -320,7 +320,7 @@ namespace NuGet.Insights.Worker
                 });
 
                 // Add the CSV compactor processor
-                serviceCollection.AddTransient(
+                serviceCollection.AddSingleton(
                     typeof(IMessageProcessor<>).MakeGenericType(typeof(CsvCompactMessage<>).MakeGenericType(recordType)),
                     typeof(CsvCompactorProcessor<>).MakeGenericType(recordType));
             }
@@ -336,28 +336,28 @@ namespace NuGet.Insights.Worker
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICatalogLeafToCsvDriver<>)))
             {
                 // Add the driver
-                serviceCollection.AddTransient(serviceType, implementationType);
+                serviceCollection.AddSingleton(serviceType, implementationType);
 
                 // Add the catalog scan adapter
-                serviceCollection.AddTransient(typeof(CatalogLeafScanToCsvNonBatchAdapter<>).MakeGenericType(serviceType.GenericTypeArguments));
+                serviceCollection.AddSingleton(typeof(CatalogLeafScanToCsvNonBatchAdapter<>).MakeGenericType(serviceType.GenericTypeArguments));
             }
 
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICatalogLeafToCsvDriver<,>)))
             {
                 // Add the driver
-                serviceCollection.AddTransient(serviceType, implementationType);
+                serviceCollection.AddSingleton(serviceType, implementationType);
 
                 // Add the catalog scan adapter
-                serviceCollection.AddTransient(typeof(CatalogLeafScanToCsvNonBatchAdapter<,>).MakeGenericType(serviceType.GenericTypeArguments));
+                serviceCollection.AddSingleton(typeof(CatalogLeafScanToCsvNonBatchAdapter<,>).MakeGenericType(serviceType.GenericTypeArguments));
             }
 
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICatalogLeafToCsvDriver<,,>)))
             {
                 // Add the driver
-                serviceCollection.AddTransient(serviceType, implementationType);
+                serviceCollection.AddSingleton(serviceType, implementationType);
 
                 // Add the catalog scan adapter
-                serviceCollection.AddTransient(typeof(CatalogLeafScanToCsvNonBatchAdapter<,,>).MakeGenericType(serviceType.GenericTypeArguments));
+                serviceCollection.AddSingleton(typeof(CatalogLeafScanToCsvNonBatchAdapter<,,>).MakeGenericType(serviceType.GenericTypeArguments));
             }
         }
 
@@ -366,28 +366,28 @@ namespace NuGet.Insights.Worker
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICatalogLeafToCsvBatchDriver<>)))
             {
                 // Add the driver
-                serviceCollection.AddTransient(serviceType, implementationType);
+                serviceCollection.AddSingleton(serviceType, implementationType);
 
                 // Add the catalog scan adapter
-                serviceCollection.AddTransient(typeof(CatalogLeafScanToCsvBatchAdapter<>).MakeGenericType(serviceType.GenericTypeArguments));
+                serviceCollection.AddSingleton(typeof(CatalogLeafScanToCsvBatchAdapter<>).MakeGenericType(serviceType.GenericTypeArguments));
             }
 
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICatalogLeafToCsvBatchDriver<,>)))
             {
                 // Add the driver
-                serviceCollection.AddTransient(serviceType, implementationType);
+                serviceCollection.AddSingleton(serviceType, implementationType);
 
                 // Add the catalog scan adapter
-                serviceCollection.AddTransient(typeof(CatalogLeafScanToCsvBatchAdapter<,>).MakeGenericType(serviceType.GenericTypeArguments));
+                serviceCollection.AddSingleton(typeof(CatalogLeafScanToCsvBatchAdapter<,>).MakeGenericType(serviceType.GenericTypeArguments));
             }
 
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ICatalogLeafToCsvBatchDriver<,,>)))
             {
                 // Add the driver
-                serviceCollection.AddTransient(serviceType, implementationType);
+                serviceCollection.AddSingleton(serviceType, implementationType);
 
                 // Add the catalog scan adapter
-                serviceCollection.AddTransient(typeof(CatalogLeafScanToCsvBatchAdapter<,,>).MakeGenericType(serviceType.GenericTypeArguments));
+                serviceCollection.AddSingleton(typeof(CatalogLeafScanToCsvBatchAdapter<,,>).MakeGenericType(serviceType.GenericTypeArguments));
             }
         }
 
@@ -407,31 +407,31 @@ namespace NuGet.Insights.Worker
             var messageType = typeof(CleanupOrphanRecordsMessage<>).MakeGenericType(dataType);
 
             // Add the adapter
-            serviceCollection.AddTransient(serviceType, implementationType);
+            serviceCollection.AddSingleton(serviceType, implementationType);
 
             // Add the service
-            serviceCollection.AddTransient(
+            serviceCollection.AddSingleton(
                 typeof(ICleanupOrphanRecordsService<>).MakeGenericType(dataType),
                 typeof(CleanupOrphanRecordsService<>).MakeGenericType(dataType));
-            serviceCollection.AddTransient(
+            serviceCollection.AddSingleton(
                 typeof(ICleanupOrphanRecordsService),
                 typeof(CleanupOrphanRecordsService<>).MakeGenericType(dataType));
 
             // Add the message processor
-            serviceCollection.AddTransient(
+            serviceCollection.AddSingleton(
                 typeof(IMessageProcessor<>).MakeGenericType(messageType),
                 typeof(TaskStateMessageProcessor<>).MakeGenericType(messageType));
 
             // Add the task state message processor
-            serviceCollection.AddTransient(
+            serviceCollection.AddSingleton(
                 typeof(ITaskStateMessageProcessor<>).MakeGenericType(messageType),
                 typeof(CleanupOrphanRecordsProcessor<>).MakeGenericType(dataType));
 
             // Add the timer
-            serviceCollection.AddTransient(
+            serviceCollection.AddSingleton(
                 typeof(ITimer),
                 typeof(CleanupOrphanRecordsTimer<>).MakeGenericType(dataType));
-            serviceCollection.AddTransient(
+            serviceCollection.AddSingleton(
                 typeof(ICleanupOrphanRecordsTimer),
                 typeof(CleanupOrphanRecordsTimer<>).MakeGenericType(dataType));
         }
@@ -439,10 +439,10 @@ namespace NuGet.Insights.Worker
         private static void AddTableScan<T>(IServiceCollection serviceCollection) where T : ITableEntityWithClientRequestId, new()
         {
             var entityType = typeof(T);
-            serviceCollection.AddTransient(
+            serviceCollection.AddSingleton(
                 typeof(IMessageProcessor<>).MakeGenericType(typeof(TableScanMessage<>).MakeGenericType(entityType)),
                 typeof(TableScanMessageProcessor<>).MakeGenericType(entityType));
-            serviceCollection.AddTransient(
+            serviceCollection.AddSingleton(
                 typeof(IMessageProcessor<>).MakeGenericType(typeof(TableRowCopyMessage<>).MakeGenericType(entityType)),
                 typeof(TableRowCopyMessageProcessor<>).MakeGenericType(entityType));
         }

@@ -18,7 +18,7 @@ namespace NuGet.Insights.Worker
 
             hostBuilder.ConfigureServices(serviceCollection =>
             {
-                serviceCollection.AddTransient(s => MockVersionSetProvider.Object);
+                serviceCollection.AddSingleton(s => MockVersionSetProvider.Object);
             });
         }
 

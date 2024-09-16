@@ -570,9 +570,9 @@ namespace NuGet.Insights.Worker
 
             hostBuilder.ConfigureServices(serviceCollection =>
             {
-                serviceCollection.AddTransient<CatalogLeafScanMessageProcessor>();
-                serviceCollection.AddTransient(s => MockMessageEnqueuer.Object);
-                serviceCollection.AddTransient(s => MockDriverFactory.Object);
+                serviceCollection.AddSingleton<CatalogLeafScanMessageProcessor>();
+                serviceCollection.AddSingleton(s => MockMessageEnqueuer.Object);
+                serviceCollection.AddSingleton(s => MockDriverFactory.Object);
             });
         }
 

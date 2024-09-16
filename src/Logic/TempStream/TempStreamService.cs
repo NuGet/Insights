@@ -7,11 +7,11 @@ namespace NuGet.Insights
 {
     public class TempStreamService
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly Func<TempStreamWriter> _tempStreamWriterFactory;
 
-        public TempStreamService(IServiceProvider serviceProvider)
+        public TempStreamService(Func<TempStreamWriter> tempStreamWriterFactory)
         {
-            _serviceProvider = serviceProvider;
+            _tempStreamWriterFactory = tempStreamWriterFactory;
         }
 
         public async Task<TempStreamResult> CopyToTempStreamAsync(Func<Task<Stream>> getStreamAsync, Func<string> getTempFileName, long length, Func<IIncrementalHash> getHashAlgorithm)
@@ -30,7 +30,7 @@ namespace NuGet.Insights
 
         public TempStreamWriter GetWriter()
         {
-            return _serviceProvider.GetRequiredService<TempStreamWriter>();
+            return _tempStreamWriterFactory();
         }
     }
 }

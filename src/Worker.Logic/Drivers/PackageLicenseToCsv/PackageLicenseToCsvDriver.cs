@@ -145,7 +145,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
 
                 if (result != null)
                 {
-                    using (result)
+                    await using (result)
                     {
                         if (result.Type == TempStreamResultType.SemaphoreNotAvailable)
                         {

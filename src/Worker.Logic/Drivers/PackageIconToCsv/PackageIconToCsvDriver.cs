@@ -80,7 +80,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
                     );
                 }
 
-                using (result.Value.Body)
+                await using (result.Value.Body)
                 {
                     if (result.Value.Body.Type == TempStreamResultType.SemaphoreNotAvailable)
                     {

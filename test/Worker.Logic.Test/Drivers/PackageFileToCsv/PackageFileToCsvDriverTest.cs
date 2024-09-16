@@ -49,28 +49,24 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
             await Host.Services.GetRequiredService<StorageLeaseService>().InitializeAsync();
             await Target.InitializeAsync();
 
-            using (var serviceScope = Host.Services.CreateScope())
+            var leaf = new CatalogLeafScan
             {
-                var leaseScopeA = serviceScope.ServiceProvider.GetRequiredService<TempStreamLeaseScope>();
-                await using var ownershipA = leaseScopeA.TakeOwnership();
-                Assert.True(await leaseScopeA.WaitAsync(tempDir));
+                Url = "https://api.nuget.org/v3/catalog0/data/2018.12.14.10.06.47/microsoft.dotnet.interop.1.0.0-prerelease-0002.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "Microsoft.DotNet.Interop",
+                PackageVersion = "1.0.0-prerelease-0002",
+            };
 
-                var leaseScopeB = Host.Services.GetRequiredService<TempStreamLeaseScope>();
-                await using var ownershipB = leaseScopeB.TakeOwnership();
-                var leaf = new CatalogLeafScan
-                {
-                    Url = "https://api.nuget.org/v3/catalog0/data/2018.12.14.10.06.47/microsoft.dotnet.interop.1.0.0-prerelease-0002.json",
-                    LeafType = CatalogLeafType.PackageDetails,
-                    PackageId = "Microsoft.DotNet.Interop",
-                    PackageVersion = "1.0.0-prerelease-0002",
-                };
+            using var otherHost = GetHost(Output);
+            var leaseService = otherHost.Services.GetRequiredService<TempStreamDirectoryLeaseService>();
+            await using var leaseA = await leaseService.WaitForLeaseAsync(tempDir);
+            Assert.NotNull(leaseA);
 
-                // Act
-                var output = await Target.ProcessLeafAsync(leaf);
+            // Act
+            var output = await Target.ProcessLeafAsync(leaf);
 
-                // Assert
-                Assert.Equal(DriverResultType.TryAgainLater, output.Type);
-            }
+            // Assert
+            Assert.Equal(DriverResultType.TryAgainLater, output.Type);
         }
     }
 }

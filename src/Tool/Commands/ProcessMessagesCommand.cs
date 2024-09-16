@@ -54,8 +54,6 @@ namespace NuGet.Insights.Tool
         {
             using (var scope = _serviceProvider.CreateScope())
             {
-                var leaseScope = scope.ServiceProvider.GetRequiredService<TempStreamLeaseScope>();
-                await using var scopeOwnership = leaseScope.TakeOwnership();
                 var messageProcessor = scope.ServiceProvider.GetRequiredService<IGenericMessageProcessor>();
                 var messageBytes = Encoding.UTF8.GetBytes(value);
                 await messageProcessor.ProcessSingleAsync(QueueType.Work, messageBytes, 0);
@@ -126,8 +124,6 @@ namespace NuGet.Insights.Tool
 
         private async Task ProcessMessageAsync(IServiceProvider serviceProvider, QueueType queue, QueueMessage message)
         {
-            var leaseScope = serviceProvider.GetRequiredService<TempStreamLeaseScope>();
-            await using var scopeOwnership = leaseScope.TakeOwnership();
             var messageProcessor = serviceProvider.GetRequiredService<IGenericMessageProcessor>();
             await messageProcessor.ProcessSingleAsync(queue, message.Body.ToMemory(), message.DequeueCount);
         }

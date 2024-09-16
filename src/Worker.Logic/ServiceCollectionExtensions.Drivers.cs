@@ -23,51 +23,51 @@ namespace NuGet.Insights.Worker
         private static void SetupDrivers(IServiceCollection serviceCollection)
         {
             // Internal_FindLatestCatalogLeafScan
-            serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<CatalogLeafScan>, LatestCatalogLeafScanStorageFactory>();
-            serviceCollection.AddTransient<FindLatestLeafDriver<CatalogLeafScan>>();
+            serviceCollection.AddSingleton<ILatestPackageLeafStorageFactory<CatalogLeafScan>, LatestCatalogLeafScanStorageFactory>();
+            serviceCollection.AddSingleton<FindLatestLeafDriver<CatalogLeafScan>>();
 
             // Internal_FindLatestCatalogLeafScanPerId
-            serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<CatalogLeafScanPerId>, LatestCatalogLeafScanPerIdStorageFactory>();
-            serviceCollection.AddTransient<FindLatestLeafDriver<CatalogLeafScanPerId>>();
+            serviceCollection.AddSingleton<ILatestPackageLeafStorageFactory<CatalogLeafScanPerId>, LatestCatalogLeafScanPerIdStorageFactory>();
+            serviceCollection.AddSingleton<FindLatestLeafDriver<CatalogLeafScanPerId>>();
 
             // PackageCompatibilityToCsv
             serviceCollection.AddSingleton<IPackageFrameworkCompatibilityFactory>(new PackageFrameworkCompatibilityFactory());
 
             // BuildVersionSet
-            serviceCollection.AddTransient<BuildVersionSetDriver>();
-            serviceCollection.AddTransient<VersionSetAggregateStorageService>();
+            serviceCollection.AddSingleton<BuildVersionSetDriver>();
+            serviceCollection.AddSingleton<VersionSetAggregateStorageService>();
             serviceCollection.AddSingleton<VersionSetService>();
             serviceCollection.AddSingleton<IVersionSetProvider>(s => s.GetRequiredService<VersionSetService>());
 
             // LoadLatestPackageLeaf
             AddTableScan<LatestPackageLeaf>(serviceCollection);
-            serviceCollection.AddTransient<LatestPackageLeafService>();
-            serviceCollection.AddTransient<LatestPackageLeafStorageFactory>();
-            serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<LatestPackageLeaf>, LatestPackageLeafStorageFactory>();
-            serviceCollection.AddTransient<FindLatestLeafDriver<LatestPackageLeaf>>();
+            serviceCollection.AddSingleton<LatestPackageLeafService>();
+            serviceCollection.AddSingleton<LatestPackageLeafStorageFactory>();
+            serviceCollection.AddSingleton<ILatestPackageLeafStorageFactory<LatestPackageLeaf>, LatestPackageLeafStorageFactory>();
+            serviceCollection.AddSingleton<FindLatestLeafDriver<LatestPackageLeaf>>();
 
             // LoadBucketedPackage
             AddTableScan<BucketedPackage>(serviceCollection);
-            serviceCollection.AddTransient<BucketedPackageService>();
-            serviceCollection.AddTransient<BucketedPackageStorageFactory>();
-            serviceCollection.AddTransient<ILatestPackageLeafStorageFactory<BucketedPackage>, BucketedPackageStorageFactory>();
-            serviceCollection.AddTransient<FindLatestLeafDriver<BucketedPackage>>();
+            serviceCollection.AddSingleton<BucketedPackageService>();
+            serviceCollection.AddSingleton<BucketedPackageStorageFactory>();
+            serviceCollection.AddSingleton<ILatestPackageLeafStorageFactory<BucketedPackage>, BucketedPackageStorageFactory>();
+            serviceCollection.AddSingleton<FindLatestLeafDriver<BucketedPackage>>();
 
             // LoadPackageArchive
-            serviceCollection.AddTransient<LoadPackageArchiveDriver>();
+            serviceCollection.AddSingleton<LoadPackageArchiveDriver>();
 
             // LoadSymbolPackageArchive
-            serviceCollection.AddTransient<LoadSymbolPackageArchiveDriver>();
+            serviceCollection.AddSingleton<LoadSymbolPackageArchiveDriver>();
 
             // LoadPackageManifest
-            serviceCollection.AddTransient<LoadPackageManifestDriver>();
+            serviceCollection.AddSingleton<LoadPackageManifestDriver>();
 
             // LoadPackageReadme
-            serviceCollection.AddTransient<LoadPackageReadmeDriver>();
+            serviceCollection.AddSingleton<LoadPackageReadmeDriver>();
 
             // LoadPackageVersion
-            serviceCollection.AddTransient<LoadPackageVersionDriver>();
-            serviceCollection.AddTransient<PackageVersionStorageService>();
+            serviceCollection.AddSingleton<LoadPackageVersionDriver>();
+            serviceCollection.AddSingleton<PackageVersionStorageService>();
         }
     }
 }

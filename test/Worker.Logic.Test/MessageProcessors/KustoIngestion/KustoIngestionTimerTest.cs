@@ -17,7 +17,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
             hostBuilder.ConfigureServices(serviceCollection =>
             {
-                serviceCollection.AddTransient<KustoIngestionTimer>();
+                serviceCollection.AddSingleton<KustoIngestionTimer>();
             });
         }
 

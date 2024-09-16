@@ -97,7 +97,7 @@ namespace NuGet.Insights
             _lazyHost = new Lazy<IHost>(() => GetHost(output));
         }
 
-        private IHost GetHost(ITestOutputHelper output)
+        protected IHost GetHost(ITestOutputHelper output)
         {
             var hostBuilder = new HostBuilder();
 

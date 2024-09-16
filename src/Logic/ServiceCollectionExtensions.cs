@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Runtime.InteropServices;
-using Azure.Core.Pipeline;
 using Knapcode.MiniZip;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Http;
@@ -102,7 +101,7 @@ namespace NuGet.Insights
                 return () => httpClientFactory.CreateClient(DefaultHttpClient);
             });
 
-            serviceCollection.AddTransient<RedirectResolver>();
+            serviceCollection.AddSingleton<RedirectResolver>();
 
             serviceCollection.AddLogging(o =>
             {
@@ -123,7 +122,7 @@ namespace NuGet.Insights
 
             serviceCollection.AddSingleton(x => TimeProvider.System);
 
-            serviceCollection.AddTransient<Func<HttpZipProvider>>(
+            serviceCollection.AddSingleton<Func<HttpZipProvider>>(
                 x => () => new HttpZipProvider(x.GetRequiredService<Func<HttpClient>>()(), x.GetRequiredService<IThrottle>())
                 {
                     RequireAcceptRanges = false,
@@ -132,43 +131,46 @@ namespace NuGet.Insights
                         secondBufferSize: 1024 * 16,
                         exponent: 2)
                 });
-            serviceCollection.AddTransient<MZipFormat>();
-            serviceCollection.AddTransient<FileDownloader>();
+            serviceCollection.AddSingleton<MZipFormat>();
+            serviceCollection.AddSingleton<FileDownloader>();
 
-            serviceCollection.AddTransient<StorageLeaseService>();
-            serviceCollection.AddTransient<AutoRenewingStorageLeaseService>();
-            serviceCollection.AddTransient<StorageSemaphoreLeaseService>();
-            serviceCollection.AddTransient<TablePrefixScanner>();
-            serviceCollection.AddTransient<ReferenceTracker>();
-            serviceCollection.AddTransient<WideEntityService>();
-            serviceCollection.AddTransient<PackageWideEntityService>();
-            serviceCollection.AddTransient<PackageFileService>();
-            serviceCollection.AddTransient<PackageHashService>();
-            serviceCollection.AddTransient<SymbolPackageHashService>();
-            serviceCollection.AddTransient<PackageManifestService>();
-            serviceCollection.AddTransient<PackageReadmeService>();
-            serviceCollection.AddTransient<SymbolPackageFileService>();
-            serviceCollection.AddTransient<SymbolPackageClient>();
+            serviceCollection.AddSingleton<StorageLeaseService>();
+            serviceCollection.AddSingleton<AutoRenewingStorageLeaseService>();
+            serviceCollection.AddSingleton<StorageSemaphoreLeaseService>();
+            serviceCollection.AddSingleton<TablePrefixScanner>();
+            serviceCollection.AddSingleton<ReferenceTracker>();
+            serviceCollection.AddSingleton<WideEntityService>();
+            serviceCollection.AddSingleton<PackageWideEntityService>();
+            serviceCollection.AddSingleton<PackageFileService>();
+            serviceCollection.AddSingleton<PackageHashService>();
+            serviceCollection.AddSingleton<SymbolPackageHashService>();
+            serviceCollection.AddSingleton<PackageManifestService>();
+            serviceCollection.AddSingleton<PackageReadmeService>();
+            serviceCollection.AddSingleton<SymbolPackageFileService>();
+            serviceCollection.AddSingleton<SymbolPackageClient>();
 
             serviceCollection.AddSingleton<ITelemetryClient, TelemetryClientWrapper>();
 
-            serviceCollection.AddTransient<TempStreamService>();
-            serviceCollection.AddTransient<TempStreamWriter>();
-            serviceCollection.AddScoped<TempStreamLeaseScope>();
+            serviceCollection.AddSingleton<TempStreamService>();
+            serviceCollection.AddSingleton<TempStreamDirectoryLeaseService>();
+            serviceCollection.AddSingleton<Func<TempStreamWriter>>(x => () => new TempStreamWriter(
+                x.GetRequiredService<TempStreamDirectoryLeaseService>(),
+                x.GetRequiredService<IOptions<NuGetInsightsSettings>>(),
+                x.GetRequiredService<ILogger<TempStreamWriter>>()));
 
             serviceCollection.AddSingleton<ServiceIndexCache>();
-            serviceCollection.AddTransient<FlatContainerClient>();
-            serviceCollection.AddTransient<ExternalBlobStorageClient>();
-            serviceCollection.AddTransient<PackageDownloadsClient>();
-            serviceCollection.AddTransient<PackageOwnersClient>();
-            serviceCollection.AddTransient<VerifiedPackagesClient>();
-            serviceCollection.AddTransient<ExcludedPackagesClient>();
-            serviceCollection.AddTransient<PopularityTransfersClient>();
-            serviceCollection.AddTransient<CatalogClient>();
+            serviceCollection.AddSingleton<FlatContainerClient>();
+            serviceCollection.AddSingleton<ExternalBlobStorageClient>();
+            serviceCollection.AddSingleton<PackageDownloadsClient>();
+            serviceCollection.AddSingleton<PackageOwnersClient>();
+            serviceCollection.AddSingleton<VerifiedPackagesClient>();
+            serviceCollection.AddSingleton<ExcludedPackagesClient>();
+            serviceCollection.AddSingleton<PopularityTransfersClient>();
+            serviceCollection.AddSingleton<CatalogClient>();
             serviceCollection.AddSingleton<CatalogCommitTimestampProvider>();
-            serviceCollection.AddTransient<IRemoteCursorClient, RemoteCursorClient>();
+            serviceCollection.AddSingleton<IRemoteCursorClient, RemoteCursorClient>();
 
-            serviceCollection.AddTransient<ICertificateVerifier, OnlineCertificateVerifier>();
+            serviceCollection.AddSingleton<ICertificateVerifier, OnlineCertificateVerifier>();
 
             return serviceCollection;
         }

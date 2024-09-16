@@ -470,7 +470,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         }
 
         [Fact]
-        public async Task HandlesMaxWriterConcurrency()
+        public async Task HandlesMaxWriterConcurrency_Blocked()
         {
             // Arrange
             TempStreamDirectory tempDir = null;
@@ -484,28 +484,68 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             await Host.Services.GetRequiredService<StorageLeaseService>().InitializeAsync();
             await Target.InitializeAsync();
 
-            using (var serviceScope = Host.Services.CreateScope())
+            var leaf = new CatalogLeafScan
             {
-                var leaseScopeA = serviceScope.ServiceProvider.GetRequiredService<TempStreamLeaseScope>();
-                await using var ownershipA = leaseScopeA.TakeOwnership();
-                Assert.True(await leaseScopeA.WaitAsync(tempDir));
+                Url = "https://api.nuget.org/v3/catalog0/data/2018.12.14.10.06.47/microsoft.dotnet.interop.1.0.0-prerelease-0002.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "Microsoft.DotNet.Interop",
+                PackageVersion = "1.0.0-prerelease-0002",
+            };
 
-                var leaseScopeB = Host.Services.GetRequiredService<TempStreamLeaseScope>();
-                await using var ownershipB = leaseScopeB.TakeOwnership();
-                var leaf = new CatalogLeafScan
-                {
-                    Url = "https://api.nuget.org/v3/catalog0/data/2018.12.14.10.06.47/microsoft.dotnet.interop.1.0.0-prerelease-0002.json",
-                    LeafType = CatalogLeafType.PackageDetails,
-                    PackageId = "Microsoft.DotNet.Interop",
-                    PackageVersion = "1.0.0-prerelease-0002",
-                };
+            using var otherHost = GetHost(Output);
+            var leaseService = otherHost.Services.GetRequiredService<TempStreamDirectoryLeaseService>();
+            await using var leaseA = await leaseService.WaitForLeaseAsync(tempDir);
+            Assert.NotNull(leaseA);
+
+            // Act
+            var output = await Target.ProcessLeafAsync(leaf);
+
+            // Assert
+            Assert.Equal(DriverResultType.TryAgainLater, output.Type);
+        }
+
+        [Fact]
+        public async Task HandlesMaxWriterConcurrency_Released()
+        {
+            // Arrange
+            TempStreamDirectory tempDir = null;
+            ConfigureSettings = x =>
+            {
+                x.MaxTempMemoryStreamSize = 0;
+                tempDir = x.TempDirectories[0];
+                tempDir.Path = Path.GetFullPath(tempDir.Path);
+                tempDir.MaxConcurrentWriters = 1;
+            };
+            await Host.Services.GetRequiredService<StorageLeaseService>().InitializeAsync();
+            await Target.InitializeAsync();
+
+            var leaf = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2018.12.14.10.06.47/microsoft.dotnet.interop.1.0.0-prerelease-0002.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "Microsoft.DotNet.Interop",
+                PackageVersion = "1.0.0-prerelease-0002",
+            };
+
+
+            using (var otherHost = GetHost(Output))
+            {
+                var leaseService = otherHost.Services.GetRequiredService<TempStreamDirectoryLeaseService>();
+                await using var leaseA = await leaseService.WaitForLeaseAsync(tempDir);
+                Assert.NotNull(leaseA);
 
                 // Act
-                var output = await Target.ProcessLeafAsync(leaf);
+                var outputA = await Target.ProcessLeafAsync(leaf);
 
                 // Assert
-                Assert.Equal(DriverResultType.TryAgainLater, output.Type);
+                Assert.Equal(DriverResultType.TryAgainLater, outputA.Type);
             }
+
+            // Act
+            var outputB = await Target.ProcessLeafAsync(leaf);
+
+            // Assert
+            Assert.Equal(DriverResultType.Success, outputB.Type);
         }
 
         [Fact]

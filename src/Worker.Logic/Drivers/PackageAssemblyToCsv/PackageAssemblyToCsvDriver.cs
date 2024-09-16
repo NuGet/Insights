@@ -97,7 +97,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                     return MakeEmptyResults();
                 }
 
-                using (result.Value.Body)
+                await using (result.Value.Body)
                 {
 
                     if (result.Value.Body.Type == TempStreamResultType.SemaphoreNotAvailable)
@@ -245,7 +245,10 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             }
             finally
             {
-                tempStreamResult?.Dispose();
+                if (tempStreamResult is not null)
+                {
+                    await tempStreamResult.DisposeAsync();
+                }
             }
         }
 

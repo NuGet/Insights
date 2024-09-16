@@ -17,7 +17,7 @@ namespace NuGet.Insights.Worker
 
             hostBuilder.ConfigureServices(serviceCollection =>
             {
-                serviceCollection.AddTransient<CatalogScanUpdateTimer>();
+                serviceCollection.AddSingleton<CatalogScanUpdateTimer>();
             });
         }
 

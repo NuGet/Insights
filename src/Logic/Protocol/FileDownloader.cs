@@ -100,7 +100,10 @@ namespace NuGet.Insights
             }
             catch
             {
-                result?.Dispose();
+                if (result is not null)
+                {
+                    await result.DisposeAsync();
+                }
                 throw;
             }
         }
@@ -136,7 +139,7 @@ namespace NuGet.Insights
                 {
                     if (result.HasValue)
                     {
-                        result.Value.Body.Dispose();
+                        await result.Value.Body.DisposeAsync();
                     }
                 }
             }

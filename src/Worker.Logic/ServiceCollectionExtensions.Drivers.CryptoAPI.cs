@@ -12,7 +12,7 @@ namespace NuGet.Insights.Worker
         /// </summary>
         private static void SetupPackageCertificateToCsvDriver(IServiceCollection serviceCollection)
         {
-            serviceCollection.AddTransient<PackageCertificateToCsvDriver>();
+            serviceCollection.AddSingleton<PackageCertificateToCsvDriver>();
         }
     }
 }

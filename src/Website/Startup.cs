@@ -36,7 +36,7 @@ namespace NuGet.Insights.Website
             services.AddSingleton<IAdminViewModelCache>(s => s.GetRequiredService<CachedAdminViewModelService.AdminViewModelCache>());
             services.AddScoped<IAuthorizationHandler, AllowListAuthorizationHandler>();
             services.AddScoped<AllowListAuthorizationHandler>();
-            services.AddTransient<ViewModelFactory>();
+            services.AddSingleton<ViewModelFactory>();
             services.AddSingleton<InitializerHostedService>();
             services.AddHostedService(s => s.GetRequiredService<InitializerHostedService>());
             services.AddHostedService<MoveMessagesHostedService>();
