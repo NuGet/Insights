@@ -20,7 +20,6 @@
     "logLevel": {
       "Azure.Core": "Error",
       "default": "Information",
-      "Function": "Critical",
       "LoggerTraceListener": "Information",
       "Host.Results": "Critical",
       "Host.Startup": "Error"

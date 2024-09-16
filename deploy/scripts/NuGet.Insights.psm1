@@ -343,7 +343,8 @@ class ResourceSettings {
                 AzureFunctionsJobHost            = @{
                     logging = @{
                         LogLevel = @{
-                            Default = $this.WorkerLogLevel;
+                            Function = "Critical";
+                            Default  = $this.WorkerLogLevel;
                         };
                     };
                 };
