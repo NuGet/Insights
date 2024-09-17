@@ -13,7 +13,7 @@ namespace NuGet.Insights
         private bool _disposed;
 
         private AutoRenewingStorageLeaseResult(StorageLeaseService? service, StorageLeaseResult? lease, bool acquired, CancellationTokenSource? cts, Task? renewTask)
-            : base(lease, lease?.ETag, acquired)
+            : base(lease, lease?.ETag, lease?.Started, acquired)
         {
             _service = service;
             _cts = cts;
@@ -31,7 +31,7 @@ namespace NuGet.Insights
                     _cts!.Cancel();
                     await _renewTask!;
                     _cts.Dispose();
-                    await _service!.ReleaseAsync(Lease);
+                    await _service!.ReleaseAsync(Lease!);
                     _disposed = true;
                 }
             }

@@ -435,10 +435,12 @@ namespace NuGet.Insights
                 return table;
             }
 
-            public AutoRenewingStorageLeaseService GetLeaseService(ServiceClientFactory serviceClientFactory, ILoggerFactory loggerFactory)
+            public AutoRenewingStorageLeaseService GetLeaseService(
+                ServiceClientFactory serviceClientFactory,
+                ILoggerFactory loggerFactory)
             {
                 return new AutoRenewingStorageLeaseService(
-                    new StorageLeaseService(serviceClientFactory, Options.Object),
+                    new StorageLeaseService(serviceClientFactory, loggerFactory.GetLoggerTelemetryClient(), Options.Object),
                     loggerFactory.CreateLogger<AutoRenewingStorageLeaseService>());
             }
 

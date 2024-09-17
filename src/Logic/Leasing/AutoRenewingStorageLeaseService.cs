@@ -33,7 +33,7 @@ namespace NuGet.Insights
             {
                 if (attempt > 0)
                 {
-                    var sleepDuration = TimeSpan.FromSeconds(Math.Max(attempt, 10));
+                    var sleepDuration = TimeSpan.FromSeconds(Math.Min(attempt, 10));
                     _logger.LogTransientWarning("After attempt {Attempt}, storage lease {Name} is not available. Trying again in {SleepDurationMs}ms.", attempt, name, sleepDuration.TotalMilliseconds);
                     await Task.Delay(sleepDuration);
                 }

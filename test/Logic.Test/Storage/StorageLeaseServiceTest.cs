@@ -344,6 +344,7 @@ namespace NuGet.Insights
                 LeaseName = "some-lease";
                 MinDuration = TimeSpan.FromSeconds(15);
                 MaxDuration = TimeSpan.FromSeconds(60);
+                TelemetryClient = output.GetTelemetryClient();
                 Settings = new NuGetInsightsSettings
                 {
                     LeaseContainerName = ContainerName,
@@ -357,7 +358,10 @@ namespace NuGet.Insights
                     Options.Object,
                     output.GetTelemetryClient(),
                     output.GetLoggerFactory());
-                Target = new StorageLeaseService(ServiceClientFactory, Options.Object);
+                Target = new StorageLeaseService(
+                    ServiceClientFactory,
+                    TelemetryClient,
+                    Options.Object);
             }
 
             public ITestOutputHelper Output { get; }
@@ -365,6 +369,7 @@ namespace NuGet.Insights
             public string LeaseName { get; }
             public TimeSpan MinDuration { get; }
             public TimeSpan MaxDuration { get; }
+            public LoggerTelemetryClient TelemetryClient { get; }
             public NuGetInsightsSettings Settings { get; }
             public Mock<IOptions<NuGetInsightsSettings>> Options { get; }
             public HttpClientHandler HttpClientHandler { get; }

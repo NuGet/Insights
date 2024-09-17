@@ -13,7 +13,7 @@ namespace NuGet.Insights
         public const string AcquiredBySomeoneElse = "The lease has been acquired by someone else, or transient errors happened.";
         public const string NotAvailable = "The lease is not available yet.";
 
-        protected BaseLeaseResult(T? lease, ETag? etag, bool acquired)
+        protected BaseLeaseResult(T? lease, ETag? etag, DateTimeOffset? started, bool acquired)
         {
             if (acquired && lease == null)
             {
@@ -28,10 +28,14 @@ namespace NuGet.Insights
             Lease = lease;
             ETag = etag;
             Acquired = acquired;
+            Started = started;
         }
 
         public T? Lease { get; }
         public ETag? ETag { get; }
         public bool Acquired { get; }
+        public DateTimeOffset? Started { get; }
+        public DateTimeOffset? LastRenewed { get; set; }
+        public DateTimeOffset? Released { get; set; }
     }
 }

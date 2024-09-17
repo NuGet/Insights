@@ -9,21 +9,22 @@ namespace NuGet.Insights
 {
     public class StorageLeaseResult : BaseLeaseResult<string>
     {
-        private StorageLeaseResult(string name, string? leaseId, ETag? etag, bool acquired) : base(leaseId, etag, acquired)
+        private StorageLeaseResult(string name, string? leaseId, ETag? etag, DateTimeOffset? started, bool acquired)
+            : base(leaseId, etag, started, acquired)
         {
             Name = name;
         }
 
         public string Name { get; }
 
-        public static StorageLeaseResult Leased(string name, string leaseId, ETag etag)
+        public static StorageLeaseResult Leased(string name, string leaseId, ETag etag, DateTimeOffset started)
         {
-            return new StorageLeaseResult(name, leaseId, etag, acquired: true);
+            return new StorageLeaseResult(name, leaseId, etag, started, acquired: true);
         }
 
         public static StorageLeaseResult NotLeased(string name)
         {
-            return new StorageLeaseResult(name, leaseId: null, etag: null, acquired: false);
+            return new StorageLeaseResult(name, leaseId: null, etag: null, started: null, acquired: false);
         }
     }
 }
