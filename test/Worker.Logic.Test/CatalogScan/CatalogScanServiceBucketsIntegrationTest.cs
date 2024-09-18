@@ -244,13 +244,6 @@ namespace NuGet.Insights.Worker
             RetryFailedMessages = appendCsvError;
             ConfigureWorkerSettings = x =>
             {
-                if (appendCsvError)
-                {
-                    // retry at the queue message level instead
-                    x.AzureServiceClientMaxRetries = 0;
-                    x.AzureServiceClientNetworkTimeout = TimeSpan.FromSeconds(10);
-                }
-
                 x.OldCatalogIndexScansToKeep = 0;
             };
             var dir = nameof(CatalogScanService_TestCachedData);
@@ -278,7 +271,7 @@ namespace NuGet.Insights.Worker
                     storageSuffix = storageSuffix.Substring(0, storageSuffix.Length - 1);
                     if (await GetMinimumLeafAttemptCount(storageSuffix) == 1)
                     {
-                        return new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                        return new HttpResponseMessage(HttpStatusCode.BadRequest)
                         {
                             RequestMessage = r,
                             Content = new StringContent("Big yikes!"),
