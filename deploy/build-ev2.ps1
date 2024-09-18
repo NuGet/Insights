@@ -356,7 +356,9 @@ process {
         }
     
         $storageParameters = New-StorageParameters `
-            -ResourceSettings $resourceSettings
+            -ResourceSettings $resourceSettings `
+            -DenyTraffic $false `
+            -AllowSharedKeyAccess $false
 
         $mainParameters = New-MainParameters `
             -ResourceSettings $resourceSettings `

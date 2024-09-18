@@ -27,6 +27,8 @@ Write-Status "Ensuring the storage account and base containers exist..."
 
 $storageParameters = New-StorageParameters `
     -ResourceSettings $ResourceSettings
+    -DenyTraffic $false `
+    -AllowSharedKeyAccess $false
 
 New-Deployment `
     -ResourceGroupName $ResourceSettings.ResourceGroupName `

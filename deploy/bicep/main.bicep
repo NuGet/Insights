@@ -94,6 +94,7 @@ module storage './storage.bicep' = {
     deploymentContainerName: deploymentContainerName
     leaseContainerName: leaseContainerName
     location: location
+    denyTraffic: !workerIsConsumptionPlan
     allowSharedKeyAccess: workerIsConsumptionPlan
   }
 }

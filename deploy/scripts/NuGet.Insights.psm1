@@ -577,12 +577,14 @@ function Invoke-DownloadDotnetInstallScript($destPath) {
         -OutFile $destPath
 }
 
-function New-StorageParameters($ResourceSettings) {
+function New-StorageParameters($ResourceSettings, $DenyTraffic, $AllowSharedKeyAccess) {
     @{
         location                = $ResourceSettings.Location;
         storageAccountName      = $ResourceSettings.StorageAccountName;
         deploymentContainerName = $ResourceSettings.DeploymentContainerName;
-        leaseContainerName      = $ResourceSettings.LeaseContainerName
+        leaseContainerName      = $ResourceSettings.LeaseContainerName;
+        allowSharedKeyAccess    = $AllowSharedKeyAccess;
+        denyTraffic             = $DenyTraffic;
     }
 }
 
@@ -629,7 +631,7 @@ function New-MainParameters(
         leaseContainerName        = $ResourceSettings.LeaseContainerName;
         location                  = $ResourceSettings.Location;
         storageAccountName        = $ResourceSettings.StorageAccountName;
-        allowedIpRanges           = ($ResourceSettings.AllowedIpRanges | ForEach-Object { $_.Ranges });
+        allowedIpRanges           = @(@($ResourceSettings.AllowedIpRanges) | ForEach-Object { $_.Ranges } | Sort-Object | Get-Unique);
         useSpotWorkers            = $ResourceSettings.UseSpotWorkers;
         userManagedIdentityName   = $ResourceSettings.UserManagedIdentityName;
         websiteConfig             = $ResourceSettings.WebsiteConfig | ConvertTo-FlatConfig | Get-OrderedHashtable;

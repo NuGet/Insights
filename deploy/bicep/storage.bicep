@@ -2,7 +2,8 @@ param storageAccountName string
 param deploymentContainerName string
 param leaseContainerName string
 param location string
-param allowSharedKeyAccess bool = false
+param denyTraffic bool
+param allowSharedKeyAccess bool
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-04-01' = {
   name: storageAccountName
@@ -17,6 +18,9 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-04-01' = {
     allowBlobPublicAccess: false
     defaultToOAuthAuthentication: !allowSharedKeyAccess
     allowSharedKeyAccess: allowSharedKeyAccess
+    networkAcls: {
+      defaultAction: denyTraffic ? 'Deny' : 'Allow'
+    }
   }
 }
 
