@@ -1,8 +1,5 @@
-param location string
-
 param websiteName string
 param websiteLocation string
-param deploymentScriptPrefix string
 
 param workerPlanLocations array
 @minValue(1)
@@ -88,59 +85,6 @@ module workerVnets './function-worker-vnet.bicep' = [
 ]
 
 output workerSubnetIds array = [for index in range(0, workerCount): workerVnets[index].outputs.subnetId]
-
-// deployment script (e.g. for spot worker script upload)
-var deploymentScriptNsgName = '${deploymentScriptPrefix}nsg'
-var deploymentScriptVnetName = '${deploymentScriptPrefix}vnet'
-
-resource deploymentScriptNsg 'Microsoft.Network/networkSecurityGroups@2021-03-01' = {
-  name: deploymentScriptNsgName
-  location: location
-  properties: {
-    securityRules: []
-  }
-}
-
-resource deploymentScriptVnet 'Microsoft.Network/virtualNetworks@2021-03-01' = {
-  name: deploymentScriptVnetName
-  location: location
-  properties: {
-    addressSpace: {
-      addressPrefixes: [
-        '172.28.0.0/24'
-      ]
-    }
-    subnets: [
-      {
-        name: 'default'
-        properties: {
-          addressPrefix: '172.28.0.0/25'
-          serviceEndpoints: [
-            {
-              service: 'Microsoft.Storage.Global'
-              locations: [
-                '*'
-              ]
-            }
-          ]
-          delegations: [
-            {
-              name: 'Microsoft.ContainerInstance.containerGroups'
-              properties: {
-                serviceName: 'Microsoft.ContainerInstance/containerGroups'
-              }
-            }
-          ]
-          networkSecurityGroup: {
-            id: deploymentScriptNsg.id
-          }
-        }
-      }
-    ]
-  }
-}
-
-output deploymentScriptSubnetId string = deploymentScriptVnet.properties.subnets[0].id
 
 // spot workers
 var spotWorkerVnetsDeploymentLongName = '${deployment().name}-spot-worker-vnets'

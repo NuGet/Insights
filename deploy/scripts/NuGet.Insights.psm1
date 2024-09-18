@@ -96,10 +96,7 @@ class ResourceSettings {
     [string]$KeyVaultName
     
     [ValidateNotNullOrEmpty()]
-    [string]$LocalDeploymentContainerName
-    
-    [ValidateNotNullOrEmpty()]
-    [string]$SpotWorkerDeploymentContainerName
+    [string]$DeploymentContainerName
     
     [ValidateNotNullOrEmpty()]
     [string]$LeaseContainerName
@@ -111,15 +108,12 @@ class ResourceSettings {
     [string]$ExpandQueueName
     
     [ValidateNotNullOrEmpty()]
-    [string]$DeploymentNamePrefix
-    
-    [ValidateNotNullOrEmpty()]
     [bool]$UseSpotWorkers
 
     [ValidateNotNullOrEmpty()]
     [string]$RuntimeIdentifier
 
-    [string[]]$AllowedIpRanges
+    [object[]]$AllowedIpRanges
     
     [string]$SpotWorkerAdminUsername
     [string]$SpotWorkerAdminPassword
@@ -135,6 +129,7 @@ class ResourceSettings {
     [string]$ExistingWebsitePlanId
     [string]$WebsiteAadAppName
     [string]$WebsiteAadAppClientId
+    [object]$Ev2AzCopyConnectionProperties
 
     ResourceSettings(
         [string]$ConfigName,
@@ -207,14 +202,15 @@ class ResourceSettings {
         Set-OrDefault WorkerLogLevel "Warning"
         Set-OrDefault ResourceGroupName "NuGet.Insights-$StampName"
         Set-OrDefault StorageAccountName "nugin$($StampName.Replace('-', '').ToLowerInvariant())"
+        Set-OrDefault DeploymentContainerName "deployment"
         Set-OrDefault LeaseContainerName "leases"
         Set-OrDefault WorkQueueName "work"
         Set-OrDefault ExpandQueueName "expand"
         Set-OrDefault StorageEndpointSuffix "core.windows.net"
         Set-OrDefault KeyVaultName "nugin$($StampName.Replace('-', '').ToLowerInvariant())"
-        Set-OrDefault DeploymentNamePrefix "NuGetInsights-$StampName-Deployment-"
         Set-OrDefault UseSpotWorkers $false
         Set-OrDefault AllowedIpRanges @()
+        Set-OrDefault Ev2AzCopyConnectionProperties @{}
 
         # Optional settings
         $this.SubscriptionId = $DeploymentConfig.SubscriptionId
@@ -253,10 +249,6 @@ class ResourceSettings {
             }
             Set-OrDefault SpotWorkerEnableAutomaticOSUpgrade $false
         }
-
-        # Static settings
-        $this.LocalDeploymentContainerName = "localdeployment"
-        $this.SpotWorkerDeploymentContainerName = "spotworkerdeployment"
 
         $isNuGetPackageExplorerToCsvEnabled = "NuGetPackageExplorerToCsv" -notin $this.WorkerConfig["NuGetInsights"].DisabledDrivers
         $isConsumptionPlan = $this.WorkerSku -eq "Y1"
@@ -578,15 +570,28 @@ function Get-RandomPassword() {
     return $password
 }
 
+function Invoke-DownloadDotnetInstallScript($destPath) {
+    Invoke-WebRequest `
+        -Uri https://dotnet.microsoft.com/download/dotnet/scripts/v1/dotnet-install.ps1 `
+        -UseBasicParsing `
+        -OutFile $destPath
+}
+
+function New-StorageParameters($ResourceSettings) {
+    @{
+        location                = $ResourceSettings.Location;
+        storageAccountName      = $ResourceSettings.StorageAccountName;
+        deploymentContainerName = $ResourceSettings.DeploymentContainerName;
+        leaseContainerName      = $ResourceSettings.LeaseContainerName
+    }
+}
+
 function New-MainParameters(
     $ResourceSettings,
     $DeploymentLabel,
     $WebsiteZipUrl,
     $WorkerZipUrl,
-    $SpotWorkerUploadScriptUrl,
-    $AzureFunctionsHostZipUrl,
-    $WorkerStandaloneEnvUrl,
-    $InstallWorkerStandaloneUrl) {
+    $SpotWorkerCustomScriptExtensionFiles) {
 
     if ($ResourceSettings.RuntimeIdentifier -eq "linux-x64") {
         $isDeploymentLinux = $true
@@ -620,11 +625,11 @@ function New-MainParameters(
         appInsightsName           = $ResourceSettings.AppInsightsName;
         deploymentLabel           = $DeploymentLabel;
         keyVaultName              = $ResourceSettings.KeyVaultName;
+        deploymentContainerName   = $ResourceSettings.DeploymentContainerName;
         leaseContainerName        = $ResourceSettings.LeaseContainerName;
         location                  = $ResourceSettings.Location;
         storageAccountName        = $ResourceSettings.StorageAccountName;
-        allowedIpRanges           = $ResourceSettings.AllowedIpRanges;
-        deploymentNamePrefix      = $ResourceSettings.DeploymentNamePrefix;
+        allowedIpRanges           = ($ResourceSettings.AllowedIpRanges | ForEach-Object { $_.Ranges });
         useSpotWorkers            = $ResourceSettings.UseSpotWorkers;
         userManagedIdentityName   = $ResourceSettings.UserManagedIdentityName;
         websiteConfig             = $ResourceSettings.WebsiteConfig | ConvertTo-FlatConfig | Get-OrderedHashtable;
@@ -654,11 +659,8 @@ function New-MainParameters(
     }
 
     if ($ResourceSettings.UseSpotWorkers) {
-        $parameters.spotWorkerUploadScriptUrl = $SpotWorkerUploadScriptUrl;
-        $parameters.spotWorkerHostZipUrl = $AzureFunctionsHostZipUrl;
-        $parameters.spotWorkerEnvUrl = $WorkerStandaloneEnvUrl;
-        $parameters.spotWorkerInstallScriptUrl = $InstallWorkerStandaloneUrl;
-        $parameters.spotWorkerDeploymentContainerName = $ResourceSettings.SpotWorkerDeploymentContainerName
+        # Make sure to remove all SAS tokens from the URL, since these are accessed via token.
+        $parameters.spotWorkerCustomScriptExtensionFiles = @($SpotWorkerCustomScriptExtensionFiles | ForEach-Object { $_.ToString().Split("?")[0] });
         $parameters.spotWorkerAdminUsername = $ResourceSettings.SpotWorkerAdminUsername;
         $parameters.spotWorkerAdminPassword = $ResourceSettings.SpotWorkerAdminPassword;
         $parameters.spotWorkerSpecs = $ResourceSettings.SpotWorkerSpecs;
@@ -886,7 +888,7 @@ function Get-ConfigNameDynamicParameter($type, $name) {
 
 function Get-DeploymentLocals($DeploymentLabel, $DeploymentDir) {
     if (!$DeploymentLabel) {
-        $DeploymentLabel = (Get-Date).ToUniversalTime().ToString("yyyyMMddHHmmss")
+        $DeploymentLabel = "local-$((Get-Date).ToUniversalTime().ToString("yyyyMMddHHmmss"))"
         Write-Status "Using deployment label: $DeploymentLabel"
     }
 

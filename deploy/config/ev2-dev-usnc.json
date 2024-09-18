@@ -24,6 +24,7 @@
     "KeyVaultName": "ev2-dev-usnc-insights",
     "ResourceGroupName": "ev2-dev-usnc-insights",
     "StorageAccountName": "ev2devusncinsights",
+    "DeploymentContainerName": "deployment",
     "LeaseContainerName": "leases",
     "WorkQueueName": "work",
     "ExpandQueueName": "expand",
@@ -38,8 +39,24 @@
     "WorkerAutoscaleNamePrefix": "ev2-dev-usnc-insights-worker-",
     "WorkerHostId": "ev2-dev-usnc-insights",
     "UserManagedIdentityName": "ev2-dev-usnc-insights-worker",
-    "DeploymentNamePrefix": "ev2-dev-usnc-insights-deployment-",
     "AllowedIpRanges": [],
+    "Ev2AzCopyConnectionProperties": {
+      "endpoint": "https://example",
+      "maxExecutionTime": "PT1H",
+      "authentication": {
+        "type": "AadApplicationAuthentication",
+        "reference": {
+          "provider": "AzureKeyVault",
+          "parameters": {
+            "secretId": "https://ev2-dev-usnc-insights.vault.azure.net/secrets/ClientCertificate"
+          }
+        },
+        "properties": {
+          "applicationId": "00000000-0000-0000-0000-000000000000",
+          "tenantId": "00000000-0000-0000-0000-000000000000"
+        }
+      }
+    },
     "UseSpotWorkers": true,
     "SpotWorkerAdminUsername": "ev2",
     "SpotWorkerSpecs": [

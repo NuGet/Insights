@@ -66,11 +66,11 @@ Add-AzRoleAssignmentWithRetry $currentUser $ResourceSettings.ResourceGroupName "
     $container = Get-AzStorageContainer `
         -Context $storageContext `
         -ErrorAction Stop `
-    | Where-Object { $_.Name -eq $Resourcesettings.LocalDeploymentContainerName }
+    | Where-Object { $_.Name -eq $Resourcesettings.DeploymentContainerName }
     if (!$container) {
         New-AzStorageContainer `
             -Context $storageContext `
-            -Name $Resourcesettings.LocalDeploymentContainerName `
+            -Name $Resourcesettings.DeploymentContainerName `
             -ErrorAction Stop | Out-Null 
     }
 }
@@ -81,14 +81,14 @@ function New-DeploymentFile ($Path, $BlobName) {
     return Invoke-WithRetryOnForbidden {
         Set-AzStorageBlobContent `
             -Context $storageContext `
-            -Container $ResourceSettings.LocalDeploymentContainerName `
+            -Container $ResourceSettings.DeploymentContainerName `
             -File $Path `
             -Blob $BlobName `
             -Force `
             -ErrorAction Stop | Out-Null
     
         $sasUrl = New-AzStorageBlobSASToken `
-            -Container $ResourceSettings.LocalDeploymentContainerName `
+            -Container $ResourceSettings.DeploymentContainerName `
             -Blob $BlobName `
             -Permission r `
             -Protocol HttpsOnly `
@@ -105,23 +105,34 @@ function New-DeploymentFile ($Path, $BlobName) {
     }
 }
 
-$spotWorkerUploadScriptPath = Join-Path $PSScriptRoot "Set-SpotWorkerDeploymentFiles.ps1"
 $workerStandaloneEnvPath = Join-Path $DeploymentDir "WorkerStandalone.env"
 New-WorkerStandaloneEnv $ResourceSettings | Out-EnvFile -FilePath $workerStandaloneEnvPath
 $installWorkerStandalonePath = Join-Path $PSScriptRoot "Install-WorkerStandalone.ps1"
 
+$dotnetInstallScriptPath = Join-Path $DeploymentDir "dotnet-install.ps1"
+Invoke-DownloadDotnetInstallScript $dotnetInstallScriptPath
+
 $websiteZipUrl = New-DeploymentFile $WebsiteZipPath "$DeploymentLabel/Website.zip"
 $workerZipUrl = New-DeploymentFile $WorkerZipPath "$DeploymentLabel/Worker.zip"
+$spotWorkerCustomScriptExtensionFiles = @()
 
 if ($ResourceSettings.UseSpotWorkers) {
     if (!$AzureFunctionsHostZipPath) {
         throw "No AzureFunctionsHostZipPath parameter was provided but at least one of the configurations has UseSpotWorkers set to true."
     }
 
-    $spotWorkerUploadScriptUrl = New-DeploymentFile $spotWorkerUploadScriptPath "$DeploymentLabel/Set-SpotWorkerDeploymentFiles.ps1"
+    $dotnetInstallScriptUrl = New-DeploymentFile $dotnetInstallScriptPath "$DeploymentLabel/dotnet-install.ps1"
     $azureFunctionsHostZipUrl = New-DeploymentFile $AzureFunctionsHostZipPath "$DeploymentLabel/AzureFunctionsHost.zip"
     $workerStandaloneEnvUrl = New-DeploymentFile $workerStandaloneEnvPath "$DeploymentLabel/WorkerStandalone.env"
     $installWorkerStandaloneUrl = New-DeploymentFile $installWorkerStandalonePath "$DeploymentLabel/Install-WorkerStandalone.ps1"
+
+    $spotWorkerCustomScriptExtensionFiles = @(
+        $workerZipUrl,
+        $azureFunctionsHostZipUrl,
+        $dotnetInstallScriptUrl,
+        $workerStandaloneEnvUrl,
+        $installWorkerStandaloneUrl
+    )
 }
 
 # Deploy the resources using the main ARM template
@@ -132,10 +143,7 @@ $mainParameters = New-MainParameters `
     -DeploymentLabel $DeploymentLabel `
     -WebsiteZipUrl $websiteZipUrl `
     -WorkerZipUrl $workerZipUrl `
-    -AzureFunctionsHostZipUrl $azureFunctionsHostZipUrl `
-    -SpotWorkerUploadScriptUrl $spotWorkerUploadScriptUrl `
-    -WorkerStandaloneEnvUrl $workerStandaloneEnvUrl `
-    -InstallWorkerStandaloneUrl $installWorkerStandaloneUrl
+    -SpotWorkerCustomScriptExtensionFiles $spotWorkerCustomScriptExtensionFiles
 
 if ($mainParameters.spotWorkerAdminPassword -eq "") {
     Write-Host "Setting spotWorkerAdminPassword to a random value"

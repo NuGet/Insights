@@ -2,6 +2,7 @@ param userManagedIdentityName string
 param appInsightsName string
 
 param deploymentLabel string
+param customScriptExtensionFileDirectory string
 param customScriptExtensionFiles array
 
 param location string
@@ -200,7 +201,7 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2023-03-01' = {
               autoUpgradeMinorVersion: true
               settings: {
                 fileUris: customScriptExtensionFiles
-                commandToExecute: 'powershell -ExecutionPolicy Unrestricted -File "${deploymentLabel}/Install-WorkerStandalone.ps1" -DeploymentLabel "${deploymentLabel}" -HostPattern "AzureFunctionsHost.zip" -AppPattern "Worker.zip" -EnvPattern "WorkerStandalone*.env" -LocalHealthPort 80 -ApplicationInsightsConnectionString "${appInsights.properties.ConnectionString}" -UserManagedIdentityClientId "${userManagedIdentity.properties.clientId}" -RoleName "${vmssName}" -ExpandOSPartition'
+                commandToExecute: 'powershell -ExecutionPolicy Unrestricted -File "${customScriptExtensionFileDirectory}Install-WorkerStandalone.ps1" -DeploymentLabel "${deploymentLabel}" -ApplicationInsightsConnectionString "${appInsights.properties.ConnectionString}" -UserManagedIdentityClientId "${userManagedIdentity.properties.clientId}" -RoleName "${vmssName}" -ExpandOSPartition'
               }
               protectedSettings: {
                 managedIdentity: {

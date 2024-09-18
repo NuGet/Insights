@@ -54,19 +54,6 @@ resource tablePermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-pr
   }
 }
 
-resource deploymentScriptFilePermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
-  name: guid('DeploymentScriptCanAccessFiles-${userManagedIdentity.id}')
-  scope: storageAccount
-  properties: {
-    roleDefinitionId: subscriptionResourceId(
-      'Microsoft.Authorization/roleDefinitions',
-      '69566ab7-960f-475b-8e7c-b3118f30c6bd'
-    )
-    principalId: userManagedIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
 // Key Vault
 resource keyVaultReadSecretPermissions 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
   name: guid('AppCanUseKeyVaultSecretsAndCertificates-${userManagedIdentity.id}')

@@ -34,9 +34,11 @@ begin {
 
 process {
     function New-ServiceModelFile($resourceSettings) {
-        # Docs: https://ev2docs.azure.net/getting-started/authoring/service-model/servicemodel.html
+        # Docs: https://ev2docs.azure.net/features/service-artifacts/servicemodel.html
         $definitionName = "Deploy.ServiceDefinition"
-        $resourceName = "Deploy.ResourceDefinition"
+        $storageResourceDefinitionName = "Storage.ResourceDefinition"
+        $copyResourceDefinitionName = "Copy.ResourceDefinition"
+        $mainResourceDefinitionName = "Main.ResourceDefinition"
         $serviceModel = [ordered]@{
             "`$schema"                      = "http://schema.express.azure.com/schemas/2015-01-01-alpha/ServiceModel.json";
             contentVersion                  = "0.0.0.1";
@@ -50,7 +52,27 @@ process {
                     name                       = $definitionName;
                     serviceResourceDefinitions = @(
                         [ordered]@{
-                            name       = $resourceName;
+                            name       = $storageResourceDefinitionName;
+                            composedOf = [ordered]@{
+                                arm = [ordered]@{
+                                    templatePath = Get-TemplatePath "storage";
+                                }
+                            }
+                        };
+                        [ordered]@{
+                            name       = $copyResourceDefinitionName;
+                            composedOf = [ordered]@{
+                                extension = [ordered]@{
+                                    allowedTypes = @(
+                                        [ordered]@{
+                                            type = "Microsoft.Storage/AzCopy"
+                                        }
+                                    )
+                                }
+                            }
+                        };
+                        [ordered]@{
+                            name       = $mainResourceDefinitionName;
                             composedOf = [ordered]@{
                                 arm = [ordered]@{
                                     templatePath = Get-TemplatePath "main";
@@ -69,11 +91,21 @@ process {
                     azureSubscriptionId    = $resourceSettings.SubscriptionId;
                     serviceResources       = @(
                         [ordered]@{
-                            name              = $serviceResourceName;
-                            instanceOf        = $resourceName;
-                            armParametersPath = Get-ParametersPath $resourceSettings.ConfigName;
+                            name              = $storageServiceResourceName;
+                            instanceOf        = $storageResourceDefinitionName;
+                            armParametersPath = Get-ParametersPath $resourceSettings.ConfigName "storage";
+                        },
+                        [ordered]@{
+                            name                  = $copyServiceResourceName;
+                            instanceOf            = $copyResourceDefinitionName;
+                            rolloutParametersPath = Get-RolloutParametersPath $resourceSettings.ConfigName "copy";
+                        },
+                        [ordered]@{
+                            name              = $mainServiceResourceName;
+                            instanceOf        = $mainResourceDefinitionName;
+                            armParametersPath = Get-ParametersPath $resourceSettings.ConfigName "main";
                         }
-                    );
+                    )
                 }
             )
         }
@@ -89,7 +121,7 @@ process {
     }
     
     function New-RolloutSpecFile($resourceSettings) {
-        # Docs: https://ev2docs.azure.net/getting-started/authoring/rollout-spec/rolloutspec.html
+        # Docs: https://ev2docs.azure.net/features/service-artifacts/rolloutspec.html
         $rolloutSpec = [ordered]@{
             "`$schema"        = "http://schema.express.azure.com/schemas/2015-01-01-alpha/RolloutSpec.json";
             contentVersion    = "1.0.0.0";
@@ -105,11 +137,25 @@ process {
             };
             orchestratedSteps = @(
                 [ordered]@{
-                    name       = "Deploy.OrchestratedStep";
+                    name       = "Storage.OrchestratedStep";
                     targetType = "ServiceResource";
-                    targetName = $serviceResourceName;
-                    actions    = @( "deploy" );
+                    targetName = $storageServiceResourceName;
+                    actions    = @("deploy");
                     dependsOn  = @();
+                };
+                [ordered]@{
+                    name       = "Copy.OrchestratedStep";
+                    targetType = "ServiceResource";
+                    targetName = $copyServiceResourceName;
+                    actions    = @("extension/AzCopy");
+                    dependsOn  = @("Storage.OrchestratedStep");
+                };
+                [ordered]@{
+                    name       = "Main.OrchestratedStep";
+                    targetType = "ServiceResource";
+                    targetName = $mainServiceResourceName;
+                    actions    = @("deploy");
+                    dependsOn  = @("Copy.OrchestratedStep");
                 }
             )
         }
@@ -122,6 +168,47 @@ process {
         }
     
         $rolloutSpec | ConvertTo-Json -Depth 100 | Format-Json | Out-File $rolloutSpecPath -Encoding UTF8
+    }
+    
+    function New-RolloutParametersFile($ResourceSettings, $FilePath, $DeploymentBaseUrl) {
+        # Docs: https://ev2docs.azure.net/features/service-artifacts/rolloutparameters.html
+        # Docs: https://msazure.visualstudio.com/One/_wiki/wikis/One.wiki/51808/AzCopy-Ev2-Extension
+        $rolloutParameters = [ordered]@{
+            "`$schema"     = "https://ev2schema.azure.net/schemas/2020-01-01/rolloutParameters.json";
+            contentVersion = "1.0.0.0";
+            extensions     = @(
+                [ordered]@{
+                    name                 = "AzCopy";
+                    type                 = "Microsoft.Storage/AzCopy";
+                    version              = "2020-07-17";
+                    connectionProperties = $ResourceSettings.Ev2AzCopyConnectionProperties;
+                    payloadProperties    = [ordered]@{
+                        sourceSAS          = [ordered]@{
+                            reference = [ordered]@{
+                                path        = "bin";
+                                isDirectory = "true"
+                            }
+                        };
+                        destinationSAS     = [ordered]@{
+                            value = $DeploymentBaseUrl
+                        };
+                        DestinationService = [ordered]@{
+                            value = "blob"
+                        };
+                        AsSubdir           = [ordered]@{
+                            value = "false"
+                        }
+                    }
+                }
+            )
+        }
+
+        $dirPath = Split-Path $FilePath
+        if (!(Test-Path $dirPath)) {
+            New-Item $dirPath -ItemType Directory | Out-Null
+        }
+        
+        $rolloutParameters | ConvertTo-Json -Depth 100 | Format-Json | Out-File $FilePath -Encoding UTF8
     }
     
     function New-Bicep($name) {
@@ -148,8 +235,12 @@ process {
         return "$configName.RolloutSpec.json"
     }
     
-    function Get-ParametersPath($configName) {
-        return "Parameters/$configName.Parameters.json"
+    function Get-RolloutParametersPath($configName, $name) {
+        return "Parameters/$configName.$name.RolloutParameters.json"
+    }
+    
+    function Get-ParametersPath($configName, $templateName) {
+        return "Parameters/$configName.$templateName.Parameters.json"
     }
     
     function Get-TemplatePath($name) {
@@ -161,19 +252,22 @@ process {
     # Declare shared variables
     $artifacts = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../artifacts"))
     $ev2 = Join-Path $artifacts "ExpressV2"
-    $serviceResourceName = "Deploy.ResourceInstance"
-    $websiteBinPath = "bin/Website.zip"
-    $workerBinPath = "bin/Worker.zip"
-    $azureFunctionsHostBinPath = "bin/AzureFunctionsHost.zip"
-    $workerStandaloneEnvPathPattern = "bin/WorkerStandalone.{0}.env"
-    $spotWorkerUploadBinPath = "bin/Set-SpotWorkerDeploymentFiles.ps1"
-    $installWorkerStandaloneBinPath = "bin/Install-WorkerStandalone.ps1"
+    $bin = Join-Path $ev2 "bin"
+    $storageServiceResourceName = "Storage.ResourceInstance"
+    $copyServiceResourceName = "Copy.ResourceInstance"
+    $mainServiceResourceName = "Main.ResourceInstance"
+
+    $websiteZipFile = "Website.zip"
+    $workerZipFile = "Worker.zip"
+    $azureFunctionsHostZipFile = "AzureFunctionsHost.zip"
+    $workerStandaloneEnvFilePattern = "WorkerStandalone.{0}.env"
+    $installWorkerStandaloneScriptFile = "Install-WorkerStandalone.ps1"
+    $dotnetInstallScriptFile = "dotnet-install.ps1"
 
     $scriptsToCopy = [ordered]@{
-        "scripts/Install-WorkerStandalone.ps1"      = $installWorkerStandaloneBinPath;
-        "scripts/NuGet.Insights.psm1"               = "NuGet.Insights.psm1";
-        "scripts/Set-DeploymentParameters.ps1"      = "Set-DeploymentParameters.ps1";
-        "scripts/Set-SpotWorkerDeploymentFiles.ps1" = $spotWorkerUploadBinPath;
+        "scripts/Install-WorkerStandalone.ps1" = $installWorkerStandaloneBinPath;
+        "scripts/NuGet.Insights.psm1"          = "NuGet.Insights.psm1";
+        "scripts/Set-DeploymentParameters.ps1" = "Set-DeploymentParameters.ps1";
     }
     
     # Install Bicep, if needed.
@@ -207,8 +301,8 @@ process {
     }
     
     # Compile the Bicep templates to raw ARM JSON.
-    New-Bicep "main"
     New-Bicep "storage"
+    New-Bicep "main"
     
     $bin = Join-Path $ev2 "bin"
     New-Item $bin -ItemType Directory | Out-Null
@@ -242,33 +336,42 @@ process {
             "websiteZipUrl"
             "workerZipUrl"
         )
+        
+        $deploymentBaseUrl = "https://$($resourceSettings.StorageAccountName).blob.core.windows.net/$($resourceSettings.DeploymentContainerName)/$BuildVersion"
+        $workerZipUrl = "$deploymentBaseUrl/$workerZipFile"
+        $spotWorkerCustomScriptExtensionFiles = @()
 
         if ($resourceSettings.UseSpotWorkers) {
-            $standaloneEnv = New-WorkerStandaloneEnv $resourceSettings
-            $standaloneEnvFileName = $workerStandaloneEnvPathPattern -f $resourceSettings.ConfigName
-            $standaloneEnv | Out-EnvFile -FilePath (Join-Path $ev2 $standaloneEnvFileName)
-            
-            $pathReferences += @(
-                "spotWorkerEnvUrl"
-                "spotWorkerHostZipUrl"
-                "spotWorkerInstallScriptUrl"
-                "spotWorkerUploadScriptUrl"
+            $workerStandaloneEnv = New-WorkerStandaloneEnv $resourceSettings
+            $workerStandaloneEnvFile = $workerStandaloneEnvFilePattern -f $resourceSettings.ConfigName
+            $workerStandaloneEnv | Out-EnvFile -FilePath (Join-Path $bin $workerStandaloneEnvFile)
+
+            $spotWorkerCustomScriptExtensionFiles = @(
+                $workerZipUrl,
+                "$deploymentBaseUrl/$azureFunctionsHostZipFile",
+                "$deploymentBaseUrl/$dotnetInstallScriptFile",
+                "$deploymentBaseUrl/$workerStandaloneEnvFile",
+                "$deploymentBaseUrl/$installWorkerStandaloneScriptFile"
             )
         }
     
-        $parameters = New-MainParameters `
+        $storageParameters = New-StorageParameters `
+            -ResourceSettings $resourceSettings
+
+        $mainParameters = New-MainParameters `
             -ResourceSettings $resourceSettings `
             -DeploymentLabel "PLACEHOLDER" `
-            -WebsiteZipUrl $websiteBinPath `
-            -WorkerZipUrl $workerBinPath `
-            -AzureFunctionsHostZipUrl $azureFunctionsHostBinPath `
-            -SpotWorkerUploadScriptUrl $spotWorkerUploadBinPath `
-            -WorkerStandaloneEnvUrl $standaloneEnvFileName `
-            -InstallWorkerStandaloneUrl $installWorkerStandaloneBinPath
+            -WebsiteZipUrl (Join-Path "bin" $websiteZipFile) `
+            -WorkerZipUrl (Join-Path "bin" $workerZipFile) `
+            -SpotWorkerCustomScriptExtensionFiles $spotWorkerCustomScriptExtensionFiles
 
-        $parametersPath = Join-Path $ev2 (Get-ParametersPath $resourceSettings.ConfigName)
+        $storageParametersPath = Join-Path $ev2 (Get-ParametersPath $resourceSettings.ConfigName "storage")
+        $rolloutParametersPath = Join-Path $ev2 (Get-RolloutParametersPath $ResourceSettings.ConfigName "copy")
+        $mainParametersPath = Join-Path $ev2 (Get-ParametersPath $resourceSettings.ConfigName "main")
 
-        New-ParameterFile $parameters $pathReferences $parametersPath
+        New-ParameterFile $storageParameters @() $storageParametersPath
+        New-RolloutParametersFile $resourceSettings $rolloutParametersPath $deploymentBaseUrl
+        New-ParameterFile $mainParameters $pathReferences $mainParametersPath
         New-ServiceModelFile $resourceSettings
         New-RolloutSpecFile $resourceSettings
     
@@ -278,10 +381,14 @@ process {
     $BuildVersion | Out-File (Join-Path $ev2 "BuildVer.txt") -NoNewline -Encoding UTF8
     
     # Copy the runtime assets
-    Copy-Item $WebsiteZipPath -Destination (Join-Path $ev2 $websiteBinPath) -Verbose
-    Copy-Item $WorkerZipPath -Destination (Join-Path $ev2 $workerBinPath) -Verbose
+    Copy-Item $WebsiteZipPath -Destination (Join-Path $bin $websiteBinPath) -Verbose
+    Copy-Item $WorkerZipPath -Destination (Join-Path $bin $workerBinPath) -Verbose
+
     if ($AzureFunctionsHostZipPath) {
-        Copy-Item $AzureFunctionsHostZipPath -Destination (Join-Path $ev2 $azureFunctionsHostBinPath) -Verbose
+        Copy-Item $AzureFunctionsHostZipPath -Destination (Join-Path $bin $azureFunctionsHostBinPath) -Verbose
+        
+        $dotnetInstallScriptPath = Join-Path $bin "dotnet-install.ps1"
+        Invoke-DownloadDotnetInstallScript $dotnetInstallScriptPath
     }
     elseif ($anyUseSpotWorkers) {
         throw "No AzureFunctionsHostZipPath parameter was provided but at least one of the configurations has UseSpotWorkers set to true."
@@ -289,7 +396,7 @@ process {
 
     foreach ($pair in $scriptsToCopy.GetEnumerator()) {
         $source = Join-Path $PSScriptRoot $pair.Key
-        $destination = Join-Path $ev2 $pair.Value
+        $destination = Join-Path $bin $pair.Value
         Copy-Item -Path $source -Destination $destination -Verbose
     }
 

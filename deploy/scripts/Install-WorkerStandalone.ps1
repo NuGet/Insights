@@ -3,17 +3,17 @@ param (
     [Parameter(Mandatory = $true)]
     [string]$DeploymentLabel,
     
-    [Parameter(Mandatory = $true)]
-    [string]$HostPattern,
+    [Parameter(Mandatory = $false)]
+    [string]$HostPattern = "AzureFunctionsHost.zip",
     
-    [Parameter(Mandatory = $true)]
-    [string]$AppPattern,
+    [Parameter(Mandatory = $false)]
+    [string]$AppPattern = "Worker.zip",
     
-    [Parameter(Mandatory = $true)]
-    [string]$EnvPattern,
+    [Parameter(Mandatory = $false)]
+    [string]$EnvPattern = "WorkerStandalone*.env",
 
-    [Parameter(Mandatory = $true)]
-    [int]$LocalHealthPort,
+    [Parameter(Mandatory = $false)]
+    [int]$LocalHealthPort = 80,
     
     [Parameter(Mandatory = $true)]
     [string]$ApplicationInsightsConnectionString,

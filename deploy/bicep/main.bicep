@@ -1,6 +1,7 @@
 param deploymentLabel string
 param storageAccountName string
 param keyVaultName string
+param deploymentContainerName string
 param leaseContainerName string
 param userManagedIdentityName string
 param location string
@@ -40,22 +41,12 @@ param workerNamePrefix string
 param workerZipUrl string
 param workerConfig object
 
-param deploymentNamePrefix string
-
 param useSpotWorkers bool
-@secure()
-param spotWorkerUploadScriptUrl string = ''
-@secure()
-param spotWorkerHostZipUrl string = ''
-@secure()
-param spotWorkerEnvUrl string = ''
-@secure()
-param spotWorkerInstallScriptUrl string = ''
-param spotWorkerDeploymentContainerName string = ''
 param spotWorkerAdminUsername string = ''
 @secure()
 param spotWorkerAdminPassword string = ''
 param spotWorkerSpecs array = []
+param spotWorkerCustomScriptExtensionFiles array = [] // an array of blob URLs, must be accessible with the managed identity
 param spotWorkerImageReference object = {}
 param spotWorkerEnableAutomaticOSUpgrade bool = false
 
@@ -100,9 +91,10 @@ module storage './storage.bicep' = {
   name: storageName
   params: {
     storageAccountName: storageAccountName
+    deploymentContainerName: deploymentContainerName
     leaseContainerName: leaseContainerName
     location: location
-    allowSharedKeyAccess: useSpotWorkers || workerIsConsumptionPlan
+    allowSharedKeyAccess: workerIsConsumptionPlan
   }
 }
 
@@ -148,8 +140,6 @@ var vnetsDeploymentName = length(vnetsDeploymentLongName) > 64
 module vnets './vnets.bicep' = {
   name: vnetsDeploymentName
   params: {
-    location: location
-    deploymentScriptPrefix: deploymentNamePrefix
     spotWorkerSpecs: spotWorkerSpecs
     useSpotWorkers: useSpotWorkers
     websiteName: websiteName
@@ -173,12 +163,7 @@ module storageNetworkAcls './storage-network-acls.bicep' = {
     storageAccountName: storageAccountName
     location: location
     denyTraffic: !workerIsConsumptionPlan
-    subnetIds: concat(
-      [vnets.outputs.websiteSubnetId],
-      vnets.outputs.workerSubnetIds,
-      [vnets.outputs.deploymentScriptSubnetId],
-      vnets.outputs.spotWorkerSubnetIds
-    )
+    subnetIds: concat([vnets.outputs.websiteSubnetId], vnets.outputs.workerSubnetIds, vnets.outputs.spotWorkerSubnetIds)
     allowedIpRanges: allowedIpRanges
   }
 }
@@ -335,27 +320,16 @@ var spotWorkersDeploymentName = length(spotWorkersDeploymentLongName) > 64
 module spotWorkers './spot-workers.bicep' = if (useSpotWorkers) {
   name: spotWorkersDeploymentName
   params: {
-    location: location
-    storageAccountName: storageAccountName
     keyVaultName: keyVaultName
     userManagedIdentityName: userManagedIdentityName
-    uploadScriptUrl: spotWorkerUploadScriptUrl
-    deploymentUrls: {
-      files: [
-        workerZipUrl
-        spotWorkerHostZipUrl
-        spotWorkerEnvUrl
-        spotWorkerInstallScriptUrl
-      ]
-    }
+    storageAccountName: storageAccountName
+    deploymentContainerName: deploymentContainerName
+    customScriptExtensionFiles: spotWorkerCustomScriptExtensionFiles
     deploymentLabel: deploymentLabel
-    spotWorkerDeploymentContainerName: spotWorkerDeploymentContainerName
     appInsightsName: appInsightsName
     adminUsername: spotWorkerAdminUsername
     adminPassword: spotWorkerAdminPassword
     specs: spotWorkerSpecs
-    deploymentScriptSubnetId: vnets.outputs.deploymentScriptSubnetId
-    deploymentNamePrefix: deploymentNamePrefix
     subnetIds: vnets.outputs.spotWorkerSubnetIds
     imageReference: spotWorkerImageReference
     enableAutomaticOSUpgrade: spotWorkerEnableAutomaticOSUpgrade
@@ -363,22 +337,5 @@ module spotWorkers './spot-workers.bicep' = if (useSpotWorkers) {
   dependsOn: [
     permissions
     storageNetworkAcls
-  ]
-}
-
-// HACK: fix allowSharedKeyAccess
-var disableSakLongName = '${deployment().name}-disable-sak'
-var disableSakName = length(disableSakLongName) > 64 ? '${guid(deployment().name)}-disable-sak' : disableSakLongName
-
-module disableSak './storage.bicep' = if (useSpotWorkers && !workerIsConsumptionPlan) {
-  name: disableSakName
-  params: {
-    storageAccountName: storageAccountName
-    leaseContainerName: leaseContainerName
-    location: location
-    allowSharedKeyAccess: false
-  }
-  dependsOn: [
-    spotWorkers
   ]
 }

@@ -24,17 +24,17 @@ New-AzResourceGroup `
 
 # Deploy the storage account and base containers.
 Write-Status "Ensuring the storage account and base containers exist..."
+
+$storageParameters = New-StorageParameters `
+    -ResourceSettings $ResourceSettings
+
 New-Deployment `
     -ResourceGroupName $ResourceSettings.ResourceGroupName `
     -DeploymentDir $DeploymentDir `
     -DeploymentLabel $DeploymentLabel `
     -DeploymentName "storage" `
     -BicepPath "../bicep/storage.bicep" `
-    -Parameters @{
-    location           = $ResourceSettings.Location;
-    storageAccountName = $ResourceSettings.StorageAccountName;
-    leaseContainerName = $ResourceSettings.LeaseContainerName
-} | Out-Default
+    -Parameters $storageParameters | Out-Default
 
 # Initialize the AAD app, if necessary
 if (!$ResourceSettings.WebsiteAadAppClientId) {

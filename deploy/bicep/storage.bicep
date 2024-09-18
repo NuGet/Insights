@@ -1,12 +1,7 @@
 param storageAccountName string
+param deploymentContainerName string
 param leaseContainerName string
 param location string
-
-/*
-HACK: This should be hard coded to false. Currently it must be while the spot worker deployment
-script runs otherwise the associated container instance never starts.
-Blocking issue: https://msazure.visualstudio.com/One/_workitems/edit/28104339
-*/
 param allowSharedKeyAccess bool = false
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-04-01' = {
@@ -23,6 +18,13 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-04-01' = {
     defaultToOAuthAuthentication: !allowSharedKeyAccess
     allowSharedKeyAccess: allowSharedKeyAccess
   }
+}
+
+resource deploymentContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2019-06-01' = {
+  name: '${storageAccountName}/default/${deploymentContainerName}'
+  dependsOn: [
+    storageAccount
+  ]
 }
 
 resource leaseContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2019-06-01' = {
