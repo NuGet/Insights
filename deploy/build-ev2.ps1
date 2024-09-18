@@ -265,9 +265,9 @@ process {
     $dotnetInstallScriptFile = "dotnet-install.ps1"
 
     $scriptsToCopy = [ordered]@{
-        "scripts/Install-WorkerStandalone.ps1" = $installWorkerStandaloneBinPath;
-        "scripts/NuGet.Insights.psm1"          = "NuGet.Insights.psm1";
-        "scripts/Set-DeploymentParameters.ps1" = "Set-DeploymentParameters.ps1";
+        "scripts/Install-WorkerStandalone.ps1" = (Join-Path $bin $installWorkerStandaloneScriptFile);
+        "scripts/NuGet.Insights.psm1"          = (Join-Path $ev2 "NuGet.Insights.psm1");
+        "scripts/Set-DeploymentParameters.ps1" = (Join-Path $ev2 "Set-DeploymentParameters.ps1");
     }
     
     # Install Bicep, if needed.
@@ -396,8 +396,7 @@ process {
 
     foreach ($pair in $scriptsToCopy.GetEnumerator()) {
         $source = Join-Path $PSScriptRoot $pair.Key
-        $destination = Join-Path $bin $pair.Value
-        Copy-Item -Path $source -Destination $destination -Verbose
+        Copy-Item -Path $source -Destination $pair.Value -Verbose
     }
 
     Write-Host "Wrote Ev2 files to: $ev2"
