@@ -17,21 +17,20 @@ namespace NuGet.Insights.Worker
             Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
             var scan = result.Scan;
 
-            var firstGetTask = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var firstUpdateTask = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var getTask1 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var getTask2 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
             {
-                if (r.RequestUri.AbsolutePath.EndsWith($"(PartitionKey='{scan.PartitionKey}',RowKey='{scan.RowKey}')", StringComparison.Ordinal))
+                if (r.RequestUri.AbsoluteUri == "https://api.nuget.org/v3/catalog0/index.json")
                 {
-                    if (r.Method == HttpMethod.Get && firstGetTask.TrySetResult())
+                    if (getTask1.TrySetResult())
                     {
-                        await firstUpdateTask.Task;
+                        await getTask2.Task;
                     }
-
-                    if (r.Method != HttpMethod.Get)
+                    else
                     {
-                        await firstGetTask.Task;
-                        firstUpdateTask.TrySetResult();
+                        await getTask1.Task;
+                        getTask2.TrySetResult();
                     }
                 }
 
@@ -42,7 +41,7 @@ namespace NuGet.Insights.Worker
             try
             {
                 await ProcessQueueAsync(
-                    () => Task.FromResult(firstGetTask.Task.IsCompleted && firstUpdateTask.Task.IsCompleted),
+                    () => Task.FromResult(getTask1.Task.IsCompleted && getTask2.Task.IsCompleted),
                     parallel: true,
                     visibilityTimeout: TimeSpan.FromSeconds(1));
             }

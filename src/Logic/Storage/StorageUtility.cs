@@ -34,8 +34,6 @@ namespace NuGet.Insights
 
         public const string RecordCountMetadata = "recordCount";
 
-        public const string EmulatorConnectionString = "UseDevelopmentStorage=true";
-
         public static readonly IList<string> MinSelectColumns = [PartitionKey, RowKey];
 
         public static int GetBucket(int bucketCount, string bucketKey)

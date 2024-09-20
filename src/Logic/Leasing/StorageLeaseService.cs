@@ -182,7 +182,7 @@ namespace NuGet.Insights
             var blob = await GetBlobAsync(result.Name);
             var leaseClient = blob.GetBlobLeaseClient(result.Lease);
 
-            DateTimeOffset released = DateTimeOffset.Now;
+            DateTimeOffset released = DateTimeOffset.UtcNow;
             try
             {
                 await leaseClient.ReleaseAsync();

@@ -5,6 +5,7 @@
 
 using Azure;
 using Azure.Core;
+using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 
 namespace NuGet.Insights
@@ -207,35 +208,22 @@ namespace NuGet.Insights
                 }
 
                 var useBlobClient = _options.Value.UseBlobClientForExternalData;
-                TokenCredential? storageTokenCredential = null;
                 Uri? lastUrl = null;
+                BlobClient? blobClient = null;
 
                 if (useBlobClient != false)
                 {
-                    storageTokenCredential = await _serviceClientFactory.GetStorageTokenCredentialAsync();
-                    useBlobClient = storageTokenCredential is not null;
-
-                    if (useBlobClient == true)
+                    lastUrl = await _redirectResolver.FollowRedirectsAsync(request.Url);
+                    blobClient = await _serviceClientFactory.TryGetBlobClientAsync(lastUrl);
+                    if (useBlobClient == true && blobClient is null)
                     {
-                        lastUrl = await _redirectResolver.FollowRedirectsAsync(request.Url);
-                        if (lastUrl.Scheme != "https" || !IsAzureBlobStorage(lastUrl))
-                        {
-                            useBlobClient = false;
-                        }
+                        throw new InvalidOperationException("Unable to build a blob client for URL: " + lastUrl.Obfuscate());
                     }
                 }
 
-                if (useBlobClient == true)
+                if (blobClient is not null)
                 {
-                    if (storageTokenCredential is null)
-                    {
-                        var storageCredentialType = await _serviceClientFactory.GetStorageCredentialTypeAsync();
-                        throw new InvalidOperationException(
-                            $"The {nameof(NuGetInsightsSettings.UseBlobClientForExternalData)} setting is only supported when a storage token credential is used. " +
-                            $"The storage credential type is {storageCredentialType}.");
-                    }
-
-                    return await GetResponseWithBlobClientAsync(request, lastUrl!, storageTokenCredential);
+                    return await GetResponseWithBlobClientAsync(request, lastUrl!, blobClient);
                 }
                 else
                 {
@@ -252,9 +240,8 @@ namespace NuGet.Insights
             }
         }
 
-        private async Task<ExternalBlobResponse?> GetResponseWithBlobClientAsync(ExternalBlobRequest request, Uri lastUrl, TokenCredential storageTokenCredential)
+        private async Task<ExternalBlobResponse?> GetResponseWithBlobClientAsync(ExternalBlobRequest request, Uri lastUrl, BlobClient blobClient)
         {
-            var blobClient = await _serviceClientFactory.GetBlobClientAsync(lastUrl);
             Response<BlobDownloadStreamingResult>? streamingResponse = null;
             Response? rawResponse = null;
             try
@@ -306,11 +293,6 @@ namespace NuGet.Insights
         private static ILookup<string, string> GetHeaders(ResponseHeaders headers)
         {
             return headers.ToLookup(x => x.Name, x => x.Value);
-        }
-
-        private static bool IsAzureBlobStorage(Uri lastUrl)
-        {
-            return lastUrl.Host.EndsWith(".blob.core.windows.net", StringComparison.OrdinalIgnoreCase);
         }
 
         private async Task<ExternalBlobResponse?> GetResponseWithHttpClientAsync(ExternalBlobRequest request, Uri? lastUrl)

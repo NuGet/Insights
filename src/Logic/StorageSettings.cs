@@ -5,14 +5,15 @@ namespace NuGet.Insights
 {
     public class StorageSettings
     {
+        public bool UseDevelopmentStorage { get; set; } = false;
+
         public string StorageAccountName { get; set; } = null;
         public string StorageClientApplicationId { get; set; } = null;
         public string StorageClientTenantId { get; set; } = null;
         public string StorageClientCertificatePath { get; set; } = null;
         public string StorageClientCertificateKeyVault { get; set; } = null;
         public string StorageClientCertificateKeyVaultCertificateName { get; set; } = null;
-        public string StorageBlobReadSharedAccessSignature { get; set; } = null;
-        public string StorageConnectionString { get; set; } = null;
+        public string StorageAccessKey { get; set; } = null;
 
         public TimeSpan ServiceClientRefreshPeriod { get; set; } = TimeSpan.FromMinutes(30);
         public TimeSpan ServiceClientSasDuration { get; set; } = TimeSpan.FromHours(12);

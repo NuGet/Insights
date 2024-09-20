@@ -9,17 +9,15 @@ namespace NuGet.Insights.Worker
     {
         public KustoFactAttribute()
         {
-            if (LogicTestSettings.IsStorageEmulator)
+            if (LogicTestSettings.UseDevelopmentStorage)
             {
                 Skip = "This Fact is skipped because the storage emulator is being used.";
             }
-
-            if (new NuGetInsightsWorkerSettings().WithTestKustoSettings().KustoConnectionString is null)
+            else if (new NuGetInsightsWorkerSettings().WithTestKustoSettings().KustoConnectionString is null)
             {
                 Skip = "This Fact is skipped because the Kusto environment variables are not set.";
             }
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 Skip = "This Fact is skipped because Kusto initialization randomly hangs in macOS CI environments.";
             }

@@ -86,7 +86,7 @@ namespace NuGet.Insights.WideEntities
             _serviceClientFactory = serviceClientFactory ?? throw new ArgumentNullException(nameof(serviceClientFactory));
             _telemetryClient = telemetryClient ?? throw new ArgumentNullException(nameof(telemetryClient));
 
-            if (options.Value.StorageConnectionString == StorageUtility.EmulatorConnectionString)
+            if (options.Value.UseDevelopmentStorage)
             {
                 // See: https://stackoverflow.com/a/65770156
                 _maxEntitySize = (int)(393250 * 0.99);

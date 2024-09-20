@@ -18,7 +18,8 @@ namespace NuGet.Insights
         /// <summary>
         /// Whether or not to use an authenticated Azure Storage blob client to fetch the auxiliary file URLs
         /// configured in <see cref="DownloadsV1Urls"/>, <see cref="DownloadsV2Urls"/>, etc. If left as <c>null</c>,
-        /// the blob client will default to being used if the storage credential is a <see cref="Azure.Core.TokenCredential"/>.
+        /// the blob client will default to being used if a storage token credential is used, or if the base URL of the
+        /// external URL matches the base URL of the configured storage account.
         /// </summary>
         public bool? UseBlobClientForExternalData { get; set; } = null;
 

@@ -5,7 +5,7 @@
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
     "NUGET_INSIGHTS_ALLOW_ICU": "true",
     "NuGetInsights__ExpandQueueName": "expand",
-    "NuGetInsights__StorageConnectionString": "UseDevelopmentStorage=true",
+    "NuGetInsights__UseDevelopmentStorage": "true",
     "NuGetInsights__WorkQueueName": "work",
     "QueueTriggerConnection": "UseDevelopmentStorage=true"
   }

@@ -94,7 +94,7 @@ namespace NuGet.Insights.TablePrefixScan
         {
             // For some reason the Azure Storage Emulator sorts the '𐐷' character before 'A'. Real Azure Table Storage
             // does not do this.
-            var hackPrefix = LogicTestSettings.IsStorageEmulator ? "A" : string.Empty;
+            var hackPrefix = LogicTestSettings.UseDevelopmentStorage ? "A" : string.Empty;
 
             (var table, var expected) = await _fixture.SortAndInsertAsync(new[]
             {

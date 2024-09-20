@@ -14,10 +14,8 @@ namespace NuGet.Insights
         private const string StorageClientCertificatePathEnv = "NUGETINSIGHTS_STORAGECLIENTCERTIFICATEPATH";
         private const string StorageClientCertificateKeyVaultEnv = "NUGETINSIGHTS_STORAGECLIENTCERTIFICATEKEYVAULT";
         private const string StorageClientCertificateKeyVaultCertificateNameEnv = "NUGETINSIGHTS_STORAGECLIENTCERTIFICATEKEYVAULTCERTIFICATENAME";
-        private const string StorageSasEnv = "NUGETINSIGHTS_STORAGESAS";
-        private const string StorageBlobReadSasEnv = "NUGETINSIGHTS_STORAGEBLOBREADSAS";
 
-        public static bool IsStorageEmulator => StorageCredentialType == StorageCredentialType.UseDevelopmentStorage;
+        public static bool UseDevelopmentStorage => StorageCredentialType == StorageCredentialType.DevelopmentStorage;
         public static StorageCredentialType StorageCredentialType => ServiceClientFactory.GetStorageCredentialType(new NuGetInsightsSettings().WithTestStorageSettings());
 
         public static string StorageAccountName => GetEnvOrNull(StorageAccountNameEnv);
@@ -26,38 +24,22 @@ namespace NuGet.Insights
         private static string StorageClientCertificatePath => GetEnvOrNull(StorageClientCertificatePathEnv);
         private static string StorageClientCertificateKeyVault => GetEnvOrNull(StorageClientCertificateKeyVaultEnv);
         private static string StorageClientCertificateKeyVaultCertificateName => GetEnvOrNull(StorageClientCertificateKeyVaultCertificateNameEnv);
-        public static string StorageSharedAccessSignature => GetEnvOrNull(StorageSasEnv);
-        private static string StorageBlobReadSharedAccessSignature => GetEnvOrNull(StorageBlobReadSasEnv);
 
         public static T WithTestStorageSettings<T>(this T settings) where T : NuGetInsightsSettings
         {
             settings.StorageAccountName = StorageAccountName;
-            settings.StorageBlobReadSharedAccessSignature = StorageBlobReadSharedAccessSignature;
             settings.StorageClientApplicationId = StorageClientApplicationId;
             settings.StorageClientCertificateKeyVault = StorageClientCertificateKeyVault;
             settings.StorageClientCertificateKeyVaultCertificateName = StorageClientCertificateKeyVaultCertificateName;
             settings.StorageClientCertificatePath = StorageClientCertificatePath;
             settings.StorageClientTenantId = StorageClientTenantId;
-            settings.StorageConnectionString = StorageConnectionString;
-            return settings;
-        }
 
-        private static string StorageConnectionString
-        {
-            get
+            if (settings.StorageAccountName is null)
             {
-                if (StorageAccountName is null)
-                {
-                    return StorageUtility.EmulatorConnectionString;
-                }
-
-                if (StorageSharedAccessSignature is not null)
-                {
-                    return $"AccountName={StorageAccountName};SharedAccessSignature={StorageSharedAccessSignature}";
-                }
-
-                return null;
+                settings.UseDevelopmentStorage = true;
             }
+
+            return settings;
         }
 
         public static string GetEnvOrNull(string variable)
