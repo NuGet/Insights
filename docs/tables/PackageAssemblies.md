@@ -79,6 +79,7 @@ The EdgeCases column is a enum with one or more of any of the following values. 
 | CustomAttributes_TruncatedFailedDecode        | CustomAttributesFailedDecode column is truncated since it exceeded a limit                |
 | CustomAttributes_TypeDefinitionConstructor    | A custom attribute constructor refers to a type definition instead of type declaration    |
 | CustomAttributes_TypeSpecificationConstructor | A custom attribute constructor refers to a type specification instead of type declaration |
+| CustomAttributes_UnknownEnum                  | An enum was referenced in a custom attribute that could not be resolved                   |
 | Name_CultureNotFoundException                 | The culture in the .NET assembly is unrecognized                                          |
 | Name_FileLoadException                        | Reading the assembly name failed with a file load exception                               |
 | None                                          | None edge cases were encountered                                                          |

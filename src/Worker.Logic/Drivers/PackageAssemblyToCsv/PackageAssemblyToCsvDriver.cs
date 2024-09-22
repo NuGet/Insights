@@ -202,38 +202,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                     return DriverResult.TryAgainLater();
                 }
 
-                assembly.FileLength = tempStreamResult.Stream.Length;
-
-                using var peReader = new PEReader(tempStreamResult.Stream);
-                if (!peReader.HasMetadata)
-                {
-                    assembly.ResultType = PackageAssemblyResultType.NoManagedMetadata;
-                    return DriverResult.Success();
-                }
-
-                var metadataReader = peReader.GetMetadataReader();
-                if (!metadataReader.IsAssembly)
-                {
-                    assembly.ResultType = PackageAssemblyResultType.DoesNotContainAssembly;
-                    return DriverResult.Success();
-                }
-
-                var assemblyDefinition = metadataReader.GetAssemblyDefinition();
-
-                assembly.AssemblyName = metadataReader.GetString(assemblyDefinition.Name);
-                assembly.AssemblyVersion = assemblyDefinition.Version;
-                assembly.Culture = metadataReader.GetString(assemblyDefinition.Culture);
-                assembly.HashAlgorithm = assemblyDefinition.HashAlgorithm;
-                assembly.EdgeCases = PackageAssemblyEdgeCases.None;
-
-                SetPublicKeyInfo(assembly, metadataReader, assemblyDefinition);
-                SetAssemblyAttributeInfo(assembly, metadataReader);
-
-                var assemblyName = GetAssemblyName(assembly, assemblyDefinition);
-                if (assemblyName != null)
-                {
-                    SetPublicKeyTokenInfo(assembly, assemblyName);
-                }
+                Analyze(assembly, tempStreamResult.Stream, _logger);
 
                 return DriverResult.Success();
             }
@@ -252,7 +221,43 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             }
         }
 
-        private AssemblyName? GetAssemblyName(PackageAssembly assembly, AssemblyDefinition assemblyDefinition)
+        public static void Analyze(PackageAssembly assembly, Stream stream, ILogger logger)
+        {
+            assembly.FileLength = stream.Length;
+
+            using var peReader = new PEReader(stream);
+            if (!peReader.HasMetadata)
+            {
+                assembly.ResultType = PackageAssemblyResultType.NoManagedMetadata;
+                return;
+            }
+
+            var metadataReader = peReader.GetMetadataReader();
+            if (!metadataReader.IsAssembly)
+            {
+                assembly.ResultType = PackageAssemblyResultType.DoesNotContainAssembly;
+                return;
+            }
+
+            var assemblyDefinition = metadataReader.GetAssemblyDefinition();
+
+            assembly.AssemblyName = metadataReader.GetString(assemblyDefinition.Name);
+            assembly.AssemblyVersion = assemblyDefinition.Version;
+            assembly.Culture = metadataReader.GetString(assemblyDefinition.Culture);
+            assembly.HashAlgorithm = assemblyDefinition.HashAlgorithm;
+            assembly.EdgeCases = PackageAssemblyEdgeCases.None;
+
+            SetPublicKeyInfo(assembly, metadataReader, assemblyDefinition);
+            SetAssemblyAttributeInfo(assembly, metadataReader, logger);
+
+            var assemblyName = GetAssemblyName(assembly, assemblyDefinition, logger);
+            if (assemblyName != null)
+            {
+                SetPublicKeyTokenInfo(assembly, assemblyName, logger);
+            }
+        }
+
+        private static AssemblyName? GetAssemblyName(PackageAssembly assembly, AssemblyDefinition assemblyDefinition, ILogger logger)
         {
             AssemblyName? assemblyName = null;
             try
@@ -262,12 +267,12 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             catch (CultureNotFoundException ex)
             {
                 assembly.EdgeCases |= PackageAssemblyEdgeCases.Name_CultureNotFoundException;
-                _logger.LogInformation(ex, "Package {Id} {Version} has an invalid culture: {Path}", assembly.Id, assembly.Version, assembly.Path);
+                logger.LogInformation(ex, "Package {Id} {Version} has an invalid culture: {Path}", assembly.Id, assembly.Version, assembly.Path);
             }
             catch (FileLoadException ex)
             {
                 assembly.EdgeCases |= PackageAssemblyEdgeCases.Name_FileLoadException;
-                _logger.LogInformation(ex, "Package {Id} {Version} has an AssemblyName that can't be loaded: {Path}", assembly.Id, assembly.Version, assembly.Path);
+                logger.LogInformation(ex, "Package {Id} {Version} has an AssemblyName that can't be loaded: {Path}", assembly.Id, assembly.Version, assembly.Path);
             }
 
             return assemblyName;
@@ -289,7 +294,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             assembly.PublicKeySHA1 = algorithm.ComputeHash(publicKey).ToBase64();
         }
 
-        private void SetPublicKeyTokenInfo(PackageAssembly assembly, AssemblyName assemblyName)
+        private static void SetPublicKeyTokenInfo(PackageAssembly assembly, AssemblyName assemblyName, ILogger logger)
         {
             byte[]? publicKeyTokenBytes = null;
             try
@@ -299,7 +304,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             catch (SecurityException ex)
             {
                 assembly.EdgeCases |= PackageAssemblyEdgeCases.PublicKeyToken_Security;
-                _logger.LogInformation(ex, "Package {Id} {Version} has an invalid public key. Path: {Path}", assembly.Id, assembly.Version, assembly.Path);
+                logger.LogInformation(ex, "Package {Id} {Version} has an invalid public key. Path: {Path}", assembly.Id, assembly.Version, assembly.Path);
             }
 
             if (publicKeyTokenBytes != null && publicKeyTokenBytes.Length > 0)
@@ -308,9 +313,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             }
         }
 
-        private void SetAssemblyAttributeInfo(PackageAssembly assembly, MetadataReader metadataReader)
+        private static void SetAssemblyAttributeInfo(PackageAssembly assembly, MetadataReader metadataReader, ILogger logger)
         {
-            var info = AssemblyAttributeReader.Read(metadataReader, assembly, _logger);
+            var info = AssemblyAttributeReader.Read(metadataReader, assembly, logger);
             assembly.EdgeCases |= info.EdgeCases;
             assembly.CustomAttributesTotalCount = info.TotalCount;
             assembly.CustomAttributesTotalDataLength = info.TotalDataLength;

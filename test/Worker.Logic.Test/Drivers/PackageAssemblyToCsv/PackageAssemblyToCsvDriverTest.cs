@@ -30,19 +30,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
             Assert.Equal(DriverResultType.Success, output.Type);
             var record = Assert.Single(output.Value);
-            Assert.Equal(
-                "[" +
-                "\"BusinessRow\"," +
-                "\"DatabaseInit\"," +
-                "\"DictionaryProvider\"," +
-                "\"FolderView\"," +
-                "\"ModuleType\"," +
-                "\"NewRow\"," +
-                "\"Service\"," +
-                "\"SimpleRight\"," +
-                "\"Worker\"" +
-                "]",
-                record.CustomAttributesFailedDecode);
+            // TODO: find a new package that has multiple failed custom attributes
+            Assert.Equal("[\"FolderView\"]", record.CustomAttributesFailedDecode);
         }
 
         [Fact]
@@ -163,7 +152,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         }
 
         [Fact]
-        public async Task HandlesCustomAttributeArgumentArrayWithCorruptedLength()
+        public async Task HandlesCustomAttributeArgumentArray()
         {
             var leaf = new CatalogLeafScan
             {
@@ -180,7 +169,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             Assert.Equal(5, output.Value.Count);
             var record = output.Value[0];
             Assert.Equal("lib/NET48/Kentico.Content.Web.Mvc.dll", record.Path);
-            Assert.Contains("RegisterPageBuilderLocalizationResource", record.CustomAttributesFailedDecode, StringComparison.Ordinal);
+            Assert.Equal("[]", record.CustomAttributesFailedDecode);
+            Assert.Contains("CustomAttributes_UnknownEnum", record.EdgeCases.Value.ToString(), StringComparison.Ordinal);
         }
 
         [Fact]
@@ -227,7 +217,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         }
 
         [Fact]
-        public async Task HandlesFailedDecodeOfSecurityRulesAttribute()
+        public async Task HandlesSecurityRulesAttribute()
         {
             var leaf = new CatalogLeafScan
             {
@@ -244,7 +234,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             Assert.Equal(43, output.Value.Count);
             var record = output.Value[0];
             Assert.Equal("Development Utility/Aspose.PDF.dll", record.Path);
-            Assert.Equal("[\"SecurityRules\"]", record.CustomAttributesFailedDecode);
+            var customAttributes = JsonSerializer.Deserialize<JsonElement>(record.CustomAttributes);
+            Assert.Equal(1, customAttributes.GetProperty("SecurityRules")[0].GetProperty("0").GetInt32());
+            Assert.False(record.EdgeCases.Value.HasFlag(PackageAssemblyEdgeCases.CustomAttributes_MethodDefinition));
         }
 
         [Fact]

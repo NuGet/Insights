@@ -21,7 +21,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
     {
         public static AssemblyAttributes Read(MetadataReader metadata, PackageAssembly assembly, ILogger logger)
         {
-            var nameToArguments = new Dictionary<string, List<IDictionary<string, object>>>();
+            var nameToParameters = new Dictionary<string, List<IDictionary<string, object>>>();
             var failedDecode = new HashSet<string>();
             var edgeCases = PackageAssemblyEdgeCases.None;
             var totalCount = 0;
@@ -137,7 +137,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 var attributeValueLength = blobReader.Length;
                 totalValueLength += attributeValueLength;
 
-                if (nameToArguments.Count + 1 > maxAttributeCount // Don't record too many attributes
+                if (nameToParameters.Count + 1 > maxAttributeCount // Don't record too many attributes
                     || attributeName.Length > maxAttributeNameLength // Don't record an attribute that's name is too long
                     || addedAttributeLength + attributeValueLength > maxAttributeValueLength) // Don't record an attribute if the data exceeds the exceeds to total max
                 {
@@ -145,8 +145,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                     continue;
                 }
 
-                CustomAttributeValue<object> value;
-                var decoder = new TypelessDecoder();
+                CustomAttributeValue<SimpleTypeInfo> value;
+                var decoder = new SimpleCustomAttributeTypeProvider();
                 try
                 {
                     value = attribute.DecodeValue(decoder);
@@ -164,9 +164,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                         assembly.Path);
                     continue;
                 }
-                catch (OutOfMemoryException ex) when (decoder.ArrayCount > 0)
+                catch (OutOfMemoryException ex)
                 {
-                    // It's possible a mega array gets allocated, mitigate this, e.g. Kentico.Xperience.AspNet.Mvc5.Libraries 13.0.18)
                     edgeCases |= PackageAssemblyEdgeCases.CustomAttributes_ArrayOutOfMemory;
                     RecordFailedDecode();
                     logger.LogInformation(
@@ -180,12 +179,19 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 }
 
                 var arguments = new Dictionary<string, object>();
+
                 for (var i = 0; i < value.FixedArguments.Length; i++)
                 {
                     arguments.Add(i.ToString(CultureInfo.InvariantCulture), value.FixedArguments[i].Value);
                 }
+
                 foreach (var argument in value.NamedArguments)
                 {
+                    if (argument.Type.IsUnrecognizedEnum)
+                    {
+                        edgeCases |= PackageAssemblyEdgeCases.CustomAttributes_UnknownEnum;
+                    }
+
                     if (!arguments.ContainsKey(argument.Name))
                     {
                         arguments.Add(argument.Name, argument.Value);
@@ -196,10 +202,10 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                     }
                 }
 
-                if (!nameToArguments.TryGetValue(attributeName, out var argumentList))
+                if (!nameToParameters.TryGetValue(attributeName, out var argumentList))
                 {
                     argumentList = new List<IDictionary<string, object>>();
-                    nameToArguments.Add(attributeName, argumentList);
+                    nameToParameters.Add(attributeName, argumentList);
                 }
 
                 argumentList.Add(arguments);
@@ -211,27 +217,8 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 edgeCases,
                 totalCount,
                 totalValueLength,
-                nameToArguments,
+                nameToParameters,
                 failedDecode);
-        }
-
-        private class TypelessDecoder : ICustomAttributeTypeProvider<object>
-        {
-            private int _arrayCount;
-            public int ArrayCount => _arrayCount;
-
-            public object GetPrimitiveType(PrimitiveTypeCode typeCode) => null;
-            public object GetSystemType() => null;
-            public object GetSZArrayType(object elementType)
-            {
-                Interlocked.Increment(ref _arrayCount);
-                return null;
-            }
-            public object GetTypeFromDefinition(MetadataReader reader, TypeDefinitionHandle handle, byte rawTypeKind) => null;
-            public object GetTypeFromReference(MetadataReader reader, TypeReferenceHandle handle, byte rawTypeKind) => null;
-            public object GetTypeFromSerializedName(string name) => null;
-            public PrimitiveTypeCode GetUnderlyingEnumType(object type) => PrimitiveTypeCode.Int32;
-            public bool IsSystemType(object type) => false;
         }
     }
 }
