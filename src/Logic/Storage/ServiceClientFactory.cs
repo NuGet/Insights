@@ -349,13 +349,14 @@ namespace NuGet.Insights
                 if (useMemoryStorage)
                 {
                     blob = new MemoryBlobServiceClient(blobServiceUri, tokenCredential, blobClientOptions);
+                    queue = new MemoryQueueServiceClient(queueServiceUri, tokenCredential, queueClientOptions);
                 }
                 else
                 {
                     blob = new BlobServiceClient(blobServiceUri, tokenCredential, blobClientOptions);
+                    queue = new QueueServiceClient(queueServiceUri, tokenCredential, queueClientOptions);
                 }
 
-                queue = new QueueServiceClient(queueServiceUri, tokenCredential, queueClientOptions);
                 table = new TableServiceClient(tableServiceUri, tokenCredential, tableClientOptions);
                 userDelegationKey = await blob.GetUserDelegationKeyAsync(startsOn: null, expiresOn: sasExpiry);
 
@@ -372,13 +373,14 @@ namespace NuGet.Insights
                 if (useMemoryStorage)
                 {
                     blob = new MemoryBlobServiceClient(blobServiceUri, storageAccessKeyCredential!, blobClientOptions);
+                    queue = new MemoryQueueServiceClient(queueServiceUri, storageAccessKeyCredential!, queueClientOptions);
                 }
                 else
                 {
                     blob = new BlobServiceClient(blobServiceUri, storageAccessKeyCredential, blobClientOptions);
+                    queue = new QueueServiceClient(queueServiceUri, storageAccessKeyCredential, queueClientOptions);
                 }
 
-                queue = new QueueServiceClient(queueServiceUri, storageAccessKeyCredential, queueClientOptions);
                 table = new TableServiceClient(tableServiceUri, tableAccessKeyCredential, tableClientOptions);
                 userDelegationKey = null;
 
