@@ -241,6 +241,8 @@ namespace NuGet.Insights.Worker
         private async Task CatalogScanService_TestCachedData(bool bucketRangeFirst, bool bucketRangeSecond, bool expectCached, bool appendCsvError)
         {
             // Arrange
+            HttpMessageHandlerFactory.Requests.Limit = int.MaxValue;
+            HttpMessageHandlerFactory.RequestAndResponses.Limit = int.MaxValue;
             RetryFailedMessages = appendCsvError;
             ConfigureWorkerSettings = x =>
             {

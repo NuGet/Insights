@@ -12,15 +12,16 @@ namespace NuGet.Insights
             HttpClientHandler httpClientHandler,
             IOptions<NuGetInsightsSettings> options,
             ITelemetryClient telemetryClient,
-            ILoggerFactory logger) : base(options, telemetryClient, logger)
+            ILoggerFactory loggerFactory) : base(options, telemetryClient, loggerFactory)
         {
             LoggingHandlerFactory = loggingHandlerFactory;
             HttpClientHandler = httpClientHandler;
+            HandlerFactory = new TestHttpMessageHandlerFactory(loggerFactory);
         }
 
         public Func<LoggingHttpHandler> LoggingHandlerFactory { get; }
         public HttpClientHandler HttpClientHandler { get; }
-        public TestHttpMessageHandlerFactory HandlerFactory { get; } = new TestHttpMessageHandlerFactory();
+        public TestHttpMessageHandlerFactory HandlerFactory { get; }
 
         protected override HttpPipelineTransport GetHttpPipelineTransport()
         {

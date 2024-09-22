@@ -180,7 +180,13 @@ namespace NuGet.Insights.Worker
         private async Task SendMessageAsync(string queueTypeString, string isPoisonString, QueueClient queue, string message, TimeSpan visibilityTimeout)
         {
             var sw = Stopwatch.StartNew();
-            await queue.SendMessageAsync(message, visibilityTimeout > TimeSpan.Zero && !_options.Value.DisableMessageDelay ? visibilityTimeout : null);
+
+            if (visibilityTimeout > _options.Value.MaxMessageDelay)
+            {
+                visibilityTimeout = _options.Value.MaxMessageDelay;
+            }
+
+            await queue.SendMessageAsync(message, visibilityTimeout);
             sw.Stop();
             _durationMs.TrackValue(sw.Elapsed.TotalMilliseconds, queueTypeString, isPoisonString);
         }

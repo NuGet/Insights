@@ -13,6 +13,8 @@ namespace NuGet.Insights.Worker
         public async Task Execute()
         {
             // Arrange
+            HttpMessageHandlerFactory.Requests.Limit = int.MaxValue;
+            HttpMessageHandlerFactory.RequestAndResponses.Limit = int.MaxValue;
             ConfigureSettings = x =>
             {
                 x.LegacyReadmeUrlPattern = "https://api.nuget.org/legacy-readmes/{0}/{1}/README.md"; // fake

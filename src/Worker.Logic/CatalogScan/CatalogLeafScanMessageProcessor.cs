@@ -436,14 +436,7 @@ namespace NuGet.Insights.Worker
         private void StartAttempt(CatalogLeafScan scan, long dequeueCount)
         {
             scan.AttemptCount++;
-            if (_options.Value.DisableMessageDelay)
-            {
-                scan.NextAttempt = DateTime.UtcNow;
-            }
-            else
-            {
-                scan.NextAttempt = DateTime.UtcNow + GetMessageDelay(GetTotalAttempts(scan, dequeueCount));
-            }
+            scan.NextAttempt = DateTime.UtcNow + GetMessageDelay(GetTotalAttempts(scan, dequeueCount));
         }
 
         private static void ResetAttempt(CatalogLeafScan scan)
@@ -457,24 +450,35 @@ namespace NuGet.Insights.Worker
             return Math.Max(scan.AttemptCount + 1, dequeueCount);
         }
 
-        public static TimeSpan GetMessageDelay(long attemptCount)
+        private TimeSpan GetMessageDelay(long attemptCount)
         {
+            TimeSpan result;
+
             // First attempt, wait up to a minute.
             const int msPerMinute = 60 * 1000;
             if (attemptCount <= 1)
             {
-                return TimeSpan.FromMilliseconds(Random.Shared.Next(0, msPerMinute));
+                result = TimeSpan.FromMilliseconds(Random.Shared.Next(0, msPerMinute));
+            }
+            else
+            {
+                // Then try in increments of more minutes.
+                const int incrementMinutes = 2;
+                var minMinutes = incrementMinutes * (attemptCount - 1);
+                var maxMinutes = minMinutes + incrementMinutes;
+
+                var minMs = minMinutes * msPerMinute;
+                var maxMs = maxMinutes * msPerMinute;
+
+                result = TimeSpan.FromMilliseconds(Random.Shared.Next((int)minMs, (int)maxMs));
             }
 
-            // Then try in increments of more minutes.
-            const int incrementMinutes = 2;
-            var minMinutes = incrementMinutes * (attemptCount - 1);
-            var maxMinutes = minMinutes + incrementMinutes;
+            if (result > _options.Value.MaxMessageDelay)
+            {
+                result = _options.Value.MaxMessageDelay;
+            }
 
-            var minMs = minMinutes * msPerMinute;
-            var maxMs = maxMinutes * msPerMinute;
-
-            return TimeSpan.FromMilliseconds(Random.Shared.Next((int)minMs, (int)maxMs));
+            return result;
         }
     }
 }

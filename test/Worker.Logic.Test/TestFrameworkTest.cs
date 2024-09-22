@@ -11,6 +11,7 @@ namespace NuGet.Insights.Worker
         public async Task SkipsMessageThatIsAlreadyBeingProcessed()
         {
             // Arrange
+            LogMessages.Limit = int.MaxValue;
             await CatalogScanService.InitializeAsync();
             var result = await CatalogScanService.UpdateAsync(CatalogScanDriverType.CatalogDataToCsv, CatalogClient.NuGetOrgFirstCommit);
             Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);

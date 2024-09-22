@@ -16,7 +16,7 @@ namespace NuGet.Insights
         private readonly ConcurrentDictionary<LogLevel, int> _logLevelToCount;
         private readonly Func<LogLevel, string, LogLevel> _transformLogLevel;
         private readonly LogLevel _throwOn;
-        private readonly ConcurrentQueue<string> _logMessages;
+        private readonly LimitedConcurrentQueue<string> _logMessages;
 
         public XunitLogger(
             ITestOutputHelper output,
@@ -24,7 +24,7 @@ namespace NuGet.Insights
             ConcurrentDictionary<LogLevel, int> logLevelToCount,
             Func<LogLevel, string, LogLevel> transformLogLevel,
             LogLevel throwOn,
-            ConcurrentQueue<string> logMessages)
+            LimitedConcurrentQueue<string> logMessages)
         {
             _minLogLevel = minLogLevel;
             _output = output;
@@ -55,7 +55,10 @@ namespace NuGet.Insights
                 return;
             }
 
-            _logMessages?.Enqueue(message);
+            if (_logMessages is not null)
+            {
+                _logMessages.Enqueue(message, limit => _output.WriteLine($"The log message queue has exceeded its limit of {limit}. Older messages will be dropped."));
+            }
 
             try
             {

@@ -84,7 +84,7 @@ namespace NuGet.Insights
             Output = output;
             WebApplicationFactory = factory;
             StoragePrefix = LogicTestSettings.NewStoragePrefix();
-            HttpMessageHandlerFactory = new TestHttpMessageHandlerFactory();
+            HttpMessageHandlerFactory = new TestHttpMessageHandlerFactory(output.GetLoggerFactory());
 
             var currentDirectory = Directory.GetCurrentDirectory();
             var testWebHostBuilder = factory.WithWebHostBuilder(b => b
@@ -121,7 +121,8 @@ namespace NuGet.Insights
                             LogLevel.Trace,
                             LogLevelToCount,
                             TransformLogLevel,
-                            FailFastLogLevel, LogMessages));
+                            FailFastLogLevel,
+                            LogMessages));
                     });
 
                     serviceCollection.Configure((Action<NuGetInsightsSettings>)AssertDefaultsAndSettings);
@@ -327,7 +328,7 @@ namespace NuGet.Insights
         public LoggerTelemetryClient TelemetryClient => Host.Services.GetRequiredService<LoggerTelemetryClient>();
         public ILogger Logger => Host.Services.GetRequiredService<ILogger<BaseLogicIntegrationTest>>();
         public IOptions<NuGetInsightsSettings> Options => Host.Services.GetRequiredService<IOptions<NuGetInsightsSettings>>();
-        public ConcurrentQueue<string> LogMessages { get; } = new ConcurrentQueue<string>();
+        public LimitedConcurrentQueue<string> LogMessages { get; } = new LimitedConcurrentQueue<string>(limit: 1000);
 
         protected async Task<List<T>> GetEntitiesAsync<T>(string tableName) where T : class, ITableEntity
         {

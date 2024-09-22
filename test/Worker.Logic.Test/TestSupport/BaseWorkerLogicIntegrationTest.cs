@@ -118,7 +118,7 @@ namespace NuGet.Insights.Worker
             ConfigureDefaultsAndSettings(settings);
 
             settings.TimedReprocessIsEnabled = true;
-            settings.DisableMessageDelay = true;
+            settings.MaxMessageDelay = TimeSpan.FromMilliseconds(100);
             settings.AppendResultStorageBucketCount = 1;
             settings.KustoDatabaseName = "TestKustoDb";
             settings.PackageContentFileExtensions = new List<string> { ".txt" };
@@ -331,7 +331,7 @@ namespace NuGet.Insights.Worker
             {
                 while (processingMessages.Count > 0 || !await isCompleteAsync())
                 {
-                    await Task.Delay(TimeSpan.FromMilliseconds(100));
+                    await Task.Delay(TimeSpan.FromMilliseconds(50));
                 }
             }
 
@@ -419,9 +419,9 @@ namespace NuGet.Insights.Worker
                 {
                     try
                     {
-                        await queue.UpdateMessageAsync(message.MessageId, message.PopReceipt, visibilityTimeout: TimeSpan.FromSeconds(5));
+                        await queue.UpdateMessageAsync(message.MessageId, message.PopReceipt, visibilityTimeout: TimeSpan.FromSeconds(1));
                     }
-                    catch (Exception ex)
+                    catch (RequestFailedException ex)
                     {
                         Logger.LogTransientWarning(ex, "Unable to update visibility timeout on message {MessageId}.", message.MessageId);
                     }
@@ -452,12 +452,15 @@ namespace NuGet.Insights.Worker
                 .Range(0, parallel ? 8 : 1)
                 .Select(async x =>
                 {
+                    var sw = Stopwatch.StartNew();
                     while (!waitForCompleteTask.IsCompleted)
                     {
-                        if (!await ProcessNextMessageAsync())
+                        while (await ProcessNextMessageAsync() && sw.Elapsed < TimeSpan.FromSeconds(10))
                         {
-                            await Task.Delay(TimeSpan.FromMilliseconds(100));
                         }
+
+                        sw.Restart();
+                        await Task.Delay(TimeSpan.FromMilliseconds(50));
                     }
                 }));
 

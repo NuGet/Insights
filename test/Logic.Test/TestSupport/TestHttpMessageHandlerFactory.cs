@@ -11,11 +11,18 @@ namespace NuGet.Insights
 
     public class TestHttpMessageHandlerFactory : INuGetInsightsHttpMessageHandlerFactory
     {
+        private readonly ILoggerFactory _loggerFactory;
+
+        public TestHttpMessageHandlerFactory(ILoggerFactory loggerFactory)
+        {
+            _loggerFactory = loggerFactory;
+        }
+
         public SendMessageWithBaseAsync? OnSendAsync { get; set; }
 
-        public ConcurrentQueue<HttpRequestMessage> Requests { get; } = new ConcurrentQueue<HttpRequestMessage>();
+        public LimitedConcurrentQueue<HttpRequestMessage> Requests { get; } = new(limit: 1000);
 
-        public ConcurrentQueue<(HttpRequestMessage OriginalRequest, HttpResponseMessage Response)> RequestAndResponses { get; } = new ConcurrentQueue<(HttpRequestMessage OriginalRequest, HttpResponseMessage Response)>();
+        public LimitedConcurrentQueue<(HttpRequestMessage OriginalRequest, HttpResponseMessage Response)> RequestAndResponses { get; } = new(limit: 1000);
 
         public IEnumerable<HttpResponseMessage> Responses => RequestAndResponses
             .Select(x => x.Response);
@@ -58,7 +65,7 @@ namespace NuGet.Insights
                 }
 
                 return null;
-            }, Requests, RequestAndResponses);
+            }, Requests, RequestAndResponses, _loggerFactory.CreateLogger<TestHttpMessageHandler>());
         }
     }
 }

@@ -82,7 +82,7 @@ namespace NuGet.Insights.Worker
             public async Task SingleFailure()
             {
                 // Arrange
-                ConfigureWorkerSettings = x => x.DisableMessageDelay = false;
+                ConfigureWorkerSettings = x => x.MaxMessageDelay = TimeSpan.MaxValue;
                 var scans = new[]
                 {
                     new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType }.SetDefaults(),
@@ -297,7 +297,7 @@ namespace NuGet.Insights.Worker
             public async Task SingleFailure()
             {
                 // Arrange
-                ConfigureWorkerSettings = x => x.DisableMessageDelay = false;
+                ConfigureWorkerSettings = x => x.MaxMessageDelay = TimeSpan.MaxValue;
                 var scans = new[]
                 {
                     new CatalogLeafScan(StorageSuffixA, ScanId, PageId, "li-1") { DriverType = DriverType }.SetDefaults(),

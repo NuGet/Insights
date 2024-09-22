@@ -10,7 +10,7 @@ namespace NuGet.Insights.Worker
         public int EnqueueWorkers { get; set; } = 1;
         public int MaxBulkEnqueueMessageCount { get; set; } = 50;
         public bool AllowBatching { get; set; } = true;
-        public bool DisableMessageDelay { get; set; } = false;
+        public TimeSpan MaxMessageDelay { get; set; } = TimeSpan.MaxValue;
 
         public string WorkQueueName { get; set; } = "work";
         public string ExpandQueueName { get; set; } = "expand";

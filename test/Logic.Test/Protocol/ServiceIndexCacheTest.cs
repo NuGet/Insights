@@ -63,7 +63,7 @@ namespace NuGet.Insights
         {
             Output = output;
             RealHttpClientHandler = new HttpClientHandler();
-            HttpMessageHandlerFactory = new TestHttpMessageHandlerFactory();
+            HttpMessageHandlerFactory = new TestHttpMessageHandlerFactory(output.GetLoggerFactory());
             HttpMessageHandlerFactory.OnSendAsync = (r, b, t) => b(r, t);
             Settings = new NuGetInsightsSettings
             {

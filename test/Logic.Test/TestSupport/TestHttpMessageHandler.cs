@@ -8,17 +8,20 @@ namespace NuGet.Insights
     public class TestHttpMessageHandler : DelegatingHandler
     {
         private readonly SendMessageWithBaseAsync _onSendAsync;
-        private readonly ConcurrentQueue<HttpRequestMessage> _requestQueue;
-        private readonly ConcurrentQueue<(HttpRequestMessage OriginalRequest, HttpResponseMessage Response)> _responseQueue;
+        private readonly LimitedConcurrentQueue<HttpRequestMessage> _requestQueue;
+        private readonly LimitedConcurrentQueue<(HttpRequestMessage OriginalRequest, HttpResponseMessage Response)> _responseQueue;
+        private readonly ILogger<TestHttpMessageHandler> _logger;
 
         public TestHttpMessageHandler(
             SendMessageWithBaseAsync onSendAsync,
-            ConcurrentQueue<HttpRequestMessage> requestQueue,
-            ConcurrentQueue<(HttpRequestMessage OriginalRequest, HttpResponseMessage Response)> responseQueue)
+            LimitedConcurrentQueue<HttpRequestMessage> requestQueue,
+            LimitedConcurrentQueue<(HttpRequestMessage OriginalRequest, HttpResponseMessage Response)> responseQueue,
+            ILogger<TestHttpMessageHandler> logger)
         {
             _onSendAsync = onSendAsync;
             _requestQueue = requestQueue;
             _responseQueue = responseQueue;
+            _logger = logger;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
@@ -27,7 +30,9 @@ namespace NuGet.Insights
 
             if (shouldLog)
             {
-                _requestQueue.Enqueue(request);
+                _requestQueue.Enqueue(request, limit => _logger.LogTransientWarning(
+                    "The HTTP request queue has exceeded its limit of {Limit}. Older values will be dropped.",
+                    limit));
             }
 
             var response = await _onSendAsync(request, base.SendAsync, token);
@@ -38,7 +43,9 @@ namespace NuGet.Insights
 
                 if (shouldLog)
                 {
-                    _responseQueue.Enqueue((request, response));
+                    _responseQueue.Enqueue((request, response), limit => _logger.LogTransientWarning(
+                        "The HTTP response queue has exceeded its limit of {Limit}. Older values will be dropped.",
+                        limit));
                 }
 
                 return response;
@@ -50,7 +57,9 @@ namespace NuGet.Insights
 
             if (shouldLog)
             {
-                _responseQueue.Enqueue((request, response));
+                _responseQueue.Enqueue((request, response), limit => _logger.LogTransientWarning(
+                    "The HTTP request queue has exceeded its limit of {Limit}. Older values will be dropped.",
+                    limit));
             }
 
             return response;

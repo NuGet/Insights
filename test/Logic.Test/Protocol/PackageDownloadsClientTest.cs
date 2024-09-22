@@ -279,7 +279,7 @@ namespace NuGet.Insights
             }.WithTestStorageSettings();
             Options = new Mock<IOptions<NuGetInsightsSettings>>();
             Options.Setup(x => x.Value).Returns(() => Settings);
-            HttpMessageHandlerFactory = new TestHttpMessageHandlerFactory();
+            HttpMessageHandlerFactory = new TestHttpMessageHandlerFactory(output.GetLoggerFactory());
             HttpClient = new HttpClient(HttpMessageHandlerFactory.Create());
             Throttle = new SemaphoreSlimThrottle(new SemaphoreSlim(1));
             RedirectResolver = new RedirectResolver(() => HttpClient, output.GetLogger<RedirectResolver>());

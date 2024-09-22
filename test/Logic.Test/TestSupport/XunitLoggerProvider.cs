@@ -14,7 +14,7 @@ namespace NuGet.Insights
         private readonly ConcurrentDictionary<LogLevel, int> _logLevelToCount;
         private readonly Func<LogLevel, string, LogLevel> _transformLogLevel;
         private readonly LogLevel _throwOn;
-        private readonly ConcurrentQueue<string> _logMessages;
+        private readonly LimitedConcurrentQueue<string> _logMessages;
 
         public XunitLoggerProvider(ITestOutputHelper output)
             : this(output, LogLevel.Trace)
@@ -34,7 +34,7 @@ namespace NuGet.Insights
             ConcurrentDictionary<LogLevel, int> logLevelToCount,
             Func<LogLevel, string, LogLevel> transformLogLevel,
             LogLevel throwOn,
-            ConcurrentQueue<string> logMessages)
+            LimitedConcurrentQueue<string> logMessages)
         {
             _output = output;
             _minLevel = minLevel;

@@ -70,19 +70,23 @@ namespace NuGet.Insights
                 k => new LoggerMetric(metricId, [dimension1Name, dimension2Name, dimension3Name, dimension4Name], GetLogger(k)));
         }
 
-        public ConcurrentQueue<string> Operations { get; } = new();
+        public LimitedConcurrentQueue<string> Operations { get; } = new(limit: 1000);
 
         public IDisposable StartOperation(string operationName)
         {
-            Operations.Enqueue(operationName);
+            Operations.Enqueue(operationName, limit => _logger.LogTransientWarning(
+                "The telemetry operation queue has exceeded its limit of {Limit}. Older values will be dropped.",
+                limit));
             return GetLogger(new MetricKey(operationName)).BeginScope("Telemetry operation: {Scope_OperationName}", operationName);
         }
 
-        public ConcurrentQueue<(string MetricId, double MetricValue, IDictionary<string, string> MetricProperties)> MetricValues { get; } = new();
+        public LimitedConcurrentQueue<(string MetricId, double MetricValue, IDictionary<string, string> MetricProperties)> MetricValues { get; } = new(limit: 1000);
 
         public void TrackMetric(string name, double value, IDictionary<string, string> properties)
         {
-            MetricValues.Enqueue((name, value, properties));
+            MetricValues.Enqueue((name, value, properties), limit => _logger.LogTransientWarning(
+                "The metric value queue has exceeded its limit of {Limit}. Older values will be dropped.",
+                limit));
 
             var logger = GetLogger(new MetricKey(name));
             if (properties.Count == 0)
