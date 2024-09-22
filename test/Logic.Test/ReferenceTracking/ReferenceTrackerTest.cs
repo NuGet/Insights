@@ -978,8 +978,8 @@ namespace NuGet.Insights.ReferenceTracking
                 .ToList();
             var actualOwnerToSubjectEntities = ownerToSubject
                 .QueryAsync<WideEntitySegment>(x =>
-                    x.PartitionKey.CompareTo(PartitionKeyPrefix) >= 0
-                    && x.PartitionKey.CompareTo(PartitionKeyPrefix + char.MaxValue) < 0);
+                    string.Compare(x.PartitionKey, PartitionKeyPrefix, StringComparison.Ordinal) >= 0
+                    && string.Compare(x.PartitionKey, PartitionKeyPrefix + char.MaxValue, StringComparison.Ordinal) < 0);
             var actualOwnerToSubject = await WideEntityService
                 .DeserializeEntitiesAsync(
                     actualOwnerToSubjectEntities,
@@ -1006,8 +1006,8 @@ namespace NuGet.Insights.ReferenceTracking
                 .ToList();
             var actualSubjectToOwnerEntities = await subjectToOwner
                 .QueryAsync<TableEntity>(x =>
-                    x.PartitionKey.CompareTo(PartitionKeyPrefix) >= 0
-                    && x.PartitionKey.CompareTo(PartitionKeyPrefix + char.MaxValue) < 0)
+                    string.Compare(x.PartitionKey, PartitionKeyPrefix, StringComparison.Ordinal) >= 0
+                    && string.Compare(x.PartitionKey, PartitionKeyPrefix + char.MaxValue, StringComparison.Ordinal) < 0)
                 .ToListAsync();
             var actualSubjectToOwner = actualSubjectToOwnerEntities
                 .Where(x => x.PartitionKey.StartsWith(SubjectType + ReferenceTracker.Separator, StringComparison.Ordinal))

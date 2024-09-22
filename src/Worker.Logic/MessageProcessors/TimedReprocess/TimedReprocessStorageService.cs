@@ -151,7 +151,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
             var table = await GetTableAsync();
             var oldRuns = await table
                 .QueryAsync<TimedReprocessRun>(x => x.PartitionKey == TimedReprocessRun.DefaultPartitionKey
-                                                 && x.RowKey.CompareTo(currentRunId) > 0)
+                                                 && string.Compare(x.RowKey, currentRunId, StringComparison.Ordinal) > 0)
                 .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
 
             var oldRunsToDelete = oldRuns

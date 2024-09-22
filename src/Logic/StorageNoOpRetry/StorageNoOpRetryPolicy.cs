@@ -341,7 +341,9 @@ namespace NuGet.Insights.StorageNoOpRetry
                     page = await context
                         .Client
                         .QueryAsync<TableEntity>(
-                            filter: x => x.PartitionKey == pk && x.RowKey.CompareTo(rkMin) >= 0 && x.RowKey.CompareTo(rkMax) <= 0,
+                            filter: x => x.PartitionKey == pk
+                                      && string.Compare(x.RowKey, rkMin, StringComparison.Ordinal) >= 0
+                                      && string.Compare(x.RowKey, rkMax, StringComparison.Ordinal) <= 0,
                             maxPerPage: StorageUtility.MaxTakeCount,
                             select)
                         .AsPages()

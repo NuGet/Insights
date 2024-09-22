@@ -55,8 +55,10 @@ namespace NuGet.Insights.Worker.TableCopy
             var maxRowKey = sortedRowKeys.Last();
             var rowKeys = message.RowKeys.ToHashSet();
 
-            var query = sourceTable.QueryAsync<T>(
-                x => x.PartitionKey == message.PartitionKey && x.RowKey.CompareTo(minRowKey) >= 0 && x.RowKey.CompareTo(maxRowKey) <= 0,
+            var query = sourceTable.QueryAsync<T>(x =>
+                    x.PartitionKey == message.PartitionKey
+                    && string.Compare(x.RowKey, minRowKey, StringComparison.Ordinal) >= 0
+                    && string.Compare(x.RowKey, maxRowKey, StringComparison.Ordinal) <= 0,
                 maxPerPage: StorageUtility.MaxTakeCount);
 
             var rows = new List<T>();

@@ -13,8 +13,8 @@ namespace NuGet.Insights
         public static AsyncPageable<TableItem> QueryAsync(this TableServiceClientWithRetryContext client, string prefix)
         {
             return client.QueryAsync(
-                x => x.Name.CompareTo(prefix) >= 0
-                && x.Name.CompareTo(prefix + char.MaxValue) <= 0);
+                x => string.Compare(x.Name, prefix, StringComparison.Ordinal) >= 0
+                  && string.Compare(x.Name, prefix + char.MaxValue, StringComparison.Ordinal) <= 0);
         }
 
         public static async Task<T> GetEntityOrNullAsync<T>(
@@ -73,7 +73,8 @@ namespace NuGet.Insights
         {
             return await GetEntityCountLowerBoundAsync<TableEntity>(
                 table,
-                x => x.PartitionKey.CompareTo(minPartitionKey) >= 0 && x.PartitionKey.CompareTo(maxPartitionKey) <= 0,
+                x => string.Compare(x.PartitionKey, minPartitionKey, StringComparison.Ordinal) >= 0
+                  && string.Compare(x.PartitionKey, maxPartitionKey, StringComparison.Ordinal) <= 0,
                 metrics);
         }
 

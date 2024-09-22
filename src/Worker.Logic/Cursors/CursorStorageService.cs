@@ -48,7 +48,9 @@ namespace NuGet.Insights.Worker
             var max = names.Max(StringComparer.Ordinal);
 
             var nameToExisting = await table
-                .QueryAsync<CursorTableEntity>(c => c.PartitionKey == string.Empty && c.RowKey.CompareTo(min) >= 0 && c.RowKey.CompareTo(max) <= 0)
+                .QueryAsync<CursorTableEntity>(c => c.PartitionKey == string.Empty
+                                                 && string.Compare(c.RowKey, min, StringComparison.Ordinal) >= 0
+                                                 && string.Compare(c.RowKey, max, StringComparison.Ordinal) <= 0)
                 .ToDictionaryAsync(x => x.Name);
 
             var output = new List<CursorTableEntity>();

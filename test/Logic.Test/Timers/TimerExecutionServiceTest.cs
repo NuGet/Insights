@@ -381,8 +381,8 @@ namespace NuGet.Insights
             var table = await _fixture.GetTableAsync(_output.GetLoggerFactory());
             return await table
                 .QueryAsync<T>(x => x.PartitionKey == TimerExecutionService.PartitionKey
-                                 && x.RowKey.CompareTo(TimerNamePrefix) >= 0
-                                 && x.RowKey.CompareTo(TimerNamePrefix + char.MaxValue) < 0)
+                                 && string.Compare(x.RowKey, TimerNamePrefix, StringComparison.Ordinal) >= 0
+                                 && string.Compare(x.RowKey, TimerNamePrefix + char.MaxValue, StringComparison.Ordinal) < 0)
                 .ToListAsync();
         }
 

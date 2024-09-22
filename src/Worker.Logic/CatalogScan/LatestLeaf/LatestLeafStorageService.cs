@@ -475,8 +475,8 @@ namespace NuGet.Insights.Worker
             // Query for all of the version data in Table Storage, determining what needs to be updated.
             Expression<Func<T, bool>> filter = x =>
                 x.PartitionKey == partitionKey
-                && x.RowKey.CompareTo(minRowKey) >= 0
-                && x.RowKey.CompareTo(maxRowKey) <= 0;
+                && string.Compare(x.RowKey, minRowKey, StringComparison.Ordinal) >= 0
+                && string.Compare(x.RowKey, maxRowKey, StringComparison.Ordinal) <= 0;
 
             var query = storage.Table
                 .QueryAsync(

@@ -76,7 +76,7 @@ namespace NuGet.Insights.Worker.Workflow
             var table = await GetTableAsync();
             var oldRuns = await table
                 .QueryAsync<WorkflowRun>(x => x.PartitionKey == WorkflowRun.DefaultPartitionKey
-                                              && x.RowKey.CompareTo(currentRunId) > 0)
+                                              && string.Compare(x.RowKey, currentRunId, StringComparison.Ordinal) > 0)
                 .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
 
             var oldRunsToDelete = oldRuns

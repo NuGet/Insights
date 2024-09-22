@@ -164,8 +164,8 @@ namespace NuGet.Insights.Worker
             var table = await _fixture.GetTableAsync(_output.GetLoggerFactory());
             return await table
                 .QueryAsync<T>(x => x.PartitionKey == string.Empty
-                                 && x.RowKey.CompareTo(CursorNamePrefix) >= 0
-                                 && x.RowKey.CompareTo(CursorNamePrefix + char.MaxValue) < 0)
+                                 && string.Compare(x.RowKey, CursorNamePrefix, StringComparison.Ordinal) >= 0
+                                 && string.Compare(x.RowKey, CursorNamePrefix + char.MaxValue, StringComparison.Ordinal) < 0)
                 .ToListAsync();
         }
 

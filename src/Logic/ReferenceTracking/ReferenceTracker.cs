@@ -95,14 +95,14 @@ namespace NuGet.Insights.ReferenceTracking
             {
                 entities = subjectToOwnerTable.QueryAsync<TableEntity>(
                     filter: x => x.PartitionKey == partitionKey,
-                    select: new[] { StorageUtility.RowKey });
+                    select: [StorageUtility.RowKey]);
             }
             else
             {
                 var lastRowKey = GetDeleteRowKey(last);
                 entities = subjectToOwnerTable.QueryAsync<TableEntity>(
-                    filter: x => x.PartitionKey == partitionKey && x.RowKey.CompareTo(lastRowKey) > 0,
-                    select: new[] { StorageUtility.RowKey });
+                    filter: x => x.PartitionKey == partitionKey && string.Compare(x.RowKey, lastRowKey, StringComparison.Ordinal) > 0,
+                    select: [StorageUtility.RowKey]);
             }
 
             if (take.HasValue)
@@ -113,7 +113,7 @@ namespace NuGet.Insights.ReferenceTracking
             var deleted = new List<SubjectReference>();
             await foreach (var entity in entities)
             {
-                var pieces = entity.RowKey.Split(new[] { Separator }, 2);
+                var pieces = entity.RowKey.Split([Separator], 2);
                 deleted.Add(new SubjectReference(pieces[0], pieces[1]));
             }
 
@@ -169,8 +169,9 @@ namespace NuGet.Insights.ReferenceTracking
             var prefix = GetSubjectToOwnerPartitionKeyPrefix(ownerType, subjectType, subject);
             var subjectToOwnerTable = await GetSubjectToOwnerTableAsync(subjectToOwnerTableName);
             var entities = subjectToOwnerTable.QueryAsync<TableEntity>(
-                filter: x => x.PartitionKey.CompareTo(prefix) >= 0 && x.PartitionKey.CompareTo(prefix + char.MaxValue) < 0,
-                select: new[] { StorageUtility.PartitionKey, StorageUtility.RowKey },
+                filter: x => string.Compare(x.PartitionKey, prefix, StringComparison.Ordinal) >= 0
+                          && string.Compare(x.PartitionKey, prefix + char.MaxValue, StringComparison.Ordinal) < 0,
+                select: [StorageUtility.PartitionKey, StorageUtility.RowKey],
                 maxPerPage: maxPerPage);
 
             return (entities, prefix);

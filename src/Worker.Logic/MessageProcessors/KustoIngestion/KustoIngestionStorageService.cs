@@ -63,7 +63,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             var table = await GetKustoIngestionTableAsync();
             var oldIngestions = await table
                 .QueryAsync<KustoIngestionEntity>(x => x.PartitionKey == KustoIngestionEntity.DefaultPartitionKey
-                                                    && x.RowKey.CompareTo(currentIngestionId) > 0)
+                                                    && string.Compare(x.RowKey, currentIngestionId, StringComparison.Ordinal) > 0)
                 .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
 
             var oldIngestionsToDelete = oldIngestions

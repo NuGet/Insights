@@ -92,8 +92,8 @@ namespace NuGet.Insights.Worker
             return await (await GetTableAsync(storageSuffix))
                 .QueryAsync<TaskState>(
                     x => x.PartitionKey == partitionKey
-                      && x.RowKey.CompareTo(rowKeyPrefix) >= 0
-                      && x.RowKey.CompareTo(rowKeyPrefix + char.MaxValue) < 0)
+                      && string.Compare(x.RowKey, rowKeyPrefix, StringComparison.Ordinal) >= 0
+                      && string.Compare(x.RowKey, rowKeyPrefix + char.MaxValue, StringComparison.Ordinal) < 0)
                 .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
         }
 

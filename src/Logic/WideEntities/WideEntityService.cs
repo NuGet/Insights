@@ -213,8 +213,8 @@ namespace NuGet.Insights.WideEntities
                 {
                     filter = x =>
                         x.PartitionKey == partitionKey
-                        && x.RowKey.CompareTo($"{minRowKey}{WideEntitySegment.RowKeySeparator}") >= 0 // Minimum possible row key with this prefix.
-                        && x.RowKey.CompareTo($"{maxRowKey}{WideEntitySegment.RowKeySeparator}{char.MaxValue}") <= 0;  // Maximum possible row key with this prefix.
+                        && string.Compare(x.RowKey, $"{minRowKey}{WideEntitySegment.RowKeySeparator}", StringComparison.Ordinal) >= 0 // Minimum possible row key with this prefix.
+                        && string.Compare(x.RowKey, $"{maxRowKey}{WideEntitySegment.RowKeySeparator}{char.MaxValue}", StringComparison.Ordinal) <= 0; // Maximum possible row key with this prefix.
                     singleRowKey = minRowKey == maxRowKey ? minRowKey : null;
                 }
             }
@@ -241,8 +241,8 @@ namespace NuGet.Insights.WideEntities
                 {
                     filter = x =>
                         x.PartitionKey == partitionKey
-                        && x.RowKey.CompareTo($"{minRowKey}{WideEntitySegment.RowKeySeparator}") >= 0
-                        && x.RowKey.CompareTo($"{maxRowKey}{WideEntitySegment.RowKeySeparator}{WideEntitySegment.Index0Suffix}") <= 0;
+                        && string.Compare(x.RowKey, $"{minRowKey}{WideEntitySegment.RowKeySeparator}", StringComparison.Ordinal) >= 0
+                        && string.Compare(x.RowKey, $"{maxRowKey}{WideEntitySegment.RowKeySeparator}{WideEntitySegment.Index0Suffix}", StringComparison.Ordinal) <= 0;
                     singleRowKey = null;
                 }
             }

@@ -265,7 +265,7 @@ namespace NuGet.Insights.TablePrefixScan
             if (query.RowKeySkip != null)
             {
                 // Skip past the provided row key
-                Expression<Func<T, bool>> rowKeySkip = x => x.RowKey.CompareTo(query.RowKeySkip) > 0;
+                Expression<Func<T, bool>> rowKeySkip = x => string.Compare(x.RowKey, query.RowKeySkip, StringComparison.Ordinal) > 0;
 
                 filter = Expression.Lambda<Func<T, bool>>(
                     Expression.AndAlso(filter.Body, rowKeySkip.Body),
@@ -352,8 +352,8 @@ namespace NuGet.Insights.TablePrefixScan
                 var lowerBound = lastPartitionKey == null ? query.PartitionKeyLowerBound : IncrementPrefix(query.PartitionKeyPrefix, lastPartitionKey) + char.MaxValue;
 
                 Expression<Func<T, bool>> filter = x =>
-                    x.PartitionKey.CompareTo(lowerBound) > 0 // Skip past the first character of last partition key seen.
-                    && x.PartitionKey.CompareTo(upperBound) < 0; // Don't go outside of the provided prefix
+                    string.Compare(x.PartitionKey, lowerBound, StringComparison.Ordinal) > 0 // Skip past the first character of last partition key seen.
+                 && string.Compare(x.PartitionKey, upperBound, StringComparison.Ordinal) < 0; // Don't go outside of the provided prefix
 
                 var tablePageQuery = query.Parameters.Table
                     .QueryAsync(

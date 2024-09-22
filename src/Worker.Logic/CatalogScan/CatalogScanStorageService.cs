@@ -130,8 +130,8 @@ namespace NuGet.Insights.Worker
             var leafScans = await table
                 .QueryAsync<CatalogLeafScan>(x =>
                     x.PartitionKey == CatalogLeafScan.GetPartitionKey(scanId, pageId)
-                    && x.RowKey.CompareTo(min) >= 0
-                    && x.RowKey.CompareTo(max) <= 0)
+                    && string.Compare(x.RowKey, min, StringComparison.Ordinal) >= 0
+                    && string.Compare(x.RowKey, max, StringComparison.Ordinal) <= 0)
                 .ToListAsync(_telemetryClient.StartQueryLoopMetrics(dimension1Name: "StorageSuffix", storageSuffix, dimension2Name: "ScanId", scanId));
             var uniqueLeafIds = sortedLeafIds.ToHashSet();
             return leafScans
@@ -249,7 +249,9 @@ namespace NuGet.Insights.Worker
             var maxPk = pks.Max(StringComparer.Ordinal);
 
             var table = await GetIndexScanTableAsync();
-            var query = table.QueryAsync<CatalogIndexScan>(x => x.PartitionKey.CompareTo(minPk) >= 0 && x.PartitionKey.CompareTo(maxPk) <= 0);
+            var query = table.QueryAsync<CatalogIndexScan>(x =>
+                string.Compare(x.PartitionKey, minPk, StringComparison.Ordinal) >= 0
+                && string.Compare(x.PartitionKey, maxPk, StringComparison.Ordinal) <= 0);
 
             var output = CatalogScanDriverMetadata.StartableDriverTypes.ToDictionary(x => x, x => new List<CatalogIndexScan>());
             var completed = 0;
@@ -287,7 +289,7 @@ namespace NuGet.Insights.Worker
 
             var oldScans = await table
                 .QueryAsync<CatalogIndexScan>(x => x.PartitionKey == driverType.ToString()
-                                                && x.RowKey.CompareTo(currentScanId) > 0)
+                                                && string.Compare(x.RowKey, currentScanId, StringComparison.Ordinal) > 0)
                 .ToListAsync(_telemetryClient.StartQueryLoopMetrics(dimension1Name: "DriverType", driverType.ToString()));
 
             var oldScansToDelete = oldScans
