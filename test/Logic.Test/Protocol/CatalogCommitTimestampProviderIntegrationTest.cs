@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Xunit.Sdk;
+
 namespace NuGet.Insights
 {
     public class CatalogCommitTimestampProviderIntegrationTest : BaseLogicIntegrationTest
@@ -77,6 +79,30 @@ namespace NuGet.Insights
         }
 
         public CatalogCommitTimestampProvider Target => Host.Services.GetRequiredService<CatalogCommitTimestampProvider>();
+
+        [Fact]
+        public async Task ReturnsCommitTimestamp()
+        {
+            var attempt = 0;
+            while (true)
+            {
+                attempt++;
+
+                var catalogClient = Host.Services.GetRequiredService<CatalogClient>();
+                var index = await catalogClient.GetCatalogIndexAsync();
+
+                var max = await Target.GetMaxAsync();
+
+                try
+                {
+                    Assert.Equal(index.CommitTimestamp, max);
+                    break;
+                }
+                catch (XunitException) when (attempt < 5)
+                {
+                }
+            }
+        }
 
         [Theory]
         [InlineData(0)]

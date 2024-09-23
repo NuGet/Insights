@@ -5,7 +5,6 @@ namespace NuGet.Insights
 {
     public interface IRemoteCursorClient
     {
-        Task<DateTimeOffset> GetCatalogAsync(CancellationToken token = default);
         Task<DateTimeOffset> GetFlatContainerAsync(CancellationToken token = default);
     }
 }

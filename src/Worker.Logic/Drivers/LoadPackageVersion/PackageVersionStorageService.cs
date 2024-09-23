@@ -80,7 +80,7 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
                     return new PackageVersionEntity(partitionKey, rowKey, item);
                 }
 
-                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item);
+                var leaf = (PackageDetailsCatalogLeaf)await _catalogClient.GetCatalogLeafAsync(item.LeafType, item.Url);
 
                 return new PackageVersionEntity(partitionKey, rowKey, item, leaf);
             }

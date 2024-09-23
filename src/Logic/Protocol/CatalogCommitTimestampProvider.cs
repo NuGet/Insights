@@ -162,12 +162,21 @@ namespace NuGet.Insights
             _catalogClient = catalogClient;
         }
 
-        public async Task<DateTimeOffset?> GetNextAsync(DateTimeOffset min)
+        public async Task<DateTimeOffset> GetMaxAsync()
         {
             await _lock.WaitAsync();
             try
             {
-                return await GetNextDefaultMaxInternalAsync(min, allowPageFetch: true);
+                if (_index == null)
+                {
+                    _index = new Index(await _catalogClient.GetCatalogIndexAsync());
+                }
+                else
+                {
+                    _index.Update(await _catalogClient.GetCatalogIndexAsync());
+                }
+
+                return _index.LatestCommit;
             }
             finally
             {
@@ -175,7 +184,20 @@ namespace NuGet.Insights
             }
         }
 
-        private async Task<DateTimeOffset?> GetNextDefaultMaxInternalAsync(DateTimeOffset min, bool allowPageFetch)
+        public async Task<DateTimeOffset?> GetNextAsync(DateTimeOffset min)
+        {
+            await _lock.WaitAsync();
+            try
+            {
+                return await GetNextAsync(min, allowPageFetch: true);
+            }
+            finally
+            {
+                _lock.Release();
+            }
+        }
+
+        private async Task<DateTimeOffset?> GetNextAsync(DateTimeOffset min, bool allowPageFetch)
         {
             if (_index == null)
             {
@@ -185,7 +207,7 @@ namespace NuGet.Insights
 
             // Binary search returns a value greater than or equal to zero if the provided min exactly matches on of
             // the items in the list. We'll refer to this as an "exact match".
-            var pageMatch = _index.PagesForSearch.BinarySearch(new LatestCommitSearch(min), LatestCommitComparer.Instance);
+            var pageMatch = _index!.PagesForSearch.BinarySearch(new LatestCommitSearch(min), LatestCommitComparer.Instance);
             Page page;
 
             if (pageMatch >= 0)
@@ -201,7 +223,7 @@ namespace NuGet.Insights
                     // If the exact match on a page commit timestamp is the last page, then we need to try to fetch more
                     // pages and then try the search again.
                     _index.Update(await _catalogClient.GetCatalogIndexAsync());
-                    return await GetNextDefaultMaxInternalAsync(min, allowPageFetch: false);
+                    return await GetNextAsync(min, allowPageFetch: false);
                 }
                 else
                 {
@@ -226,7 +248,7 @@ namespace NuGet.Insights
                     // If we've reached this point, that means that the provided min is greater than the last page and
                     // we need to try to fetch more pages and try the search again.
                     _index.Update(await _catalogClient.GetCatalogIndexAsync());
-                    return await GetNextDefaultMaxInternalAsync(min, allowPageFetch: false);
+                    return await GetNextAsync(min, allowPageFetch: false);
                 }
                 else
                 {

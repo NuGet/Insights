@@ -17,7 +17,6 @@ namespace NuGet.Insights.Website
         private readonly CatalogScanStorageService _catalogScanStorageService;
         private readonly CatalogScanCursorService _catalogScanCursorService;
         private readonly CatalogScanService _catalogScanService;
-        private readonly IRemoteCursorClient _remoteCursorClient;
         private readonly TimerExecutionService _timerExecutionService;
         private readonly WorkflowService _workflowService;
         private readonly WorkflowStorageService _workflowStorageService;
@@ -33,7 +32,6 @@ namespace NuGet.Insights.Website
             CatalogScanStorageService catalogScanStorageService,
             CatalogScanCursorService catalogScanCursorService,
             CatalogScanService catalogScanService,
-            IRemoteCursorClient remoteCursorClient,
             TimerExecutionService timerExecutionService,
             WorkflowService workflowService,
             WorkflowStorageService workflowStorageService,
@@ -48,7 +46,6 @@ namespace NuGet.Insights.Website
             _catalogScanStorageService = catalogScanStorageService;
             _catalogScanCursorService = catalogScanCursorService;
             _catalogScanService = catalogScanService;
-            _remoteCursorClient = remoteCursorClient;
             _timerExecutionService = timerExecutionService;
             _workflowService = workflowService;
             _workflowStorageService = workflowStorageService;
@@ -69,7 +66,7 @@ namespace NuGet.Insights.Website
             var workflowRunsTask = GetWorkflowRunsAsync();
             var timedReprocessRunsTask = GetTimedReprocessRunsAsync(catalogScansTask);
             var kustoIngestionsTask = GetKustoIngestionsAsync();
-            var catalogCommitTimestampTask = _remoteCursorClient.GetCatalogAsync();
+            var catalogCommitTimestampTask = _catalogCommitTimestampProvider.GetMaxAsync();
 
             await Task.WhenAll(
                 workQueueTask,

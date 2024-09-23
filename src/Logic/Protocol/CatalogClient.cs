@@ -73,97 +73,22 @@ namespace NuGet.Insights
             _logger = logger;
         }
 
-        public async Task<CatalogIndex> GetCatalogIndexAsync(string url)
-        {
-            var httpClient = _httpClientFactory();
-            return await httpClient.DeserializeUrlAsync<CatalogIndex>(url, _logger);
-        }
-
-        public async Task<DateTimeOffset> GetCommitTimestampAsync()
-        {
-            var url = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.Catalog);
-            var length = 512;
-            var httpClient = _httpClientFactory();
-            var commitTimestamp = await httpClient.ProcessResponseWithRetriesAsync(
-                () =>
-                {
-                    var request = new HttpRequestMessage(HttpMethod.Get, url);
-                    request.Headers.Range = new RangeHeaderValue(0, length);
-                    return request;
-                },
-                async response =>
-                {
-                    if (response.StatusCode != HttpStatusCode.PartialContent
-                        && response.StatusCode != HttpStatusCode.OK) // I've seen some transient 200s returned...
-                    {
-                        throw new InvalidOperationException($"Expected an HTTP 206 Partial Content response. Got HTTP {(int)response.StatusCode} {response.ReasonPhrase}.");
-                    }
-
-                    var bytes = await response.Content.ReadAsByteArrayAsync();
-                    var output = ReadCommitTimestamp(bytes);
-                    if (output != null)
-                    {
-                        return output;
-                    }
-
-                    throw new InvalidOperationException($"Could not find the commit timestamp in the first {length} bytes of the catalog index.");
-                },
-                _logger,
-                CancellationToken.None);
-
-            return DateTimeOffset.Parse(commitTimestamp, CultureInfo.InvariantCulture);
-        }
-
-        private string? ReadCommitTimestamp(byte[] bytes)
-        {
-            var jsonReader = new Utf8JsonReader(bytes);
-            var found = false;
-            while (jsonReader.Read())
-            {
-                if (found)
-                {
-                    if (jsonReader.TokenType == JsonTokenType.String)
-                    {
-                        return jsonReader.GetString();
-                    }
-
-                    found = false;
-                }
-
-                if (jsonReader.TokenType == JsonTokenType.PropertyName
-                    && jsonReader.CurrentDepth == 1
-                    && jsonReader.GetString() == "commitTimeStamp")
-                {
-                    found = true;
-                }
-            }
-
-            return null;
-        }
-
         public async Task<CatalogIndex> GetCatalogIndexAsync()
         {
             var url = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.Catalog);
             return await GetCatalogIndexAsync(url);
         }
 
+        private async Task<CatalogIndex> GetCatalogIndexAsync(string url)
+        {
+            var httpClient = _httpClientFactory();
+            return await httpClient.DeserializeUrlAsync<CatalogIndex>(url, _logger);
+        }
+
         public async Task<CatalogPage> GetCatalogPageAsync(string url)
         {
             var httpClient = _httpClientFactory();
             return await httpClient.DeserializeUrlAsync<CatalogPage>(url, _logger);
-        }
-
-        public async Task<IReadOnlyList<CatalogPageItem>> GetCatalogPageItemsAsync(
-            DateTimeOffset minCommitTimestamp,
-            DateTimeOffset maxCommitTimestamp)
-        {
-            var catalogIndex = await GetCatalogIndexAsync();
-            return catalogIndex.GetPagesInBounds(minCommitTimestamp, maxCommitTimestamp);
-        }
-
-        public async Task<CatalogLeaf> GetCatalogLeafAsync(ICatalogLeafItem leaf)
-        {
-            return await GetCatalogLeafAsync(leaf.LeafType, leaf.Url);
         }
 
         public async Task<CatalogLeaf> GetCatalogLeafAsync(CatalogLeafType type, string url)
@@ -178,36 +103,6 @@ namespace NuGet.Insights
                 default:
                     throw new NotImplementedException($"Catalog leaf type {type} is not supported.");
             }
-        }
-
-        public string GetExpectedCatalogLeafRelativePath(string id, string version, DateTimeOffset commitTimestamp)
-        {
-            return string.Join("/", new[]
-            {
-                "data",
-                commitTimestamp.ToString("yyyy.MM.dd.HH.mm.ss", CultureInfo.InvariantCulture),
-                $"{Uri.EscapeDataString(id.ToLowerInvariant())}.{version.ToLowerInvariant()}.json",
-            });
-        }
-
-        public async Task<string> GetCatalogBaseUrlAsync()
-        {
-            var catalogIndexUrl = await _serviceIndexCache.GetUrlAsync(ServiceIndexTypes.Catalog);
-            var lastSlashIndex = catalogIndexUrl.LastIndexOf('/');
-            if (lastSlashIndex < 0)
-            {
-                throw new InvalidOperationException("No slashes were found in the catalog index URL.");
-            }
-
-            var catalogBaseUrl = catalogIndexUrl.Substring(0, lastSlashIndex + 1);
-
-            var indexPath = catalogIndexUrl.Substring(catalogBaseUrl.Length);
-            if (indexPath != "index.json")
-            {
-                throw new InvalidOperationException("The catalog index does not have the expected relative path.");
-            }
-
-            return catalogBaseUrl;
         }
     }
 }

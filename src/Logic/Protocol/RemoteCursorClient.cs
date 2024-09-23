@@ -7,26 +7,18 @@ namespace NuGet.Insights
 {
     public class RemoteCursorClient : IRemoteCursorClient
     {
-        private readonly CatalogClient _catalogClient;
         private readonly ServiceIndexCache _serviceIndexCache;
         private readonly Func<HttpClient> _httpClientFactory;
         private readonly ILogger<RemoteCursorClient> _logger;
 
         public RemoteCursorClient(
-            CatalogClient catalogClient,
             ServiceIndexCache serviceIndexCache,
             Func<HttpClient> httpClientFactory,
             ILogger<RemoteCursorClient> logger)
         {
-            _catalogClient = catalogClient;
             _serviceIndexCache = serviceIndexCache;
             _httpClientFactory = httpClientFactory;
             _logger = logger;
-        }
-
-        public async Task<DateTimeOffset> GetCatalogAsync(CancellationToken token = default)
-        {
-            return await _catalogClient.GetCommitTimestampAsync();
         }
 
         public async Task<DateTimeOffset> GetFlatContainerAsync(CancellationToken token = default)

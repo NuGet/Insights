@@ -7,31 +7,6 @@ namespace NuGet.Insights
 {
     public class CatalogClientTest : IDisposable
     {
-        public class TheGetCommitTimestampAsyncMethod : CatalogClientTest
-        {
-            [Fact]
-            public async Task ReturnsCommitTimestamp()
-            {
-                for (var attempt = 0; ; attempt++)
-                {
-                    var index = await Target.GetCatalogIndexAsync();
-                    var commitTimestamp = await Target.GetCommitTimestampAsync();
-
-                    if (attempt < 5 && commitTimestamp != index.CommitTimestamp)
-                    {
-                        continue;
-                    }
-
-                    Assert.Equal(index.CommitTimestamp, commitTimestamp);
-                    break;
-                }
-            }
-
-            public TheGetCommitTimestampAsyncMethod(ITestOutputHelper output) : base(output)
-            {
-            }
-        }
-
         public class TheGetCatalogIndexAsyncMethod : CatalogClientTest
         {
             [Fact]
