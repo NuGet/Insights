@@ -259,17 +259,19 @@ namespace NuGet.Insights.TablePrefixScan
         {
             using var metrics = _telemetryClient.StartQueryLoopMetrics();
 
-            // Match the provided partition key
-            Expression<Func<T, bool>> filter = x => x.PartitionKey == query.PartitionKey;
-
-            if (query.RowKeySkip != null)
+            Expression<Func<T, bool>> filter;
+            if (query.RowKeySkip is not null)
             {
-                // Skip past the provided row key
-                Expression<Func<T, bool>> rowKeySkip = x => string.Compare(x.RowKey, query.RowKeySkip, StringComparison.Ordinal) > 0;
-
-                filter = Expression.Lambda<Func<T, bool>>(
-                    Expression.AndAlso(filter.Body, rowKeySkip.Body),
-                    filter.Parameters[0]);
+                // Match the provided partition key, skip past the provided row key
+                filter = x =>
+                    x.PartitionKey == query.PartitionKey
+                    && string.Compare(x.RowKey, query.RowKeySkip, StringComparison.Ordinal) > 0;
+            }
+            else
+            {
+                // Match the provided partition key
+                filter = x =>
+                    x.PartitionKey == query.PartitionKey;
             }
 
             var tablePageQuery = query.Parameters.Table
