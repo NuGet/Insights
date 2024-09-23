@@ -500,7 +500,7 @@ namespace NuGet.Insights.Worker
             {
                 OverwriteTestDataAndCopyToSource(testDataFile, actual);
             }
-            var expected = File.ReadAllText(testDataFile);
+            var expected = ReadAllTextWithRetry(testDataFile);
             Assert.Equal(expected, actual);
 
             return actual;
@@ -691,7 +691,7 @@ namespace NuGet.Insights.Worker
                 OverwriteTestDataAndCopyToSource(expectedPath, actual);
             }
 
-            var expected = File.ReadAllText(expectedPath);
+            var expected = ReadAllTextWithRetry(expectedPath);
 
             if (expected != actual && expected.Length > 0 && actual.Length > 0)
             {

@@ -376,6 +376,27 @@ namespace NuGet.Insights
         private static readonly ConcurrentDictionary<string, object> StringLock = new ConcurrentDictionary<string, object>();
         private static readonly IReadOnlySet<string> ProjectDirs = new HashSet<string> { "Worker.Test", "Worker.Logic.Test", "Logic.Test" };
 
+        public static string ReadAllTextWithRetry(string testDataFile)
+        {
+            string expected;
+            var attempt = 0;
+            while (true)
+            {
+                try
+                {
+                    attempt++;
+                    expected = File.ReadAllText(testDataFile);
+                    break;
+                }
+                catch (IOException) when (attempt < 5)
+                {
+                    Thread.Sleep(500 * attempt);
+                }
+            }
+
+            return expected;
+        }
+
         protected static void OverwriteTestDataAndCopyToSource(string testDataFile, string actual)
         {
             var sourcePath = Path.GetFullPath(testDataFile);

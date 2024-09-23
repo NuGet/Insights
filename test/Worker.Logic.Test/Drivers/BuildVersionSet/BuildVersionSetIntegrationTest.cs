@@ -206,7 +206,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             {
                 OverwriteTestDataAndCopyToSource(testDataFile, actual);
             }
-            var expected = File.ReadAllText(Path.Combine(TestData, testName, stepName, fileName));
+            var expected = ReadAllTextWithRetry(Path.Combine(TestData, testName, stepName, fileName));
             Assert.Equal(expected, actual);
         }
     }

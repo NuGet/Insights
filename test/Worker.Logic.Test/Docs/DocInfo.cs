@@ -25,7 +25,7 @@ namespace NuGet.Insights.Worker
 
         public virtual void ReadMarkdown()
         {
-            UnparsedMarkdown = File.ReadAllText(DocPath);
+            UnparsedMarkdown = BaseLogicIntegrationTest.ReadAllTextWithRetry(DocPath);
             MarkdownDocument = ReadMarkdown(UnparsedMarkdown);
         }
 
