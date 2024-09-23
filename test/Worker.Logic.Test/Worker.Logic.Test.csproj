@@ -25,9 +25,6 @@
     <Compile Remove="CatalogScan\CatalogScanDriverMetadataTest.CryptoApi.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Logic.Test\Properties\AssemblyInfo.cs" Link="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="DiffPlex" />
     <PackageReference Include="Humanizer.Core" />
     <PackageReference Include="Markdig.Signed" />

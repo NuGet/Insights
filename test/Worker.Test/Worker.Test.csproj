@@ -10,9 +10,6 @@
     <NoWarn>$(NoWarn);CS0436</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\Logic.Test\Properties\AssemblyInfo.cs" Link="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit.runner.visualstudio">
