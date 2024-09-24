@@ -5,21 +5,24 @@ using System.Runtime.InteropServices;
 
 namespace NuGet.Insights.Worker
 {
-    public class KustoFactAttribute : FactAttribute
+    public class KustoFactAttribute : NoInMemoryStorageFactAttribute
     {
         public KustoFactAttribute()
         {
-            if (LogicTestSettings.UseDevelopmentStorage)
+            if (Skip is null)
             {
-                Skip = "This Fact is skipped because the storage emulator is being used.";
-            }
-            else if (new NuGetInsightsWorkerSettings().WithTestKustoSettings().KustoConnectionString is null)
-            {
-                Skip = "This Fact is skipped because the Kusto environment variables are not set.";
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                Skip = "This Fact is skipped because Kusto initialization randomly hangs in macOS CI environments.";
+                if (LogicTestSettings.UseDevelopmentStorage)
+                {
+                    Skip = "This Fact is skipped because the storage emulator is being used.";
+                }
+                else if (new NuGetInsightsWorkerSettings().WithTestKustoSettings().KustoConnectionString is null)
+                {
+                    Skip = "This Fact is skipped because the Kusto environment variables are not set.";
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    Skip = "This Fact is skipped because Kusto initialization randomly hangs in macOS CI environments.";
+                }
             }
         }
     }

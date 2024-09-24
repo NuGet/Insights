@@ -5,6 +5,7 @@ namespace NuGet.Insights
 {
     public class StorageSettings
     {
+        public bool UseMemoryStorage { get; set; } = false;
         public bool UseDevelopmentStorage { get; set; } = false;
 
         public string StorageAccountName { get; set; } = null;

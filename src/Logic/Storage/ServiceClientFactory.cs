@@ -266,6 +266,7 @@ namespace NuGet.Insights
             ILoggerFactory loggerFactory)
         {
             var sasExpiry = created.Add(settings.ServiceClientSasDuration);
+            var useMemoryStorage = settings.UseMemoryStorage;
 
             TokenCredential? tokenCredential = null;
             StorageSharedKeyCredential? storageAccessKeyCredential = null;
@@ -342,7 +343,8 @@ namespace NuGet.Insights
                 userDelegationKey = await blob.GetUserDelegationKeyAsync(startsOn: null, expiresOn: sasExpiry);
 
                 logger.LogInformation(
-                    "Using storage account '{StorageAccountName}' with a {CredentialType} and a user delegation key expiring at {Expiry:O}, which is in {RemainingHours:F2} hours.",
+                    "Using {PersistenceType} storage account '{StorageAccountName}' with a {CredentialType} and a user delegation key expiring at {Expiry:O}, which is in {RemainingHours:F2} hours.",
+                    useMemoryStorage ? "in-memory" : "external",
                     blob.AccountName,
                     storageCredentialType,
                     sasExpiry,
@@ -356,7 +358,8 @@ namespace NuGet.Insights
                 userDelegationKey = null;
 
                 logger.LogInformation(
-                    "Using storage account '{StorageAccountName}' with a {CredentialType}.",
+                    "Using {PersistenceType} storage account '{StorageAccountName}' with a {CredentialType}.",
+                    useMemoryStorage ? "in-memory" : "external",
                     blob.AccountName,
                     storageCredentialType);
             }
@@ -377,7 +380,8 @@ namespace NuGet.Insights
                 blobClientOptions,
                 queue,
                 table,
-                new TableServiceClientWithRetryContext(table, telemetryClient));
+                new TableServiceClientWithRetryContext(table, telemetryClient),
+                useMemoryStorage);
         }
 
         protected virtual HttpPipelineTransport? GetHttpPipelineTransport()
@@ -398,6 +402,7 @@ namespace NuGet.Insights
             BlobClientOptions BlobClientOptions,
             QueueServiceClient QueueServiceClient,
             TableServiceClient TableServiceClient,
-            TableServiceClientWithRetryContext TableServiceClientWithRetryContext);
+            TableServiceClientWithRetryContext TableServiceClientWithRetryContext,
+            bool UseMemoryStorage);
     }
 }

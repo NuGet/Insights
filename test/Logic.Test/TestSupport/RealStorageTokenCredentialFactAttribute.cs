@@ -3,21 +3,24 @@
 
 namespace NuGet.Insights
 {
-    public class RealStorageTokenCredentialFactAttribute : FactAttribute
+    public class RealStorageTokenCredentialFactAttribute : NoInMemoryStorageFactAttribute
     {
         public RealStorageTokenCredentialFactAttribute()
         {
-            var type = LogicTestSettings.StorageCredentialType;
-            switch (type)
+            if (Skip is null)
             {
-                case StorageCredentialType.ClientCertificateCredentialFromKeyVault:
-                case StorageCredentialType.ClientCertificateCredentialFromPath:
-                case StorageCredentialType.UserAssignedManagedIdentityCredential:
-                case StorageCredentialType.DefaultAzureCredential:
-                    break;
-                default:
-                    Skip = $"This Fact is skipped because the current storage credential is not a token credential. The credential type is {type}.";
-                    break;
+                var type = LogicTestSettings.StorageCredentialType;
+                switch (type)
+                {
+                    case StorageCredentialType.ClientCertificateCredentialFromKeyVault:
+                    case StorageCredentialType.ClientCertificateCredentialFromPath:
+                    case StorageCredentialType.UserAssignedManagedIdentityCredential:
+                    case StorageCredentialType.DefaultAzureCredential:
+                        break;
+                    default:
+                        Skip = $"This Fact is skipped because the current storage credential is not a token credential. The credential type is {type}.";
+                        break;
+                }
             }
         }
     }

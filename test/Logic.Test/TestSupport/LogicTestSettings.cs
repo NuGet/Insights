@@ -27,6 +27,7 @@ namespace NuGet.Insights
         private const string StorageClientCertificateKeyVaultEnvName = "NUGETINSIGHTS_STORAGECLIENTCERTIFICATEKEYVAULT";
         private const string StorageClientCertificateKeyVaultCertificateNameEnvName = "NUGETINSIGHTS_STORAGECLIENTCERTIFICATEKEYVAULTCERTIFICATENAME";
 
+        public static bool UseMemoryStorage => false;
         public static bool UseDevelopmentStorage => StorageCredentialType == StorageCredentialType.DevelopmentStorage;
         public static StorageCredentialType StorageCredentialType => ServiceClientFactory.GetStorageCredentialType(PopulateSettings(new NuGetInsightsSettings()));
 
