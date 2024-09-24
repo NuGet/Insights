@@ -28,7 +28,11 @@ namespace NuGet.Insights.Worker
 
         protected override async Task DisposeInternalAsync()
         {
-            await AssertExpectedStorageAsync();
+            if (!LogicTestSettings.HasStorageConnectionError)
+            {
+                await AssertExpectedStorageAsync();
+            }
+
             await base.DisposeInternalAsync();
         }
 

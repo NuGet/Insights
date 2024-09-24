@@ -17,6 +17,11 @@ namespace NuGet.Insights
         public static Uri QueueEndpoint { get; } = new Uri("http://127.0.0.1:10001/devstoreaccount1");
         public static Uri TableEndpoint { get; } = new Uri("http://127.0.0.1:10002/devstoreaccount1");
 
+        public static (Uri Blob, Uri Queue, Uri Table) GetStorageEndpoints()
+        {
+            return (BlobEndpoint, QueueEndpoint, TableEndpoint);
+        }
+
         static DevelopmentStorage()
         {
             var bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.GetProperty;

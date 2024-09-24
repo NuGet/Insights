@@ -83,6 +83,15 @@ namespace NuGet.Insights
             return bucket;
         }
 
+        public static (Uri Blob, Uri Queue, Uri Table) GetStorageEndpoints(string accountName)
+        {
+            return (
+                new Uri($"https://{accountName}.blob.core.windows.net"),
+                new Uri($"https://{accountName}.queue.core.windows.net"),
+                new Uri($"https://{accountName}.table.core.windows.net")
+            );
+        }
+
         public static string GenerateUniqueId()
         {
             return Guid.NewGuid().ToByteArray().ToTrimmedBase32();

@@ -421,6 +421,12 @@ namespace NuGet.Insights
 
         public virtual Task InitializeAsync()
         {
+            var ex = LogicTestSettings.StorageConnectionError.Value;
+            if (ex is not null)
+            {
+                throw ex;
+            }
+
             return Task.CompletedTask;
         }
 
@@ -441,7 +447,10 @@ namespace NuGet.Insights
             {
                 try
                 {
-                    await CleanUpStorageContainers(x => x.StartsWith(StoragePrefix, StringComparison.Ordinal));
+                    if (!LogicTestSettings.HasStorageConnectionError)
+                    {
+                        await CleanUpStorageContainers(x => x.StartsWith(StoragePrefix, StringComparison.Ordinal));
+                    }
                 }
                 finally
                 {

@@ -326,21 +326,9 @@ namespace NuGet.Insights
             var queueClientOptions = GetOptions(settings, loggerFactory, new QueueClientOptions(), httpPipelineTransport);
             var tableClientOptions = GetOptions(settings, loggerFactory, new TableClientOptions(), httpPipelineTransport);
 
-            Uri blobServiceUri;
-            Uri queueServiceUri;
-            Uri tableServiceUri;
-            if (storageCredentialType == StorageCredentialType.DevelopmentStorage)
-            {
-                blobServiceUri = DevelopmentStorage.BlobEndpoint;
-                queueServiceUri = DevelopmentStorage.QueueEndpoint;
-                tableServiceUri = DevelopmentStorage.TableEndpoint;
-            }
-            else
-            {
-                blobServiceUri = new Uri($"https://{settings.StorageAccountName}.blob.core.windows.net");
-                queueServiceUri = new Uri($"https://{settings.StorageAccountName}.queue.core.windows.net");
-                tableServiceUri = new Uri($"https://{settings.StorageAccountName}.table.core.windows.net");
-            }
+            var (blobServiceUri, queueServiceUri, tableServiceUri) = storageCredentialType == StorageCredentialType.DevelopmentStorage
+                ? DevelopmentStorage.GetStorageEndpoints()
+                : StorageUtility.GetStorageEndpoints(accountName!);
 
             BlobServiceClient blob;
             QueueServiceClient queue;

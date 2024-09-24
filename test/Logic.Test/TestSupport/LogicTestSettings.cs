@@ -3,6 +3,7 @@
 
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using Azure.Identity;
 
 #nullable enable
 
@@ -10,6 +11,14 @@ namespace NuGet.Insights
 {
     public static class LogicTestSettings
     {
+        public static Lazy<Exception?> StorageConnectionError { get; } = new(GetStorageConnectionError);
+        public static bool HasStorageConnectionError => StorageConnectionError.IsValueCreated && StorageConnectionError.Value is not null;
+
+        static LogicTestSettings()
+        {
+            VerifyStorageConfiguration();
+        }
+
         private const string UseDevelopmentStorageEnvName = "NUGETINSIGHTS_USEDEVELOPMENTSTORAGE";
         private const string StorageAccountNameEnvName = "NUGETINSIGHTS_STORAGEACCOUNTNAME";
         private const string StorageClientApplicationIdEnvName = "NUGETINSIGHTS_STORAGECLIENTAPPLICATIONID";
@@ -19,7 +28,7 @@ namespace NuGet.Insights
         private const string StorageClientCertificateKeyVaultCertificateNameEnvName = "NUGETINSIGHTS_STORAGECLIENTCERTIFICATEKEYVAULTCERTIFICATENAME";
 
         public static bool UseDevelopmentStorage => StorageCredentialType == StorageCredentialType.DevelopmentStorage;
-        public static StorageCredentialType StorageCredentialType => ServiceClientFactory.GetStorageCredentialType(new NuGetInsightsSettings().WithTestStorageSettings());
+        public static StorageCredentialType StorageCredentialType => ServiceClientFactory.GetStorageCredentialType(PopulateSettings(new NuGetInsightsSettings()));
 
         private static bool? UseDevelopmentStorageEnv => GetEnvBool(UseDevelopmentStorageEnvName);
         private static string? StorageAccountNameEnv => GetEnvOrNull(StorageAccountNameEnvName);
@@ -30,6 +39,19 @@ namespace NuGet.Insights
         private static string? StorageClientCertificateKeyVaultCertificateNameEnv => GetEnvOrNull(StorageClientCertificateKeyVaultCertificateNameEnvName);
 
         public static T WithTestStorageSettings<T>(this T settings) where T : NuGetInsightsSettings
+        {
+            PopulateSettings(settings);
+
+            var ex = StorageConnectionError.Value;
+            if (ex is not null)
+            {
+                throw ex;
+            }
+
+            return settings;
+        }
+
+        private static T PopulateSettings<T>(T settings) where T : NuGetInsightsSettings
         {
             settings.UseDevelopmentStorage = UseDevelopmentStorageEnv.GetValueOrDefault(false);
             settings.StorageAccountName = StorageAccountNameEnv;
@@ -49,6 +71,125 @@ namespace NuGet.Insights
             }
 
             return settings;
+        }
+
+        private static void VerifyStorageConfiguration()
+        {
+            if (UseDevelopmentStorageEnv == false
+                && StorageAccountNameEnv is null)
+            {
+                var names = string.Join(Environment.NewLine, Environment
+                    .GetEnvironmentVariables()
+                    .Keys
+                    .OfType<string>()
+                    .OrderBy(x => x, StringComparer.Ordinal)
+                    .Where(x => x.StartsWith("NUGETINSIGHTS_", StringComparison.OrdinalIgnoreCase))
+                    .Select(x => $"  * {x}"));
+
+                throw new InvalidOperationException(
+                    $"""
+
+
+                    ########################
+                    # NUGET INSIGHTS TESTS #
+                    ########################
+
+                    No valid test storage configurations were found. Consider these options:
+
+                    - Set {UseDevelopmentStorageEnvName} to 'true' to use the storage emulator.
+                      * It evaluates to '{UseDevelopmentStorageEnv}' now.
+                      * You must start the storage emulator (e.g. Azurite) before running the tests.
+
+                    - Set {StorageAccountNameEnvName} to the name of a real Azure storage account to use.
+                      * Set an appropriate credential via environment variables, or use {nameof(DefaultAzureCredential)} as the default.
+                      * Use {StorageClientApplicationIdEnvName} and {StorageClientTenantIdEnvName} to specify an app registration.
+                      * Use {StorageClientCertificatePathEnvName} to specify a certificate file on disk.
+                      * Use {StorageClientCertificateKeyVaultEnvName} and {StorageClientCertificateKeyVaultCertificateNameEnvName} to specify a certificate in Key Vault.
+                      * Key Vault authentication uses {nameof(DefaultAzureCredential)}.
+
+                    The following NUGETINSIGHTS_ environment variables have values:
+                    {names}
+
+                    Fix the environment variables and then try again.
+
+                    """);
+            }
+        }
+
+        private static Exception? GetStorageConnectionError()
+        {
+            NuGetInsightsSettings settings = new NuGetInsightsSettings();
+            PopulateSettings(settings);
+
+            var storageCredentialType = ServiceClientFactory.GetStorageCredentialType(settings);
+            var (blob, queue, table) = storageCredentialType == StorageCredentialType.DevelopmentStorage
+                ? DevelopmentStorage.GetStorageEndpoints()
+                : StorageUtility.GetStorageEndpoints(settings.StorageAccountName!);
+
+            using var httpClient = new HttpClient();
+            httpClient.Timeout = TimeSpan.FromSeconds(20);
+
+            foreach (var (endpoint, uri) in new[] { ("blob", blob), ("queue", queue), ("table", table) })
+            {
+                var attempt = 0;
+                while (true)
+                {
+                    try
+                    {
+                        attempt++;
+
+                        using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+                        using var response = httpClient.Send(request);
+
+                        // any response is good enough for now
+                        break;
+                    }
+                    catch when (attempt < 5)
+                    {
+                        // allow retry
+                        Thread.Sleep(500);
+                    }
+                    catch (Exception ex)
+                    {
+                        var messages = new StringBuilder();
+                        var current = ex;
+                        while (current is not null)
+                        {
+                            messages.AppendLine();
+                            messages.AppendFormat(CultureInfo.InvariantCulture, "{0}: {1}", current.GetType().FullName, current.Message);
+                            current = current.InnerException;
+                        }
+
+                        messages.AppendLine();
+                        messages.AppendLine();
+
+                        if (storageCredentialType == StorageCredentialType.DevelopmentStorage)
+                        {
+                            messages.AppendLine("Ensure that the storage emulator (e.g. Azurite) is running.");
+                        }
+                        else
+                        {
+                            messages.AppendLine("Ensure that the storage account exists.");
+                        }
+
+                        return new InvalidOperationException(
+                            $"""
+
+
+                            ########################
+                            # NUGET INSIGHTS TESTS #
+                            ########################
+
+                            The {endpoint} storage endpoint at {uri} is not responding.
+                            The storage credential type is {storageCredentialType}.
+                            The error is:
+                            {messages}
+                            """);
+                    }
+                }
+            }
+
+            return null;
         }
 
         public static string? GetEnvOrNull(string variable)

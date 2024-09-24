@@ -331,8 +331,11 @@ namespace NuGet.Insights
 
         protected async override Task DisposeInternalAsync()
         {
-            var client = await Host.Services.GetRequiredService<ServiceClientFactory>().GetTableServiceClientAsync();
-            await client.DeleteTableAsync(TableName);
+            if (!LogicTestSettings.HasStorageConnectionError)
+            {
+                var client = await Host.Services.GetRequiredService<ServiceClientFactory>().GetTableServiceClientAsync();
+                await client.DeleteTableAsync(TableName);
+            }
 
             await base.DisposeInternalAsync();
         }
