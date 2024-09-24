@@ -23,49 +23,6 @@ namespace NuGet.Insights.Worker
         {
         }
 
-        public static KustoConnectionStringBuilder GetKustoConnectionStringBuilder(NuGetInsightsWorkerSettings settings)
-        {
-            if (string.IsNullOrEmpty(settings.KustoConnectionString))
-            {
-                return new KustoConnectionStringBuilder("https://localhost:8080");
-            }
-
-            var builder = new KustoConnectionStringBuilder(settings.KustoConnectionString);
-
-            if (settings.KustoClientCertificatePath != null)
-            {
-                var certificate = new X509Certificate2(settings.KustoClientCertificatePath);
-                builder = builder.WithAadApplicationCertificateAuthentication(
-                    builder.ApplicationClientId,
-                    certificate,
-                    builder.Authority,
-                    builder.ApplicationCertificateSendX5c);
-            }
-            else if (settings.KustoClientCertificateKeyVault != null)
-            {
-                var certificate = CredentialCache.GetLazyCertificate(
-                    settings.KustoClientCertificateKeyVault,
-                    settings.KustoClientCertificateKeyVaultCertificateName).Value;
-                builder = builder.WithAadApplicationCertificateAuthentication(
-                    builder.ApplicationClientId,
-                    certificate,
-                    builder.Authority,
-                    builder.ApplicationCertificateSendX5c);
-            }
-            else if (settings.UserManagedIdentityClientId != null && settings.KustoUseUserManagedIdentity)
-            {
-                builder = builder.WithAadUserManagedIdentity(settings.UserManagedIdentityClientId);
-            }
-            else
-            {
-                builder = builder.WithAadAzureTokenCredentialsAuthentication(CredentialCache.DefaultAzureCredential);
-            }
-
-            return builder;
-        }
-
-        private static readonly object TraceListenersLock = new object();
-
         private static IReadOnlyList<Action<IServiceCollection>> AdditionalSetupActions = typeof(ServiceCollectionExtensions)
             .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
             .Where(x => x.Name.StartsWith("Setup", StringComparison.Ordinal)
@@ -128,74 +85,38 @@ namespace NuGet.Insights.Worker
 
             serviceCollection.AddSingleton(x =>
             {
-                var options = x.GetRequiredService<IOptions<NuGetInsightsWorkerSettings>>();
+                var connectionStringBuilder = GetKustoConnectionStringBuilder(x, addIngest: false);
 
-                if (options.Value.EnableDiagnosticTracingToLogger)
-                {
-                    lock (TraceListenersLock)
-                    {
-                        var anyListener = Trace
-                            .Listeners
-                            .OfType<LoggerTraceListener>()
-                            .Any();
-
-                        if (!anyListener)
-                        {
-                            ContextAwareTraceFormatter.GetStaticContext(
-                                out _,
-                                out var machineName,
-                                out var instanceId,
-                                out var instanceNumericId);
-                            ContextAwareTraceFormatter.SetStaticContext(
-                                "KustoClientSideTracing",
-                                machineName,
-                                instanceId,
-                                instanceNumericId);
-
-                            var loggerFactory = x.GetRequiredService<ILoggerFactory>();
-                            Trace.Listeners.Add(new LoggerTraceListener(loggerFactory));
-                        }
-                    }
-                }
-
-                return GetKustoConnectionStringBuilder(options.Value);
-            });
-            serviceCollection.AddSingleton(x =>
-            {
-                var connectionStringBuilder = x.GetRequiredService<KustoConnectionStringBuilder>();
                 var adminProvider = KustoClientFactory.CreateCslAdminProvider(connectionStringBuilder);
                 if (adminProvider is null)
                 {
                     throw new InvalidOperationException($"The {nameof(ICslAdminProvider)} instance must not be null, even if there is no Kusto configuration.");
                 }
+
                 return adminProvider;
             });
             serviceCollection.AddSingleton(x =>
             {
-                var connectionStringBuilder = x.GetRequiredService<KustoConnectionStringBuilder>();
+                var connectionStringBuilder = GetKustoConnectionStringBuilder(x, addIngest: false);
+
                 var queryProvider = KustoClientFactory.CreateCslQueryProvider(connectionStringBuilder);
                 if (queryProvider is null)
                 {
                     throw new InvalidOperationException($"The {nameof(ICslQueryProvider)} instance must not be null, even if there is no Kusto configuration.");
                 }
+
                 return queryProvider;
             });
             serviceCollection.AddSingleton(x =>
             {
-                var connectionStringBuilder = x.GetRequiredService<KustoConnectionStringBuilder>();
-
-                const string prefix = "https://";
-                if (connectionStringBuilder.DataSource == null || !connectionStringBuilder.DataSource.StartsWith(prefix, StringComparison.Ordinal))
-                {
-                    throw new InvalidOperationException($"The Kusto connection must have a data source that starts with '{prefix}'.");
-                }
-                connectionStringBuilder.DataSource = prefix + "ingest-" + connectionStringBuilder.DataSource.Substring(prefix.Length);
+                var connectionStringBuilder = GetKustoConnectionStringBuilder(x, addIngest: true);
 
                 var ingestClient = KustoIngestFactory.CreateQueuedIngestClient(connectionStringBuilder);
                 if (ingestClient is null)
                 {
                     throw new InvalidOperationException($"The {nameof(IKustoQueuedIngestClient)} instance must not be null, even if there is no Kusto configuration.");
                 }
+
                 return ingestClient;
             });
 
@@ -446,5 +367,95 @@ namespace NuGet.Insights.Worker
                 typeof(IMessageProcessor<>).MakeGenericType(typeof(TableRowCopyMessage<>).MakeGenericType(entityType)),
                 typeof(TableRowCopyMessageProcessor<>).MakeGenericType(entityType));
         }
+
+        private static KustoConnectionStringBuilder GetKustoConnectionStringBuilder(IServiceProvider provider, bool addIngest)
+        {
+            var settings = provider.GetRequiredService<IOptions<NuGetInsightsWorkerSettings>>().Value;
+
+            if (settings.EnableDiagnosticTracingToLogger)
+            {
+                lock (TraceListenersLock)
+                {
+                    var anyListener = Trace
+                        .Listeners
+                        .OfType<LoggerTraceListener>()
+                        .Any();
+
+                    if (!anyListener)
+                    {
+                        ContextAwareTraceFormatter.GetStaticContext(
+                            out _,
+                            out var machineName,
+                            out var instanceId,
+                            out var instanceNumericId);
+                        ContextAwareTraceFormatter.SetStaticContext(
+                            "KustoClientSideTracing",
+                            machineName,
+                            instanceId,
+                            instanceNumericId);
+
+                        var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
+                        Trace.Listeners.Add(new LoggerTraceListener(loggerFactory));
+                    }
+                }
+            }
+
+            return GetKustoConnectionStringBuilder(settings, addIngest);
+        }
+
+        public static KustoConnectionStringBuilder GetKustoConnectionStringBuilder(NuGetInsightsWorkerSettings settings, bool addIngest)
+        {
+            if (string.IsNullOrEmpty(settings.KustoConnectionString))
+            {
+                return new KustoConnectionStringBuilder("https://localhost:8080");
+            }
+
+            var builder = new KustoConnectionStringBuilder(settings.KustoConnectionString);
+
+            if (settings.KustoClientCertificatePath != null)
+            {
+                var certificate = new X509Certificate2(settings.KustoClientCertificatePath);
+                builder = builder.WithAadApplicationCertificateAuthentication(
+                    builder.ApplicationClientId,
+                    certificate,
+                    builder.Authority,
+                    builder.ApplicationCertificateSendX5c);
+            }
+            else if (settings.KustoClientCertificateKeyVault != null)
+            {
+                var certificate = CredentialCache.GetLazyCertificate(
+                    settings.KustoClientCertificateKeyVault,
+                    settings.KustoClientCertificateKeyVaultCertificateName).Value;
+                builder = builder.WithAadApplicationCertificateAuthentication(
+                    builder.ApplicationClientId,
+                    certificate,
+                    builder.Authority,
+                    builder.ApplicationCertificateSendX5c);
+            }
+            else if (settings.UserManagedIdentityClientId != null && settings.KustoUseUserManagedIdentity)
+            {
+                builder = builder.WithAadUserManagedIdentity(settings.UserManagedIdentityClientId);
+            }
+            else
+            {
+                builder = builder.WithAadAzureTokenCredentialsAuthentication(CredentialCache.DefaultAzureCredential);
+            }
+
+            const string prefix = "https://";
+            if (builder.DataSource == null || !builder.DataSource.StartsWith(prefix, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException($"The Kusto connection must have a data source that starts with '{prefix}'.");
+            }
+
+            if (addIngest)
+            {
+                builder.DataSource = prefix + "ingest-" + builder.DataSource.Substring(prefix.Length);
+            }
+
+            return builder;
+        }
+
+        private static readonly object TraceListenersLock = new object();
+
     }
 }

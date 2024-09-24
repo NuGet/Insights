@@ -1024,7 +1024,8 @@ namespace NuGet.Insights.Worker
         private static ICslAdminProvider GetKustoAdminClient()
         {
             var connectionStringBuilder = ServiceCollectionExtensions.GetKustoConnectionStringBuilder(
-                new NuGetInsightsWorkerSettings().WithTestKustoSettings());
+                new NuGetInsightsWorkerSettings().WithTestKustoSettings(),
+                addIngest: false);
 
             return KustoClientFactory.CreateCslAdminProvider(connectionStringBuilder);
         }
