@@ -1,21 +1,97 @@
 # Testing NuGet Insights
 
-To run the tests, all you need running is Azurite. You need to start the blob, queue, and table services. Azurite starts
-all three by default. A couple tests won't run without Kusto configuration but they will be gracefully skipped.
+The NuGet Insights tests use Azure storage heavily. There are three options for fulfilling this storage requirement and
+an additional option for testing Kusto integration.
+
+1. [Use in-memory storage stubs](#use-in-memory-storage-stubs)
+   - This is the default if no `NUGETINSIGHT_*` environment variables are set.
+   - Tests run very quickly but if new storage APIs are used, the stubs need to be enhanced.
+2. [Use storage emulator](#use-storage-emulator)
+   - Set environment variable `NUGETINSIGHTS_USEDEVELOPMENTSTORAGE` to `true`.
+   - Start all Azurite endpoints (blob, queue, tables).
+3. [Use real Azure storage](#use-real-azure-storage)
+   - Set environment variable `NUGETINSIGHTS_STORAGEACCOUNTNAME` to the name of your storage account and set permissions.
+4. [Use real Azure storage and real Kusto](#use-real-azure-storage-and-real-kusto)
+   - Same as the previous option but tests ingestion into Azure Data Explorer (Kusto).
+
+## Use in-memory storage stubs
+
+No set up is required. Just run `dotnet test` with no `NUGETINSIGHT_*` environment variables set. Note that there are
+some tests that will not be run because they require either a storage emulator, real Azure storage, or even Kusto.
+
+## Use storage emulator
+
+To use this option, all you need running is Azurite. See [Install
+Azurite](https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio%2Cblob-storage#install-azurite)
+on for documentation on how to get Azurite. You need to start the blob, queue, and table services. Azurite starts all
+three by default. A couple tests won't run without real storage or Kusto configuration but they will be gracefully
+skipped. If you have VS Code, you can install the Azurite extension a start the Azurite services in the VS Code status
+bar.
 
 To avoid disk space management and to improve performance, consider enabling [in-memory
-persistence](https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio%2Cblob-storage#in-memory-persistence). 
+persistence](https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=visual-studio%2Cblob-storage#in-memory-persistence).
 
-## Real Azure tests
+## Use real Azure storage
 
-The tests can be configured to run against real Azure Storage and even real Kusto (Azure Data Explorer). To do this, you
-need to set up test resources, configure authentication, and configure role assignments (permissions).
+The tests can be configured to run against real Azure Storage. To do this, you need to set up test resources, configure
+authentication, and configure role assignments (permissions). 
 
 To minimize credential management, it's recommended to give your current user (your own identity) the required blob,
-queue, table, and (optionally) Kusto permissions.
+queue, table role assignments on the storage account:
+
+- [Storage Blob Data Contributor](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/storage#storage-blob-data-contributor)
+- [Storage Queue Data Contributor](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/storage#storage-queue-data-contributor)
+- [Storage Table Data Contributor](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles/storage#storage-queue-data-contributor)
+
+[`DefaultAzureCredential`](https://learn.microsoft.com/en-us/dotnet/api/azure.identity.defaultazurecredential?view=azure-dotnet)
+is used by default for getting tokens for Azure resources so you can just sign in as yourself with Azure CLI or Azure
+PowerShell (both of which are token providers for `DefaultAzureCredential`).
 
 Here's are some Azure PowerShell (Az) commands you can do to create a storage account and Azure Data Explorer resource
 with the proper permissions.
+
+```powershell
+$resourceGroupName = "jver-insights-tests"
+$storageAccountName = "jverinsightstests"
+$region = "eastus"
+$signInName = (Get-AzContext).Account.Id
+
+# create the storage account, usually takes less than 1 minutes
+New-AzStorageAccount -ResourceGroupName $resourceGroupName `
+  -Name $storageAccountName `
+  -Location $region `
+  -SkuName Standard_LRS `
+  -Kind StorageV2
+
+$storageAccount = Get-AzStorageAccount -ResourceGroupName $resourceGroupName `
+    -Name $storageAccountName
+
+# assign permissions on the storage account
+New-AzRoleAssignment -SignInName $signInName `
+    -Scope $storageAccount.Id `
+    -RoleDefinitionName "Storage Blob Data Contributor"
+New-AzRoleAssignment -SignInName $signInName `
+    -Scope $storageAccount.Id `
+    -RoleDefinitionName "Storage Queue Data Contributor"
+New-AzRoleAssignment -SignInName $signInName `
+    -Scope $storageAccount.Id `
+    -RoleDefinitionName "Storage Table Data Contributor"
+
+# set test environment variables for the created resources
+$settings = @{
+  "NUGETINSIGHTS_STORAGEACCOUNTNAME" = $storageAccountName;
+}
+
+foreach ($pair in $settings.GetEnumerator()) {
+  Write-Host "Setting $($pair.Key)..."
+  [Environment]::SetEnvironmentVariable($pair.Key, $pair.Value)
+  [Environment]::SetEnvironmentVariable($pair.Key, $pair.Value, "User")
+}
+```
+
+## Use real Azure storage and real Kusto
+
+This is the same as the previous option but also set up the tests for ingesting into Kusto.
 
 ```powershell
 $resourceGroupName = "jver-insights-tests"
@@ -92,10 +168,15 @@ foreach ($pair in $settings) {
 
 ## Environment variable reference
 
+- `NUGETINSIGHTS_USEMEMORYSTORAGE`
+  - **Readable name**: use memory storage
+  - **Purpose**: use the in-memory implementation of storage (blob, queue, table) service clients. Defaults to `true`
+    with a fake storage account name if `NUGETINSIGHTS_USEDEVELOPMENTSTORAGE` is unset and
+    `NUGETINSIGHTS_STORAGEACCOUNTNAME` is unset.
+
 - `NUGETINSIGHTS_USEDEVELOPMENTSTORAGE`
   - **Readable name**: use development storage
-  - **Purpose**: force the storage emulator endpoints to be used if set to `true`. Defaults to `true` if
-    `NUGETINSIGHTS_STORAGEACCOUNTNAME` is not set. Defaults to `false` if `NUGETINSIGHTS_STORAGEACCOUNTNAME` is set.
+  - **Purpose**: force the storage emulator endpoints to be used if set to `true`.
 
 - `NUGETINSIGHTS_STORAGEACCOUNTNAME`
   - **Readable name**: storage account name

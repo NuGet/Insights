@@ -7,9 +7,10 @@ parameters:
     - osx-x64
     - win-x64
 - name: storageTypes
-  displayName: The types of Azure Storage to test against ("Azurite", "AzureWithoutKusto", or "AzureWithKusto")
+  displayName: The types of Azure Storage to test against ("Memory", "Azurite", "AzureWithoutKusto", or "AzureWithKusto")
   type: object
   default:
+    - Memory
     - Azurite
     - AzureWithoutKusto
     - AzureWithKusto
@@ -229,6 +230,10 @@ stages:
         - script: dotnet test $(BuildSolution) --no-build --no-restore --configuration $(BuildConfiguration) --logger trx --logger "console;verbosity=normal" --blame-crash-dump-type full --blame-hang-timeout 20m --collect "Code coverage" --results-directory $(OutputDirectory)/TestResults/
           displayName: "Run tests"
           env:
+            ${{ if eq(storageType, 'Memory') }}:
+              NUGETINSIGHTS_USEMEMORYSTORAGE: true
+            ${{ if eq(storageType, 'Azurite') }}:
+              NUGETINSIGHTS_USEDEVELOPMENTSTORAGE: true
             ${{ if or(eq(storageType, 'AzureWithoutKusto'), eq(storageType, 'AzureWithKusto')) }}:
               NUGETINSIGHTS_STORAGEACCOUNTNAME: $(nugetinsightstests-StorageAccountName)
               NUGETINSIGHTS_STORAGECLIENTAPPLICATIONID: $(nugetinsightstests-StorageClientApplicationId)

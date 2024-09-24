@@ -20,6 +20,7 @@ namespace NuGet.Insights
         }
 
         private const string UseDevelopmentStorageEnvName = "NUGETINSIGHTS_USEDEVELOPMENTSTORAGE";
+        private const string UseMemoryStorageEnvName = "NUGETINSIGHTS_USEMEMORYSTORAGE";
         private const string StorageAccountNameEnvName = "NUGETINSIGHTS_STORAGEACCOUNTNAME";
         private const string StorageClientApplicationIdEnvName = "NUGETINSIGHTS_STORAGECLIENTAPPLICATIONID";
         private const string StorageClientTenantIdEnvName = "NUGETINSIGHTS_STORAGECLIENTTENANTID";
@@ -27,11 +28,12 @@ namespace NuGet.Insights
         private const string StorageClientCertificateKeyVaultEnvName = "NUGETINSIGHTS_STORAGECLIENTCERTIFICATEKEYVAULT";
         private const string StorageClientCertificateKeyVaultCertificateNameEnvName = "NUGETINSIGHTS_STORAGECLIENTCERTIFICATEKEYVAULTCERTIFICATENAME";
 
-        public static bool UseMemoryStorage => false;
+        public static bool UseMemoryStorage => PopulateSettings(new NuGetInsightsSettings()).UseMemoryStorage;
         public static bool UseDevelopmentStorage => StorageCredentialType == StorageCredentialType.DevelopmentStorage;
         public static StorageCredentialType StorageCredentialType => ServiceClientFactory.GetStorageCredentialType(PopulateSettings(new NuGetInsightsSettings()));
 
         private static bool? UseDevelopmentStorageEnv => GetEnvBool(UseDevelopmentStorageEnvName);
+        private static bool? UseMemoryStorageEnv => GetEnvBool(UseMemoryStorageEnvName);
         private static string? StorageAccountNameEnv => GetEnvOrNull(StorageAccountNameEnvName);
         private static string? StorageClientApplicationIdEnv => GetEnvOrNull(StorageClientApplicationIdEnvName);
         private static string? StorageClientTenantIdEnv => GetEnvOrNull(StorageClientTenantIdEnvName);
@@ -55,6 +57,7 @@ namespace NuGet.Insights
         private static T PopulateSettings<T>(T settings) where T : NuGetInsightsSettings
         {
             settings.UseDevelopmentStorage = UseDevelopmentStorageEnv.GetValueOrDefault(false);
+            settings.UseMemoryStorage = UseMemoryStorageEnv.GetValueOrDefault(false);
             settings.StorageAccountName = StorageAccountNameEnv;
 
             settings.StorageClientApplicationId = StorageClientApplicationIdEnv;
@@ -63,12 +66,13 @@ namespace NuGet.Insights
             settings.StorageClientCertificateKeyVault = StorageClientCertificateKeyVaultEnv;
             settings.StorageClientCertificateKeyVaultCertificateName = StorageClientCertificateKeyVaultCertificateNameEnv;
 
-            // if no settings are provided, use storage emulator
-            if (!UseDevelopmentStorageEnv.HasValue
+            // if no settings are provided, use in-memory storage with a fake account name
+            if (UseMemoryStorageEnv.GetValueOrDefault(true)
+                && !UseDevelopmentStorageEnv.GetValueOrDefault(false)
                 && StorageAccountNameEnv is null)
             {
-                settings.UseDevelopmentStorage = true;
-                settings.StorageAccountName = null;
+                settings.UseMemoryStorage = true;
+                settings.StorageAccountName = "memorystorage";
             }
 
             return settings;
@@ -76,7 +80,8 @@ namespace NuGet.Insights
 
         private static void VerifyStorageConfiguration()
         {
-            if (UseDevelopmentStorageEnv == false
+            if (UseMemoryStorageEnv == false
+                && UseDevelopmentStorageEnv == false
                 && StorageAccountNameEnv is null)
             {
                 var names = string.Join(Environment.NewLine, Environment
@@ -96,6 +101,10 @@ namespace NuGet.Insights
                     ########################
 
                     No valid test storage configurations were found. Consider these options:
+
+                    - Set {UseMemoryStorageEnvName} to 'true' (or unset it) to use in-memory storage.
+                      * It evaluates to '{UseMemoryStorageEnv}' now.
+                      * This is the easiest option.
 
                     - Set {UseDevelopmentStorageEnvName} to 'true' to use the storage emulator.
                       * It evaluates to '{UseDevelopmentStorageEnv}' now.
@@ -121,6 +130,11 @@ namespace NuGet.Insights
         {
             NuGetInsightsSettings settings = new NuGetInsightsSettings();
             PopulateSettings(settings);
+
+            if (settings.UseMemoryStorage)
+            {
+                return null;
+            }
 
             var storageCredentialType = ServiceClientFactory.GetStorageCredentialType(settings);
             var (blob, queue, table) = storageCredentialType == StorageCredentialType.DevelopmentStorage
