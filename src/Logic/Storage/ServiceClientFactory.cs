@@ -11,6 +11,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Queues;
 using Azure.Storage.Sas;
+using NuGet.Insights.MemoryStorage;
 using NuGet.Insights.StorageNoOpRetry;
 
 #nullable enable
@@ -99,6 +100,14 @@ namespace NuGet.Insights
                 }
 
                 blobClient = new BlobClient(blobUrl, serviceClients.StorageTokenCredential!, serviceClients.BlobClientOptions);
+            }
+
+            if (serviceClients.UseMemoryStorage)
+            {
+                var serviceClient = (MemoryBlobServiceClient)serviceClients.BlobServiceClient;
+                blobClient = serviceClient
+                    .GetBlobContainerClient(blobClient.BlobContainerName)
+                    .GetBlobClient(blobClient.Name);
             }
 
             return blobClient;
@@ -337,7 +346,15 @@ namespace NuGet.Insights
             UserDelegationKey? userDelegationKey;
             if (tokenCredential is not null)
             {
-                blob = new BlobServiceClient(blobServiceUri, tokenCredential, blobClientOptions);
+                if (useMemoryStorage)
+                {
+                    blob = new MemoryBlobServiceClient(blobServiceUri, tokenCredential, blobClientOptions);
+                }
+                else
+                {
+                    blob = new BlobServiceClient(blobServiceUri, tokenCredential, blobClientOptions);
+                }
+
                 queue = new QueueServiceClient(queueServiceUri, tokenCredential, queueClientOptions);
                 table = new TableServiceClient(tableServiceUri, tokenCredential, tableClientOptions);
                 userDelegationKey = await blob.GetUserDelegationKeyAsync(startsOn: null, expiresOn: sasExpiry);
@@ -352,7 +369,15 @@ namespace NuGet.Insights
             }
             else
             {
-                blob = new BlobServiceClient(blobServiceUri, storageAccessKeyCredential, blobClientOptions);
+                if (useMemoryStorage)
+                {
+                    blob = new MemoryBlobServiceClient(blobServiceUri, storageAccessKeyCredential!, blobClientOptions);
+                }
+                else
+                {
+                    blob = new BlobServiceClient(blobServiceUri, storageAccessKeyCredential, blobClientOptions);
+                }
+
                 queue = new QueueServiceClient(queueServiceUri, storageAccessKeyCredential, queueClientOptions);
                 table = new TableServiceClient(tableServiceUri, tableAccessKeyCredential, tableClientOptions);
                 userDelegationKey = null;

@@ -95,7 +95,7 @@ namespace NuGet.Insights
                 Assert.True(released);
             }
 
-            [Fact]
+            [NoInMemoryStorageFact]
             public async Task DoesNotAllowReleaseWithRetriesAndAnotherThread()
             {
                 // arrange
