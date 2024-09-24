@@ -118,7 +118,7 @@ namespace NuGet.Insights.Worker
             ConfigureDefaultsAndSettings(settings);
 
             settings.TimedReprocessIsEnabled = true;
-            settings.MaxMessageDelay = TimeSpan.FromMilliseconds(100);
+            settings.MaxMessageDelay = TimeSpan.FromMilliseconds(50);
             settings.AppendResultStorageBucketCount = 1;
             settings.KustoDatabaseName = "TestKustoDb";
             settings.PackageContentFileExtensions = new List<string> { ".txt" };
@@ -329,9 +329,36 @@ namespace NuGet.Insights.Worker
 
             async Task WaitForCompleteAsync()
             {
-                while (processingMessages.Count > 0 || !await isCompleteAsync())
+                var sw = new Stopwatch();
+                var pollRate = TimeSpan.FromMilliseconds(100);
+                while (true)
                 {
-                    await Task.Delay(TimeSpan.FromMilliseconds(50));
+                    // process messages for a while
+                    sw.Restart();
+                    while (processingMessages.Count > 0 && sw.Elapsed < TimeSpan.FromSeconds(1))
+                    {
+                        await Task.Delay(pollRate);
+                    }
+
+                    // check for completion
+                    if (await isCompleteAsync())
+                    {
+                        // wait a while for messages to empty, but don't block
+                        sw.Restart();
+                        while (processingMessages.Count > 0 && sw.Elapsed < TimeSpan.FromSeconds(5))
+                        {
+                            await Task.Delay(pollRate);
+                        }
+
+                        if (processingMessages.Count > 0)
+                        {
+                            Logger.LogTransientWarning("The work is complete but {Count} queue messages are still processing.", processingMessages);
+                        }
+
+                        break;
+                    }
+
+                    await Task.Delay(pollRate);
                 }
             }
 
@@ -511,7 +538,7 @@ namespace NuGet.Insights.Worker
             var blob = await GetBlobAsync(containerName, blobName);
 
             using var destStream = new MemoryStream();
-            using BlobDownloadInfo downloadInfo = await blob.DownloadAsync();
+            using BlobDownloadStreamingResult downloadInfo = await blob.DownloadStreamingAsync();
             await downloadInfo.Content.CopyToAsync(destStream);
             destStream.Position = 0;
 

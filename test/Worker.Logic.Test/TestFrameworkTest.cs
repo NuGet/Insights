@@ -11,11 +11,18 @@ namespace NuGet.Insights.Worker
         public async Task SkipsMessageThatIsAlreadyBeingProcessed()
         {
             // Arrange
+            RetryFailedMessages = true;
+            FailFastLogLevel = LogLevel.None;
+            AssertLogLevel = LogLevel.None;
             LogMessages.Limit = int.MaxValue;
+
             await CatalogScanService.InitializeAsync();
             var result = await CatalogScanService.UpdateAsync(CatalogScanDriverType.CatalogDataToCsv, CatalogClient.NuGetOrgFirstCommit);
             Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
             var scan = result.Scan;
+            bool IsMatchingMessage(string m) =>
+                Regex.IsMatch(m, "Skipping message .+? because it's already being processed")
+                && m.Contains(scan.ScanId, StringComparison.Ordinal);
 
             var getTask1 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var getTask2 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -38,22 +45,20 @@ namespace NuGet.Insights.Worker
             };
 
             // Act
-            try
-            {
-                await ProcessQueueAsync(
-                    () => Task.FromResult(getTask1.Task.IsCompleted && getTask2.Task.IsCompleted),
-                    parallel: true,
-                    visibilityTimeout: TimeSpan.FromSeconds(1));
-            }
-            catch
-            {
-                // ignore
-            }
+            await ProcessQueueAsync(
+                () =>
+                {
+                    var complete =
+                        getTask1.Task.IsCompleted
+                        && getTask2.Task.IsCompleted
+                        && LogMessages.Any(IsMatchingMessage);
+                    return Task.FromResult(complete);
+                },
+                parallel: true,
+                visibilityTimeout: TimeSpan.FromSeconds(1));
 
             // Assert
-            Assert.Contains(
-                LogMessages,
-                x => Regex.IsMatch(x, "Skipping message .+? because it's already being processed") && x.Contains(scan.ScanId, StringComparison.Ordinal));
+            Assert.Contains(LogMessages, IsMatchingMessage);
         }
 
         public TestFrameworkTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

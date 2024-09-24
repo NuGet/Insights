@@ -600,7 +600,7 @@ namespace NuGet.Insights.WideEntities
                 Assert.Equal(rowKey, wideEntity.RowKey);
                 var error = TimeSpan.FromMinutes(5);
                 Assert.NotEqual(default, wideEntity.ETag);
-                Assert.Equal(LogicTestSettings.UseDevelopmentStorage ? 8 : 3, wideEntity.SegmentCount);
+                Assert.Equal(_fixture.Settings.UseDevelopmentStorage ? 8 : 3, wideEntity.SegmentCount);
             }
 
             public static IEnumerable<object[]> RoundTripsBytesTestData => ByteArrayLengths

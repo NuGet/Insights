@@ -58,7 +58,7 @@ namespace NuGet.Insights
             Assert.Equal(ReadmeType.None, info.ReadmeType);
         }
 
-        [StorageTokenCredentialFact]
+        [RealStorageTokenCredentialFact]
         public async Task ReturnsReadmeContentWithLegacyPatternFromPrivateAzureStorage()
         {
             // Arrange

@@ -4,45 +4,54 @@
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 
+#nullable enable
+
 namespace NuGet.Insights
 {
     public static class LogicTestSettings
     {
-        private const string StorageAccountNameEnv = "NUGETINSIGHTS_STORAGEACCOUNTNAME";
-        private const string StorageClientApplicationIdEnv = "NUGETINSIGHTS_STORAGECLIENTAPPLICATIONID";
-        private const string StorageClientTenantIdEnv = "NUGETINSIGHTS_STORAGECLIENTTENANTID";
-        private const string StorageClientCertificatePathEnv = "NUGETINSIGHTS_STORAGECLIENTCERTIFICATEPATH";
-        private const string StorageClientCertificateKeyVaultEnv = "NUGETINSIGHTS_STORAGECLIENTCERTIFICATEKEYVAULT";
-        private const string StorageClientCertificateKeyVaultCertificateNameEnv = "NUGETINSIGHTS_STORAGECLIENTCERTIFICATEKEYVAULTCERTIFICATENAME";
+        private const string UseDevelopmentStorageEnvName = "NUGETINSIGHTS_USEDEVELOPMENTSTORAGE";
+        private const string StorageAccountNameEnvName = "NUGETINSIGHTS_STORAGEACCOUNTNAME";
+        private const string StorageClientApplicationIdEnvName = "NUGETINSIGHTS_STORAGECLIENTAPPLICATIONID";
+        private const string StorageClientTenantIdEnvName = "NUGETINSIGHTS_STORAGECLIENTTENANTID";
+        private const string StorageClientCertificatePathEnvName = "NUGETINSIGHTS_STORAGECLIENTCERTIFICATEPATH";
+        private const string StorageClientCertificateKeyVaultEnvName = "NUGETINSIGHTS_STORAGECLIENTCERTIFICATEKEYVAULT";
+        private const string StorageClientCertificateKeyVaultCertificateNameEnvName = "NUGETINSIGHTS_STORAGECLIENTCERTIFICATEKEYVAULTCERTIFICATENAME";
 
         public static bool UseDevelopmentStorage => StorageCredentialType == StorageCredentialType.DevelopmentStorage;
         public static StorageCredentialType StorageCredentialType => ServiceClientFactory.GetStorageCredentialType(new NuGetInsightsSettings().WithTestStorageSettings());
 
-        public static string StorageAccountName => GetEnvOrNull(StorageAccountNameEnv);
-        public static string StorageClientApplicationId => GetEnvOrNull(StorageClientApplicationIdEnv);
-        private static string StorageClientTenantId => GetEnvOrNull(StorageClientTenantIdEnv);
-        private static string StorageClientCertificatePath => GetEnvOrNull(StorageClientCertificatePathEnv);
-        private static string StorageClientCertificateKeyVault => GetEnvOrNull(StorageClientCertificateKeyVaultEnv);
-        private static string StorageClientCertificateKeyVaultCertificateName => GetEnvOrNull(StorageClientCertificateKeyVaultCertificateNameEnv);
+        private static bool? UseDevelopmentStorageEnv => GetEnvBool(UseDevelopmentStorageEnvName);
+        private static string? StorageAccountNameEnv => GetEnvOrNull(StorageAccountNameEnvName);
+        private static string? StorageClientApplicationIdEnv => GetEnvOrNull(StorageClientApplicationIdEnvName);
+        private static string? StorageClientTenantIdEnv => GetEnvOrNull(StorageClientTenantIdEnvName);
+        private static string? StorageClientCertificatePathEnv => GetEnvOrNull(StorageClientCertificatePathEnvName);
+        private static string? StorageClientCertificateKeyVaultEnv => GetEnvOrNull(StorageClientCertificateKeyVaultEnvName);
+        private static string? StorageClientCertificateKeyVaultCertificateNameEnv => GetEnvOrNull(StorageClientCertificateKeyVaultCertificateNameEnvName);
 
         public static T WithTestStorageSettings<T>(this T settings) where T : NuGetInsightsSettings
         {
-            settings.StorageAccountName = StorageAccountName;
-            settings.StorageClientApplicationId = StorageClientApplicationId;
-            settings.StorageClientCertificateKeyVault = StorageClientCertificateKeyVault;
-            settings.StorageClientCertificateKeyVaultCertificateName = StorageClientCertificateKeyVaultCertificateName;
-            settings.StorageClientCertificatePath = StorageClientCertificatePath;
-            settings.StorageClientTenantId = StorageClientTenantId;
+            settings.UseDevelopmentStorage = UseDevelopmentStorageEnv.GetValueOrDefault(false);
+            settings.StorageAccountName = StorageAccountNameEnv;
 
-            if (settings.StorageAccountName is null)
+            settings.StorageClientApplicationId = StorageClientApplicationIdEnv;
+            settings.StorageClientTenantId = StorageClientTenantIdEnv;
+            settings.StorageClientCertificatePath = StorageClientCertificatePathEnv;
+            settings.StorageClientCertificateKeyVault = StorageClientCertificateKeyVaultEnv;
+            settings.StorageClientCertificateKeyVaultCertificateName = StorageClientCertificateKeyVaultCertificateNameEnv;
+
+            // if no settings are provided, use storage emulator
+            if (!UseDevelopmentStorageEnv.HasValue
+                && StorageAccountNameEnv is null)
             {
                 settings.UseDevelopmentStorage = true;
+                settings.StorageAccountName = null;
             }
 
             return settings;
         }
 
-        public static string GetEnvOrNull(string variable)
+        public static string? GetEnvOrNull(string variable)
         {
             var value = Environment.GetEnvironmentVariable(variable);
             if (string.IsNullOrWhiteSpace(value))
@@ -50,7 +59,19 @@ namespace NuGet.Insights
                 return null;
             }
 
-            return value;
+            return value.Trim();
+        }
+
+        public static bool? GetEnvBool(string variable)
+        {
+            var value = GetEnvOrNull(variable);
+            if (value is null
+                || !bool.TryParse(value, out var output))
+            {
+                return null;
+            }
+
+            return output;
         }
 
         private const string StoragePrefixPatternString = @"t(?<Date>\d{6})[a-z234567]{16}";

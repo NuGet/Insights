@@ -919,7 +919,7 @@ namespace NuGet.Insights.Worker
         private async Task<(CsvReaderResult<T> result, BlobDownloadDetails details)> DeserializeBlobAsync<T>(BlockBlobClient blob, int bufferSize)
             where T : ICsvRecord
         {
-            using BlobDownloadInfo info = await blob.DownloadAsync();
+            using BlobDownloadStreamingResult info = await blob.DownloadStreamingAsync();
             var readStream = info.Content;
             try
             {

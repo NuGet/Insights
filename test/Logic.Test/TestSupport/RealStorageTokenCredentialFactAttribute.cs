@@ -3,9 +3,9 @@
 
 namespace NuGet.Insights
 {
-    public class StorageTokenCredentialFactAttribute : FactAttribute
+    public class RealStorageTokenCredentialFactAttribute : FactAttribute
     {
-        public StorageTokenCredentialFactAttribute()
+        public RealStorageTokenCredentialFactAttribute()
         {
             var type = LogicTestSettings.StorageCredentialType;
             switch (type)

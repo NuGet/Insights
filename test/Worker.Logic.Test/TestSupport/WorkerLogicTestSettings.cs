@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 namespace NuGet.Insights.Worker
 {
     public static class WorkerLogicTestSettings
@@ -11,11 +13,11 @@ namespace NuGet.Insights.Worker
         private const string KustoClientCertificateKeyVaultEnv = "NUGETINSIGHTS_KUSTOCLIENTCERTIFICATEKEYVAULT";
         private const string KustoClientCertificateKeyVaultCertificateNameEnv = "NUGETINSIGHTS_KUSTOCLIENTCERTIFICATEKEYVAULTCERTIFICATENAME";
 
-        private static string KustoConnectionString => LogicTestSettings.GetEnvOrNull(KustoConnectionStringEnv);
-        private static string KustoDatabaseName => LogicTestSettings.GetEnvOrNull(KustoDatabaseNameEnv);
-        private static string KustoClientCertificatePath => LogicTestSettings.GetEnvOrNull(KustoClientCertificatePathEnv);
-        private static string KustoClientCertificateKeyVault => LogicTestSettings.GetEnvOrNull(KustoClientCertificateKeyVaultEnv);
-        private static string KustoClientCertificateKeyVaultCertificateName => LogicTestSettings.GetEnvOrNull(KustoClientCertificateKeyVaultCertificateNameEnv);
+        private static string? KustoConnectionString => LogicTestSettings.GetEnvOrNull(KustoConnectionStringEnv);
+        private static string? KustoDatabaseName => LogicTestSettings.GetEnvOrNull(KustoDatabaseNameEnv);
+        private static string? KustoClientCertificatePath => LogicTestSettings.GetEnvOrNull(KustoClientCertificatePathEnv);
+        private static string? KustoClientCertificateKeyVault => LogicTestSettings.GetEnvOrNull(KustoClientCertificateKeyVaultEnv);
+        private static string? KustoClientCertificateKeyVaultCertificateName => LogicTestSettings.GetEnvOrNull(KustoClientCertificateKeyVaultCertificateNameEnv);
 
         public static T WithTestKustoSettings<T>(this T settings) where T : NuGetInsightsWorkerSettings
         {
@@ -24,6 +26,7 @@ namespace NuGet.Insights.Worker
             settings.KustoClientCertificatePath = KustoClientCertificatePath;
             settings.KustoClientCertificateKeyVault = KustoClientCertificateKeyVault;
             settings.KustoClientCertificateKeyVaultCertificateName = KustoClientCertificateKeyVaultCertificateName;
+
             return settings;
         }
     }

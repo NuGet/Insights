@@ -71,6 +71,14 @@ namespace NuGet.Insights
         {
             var serviceClients = await GetCachedServiceClientsAsync();
 
+            if (serviceClients.StorageCredentialType != StorageCredentialType.DevelopmentStorage
+                && (blobUrl.Scheme != "https" // only allow HTTPS
+                    || !blobUrl.Host.EndsWith(".blob.core.windows.net", StringComparison.OrdinalIgnoreCase)) // only allow blob storage URLs
+                    || !string.IsNullOrEmpty(blobUrl.Query)) // don't allow SAS tokens
+            {
+                return null;
+            }
+
             BlobClient blobClient;
             if (serviceClients.StorageSharedKeyCredential is not null)
             {
@@ -84,14 +92,13 @@ namespace NuGet.Insights
             }
             else
             {
-                blobClient = new BlobClient(blobUrl, serviceClients.StorageTokenCredential!, serviceClients.BlobClientOptions);
-            }
+                // token credential requires HTTPS
+                if (blobUrl.Scheme != "https")
+                {
+                    return null;
+                }
 
-            if (serviceClients.StorageCredentialType != StorageCredentialType.DevelopmentStorage
-                && (blobClient.Uri.Scheme != "https"
-                    || blobUrl.Host.EndsWith(".blob.core.windows.net", StringComparison.OrdinalIgnoreCase)))
-            {
-                return null;
+                blobClient = new BlobClient(blobUrl, serviceClients.StorageTokenCredential!, serviceClients.BlobClientOptions);
             }
 
             return blobClient;

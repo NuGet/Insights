@@ -5,7 +5,7 @@ namespace NuGet.Insights
 {
     public class PackageDownloadsClientIntegrationTest : BaseLogicIntegrationTest
     {
-        [StorageTokenCredentialFact]
+        [RealStorageTokenCredentialFact]
         public async Task CanFetchDataFromPrivateAzureStorage()
         {
             // Arrange

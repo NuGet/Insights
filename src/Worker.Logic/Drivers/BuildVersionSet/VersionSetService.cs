@@ -99,13 +99,13 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             {
                 _logger.LogInformation("Reading the version set from storage...");
                 var blob = await GetBlobAsync();
-                using BlobDownloadInfo info = await blob.DownloadAsync();
+                using BlobDownloadStreamingResult info = await blob.DownloadStreamingAsync();
                 var data = await MessagePackSerializer.DeserializeAsync<Versions<T>>(info.Content, NuGetInsightsMessagePack.Options);
                 _logger.LogInformation(
                     "The version set exists with commit timestamp {CommitTimestamp:O} and etag {ETag} and is {Size} bytes.",
                     data.V1.CommitTimestamp,
                     info.Details.ETag,
-                    info.ContentLength);
+                    info.Details.ContentLength);
                 return (data, info.Details.ETag);
             }
             catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
@@ -208,22 +208,24 @@ namespace NuGet.Insights.Worker.BuildVersionSet
         private async Task SaveAsync<T>(DateTimeOffset commitTimestamp, T data, BlobRequestConditions requestConditions)
         {
             var sw = Stopwatch.StartNew();
-            _logger.LogInformation("Writing the version set to the temporary blob with commit timestamp {CommitTimestamp:O}...", commitTimestamp);
-            var tempBlob = await GetTempBlobAsync();
-            using (var stream = await tempBlob.OpenWriteAsync(overwrite: true))
+            _logger.LogInformation("Writing the version set to the temporary file with commit timestamp {CommitTimestamp:O}...", commitTimestamp);
+            var tempPath = Path.Combine(Path.GetTempPath(), $"NuGet.Insights.VersionSet.{Guid.NewGuid().ToByteArray().ToTrimmedBase32()}.dat");
+            using var stream = new FileStream(tempPath, new FileStreamOptions
             {
-                await MessagePackSerializer.SerializeAsync(stream, data, NuGetInsightsMessagePack.Options);
-            }
-            _logger.LogInformation("Done writing the version set to the temporary blob.");
+                Access = FileAccess.ReadWrite,
+                Mode = FileMode.CreateNew,
+                Options = FileOptions.DeleteOnClose,
+            });
+            await MessagePackSerializer.SerializeAsync(stream, data, NuGetInsightsMessagePack.Options);
+            stream.Flush();
+            stream.Position = 0;
+            _logger.LogInformation("Done writing the version set to the temporary file.");
 
-            var tempBlobUrlWithSas = await _serviceClientFactory.GetBlobReadUrlAsync(tempBlob.BlobContainerName, tempBlob.Name);
-
-            _logger.LogInformation("Copying the temp version set to destination blob...");
+            _logger.LogInformation("Uploading the temporary file to the destination blob...");
             var blob = await GetBlobAsync();
-            await blob.SyncCopyFromUriAsync(tempBlobUrlWithSas, new BlobCopyFromUriOptions { DestinationConditions = requestConditions });
-            _logger.LogInformation("Done copying the temp version set to the destination blob.");
+            await blob.UploadAsync(stream, new BlobUploadOptions { Conditions = requestConditions });
+            _logger.LogInformation("Done copying the temporary file to the destination blob.");
 
-            await tempBlob.DeleteAsync();
             _telemetryClient.TrackMetric(nameof(VersionSetService) + ".Save.ElapsedMs", sw.Elapsed.TotalMilliseconds);
         }
 

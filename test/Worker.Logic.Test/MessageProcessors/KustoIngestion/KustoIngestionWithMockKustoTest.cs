@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Azure.Storage.Blobs.Models;
 using Kusto.Data.Common;
 using Kusto.Ingest;
 using Microsoft.Extensions.Hosting;
@@ -63,15 +64,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 It.IsAny<KustoIngestionProperties>(),
                 It.IsAny<StorageSourceOptions>()), Times.Once);
             Assert.Equal(2, MockKustoQueueIngestClient.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
-            var urls = MockKustoQueueIngestClient
-                .Invocations
-                .Where(x => x.Method.Name == nameof(IKustoQueuedIngestClient.IngestFromStorageAsync))
-                .Select(x => (string)x.Arguments[0]);
-            foreach (var url in urls)
-            {
-                using var response = await Host.Services.GetRequiredService<HttpClient>().GetAsync(url);
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            }
+            await VerifyIngestedUrlsAsync();
         }
 
         [Fact]
@@ -162,15 +155,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 It.IsAny<KustoIngestionProperties>(),
                 It.IsAny<StorageSourceOptions>()), Times.Once);
             Assert.Equal(2, MockKustoQueueIngestClient.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
-            var urls = MockKustoQueueIngestClient
-                .Invocations
-                .Where(x => x.Method.Name == nameof(IKustoQueuedIngestClient.IngestFromStorageAsync))
-                .Select(x => (string)x.Arguments[0]);
-            foreach (var url in urls)
-            {
-                using var response = await Host.Services.GetRequiredService<HttpClient>().GetAsync(url);
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            }
+            await VerifyIngestedUrlsAsync();
         }
 
         [Fact]
@@ -241,15 +226,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 It.IsAny<KustoIngestionProperties>(),
                 It.IsAny<StorageSourceOptions>()), Times.Exactly(3));
             Assert.Equal(6, MockKustoQueueIngestClient.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
-            var urls = MockKustoQueueIngestClient
-                .Invocations
-                .Where(x => x.Method.Name == nameof(IKustoQueuedIngestClient.IngestFromStorageAsync))
-                .Select(x => (string)x.Arguments[0]);
-            foreach (var url in urls)
-            {
-                using var response = await Host.Services.GetRequiredService<HttpClient>().GetAsync(url);
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            }
+            await VerifyIngestedUrlsAsync();
         }
 
         [Fact]
@@ -307,6 +284,21 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
         public KustoIngestionWithMockKustoTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
+        }
+
+        private async Task VerifyIngestedUrlsAsync()
+        {
+            var urls = MockKustoQueueIngestClient
+                .Invocations
+                .Where(x => x.Method.Name == nameof(IKustoQueuedIngestClient.IngestFromStorageAsync))
+                .Select(x => (string)x.Arguments[0]);
+            foreach (var url in urls)
+            {
+                var blobClient = await ServiceClientFactory.TryGetBlobClientAsync(new UriBuilder(url) { Query = null }.Uri);
+                Assert.NotNull(blobClient);
+                BlobProperties properties = await blobClient.GetPropertiesAsync();
+                Assert.NotNull(properties);
+            }
         }
 
         private void VerifyCommand(string command, Times times)
