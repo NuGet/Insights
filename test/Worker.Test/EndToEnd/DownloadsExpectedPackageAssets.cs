@@ -106,13 +106,13 @@ namespace NuGet.Insights.Worker
                 Logger.LogInformation("Found User-Agent: {UserAgent}", userAgent);
             }
 
-            Assert.Equal(Options.Value.UseMemoryStorage ? 2 : 4, userAgents.Count); // NuGet Insights, and Blob + Queue + Table Azure SDK.
+            Assert.Equal(Options.Value.UseMemoryStorage ? 1 : 4, userAgents.Count); // NuGet Insights, and Blob + Queue + Table Azure SDK.
             Assert.StartsWith("Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0; AppInsights)", userAgents[0], StringComparison.Ordinal);
             var i = 0;
             Assert.Matches(@"(NuGet Test Client)/?(\d+)?\.?(\d+)?\.?(\d+)?", userAgents[i++]);
-            Assert.StartsWith("azsdk-net-Data.Tables/", userAgents[i++], StringComparison.Ordinal);
             if (!Options.Value.UseMemoryStorage)
             {
+                Assert.StartsWith("azsdk-net-Data.Tables/", userAgents[i++], StringComparison.Ordinal);
                 Assert.StartsWith("azsdk-net-Storage.Blobs/", userAgents[i++], StringComparison.Ordinal);
                 Assert.StartsWith("azsdk-net-Storage.Queues/", userAgents[i++], StringComparison.Ordinal);
             }

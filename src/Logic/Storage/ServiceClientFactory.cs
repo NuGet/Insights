@@ -350,14 +350,15 @@ namespace NuGet.Insights
                 {
                     blob = new MemoryBlobServiceClient(blobServiceUri, tokenCredential, blobClientOptions);
                     queue = new MemoryQueueServiceClient(queueServiceUri, tokenCredential, queueClientOptions);
+                    table = new MemoryTableServiceClient(tableServiceUri, tokenCredential, tableClientOptions);
                 }
                 else
                 {
                     blob = new BlobServiceClient(blobServiceUri, tokenCredential, blobClientOptions);
                     queue = new QueueServiceClient(queueServiceUri, tokenCredential, queueClientOptions);
+                    table = new TableServiceClient(tableServiceUri, tokenCredential, tableClientOptions);
                 }
 
-                table = new TableServiceClient(tableServiceUri, tokenCredential, tableClientOptions);
                 userDelegationKey = await blob.GetUserDelegationKeyAsync(startsOn: null, expiresOn: sasExpiry);
 
                 logger.LogInformation(
@@ -374,14 +375,15 @@ namespace NuGet.Insights
                 {
                     blob = new MemoryBlobServiceClient(blobServiceUri, storageAccessKeyCredential!, blobClientOptions);
                     queue = new MemoryQueueServiceClient(queueServiceUri, storageAccessKeyCredential!, queueClientOptions);
+                    table = new MemoryTableServiceClient(tableServiceUri, tableAccessKeyCredential!, tableClientOptions);
                 }
                 else
                 {
                     blob = new BlobServiceClient(blobServiceUri, storageAccessKeyCredential, blobClientOptions);
                     queue = new QueueServiceClient(queueServiceUri, storageAccessKeyCredential, queueClientOptions);
+                    table = new TableServiceClient(tableServiceUri, tableAccessKeyCredential, tableClientOptions);
                 }
 
-                table = new TableServiceClient(tableServiceUri, tableAccessKeyCredential, tableClientOptions);
                 userDelegationKey = null;
 
                 logger.LogInformation(

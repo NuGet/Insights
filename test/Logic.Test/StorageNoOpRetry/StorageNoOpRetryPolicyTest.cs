@@ -10,7 +10,7 @@ namespace NuGet.Insights.StorageNoOpRetry
     {
         public class TableStorageForEntity : StorageNoOpRetryPolicyTest
         {
-            [Fact]
+            [NoInMemoryStorageFact]
             public async Task DoesNotSwallowConflictWhenAnotherThreadAdded()
             {
                 // Arrange
@@ -54,7 +54,7 @@ namespace NuGet.Insights.StorageNoOpRetry
                 Assert.NotEqual(slowerAdd.ClientRequestId, finalEntity.ClientRequestId);
             }
 
-            [Fact]
+            [NoInMemoryStorageFact]
             public async Task SwallowsConflictForAdd()
             {
                 // Arrange
@@ -94,7 +94,7 @@ namespace NuGet.Insights.StorageNoOpRetry
                 Assert.Equal(idBeforeA, finalEntity.ClientRequestId);
             }
 
-            [Fact]
+            [NoInMemoryStorageFact]
             public async Task DoesNotSwallowConflictWhenAnotherThreadUpdated()
             {
                 // Arrange
@@ -145,7 +145,7 @@ namespace NuGet.Insights.StorageNoOpRetry
                 Assert.NotEqual(slowerUpdate.ClientRequestId, finalEntity.ClientRequestId);
             }
 
-            [Fact]
+            [NoInMemoryStorageFact]
             public async Task SwallowsConflictForUpdate()
             {
                 // Arrange
@@ -198,7 +198,7 @@ namespace NuGet.Insights.StorageNoOpRetry
 
         public class TableStorageForBatch : StorageNoOpRetryPolicyTest
         {
-            [Fact]
+            [NoInMemoryStorageFact]
             public async Task SwallowsConflictForSmallBatchUpdate()
             {
                 // Arrange
@@ -262,7 +262,7 @@ namespace NuGet.Insights.StorageNoOpRetry
                 Assert.NotEqual(idBeforeB, entityB.ClientRequestId);
             }
 
-            [Fact]
+            [NoInMemoryStorageFact]
             public async Task SwallowsConflictWhenAnotherThreadUpdatedSomeEntities()
             {
                 // Arrange
@@ -340,7 +340,7 @@ namespace NuGet.Insights.StorageNoOpRetry
                 Assert.NotEqual(idBeforeB, entityB.ClientRequestId);
             }
 
-            [Fact]
+            [NoInMemoryStorageFact]
             public async Task SwallowsConflictWhenAnotherThreadDeletedSomeEntities()
             {
                 // Arrange
@@ -414,7 +414,7 @@ namespace NuGet.Insights.StorageNoOpRetry
                 Assert.NotEqual(idBeforeB, entityB.ClientRequestId);
             }
 
-            [Fact]
+            [NoInMemoryStorageFact]
             public async Task DoesNotSwallowConflictWhenAnotherThreadUpdatedAllEntities()
             {
                 // Arrange
@@ -483,7 +483,7 @@ namespace NuGet.Insights.StorageNoOpRetry
                 Assert.NotEqual(slowerUpdateB.ClientRequestId, finalEntityB.ClientRequestId);
             }
 
-            [Fact]
+            [NoInMemoryStorageFact]
             public async Task DoesNotSwallowConflictWhenAnotherThreadDeletedAllEntities()
             {
                 // Arrange
@@ -537,7 +537,7 @@ namespace NuGet.Insights.StorageNoOpRetry
                 Assert.Empty(entities);
             }
 
-            [Fact]
+            [NoInMemoryStorageFact]
             public async Task SwallowsConflictForLargeBatchUpdate()
             {
                 // Arrange
@@ -607,7 +607,7 @@ namespace NuGet.Insights.StorageNoOpRetry
                 Assert.All(testEntities, e => Assert.Equal(e.ETag, rowKeyToFinalEntity[e.RowKey].ETag));
             }
 
-            [Fact]
+            [NoInMemoryStorageFact]
             public async Task SwallowsConflictForLargeBatchUpdateWhenAnotherThreadDeletedSomeEntities()
             {
                 // Arrange

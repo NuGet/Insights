@@ -62,7 +62,7 @@ namespace NuGet.Insights.WideEntities
                 Assert.Empty(retrieved);
             }
 
-            [Fact]
+            [NoInMemoryStorageFact]
             public async Task FailsWhenCannotSplitBatch()
             {
                 // Arrange

@@ -342,7 +342,7 @@ namespace NuGet.Insights.Worker
                 await AssertPoisonAsync(result, messages);
             }
 
-            [Fact]
+            [NoInMemoryStorageFact]
             public async Task HandlesUpdateHiddenByRetryGracefully()
             {
                 // Arrange

@@ -858,7 +858,7 @@ namespace NuGet.Insights.ReferenceTracking
                 await AssertExpectedAsync(references);
             }
 
-            [Fact]
+            [NoInMemoryStorageFact]
             public async Task DoesNotWriteDataWhenSettingNewEmptyReferences()
             {
                 // Arrange
@@ -875,7 +875,7 @@ namespace NuGet.Insights.ReferenceTracking
                 Assert.All(ServiceClientFactoryA.HandlerFactory.Responses, x => Assert.Equal(HttpMethod.Get, x.RequestMessage.Method));
             }
 
-            [Fact]
+            [NoInMemoryStorageFact]
             public async Task CanUpdateJustData()
             {
                 // Arrange
@@ -895,7 +895,7 @@ namespace NuGet.Insights.ReferenceTracking
                 Assert.Single(ServiceClientFactoryA.HandlerFactory.Responses, x => x.RequestMessage.Method != HttpMethod.Get);
             }
 
-            [Fact]
+            [NoInMemoryStorageFact]
             public async Task SkipsNoChangeInData()
             {
                 // Arrange
