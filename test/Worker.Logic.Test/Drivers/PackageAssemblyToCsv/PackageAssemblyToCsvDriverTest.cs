@@ -15,6 +15,31 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         public ICatalogLeafToCsvDriver<PackageAssembly> Target => Host.Services.GetRequiredService<ICatalogLeafToCsvDriver<PackageAssembly>>();
 
         [Fact]
+        public async Task HandlesNullTypeReference()
+        {
+            var leaf = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2024.09.25.04.54.59/flexrule.extensions.analytics.10.0.772.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "FlexRule.Extensions.Analytics",
+                PackageVersion = "10.0.772",
+            }.SetDefaults();
+            await Target.InitializeAsync();
+
+            var output = await Target.ProcessLeafAsync(leaf);
+
+            Assert.Equal(DriverResultType.Success, output.Type);
+            var record = output.Value.Single(x => x.Path == "bin/Microsoft.ML.Data.dll");
+            var customAttributes = JsonSerializer.Deserialize<JsonElement>(record.CustomAttributes);
+            var loadableClass = customAttributes.GetProperty("LoadableClass")[13];
+            Assert.Equal("Loads native Binary IDV data file.", loadableClass.GetProperty("0").ToString());
+            Assert.Equal("Microsoft.ML.Data.IO.BinaryLoader", loadableClass.GetProperty("1").ToString());
+            Assert.Equal(JsonValueKind.Null, loadableClass.GetProperty("2").ValueKind);
+            Assert.Equal("Microsoft.ML.Data.SignatureLoadDataLoader", loadableClass.GetProperty("3").ToString());
+            Assert.Equal("Binary Data View Loader", loadableClass.GetProperty("4").ToString());
+        }
+
+        [Fact]
         public async Task SerializesCustomAttributesFailedDecodeInLexOrder()
         {
             var leaf = new CatalogLeafScan
