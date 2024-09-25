@@ -17,7 +17,7 @@ namespace NuGet.Insights.MemoryStorage
             string? prefix)
         {
             const int maxPerPageValue = StorageUtility.MaxTakeCount;
-            return Store
+            return _store
                 .GetContainerItems(traits, states, prefix)
                 .Chunk(maxPerPageValue)
                 .Select((x, i) => Page<BlobContainerItem>.FromValues(
@@ -25,6 +25,12 @@ namespace NuGet.Insights.MemoryStorage
                     continuationToken: x.Length == maxPerPageValue ? $"container-item-page-{i}" : null,
                     new MemoryResponse(HttpStatusCode.OK)));
         }
+
+        private static readonly string LatestServiceVersion = new BlobClientOptions()
+            .Version
+            .ToString()
+            .Replace("v", string.Empty, StringComparison.OrdinalIgnoreCase)
+            .Replace("_", "-", StringComparison.Ordinal);
 
         private Response<UserDelegationKey> GetUserDelegationKeyResponse(DateTimeOffset? startsOn, DateTimeOffset expiresOn)
         {

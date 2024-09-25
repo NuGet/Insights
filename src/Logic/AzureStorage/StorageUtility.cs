@@ -3,7 +3,12 @@
 
 using System.Buffers;
 using System.Security.Cryptography;
+using Azure.Data.Tables;
+using Azure.Storage.Blobs;
+using Azure.Storage.Queues;
 using Microsoft.AspNetCore.WebUtilities;
+
+#nullable enable
 
 namespace NuGet.Insights
 {
@@ -20,6 +25,9 @@ namespace NuGet.Insights
 
         public const string MD5Header = "Content-MD5";
         public const string SHA512Header = "x-ms-meta-SHA512";
+
+        public const string MemoryStorageAccountName = "memory";
+        public const string DevelopmentConnectionString = "UseDevelopmentStorage=true";
 
         /// <summary>
         /// The minimum value for a timetamp in Azure Table Storage.
@@ -54,7 +62,7 @@ namespace NuGet.Insights
             const int maxStackBytes = 256;
             var usePool = maxBytes > maxStackBytes;
             var pool = ArrayPool<byte>.Shared;
-            byte[] poolBuffer = usePool ? pool.Rent(maxBytes) : null;
+            byte[]? poolBuffer = usePool ? pool.Rent(maxBytes) : null;
             Span<byte> buffer = usePool ? poolBuffer : stackalloc byte[maxStackBytes];
             try
             {
@@ -76,20 +84,57 @@ namespace NuGet.Insights
             {
                 if (usePool)
                 {
-                    pool.Return(poolBuffer);
+                    pool.Return(poolBuffer!);
                 }
             }
 
             return bucket;
         }
 
-        public static (Uri Blob, Uri Queue, Uri Table) GetStorageEndpoints(string accountName)
+        public static Uri DevelopmentBlobEndpoint { get; } = new BlobServiceClient(DevelopmentConnectionString).Uri;
+        public static Uri DevelopmentQueueEndpoint { get; } = new QueueServiceClient(DevelopmentConnectionString).Uri;
+        public static Uri DevelopmentTableEndpoint { get; } = new TableServiceClient(DevelopmentConnectionString).Uri;
+
+        public static Uri GetBlobEndpoint(string accountName)
         {
-            return (
-                new Uri($"https://{accountName}.blob.core.windows.net"),
-                new Uri($"https://{accountName}.queue.core.windows.net"),
-                new Uri($"https://{accountName}.table.core.windows.net")
-            );
+            return new Uri($"https://{accountName}.blob.core.windows.net");
+        }
+
+        public static Uri GetQueueEndpoint(string accountName)
+        {
+            return new Uri($"https://{accountName}.queue.core.windows.net");
+        }
+
+        public static Uri GetTableEndpoint(string accountName)
+        {
+            return new Uri($"https://{accountName}.table.core.windows.net");
+        }
+
+        public static bool TryGetAccountBlobClient(
+            BlobServiceClient serviceClient,
+            Uri blobUri,
+            [NotNullWhen(true)] out BlobClient? blobClient)
+        {
+            var uriBuilder = new BlobUriBuilder(blobUri);
+            if (uriBuilder.AccountName != serviceClient.AccountName
+                || string.IsNullOrEmpty(uriBuilder.BlobContainerName)
+                || string.IsNullOrEmpty(uriBuilder.BlobName))
+            {
+                blobClient = null;
+                return false;
+            }
+
+            blobClient = serviceClient
+                .GetBlobContainerClient(uriBuilder.BlobContainerName)
+                .GetBlobClient(uriBuilder.BlobName);
+
+            if (blobClient.Uri != blobUri)
+            {
+                blobClient = null;
+                return false;
+            }
+
+            return true;
         }
 
         public static string GenerateUniqueId()
@@ -129,7 +174,7 @@ namespace NuGet.Insights
             DateTimeOffset sasExpiry;
             var parsedSas = QueryHelpers.ParseQuery(sas);
             var expiry = parsedSas["se"].Single();
-            sasExpiry = DateTimeOffset.Parse(expiry, CultureInfo.InvariantCulture);
+            sasExpiry = DateTimeOffset.Parse(expiry!, CultureInfo.InvariantCulture);
             return sasExpiry;
         }
     }

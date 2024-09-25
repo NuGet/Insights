@@ -13,7 +13,7 @@ namespace NuGet.Insights.MemoryStorage
     {
         private Response<TableItem> CreateIfNotExistsResponse()
         {
-            var result = Store.CreateIfNotExists();
+            var result = _store.CreateIfNotExists();
             return result.Type switch
             {
                 StorageResultType.Success => Response.FromValue(result.Value, new MemoryResponse(HttpStatusCode.Created)),
@@ -25,7 +25,7 @@ namespace NuGet.Insights.MemoryStorage
         private Response<IReadOnlyList<Response>> SubmitTransactionResponse(
             IEnumerable<TableTransactionAction> transactionActions)
         {
-            var transactionResult = Store.SubmitTransaction(transactionActions.ToList());
+            var transactionResult = _store.SubmitTransaction(transactionActions.ToList());
 
             for (var i = 0; i < transactionResult.Value.Count; i++)
             {
@@ -71,7 +71,7 @@ namespace NuGet.Insights.MemoryStorage
                 throw new ArgumentOutOfRangeException(nameof(maxPerPage));
             }
 
-            var result = Store.GetEntities(filter.Compile(), select?.ToList());
+            var result = _store.GetEntities(filter.Compile(), select?.ToList());
             if (result.Type != StorageResultType.Success)
             {
                 throw result.Type switch
@@ -93,7 +93,7 @@ namespace NuGet.Insights.MemoryStorage
 
         private Response DeleteResponse()
         {
-            var result = Store.Delete();
+            var result = _store.Delete();
             return result switch
             {
                 StorageResultType.Success => new MemoryResponse(HttpStatusCode.Created),
@@ -155,7 +155,7 @@ namespace NuGet.Insights.MemoryStorage
             string rowKey,
             IEnumerable<string>? select = null) where T : ITableEntity
         {
-            var result = Store.GetEntity<T>(partitionKey, rowKey, select?.ToList());
+            var result = _store.GetEntity<T>(partitionKey, rowKey, select?.ToList());
             return result.Type switch
             {
                 StorageResultType.DoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
@@ -166,7 +166,7 @@ namespace NuGet.Insights.MemoryStorage
 
         private List<StorageResult<ETag?>> SubmitTransactionOrThrow(IReadOnlyList<TableTransactionAction> transactionActions)
         {
-            var transactionResult = Store.SubmitTransaction(transactionActions);
+            var transactionResult = _store.SubmitTransaction(transactionActions);
             if (transactionResult.Type != StorageResultType.Success)
             {
                 throw transactionResult.Type switch

@@ -11,27 +11,17 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Queues;
 using Azure.Storage.Sas;
-using NuGet.Insights.MemoryStorage;
 using NuGet.Insights.StorageNoOpRetry;
 
 #nullable enable
 
 namespace NuGet.Insights
 {
-    public enum StorageCredentialType
-    {
-        ClientCertificateCredentialFromPath = 1,
-        ClientCertificateCredentialFromKeyVault,
-        UserAssignedManagedIdentityCredential,
-        DefaultAzureCredential,
-        StorageAccessKey,
-        DevelopmentStorage,
-    }
-
-    public partial class ServiceClientFactory
+    public class ServiceClientFactory
     {
         private readonly SemaphoreSlim _lock = new SemaphoreSlim(1);
         private ServiceClients? _serviceClients;
+
         private readonly Func<HttpClient>? _httpClientFactory;
         private readonly IOptions<NuGetInsightsSettings> _options;
         private readonly ITelemetryClient _telemetryClient;
@@ -72,42 +62,9 @@ namespace NuGet.Insights
         {
             var serviceClients = await GetCachedServiceClientsAsync();
 
-            if (serviceClients.StorageCredentialType != StorageCredentialType.DevelopmentStorage
-                && (blobUrl.Scheme != "https" // only allow HTTPS
-                    || !blobUrl.Host.EndsWith(".blob.core.windows.net", StringComparison.OrdinalIgnoreCase)) // only allow blob storage URLs
-                    || !string.IsNullOrEmpty(blobUrl.Query)) // don't allow SAS tokens
+            if (!serviceClients.BlobClientFactory.TryGetBlobClient(serviceClients.BlobServiceClient, blobUrl, out var blobClient))
             {
                 return null;
-            }
-
-            BlobClient blobClient;
-            if (serviceClients.StorageSharedKeyCredential is not null)
-            {
-                // don't use a shared key credential if the base URL does not match.
-                if (blobUrl.GetLeftPart(UriPartial.Authority) != serviceClients.BlobServiceClient.Uri.GetLeftPart(UriPartial.Authority))
-                {
-                    return null;
-                }
-
-                blobClient = new BlobClient(blobUrl, serviceClients.StorageSharedKeyCredential, serviceClients.BlobClientOptions);
-            }
-            else
-            {
-                // token credential requires HTTPS
-                if (blobUrl.Scheme != "https")
-                {
-                    return null;
-                }
-
-                blobClient = new BlobClient(blobUrl, serviceClients.StorageTokenCredential!, serviceClients.BlobClientOptions);
-            }
-
-            if (serviceClients.UseMemoryStorage)
-            {
-                var serviceClient = (MemoryBlobServiceClient)serviceClients.BlobServiceClient;
-                blobClient = serviceClient
-                    .GetBlobContainerClient(blobClient.BlobContainerName)
-                    .GetBlobClient(blobClient.Name);
             }
 
             return blobClient;
@@ -229,43 +186,6 @@ namespace NuGet.Insights
             return options;
         }
 
-        public static StorageCredentialType GetStorageCredentialType(StorageSettings settings)
-        {
-            if (settings.UseDevelopmentStorage)
-            {
-                return StorageCredentialType.DevelopmentStorage;
-            }
-            else if (settings.StorageAccessKey is not null)
-            {
-                return StorageCredentialType.StorageAccessKey;
-            }
-            else if (settings.StorageAccountName is not null)
-            {
-                if (settings.StorageClientCertificatePath is not null)
-                {
-                    return StorageCredentialType.ClientCertificateCredentialFromPath;
-                }
-                else if (settings.StorageClientCertificateKeyVault is not null)
-                {
-                    return StorageCredentialType.ClientCertificateCredentialFromKeyVault;
-                }
-                else if (settings.UserManagedIdentityClientId is not null)
-                {
-                    return StorageCredentialType.UserAssignedManagedIdentityCredential;
-                }
-                else
-                {
-                    return StorageCredentialType.DefaultAzureCredential;
-                }
-            }
-            else
-            {
-                throw new ArgumentException(
-                    $"Either the {nameof(settings.StorageAccountName)} property must be set or the {nameof(settings.UseDevelopmentStorage)} must be set to true. " +
-                    $"Set {nameof(settings.UseDevelopmentStorage)} to true if you want to use Azurite.");
-            }
-        }
-
         private static async Task<ServiceClients> GetServiceClientsAsync(
             DateTimeOffset created,
             HttpPipelineTransport? httpPipelineTransport,
@@ -274,26 +194,21 @@ namespace NuGet.Insights
             ILogger logger,
             ILoggerFactory loggerFactory)
         {
-            var sasExpiry = created.Add(settings.ServiceClientSasDuration);
-            var useMemoryStorage = settings.UseMemoryStorage;
+            var storageCredentialType = settings.GetStorageCredentialType();
 
+            // build the credentials
             TokenCredential? tokenCredential = null;
             StorageSharedKeyCredential? storageAccessKeyCredential = null;
             TableSharedKeyCredential? tableAccessKeyCredential = null;
-
-            var storageCredentialType = GetStorageCredentialType(settings);
-            string? accountName = settings.StorageAccountName;
             switch (storageCredentialType)
             {
-                case StorageCredentialType.ClientCertificateCredentialFromPath:
-                    tokenCredential = await CredentialCache.GetLazyClientCertificateCredentialTask(
-                        settings.StorageClientTenantId,
-                        settings.StorageClientApplicationId,
-                        () =>
-                        {
-                            var certificate = new X509Certificate2(settings.StorageClientCertificatePath);
-                            return Task.FromResult(certificate);
-                        }).Value;
+                case StorageCredentialType.DefaultAzureCredential:
+                    tokenCredential = CredentialCache.DefaultAzureCredential;
+                    break;
+
+                case StorageCredentialType.UserAssignedManagedIdentityCredential:
+                    tokenCredential = new ManagedIdentityCredential(
+                        settings.UserManagedIdentityClientId);
                     break;
 
                 case StorageCredentialType.ClientCertificateCredentialFromKeyVault:
@@ -305,13 +220,15 @@ namespace NuGet.Insights
                             settings.StorageClientCertificateKeyVaultCertificateName).Value).Value;
                     break;
 
-                case StorageCredentialType.UserAssignedManagedIdentityCredential:
-                    tokenCredential = new ManagedIdentityCredential(
-                        settings.UserManagedIdentityClientId);
-                    break;
-
-                case StorageCredentialType.DefaultAzureCredential:
-                    tokenCredential = CredentialCache.DefaultAzureCredential;
+                case StorageCredentialType.ClientCertificateCredentialFromPath:
+                    tokenCredential = await CredentialCache.GetLazyClientCertificateCredentialTask(
+                        settings.StorageClientTenantId,
+                        settings.StorageClientApplicationId,
+                        () =>
+                        {
+                            var certificate = new X509Certificate2(settings.StorageClientCertificatePath);
+                            return Task.FromResult(certificate);
+                        }).Value;
                     break;
 
                 case StorageCredentialType.StorageAccessKey:
@@ -324,93 +241,98 @@ namespace NuGet.Insights
                     break;
 
                 case StorageCredentialType.DevelopmentStorage:
-                    storageAccessKeyCredential = DevelopmentStorage.StorageSharedKeyCredential;
-                    tableAccessKeyCredential = DevelopmentStorage.TableSharedKeyCredential;
+                case StorageCredentialType.MemoryStorage:
                     break;
 
                 default:
                     throw new NotImplementedException();
             }
 
-            var blobClientOptions = GetOptions(settings, loggerFactory, new BlobClientOptions(), httpPipelineTransport);
-            var queueClientOptions = GetOptions(settings, loggerFactory, new QueueClientOptions(), httpPipelineTransport);
-            var tableClientOptions = GetOptions(settings, loggerFactory, new TableClientOptions(), httpPipelineTransport);
+            // build the client options
+            var blobOptions = GetOptions(settings, loggerFactory, new BlobClientOptions(), httpPipelineTransport);
+            var queueOptions = GetOptions(settings, loggerFactory, new QueueClientOptions(), httpPipelineTransport);
+            var tableOptions = GetOptions(settings, loggerFactory, new TableClientOptions(), httpPipelineTransport);
 
-            var (blobServiceUri, queueServiceUri, tableServiceUri) = storageCredentialType == StorageCredentialType.DevelopmentStorage
-                ? DevelopmentStorage.GetStorageEndpoints()
-                : StorageUtility.GetStorageEndpoints(accountName!);
-
-            BlobServiceClient blob;
-            QueueServiceClient queue;
-            TableServiceClient table;
-            UserDelegationKey? userDelegationKey;
-            if (tokenCredential is not null)
+            // build the client factories
+            IBlobClientFactory blobClientFactory;
+            IQueueClientFactory queueClientFactory;
+            ITableClientFactory tableClientFactory;
+            bool supportsUserDelegationKey;
+            if (storageCredentialType == StorageCredentialType.MemoryStorage)
             {
-                if (useMemoryStorage)
-                {
-                    blob = new MemoryBlobServiceClient(blobServiceUri, tokenCredential, blobClientOptions);
-                    queue = new MemoryQueueServiceClient(queueServiceUri, tokenCredential, queueClientOptions);
-                    table = new MemoryTableServiceClient(tableServiceUri, tokenCredential, tableClientOptions);
-                }
-                else
-                {
-                    blob = new BlobServiceClient(blobServiceUri, tokenCredential, blobClientOptions);
-                    queue = new QueueServiceClient(queueServiceUri, tokenCredential, queueClientOptions);
-                    table = new TableServiceClient(tableServiceUri, tokenCredential, tableClientOptions);
-                }
-
-                userDelegationKey = await blob.GetUserDelegationKeyAsync(startsOn: null, expiresOn: sasExpiry);
-
-                logger.LogInformation(
-                    "Using {PersistenceType} storage account '{StorageAccountName}' with a {CredentialType} and a user delegation key expiring at {Expiry:O}, which is in {RemainingHours:F2} hours.",
-                    useMemoryStorage ? "in-memory" : "external",
-                    blob.AccountName,
-                    storageCredentialType,
-                    sasExpiry,
-                    (sasExpiry - created).TotalHours);
+                blobClientFactory = new MemoryBlobClientFactory();
+                queueClientFactory = new MemoryQueueClientFactory();
+                tableClientFactory = new MemoryTableClientFactory();
+                supportsUserDelegationKey = true;
+            }
+            else if (storageCredentialType == StorageCredentialType.DevelopmentStorage)
+            {
+                blobClientFactory = new DevelopmentBlobClientFactory(blobOptions);
+                queueClientFactory = new DevelopmentQueueClientFactory(queueOptions);
+                tableClientFactory = new DevelopmentTableClientFactory(tableOptions);
+                supportsUserDelegationKey = false;
             }
             else
             {
-                if (useMemoryStorage)
+                Uri blobServiceUri = StorageUtility.GetBlobEndpoint(settings.StorageAccountName);
+                Uri queueServiceUri = StorageUtility.GetQueueEndpoint(settings.StorageAccountName);
+                Uri tableServiceUri = StorageUtility.GetTableEndpoint(settings.StorageAccountName);
+
+                if (tokenCredential is not null)
                 {
-                    blob = new MemoryBlobServiceClient(blobServiceUri, storageAccessKeyCredential!, blobClientOptions);
-                    queue = new MemoryQueueServiceClient(queueServiceUri, storageAccessKeyCredential!, queueClientOptions);
-                    table = new MemoryTableServiceClient(tableServiceUri, tableAccessKeyCredential!, tableClientOptions);
+                    blobClientFactory = new TokenCredentialBlobClientFactory(blobServiceUri, tokenCredential, blobOptions);
+                    queueClientFactory = new TokenCredentialQueueClientFactory(queueServiceUri, tokenCredential, queueOptions);
+                    tableClientFactory = new TokenCredentialTableClientFactory(tableServiceUri, tokenCredential, tableOptions);
+                    supportsUserDelegationKey = true;
+                }
+                else if (storageAccessKeyCredential is not null && tableAccessKeyCredential is not null)
+                {
+                    blobClientFactory = new SharedKeyCredentialBlobClientFactory(blobServiceUri, storageAccessKeyCredential, blobOptions);
+                    queueClientFactory = new SharedKeyCredentialQueueClientFactory(queueServiceUri, storageAccessKeyCredential, queueOptions);
+                    tableClientFactory = new SharedKeyCredentialTableClientFactory(tableServiceUri, tableAccessKeyCredential, tableOptions);
+                    supportsUserDelegationKey = false;
                 }
                 else
                 {
-                    blob = new BlobServiceClient(blobServiceUri, storageAccessKeyCredential, blobClientOptions);
-                    queue = new QueueServiceClient(queueServiceUri, storageAccessKeyCredential, queueClientOptions);
-                    table = new TableServiceClient(tableServiceUri, tableAccessKeyCredential, tableClientOptions);
+                    throw new NotImplementedException();
                 }
-
-                userDelegationKey = null;
-
-                logger.LogInformation(
-                    "Using {PersistenceType} storage account '{StorageAccountName}' with a {CredentialType}.",
-                    useMemoryStorage ? "in-memory" : "external",
-                    blob.AccountName,
-                    storageCredentialType);
             }
+
+            // build the service clients
+            BlobServiceClient blob = blobClientFactory.GetServiceClient();
+            QueueServiceClient queue = queueClientFactory.GetServiceClient();
+            TableServiceClient table = tableClientFactory.GetServiceClient();
+
+            var sasExpiry = created.Add(settings.ServiceClientSasDuration);
+            logger.LogInformation(
+                "Using storage account '{StorageAccountName}' with a {CredentialType} credential type. The service clients will be cached for {Duration} hours.",
+                blob.AccountName,
+                storageCredentialType,
+                (sasExpiry - created).TotalHours);
 
             logger.LogInformation("Blob endpoint: {BlobEndpoint}", blob.Uri.Obfuscate());
             logger.LogInformation("Queue endpoint: {QueueEndpoint}", queue.Uri.Obfuscate());
             logger.LogInformation("Table endpoint: {TableEndpoint}", table.Uri.Obfuscate());
 
+            // fetch the user delegation key
+            UserDelegationKey? userDelegationKey;
+            if (supportsUserDelegationKey)
+            {
+                userDelegationKey = await blob.GetUserDelegationKeyAsync(startsOn: null, expiresOn: sasExpiry);
+            }
+            else
+            {
+                userDelegationKey = null;
+            }
+
             return new ServiceClients(
                 created,
-                storageCredentialType,
-                tokenCredential,
-                storageAccessKeyCredential,
-                tableAccessKeyCredential,
                 userDelegationKey,
                 sasExpiry,
                 blob,
-                blobClientOptions,
+                blobClientFactory,
                 queue,
-                table,
-                new TableServiceClientWithRetryContext(table, telemetryClient),
-                useMemoryStorage);
+                new TableServiceClientWithRetryContext(table, telemetryClient));
         }
 
         protected virtual HttpPipelineTransport? GetHttpPipelineTransport()
@@ -421,17 +343,11 @@ namespace NuGet.Insights
 
         private record ServiceClients(
             DateTimeOffset Created,
-            StorageCredentialType StorageCredentialType,
-            TokenCredential? StorageTokenCredential,
-            StorageSharedKeyCredential? StorageSharedKeyCredential,
-            TableSharedKeyCredential? TableSharedKeyCredential,
             UserDelegationKey? UserDelegationKey,
             DateTimeOffset SharedAccessSignatureExpiry,
             BlobServiceClient BlobServiceClient,
-            BlobClientOptions BlobClientOptions,
+            IBlobClientFactory BlobClientFactory,
             QueueServiceClient QueueServiceClient,
-            TableServiceClient TableServiceClient,
-            TableServiceClientWithRetryContext TableServiceClientWithRetryContext,
-            bool UseMemoryStorage);
+            TableServiceClientWithRetryContext TableServiceClientWithRetryContext);
     }
 }

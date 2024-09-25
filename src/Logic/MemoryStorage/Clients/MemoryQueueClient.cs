@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Azure;
-using Azure.Core;
-using Azure.Storage;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 
@@ -13,30 +11,13 @@ namespace NuGet.Insights.MemoryStorage
 {
     public partial class MemoryQueueClient : QueueClient
     {
-        private readonly StorageSharedKeyCredential? _sharedKeyCredential;
-        private readonly TokenCredential? _tokenCredential;
+        private readonly MemoryQueueStore _store;
 
-        public MemoryQueueClient(MemoryQueueServiceClient parent, Uri uri, StorageSharedKeyCredential credential)
-            : base(uri, credential, parent.Options)
+        public MemoryQueueClient(MemoryQueueServiceStore parent, Uri uri, QueueClientOptions options)
+            : base(uri, MemoryTokenCredential.Instance, options.AddBrokenTransport())
         {
-            _sharedKeyCredential = credential;
-            Options = parent.Options;
-            Parent = parent;
-            Store = parent.Store.GetQueue(Name);
+            _store = parent.GetQueue(Name);
         }
-
-        public MemoryQueueClient(MemoryQueueServiceClient parent, Uri uri, TokenCredential credential)
-            : base(uri, credential, parent.Options)
-        {
-            _tokenCredential = credential;
-            Options = parent.Options;
-            Parent = parent;
-            Store = parent.Store.GetQueue(Name);
-        }
-
-        public QueueClientOptions Options { get; }
-        public MemoryQueueServiceClient Parent { get; }
-        public MemoryQueueStore Store { get; }
 
         public override Task<Response<bool>> ExistsAsync(CancellationToken cancellationToken = default)
         {

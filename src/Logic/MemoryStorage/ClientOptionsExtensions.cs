@@ -12,13 +12,18 @@ namespace NuGet.Insights.MemoryStorage
     {
         public static T AddBrokenTransport<T>(this T options) where T : ClientOptions
         {
-            options.Transport = new BrokenTransport();
-            options.Retry.MaxRetries = 0;
+            if (options.Transport != BrokenTransport.Instance)
+            {
+                options.Transport = BrokenTransport.Instance;
+            }
+
             return options;
         }
 
         private class BrokenTransport : HttpPipelineTransport
         {
+            public static BrokenTransport Instance { get; } = new();
+
             private static string GetRejectionMessage()
             {
                 StackTrace stackTrace = new StackTrace();

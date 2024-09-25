@@ -28,9 +28,9 @@ namespace NuGet.Insights
         private const string StorageClientCertificateKeyVaultEnvName = "NUGETINSIGHTS_STORAGECLIENTCERTIFICATEKEYVAULT";
         private const string StorageClientCertificateKeyVaultCertificateNameEnvName = "NUGETINSIGHTS_STORAGECLIENTCERTIFICATEKEYVAULTCERTIFICATENAME";
 
-        public static bool UseMemoryStorage => PopulateSettings(new NuGetInsightsSettings()).UseMemoryStorage;
+        public static bool UseMemoryStorage => StorageCredentialType == StorageCredentialType.MemoryStorage;
         public static bool UseDevelopmentStorage => StorageCredentialType == StorageCredentialType.DevelopmentStorage;
-        public static StorageCredentialType StorageCredentialType => ServiceClientFactory.GetStorageCredentialType(PopulateSettings(new NuGetInsightsSettings()));
+        public static StorageCredentialType StorageCredentialType => PopulateSettings(new NuGetInsightsSettings()).GetStorageCredentialType();
 
         private static bool? UseDevelopmentStorageEnv => GetEnvBool(UseDevelopmentStorageEnvName);
         private static bool? UseMemoryStorageEnv => GetEnvBool(UseMemoryStorageEnvName);
@@ -66,13 +66,12 @@ namespace NuGet.Insights
             settings.StorageClientCertificateKeyVault = StorageClientCertificateKeyVaultEnv;
             settings.StorageClientCertificateKeyVaultCertificateName = StorageClientCertificateKeyVaultCertificateNameEnv;
 
-            // if no settings are provided, use in-memory storage with a fake account name
+            // if no settings are provided, use in-memory storage
             if (UseMemoryStorageEnv.GetValueOrDefault(true)
                 && !UseDevelopmentStorageEnv.GetValueOrDefault(false)
                 && StorageAccountNameEnv is null)
             {
                 settings.UseMemoryStorage = true;
-                settings.StorageAccountName = "memorystorage";
             }
 
             return settings;
@@ -131,15 +130,27 @@ namespace NuGet.Insights
             NuGetInsightsSettings settings = new NuGetInsightsSettings();
             PopulateSettings(settings);
 
-            if (settings.UseMemoryStorage)
+            var storageCredentialType = settings.GetStorageCredentialType();
+            if (storageCredentialType == StorageCredentialType.MemoryStorage)
             {
                 return null;
             }
 
-            var storageCredentialType = ServiceClientFactory.GetStorageCredentialType(settings);
-            var (blob, queue, table) = storageCredentialType == StorageCredentialType.DevelopmentStorage
-                ? DevelopmentStorage.GetStorageEndpoints()
-                : StorageUtility.GetStorageEndpoints(settings.StorageAccountName!);
+            Uri blob;
+            Uri queue;
+            Uri table;
+            if (storageCredentialType == StorageCredentialType.DevelopmentStorage)
+            {
+                blob = StorageUtility.DevelopmentBlobEndpoint;
+                queue = StorageUtility.DevelopmentQueueEndpoint;
+                table = StorageUtility.DevelopmentTableEndpoint;
+            }
+            else
+            {
+                blob = StorageUtility.GetBlobEndpoint(settings.StorageAccountName);
+                queue = StorageUtility.GetQueueEndpoint(settings.StorageAccountName);
+                table = StorageUtility.GetTableEndpoint(settings.StorageAccountName);
+            }
 
             using var httpClient = new HttpClient();
             httpClient.Timeout = TimeSpan.FromSeconds(20);

@@ -3,7 +3,6 @@
 
 using Azure;
 using Azure.Core;
-using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 
@@ -13,50 +12,35 @@ namespace NuGet.Insights.MemoryStorage
 {
     public partial class MemoryBlobServiceClient : BlobServiceClient
     {
-        private static readonly string LatestServiceVersion = new BlobClientOptions()
-            .Version
-            .ToString()
-            .Replace("v", string.Empty, StringComparison.OrdinalIgnoreCase)
-            .Replace("_", "-", StringComparison.Ordinal);
+        private readonly MemoryBlobServiceStore _store;
+        private TokenCredential _credential;
+        private readonly BlobClientOptions _options;
 
-        private static readonly MemoryBlobServiceStore SharedStore = new MemoryBlobServiceStore();
-
-        private readonly StorageSharedKeyCredential? _sharedKeyCredential;
-        private readonly TokenCredential? _tokenCredential;
-
-        public MemoryBlobServiceClient(
-            Uri serviceUri,
-            StorageSharedKeyCredential credential,
-            BlobClientOptions options) : base(serviceUri, credential, options.AddBrokenTransport())
+        public MemoryBlobServiceClient(MemoryBlobServiceStore store) : this(
+            store,
+            StorageUtility.GetBlobEndpoint(StorageUtility.MemoryStorageAccountName),
+            MemoryTokenCredential.Instance,
+            new BlobClientOptions().AddBrokenTransport())
         {
-            _sharedKeyCredential = credential;
-            Options = options;
         }
 
-        public MemoryBlobServiceClient(
+        private MemoryBlobServiceClient(
+            MemoryBlobServiceStore store,
             Uri serviceUri,
             TokenCredential credential,
-            BlobClientOptions options) : base(serviceUri, credential, options.AddBrokenTransport())
+            BlobClientOptions options)
+            : base(serviceUri, credential, options.AddBrokenTransport())
         {
-            _tokenCredential = credential;
-            Options = options;
+            _store = store;
+            _credential = credential;
+            _options = options;
         }
-
-        public BlobClientOptions Options { get; }
-        public MemoryBlobServiceStore Store { get; } = SharedStore;
 
         public override BlobContainerClient GetBlobContainerClient(
             string blobContainerName)
         {
             var uri = Uri.AppendToPath(blobContainerName);
-            if (_sharedKeyCredential is not null)
-            {
-                return new MemoryBlobContainerClient(this, uri, _sharedKeyCredential);
-            }
-            else
-            {
-                return new MemoryBlobContainerClient(this, uri, _tokenCredential!);
-            }
+            return new MemoryBlobContainerClient(_store, uri, _credential, _options);
         }
 
         public override AsyncPageable<BlobContainerItem> GetBlobContainersAsync(

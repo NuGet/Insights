@@ -13,7 +13,7 @@ namespace NuGet.Insights.MemoryStorage
         private IEnumerable<Page<QueueItem>> GetQueuePages(QueueTraits traits, string? prefix)
         {
             const int maxPerPageValue = StorageUtility.MaxTakeCount;
-            return Store
+            return _store
                 .GetQueueItems(traits, prefix)
                 .Chunk(maxPerPageValue)
                 .Select((x, i) => Page<QueueItem>.FromValues(

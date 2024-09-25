@@ -13,7 +13,7 @@ namespace NuGet.Insights.MemoryStorage
     {
         private IEnumerable<Page<BlobItem>> GetBlobPages(BlobTraits traits, BlobStates states, string? prefix)
         {
-            var result = Store.GetBlobItems(traits, states, prefix);
+            var result = _store.GetBlobItems(traits, states, prefix);
             if (result.Type != StorageResultType.Success)
             {
                 throw result.Type switch
@@ -38,7 +38,7 @@ namespace NuGet.Insights.MemoryStorage
             IDictionary<string, string>? metadata = null,
             BlobContainerEncryptionScopeOptions? encryptionScopeOptions = null)
         {
-            var result = Store.Create(publicAccessType, metadata, encryptionScopeOptions);
+            var result = _store.Create(publicAccessType, metadata, encryptionScopeOptions);
             return result.Type switch
             {
                 StorageResultType.AlreadyExists => null,
@@ -52,7 +52,7 @@ namespace NuGet.Insights.MemoryStorage
         private Response DeleteResponse(
             BlobRequestConditions? conditions = null)
         {
-            var result = Store.Delete(conditions);
+            var result = _store.Delete(conditions);
             return result switch
             {
                 StorageResultType.DoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
@@ -64,7 +64,7 @@ namespace NuGet.Insights.MemoryStorage
         private Response<bool> DeleteIfExistsResponse(
             BlobRequestConditions? conditions = null)
         {
-            var result = Store.Delete(conditions);
+            var result = _store.Delete(conditions);
             return result switch
             {
                 StorageResultType.DoesNotExist => Response.FromValue(
@@ -79,7 +79,7 @@ namespace NuGet.Insights.MemoryStorage
 
         private Response<bool> ExistsResponse()
         {
-            if (Store.Exists())
+            if (_store.Exists())
             {
                 return Response.FromValue(
                     true,

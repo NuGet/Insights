@@ -14,42 +14,29 @@ namespace NuGet.Insights.MemoryStorage
 {
     public partial class MemoryBlobClient : BlobClient
     {
-        private readonly StorageSharedKeyCredential? _sharedKeyCredential;
-        private readonly TokenCredential? _tokenCredential;
+        private readonly MemoryBlobContainerStore _parent;
+        private readonly MemoryBlobStore _store;
+        private readonly BlobClientOptions _options;
 
-        public MemoryBlobClient(MemoryBlobContainerClient parent, Uri blobUri, StorageSharedKeyCredential credential)
-            : base(blobUri, credential, parent.Options)
+        public MemoryBlobClient(MemoryBlobContainerStore parent, Uri blobUri, TokenCredential tokenCredential, BlobClientOptions options)
+            : base(blobUri, tokenCredential, options.AddBrokenTransport())
         {
-            _sharedKeyCredential = credential;
-            Options = parent.Options;
-            Parent = parent;
-            Store = parent.Store.GetBlob(Name);
+            _parent = parent;
+            _store = parent.GetBlob(Name);
+            _options = options;
         }
-
-        public MemoryBlobClient(MemoryBlobContainerClient parent, Uri blobUri, TokenCredential credential)
-            : base(blobUri, credential, parent.Options)
-        {
-            _tokenCredential = credential;
-            Options = parent.Options;
-            Parent = parent;
-            Store = parent.Store.GetBlob(Name);
-        }
-
-        public BlobClientOptions Options { get; }
-        public MemoryBlobContainerClient Parent { get; }
-        public MemoryBlobStore Store { get; }
 
         protected override BlobLeaseClient GetBlobLeaseClientCore(
             string? leaseId)
         {
-            return new MemoryBlobLeaseClient(this, leaseId);
+            return new MemoryBlobLeaseClient(_store, this, leaseId);
         }
 
         public override Task<Response<BlobProperties>> GetPropertiesAsync(
             BlobRequestConditions? conditions = null,
             CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(Store.GetPropertiesResponse(conditions));
+            return Task.FromResult(_store.GetPropertiesResponse(conditions));
         }
 
         public override Task<CopyFromUriOperation> StartCopyFromUriAsync(
@@ -57,23 +44,30 @@ namespace NuGet.Insights.MemoryStorage
             BlobCopyFromUriOptions options,
             CancellationToken cancellationToken = default)
         {
-            MemoryBlobClient sourceClient;
-            if (_sharedKeyCredential is not null)
-            {
-                sourceClient = new MemoryBlobClient(Parent, source, _sharedKeyCredential);
-            }
-            else
-            {
-                sourceClient = new MemoryBlobClient(Parent, source, _tokenCredential!);
-            }
-
-            if (sourceClient.Uri.Authority != Uri.Authority)
+            var sourceBuilder = new BlobUriBuilder(source, _options.TrimBlobNameSlashes);
+            var destBuilder = new BlobUriBuilder(Uri, _options.TrimBlobNameSlashes);
+            if (!string.IsNullOrEmpty(sourceBuilder.VersionId)
+                || !string.IsNullOrEmpty(sourceBuilder.Snapshot)
+                || string.IsNullOrEmpty(sourceBuilder.BlobContainerName)
+                || !string.IsNullOrEmpty(destBuilder.VersionId)
+                || !string.IsNullOrEmpty(destBuilder.Snapshot)
+                || string.IsNullOrEmpty(destBuilder.BlobName)
+                || destBuilder.BlobName != Name)
             {
                 throw new NotImplementedException();
             }
 
+            var sourceBlobName = sourceBuilder.BlobName;
+            sourceBuilder.BlobName = null;
+            destBuilder.BlobName = null;
+            if (sourceBuilder.ToUri() != destBuilder.ToUri())
+            {
+                throw new NotImplementedException();
+            }
+
+            var sourceStore = _parent.GetBlob(sourceBlobName);
             var id = $"blob-copy-id-{Guid.NewGuid()}";
-            var result = Store.CopyFrom(sourceClient.Store, id, options);
+            var result = _store.CopyFrom(sourceStore, id, options);
             return result switch
             {
                 StorageResultType.Success => Task.FromResult(new CopyFromUriOperation(id, this)),
@@ -86,14 +80,14 @@ namespace NuGet.Insights.MemoryStorage
             BlobRequestConditions? conditions = null,
             CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(Store.SetMetadataResponse(metadata, conditions));
+            return Task.FromResult(_store.SetMetadataResponse(metadata, conditions));
         }
 
         public override Task<Response<BlobDownloadStreamingResult>> DownloadStreamingAsync(
             BlobDownloadOptions? options = null,
             CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(Store.DownloadStreamingResponse(options));
+            return Task.FromResult(_store.DownloadStreamingResponse(options));
         }
 
         public override Task<Response> DownloadToAsync(
@@ -102,7 +96,7 @@ namespace NuGet.Insights.MemoryStorage
             StorageTransferOptions transferOptions = default,
             CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(Store.DownloadToResponse(destination, conditions, transferOptions, cancellationToken));
+            return Task.FromResult(_store.DownloadToResponse(destination, conditions, transferOptions, cancellationToken));
         }
 
         public override Task<Response<BlobContentInfo>> UploadAsync(
@@ -110,7 +104,7 @@ namespace NuGet.Insights.MemoryStorage
             BlobUploadOptions options,
             CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(Store.UploadResponse(content, options));
+            return Task.FromResult(_store.UploadResponse(content, options));
         }
 
         public override Task<Response<BlobContentInfo>> UploadAsync(
@@ -123,7 +117,7 @@ namespace NuGet.Insights.MemoryStorage
             StorageTransferOptions transferOptions = default,
             CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(Store.UploadResponse(content, httpHeaders, metadata, conditions, progressHandler, accessTier, transferOptions));
+            return Task.FromResult(_store.UploadResponse(content, httpHeaders, metadata, conditions, progressHandler, accessTier, transferOptions));
         }
 
         public override Task<Response> DeleteAsync(
@@ -131,7 +125,7 @@ namespace NuGet.Insights.MemoryStorage
             BlobRequestConditions? conditions = null,
             CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(Store.DeleteResponse(snapshotsOption, conditions));
+            return Task.FromResult(_store.DeleteResponse(snapshotsOption, conditions));
         }
     }
 }

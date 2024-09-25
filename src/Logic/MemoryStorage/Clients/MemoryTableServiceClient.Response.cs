@@ -28,7 +28,7 @@ namespace NuGet.Insights.MemoryStorage
             }
 
             var maxPerPageValue = maxPerPage.GetValueOrDefault(StorageUtility.MaxTakeCount);
-            return Store
+            return _store
                 .GetTableItems(filter.Compile())
                 .Chunk(maxPerPage.GetValueOrDefault(maxPerPageValue))
                 .Select((x, i) => Page<TableItem>.FromValues(
@@ -39,7 +39,7 @@ namespace NuGet.Insights.MemoryStorage
 
         private Response DeleteTableResponse(string tableName)
         {
-            var result = Store.DeleteTable(tableName);
+            var result = _store.DeleteTable(tableName);
             return result switch
             {
                 StorageResultType.Success => new MemoryResponse(HttpStatusCode.NoContent),

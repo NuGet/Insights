@@ -9,6 +9,8 @@ namespace NuGet.Insights.MemoryStorage
 {
     public class MemoryTokenCredential : TokenCredential
     {
+        public static MemoryTokenCredential Instance { get; } = new();
+
         public override AccessToken GetToken(
             TokenRequestContext requestContext,
             CancellationToken cancellationToken)

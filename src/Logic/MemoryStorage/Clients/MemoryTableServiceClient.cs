@@ -12,43 +12,30 @@ namespace NuGet.Insights.MemoryStorage
 {
     public partial class MemoryTableServiceClient : TableServiceClient
     {
-        private static readonly MemoryTableServiceStore SharedStore = new MemoryTableServiceStore();
+        private readonly MemoryTableServiceStore _store;
+        private readonly TokenCredential _credential;
+        private readonly TableClientOptions _options;
 
-        private readonly TableSharedKeyCredential? _sharedKeyCredential;
-        private readonly TokenCredential? _tokenCredential;
-
-        public MemoryTableServiceClient(
-            Uri serviceUri,
-            TableSharedKeyCredential credential,
-            TableClientOptions options) : base(serviceUri, credential, options.AddBrokenTransport())
+        public MemoryTableServiceClient(MemoryTableServiceStore store) : this(
+            store,
+            StorageUtility.GetTableEndpoint(StorageUtility.MemoryStorageAccountName),
+            MemoryTokenCredential.Instance,
+            new TableClientOptions().AddBrokenTransport())
         {
-            _sharedKeyCredential = credential;
-            Options = options;
         }
 
-        public MemoryTableServiceClient(
-            Uri serviceUri,
-            TokenCredential credential,
-            TableClientOptions options) : base(serviceUri, credential, options.AddBrokenTransport())
+        private MemoryTableServiceClient(MemoryTableServiceStore store, Uri serviceUri, TokenCredential credential, TableClientOptions options)
+            : base(serviceUri, credential, options.AddBrokenTransport())
         {
-            _tokenCredential = credential;
-            Options = options;
+            _store = store;
+            _credential = credential;
+            _options = options;
         }
-
-        public TableClientOptions Options { get; }
-        public MemoryTableServiceStore Store { get; } = SharedStore;
 
         public override TableClient GetTableClient(
             string tableName)
         {
-            if (_sharedKeyCredential is not null)
-            {
-                return new MemoryTableClient(this, Uri, tableName, _sharedKeyCredential);
-            }
-            else
-            {
-                return new MemoryTableClient(this, Uri, tableName, _tokenCredential!);
-            }
+            return new MemoryTableClient(_store, Uri, tableName, _credential, _options);
         }
 
         public override AsyncPageable<TableItem> QueryAsync(

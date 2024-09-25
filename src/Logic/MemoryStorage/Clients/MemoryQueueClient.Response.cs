@@ -12,7 +12,7 @@ namespace NuGet.Insights.MemoryStorage
     {
         private Response<bool> ExistsResponse()
         {
-            if (Store.Exists())
+            if (_store.Exists())
             {
                 return Response.FromValue(
                     true,
@@ -26,7 +26,7 @@ namespace NuGet.Insights.MemoryStorage
 
         private Response CreateIfNotExistsResponse(IDictionary<string, string>? metadata)
         {
-            var result = Store.CreateIfNotExists(metadata);
+            var result = _store.CreateIfNotExists(metadata);
             return result switch
             {
                 StorageResultType.Success => new MemoryResponse(HttpStatusCode.Created),
@@ -40,7 +40,7 @@ namespace NuGet.Insights.MemoryStorage
             TimeSpan? visibilityTimeout,
             TimeSpan? timeToLive)
         {
-            var result = Store.SendMessage(messageText, visibilityTimeout, timeToLive);
+            var result = _store.SendMessage(messageText, visibilityTimeout, timeToLive);
             return result.Type switch
             {
                 StorageResultType.DoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
@@ -53,7 +53,7 @@ namespace NuGet.Insights.MemoryStorage
 
         private Response<QueueMessage[]> ReceiveMessagesResponse(int? maxMessages, TimeSpan? visibilityTimeout)
         {
-            var result = Store.ReceiveMessages(maxMessages, visibilityTimeout);
+            var result = _store.ReceiveMessages(maxMessages, visibilityTimeout);
             return result.Type switch
             {
                 StorageResultType.DoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
@@ -66,7 +66,7 @@ namespace NuGet.Insights.MemoryStorage
 
         private Response<QueueMessage?> ReceiveMessageResponse(TimeSpan? visibilityTimeout)
         {
-            var result = Store.ReceiveMessages(maxMessages: 1, visibilityTimeout);
+            var result = _store.ReceiveMessages(maxMessages: 1, visibilityTimeout);
             return result.Type switch
             {
                 StorageResultType.DoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
@@ -79,7 +79,7 @@ namespace NuGet.Insights.MemoryStorage
 
         private Response DeleteMessageResponse(string messageId, string popReceipt)
         {
-            var result = Store.DeleteMessage(messageId, popReceipt);
+            var result = _store.DeleteMessage(messageId, popReceipt);
             return result switch
             {
                 StorageResultType.DoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
@@ -90,7 +90,7 @@ namespace NuGet.Insights.MemoryStorage
 
         private Response DeleteResponse()
         {
-            var result = Store.Delete();
+            var result = _store.Delete();
             return result switch
             {
                 StorageResultType.DoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
@@ -101,7 +101,7 @@ namespace NuGet.Insights.MemoryStorage
 
         private Response<QueueProperties> GetPropertiesResponse()
         {
-            var result = Store.GetProperties();
+            var result = _store.GetProperties();
             return result.Type switch
             {
                 StorageResultType.DoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
@@ -114,7 +114,7 @@ namespace NuGet.Insights.MemoryStorage
 
         private Response<PeekedMessage[]> PeekMessagesResponse(int? maxMessages)
         {
-            var result = Store.PeekMessages(maxMessages);
+            var result = _store.PeekMessages(maxMessages);
             return result.Type switch
             {
                 StorageResultType.DoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
@@ -127,7 +127,7 @@ namespace NuGet.Insights.MemoryStorage
 
         private Response<PeekedMessage?> PeekMessageResponse()
         {
-            var result = Store.PeekMessages(maxMessages: 1);
+            var result = _store.PeekMessages(maxMessages: 1);
             return result.Type switch
             {
                 StorageResultType.DoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
@@ -144,7 +144,7 @@ namespace NuGet.Insights.MemoryStorage
             string? messageText,
             TimeSpan visibilityTimeout)
         {
-            var result = Store.UpdateMessage(messageId, popReceipt, messageText, visibilityTimeout);
+            var result = _store.UpdateMessage(messageId, popReceipt, messageText, visibilityTimeout);
             return result.Type switch
             {
                 StorageResultType.DoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),

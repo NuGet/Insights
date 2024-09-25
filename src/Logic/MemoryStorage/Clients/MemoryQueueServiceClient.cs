@@ -3,7 +3,6 @@
 
 using Azure;
 using Azure.Core;
-using Azure.Storage;
 using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 
@@ -13,44 +12,29 @@ namespace NuGet.Insights.MemoryStorage
 {
     public partial class MemoryQueueServiceClient : QueueServiceClient
     {
-        private readonly StorageSharedKeyCredential? _sharedKeyCredential;
-        private readonly TokenCredential? _tokenCredential;
+        private readonly MemoryQueueServiceStore _store;
+        private readonly QueueClientOptions _options;
 
-        private static readonly MemoryQueueServiceStore SharedStore = new MemoryQueueServiceStore();
-
-        public MemoryQueueServiceClient(
-            Uri serviceUri,
-            StorageSharedKeyCredential credential,
-            QueueClientOptions options) : base(serviceUri, credential, options.AddBrokenTransport())
+        public MemoryQueueServiceClient(MemoryQueueServiceStore store) : this(
+            store,
+            StorageUtility.GetQueueEndpoint(StorageUtility.MemoryStorageAccountName),
+            MemoryTokenCredential.Instance,
+            new QueueClientOptions().AddBrokenTransport())
         {
-            _sharedKeyCredential = credential;
-            Options = options;
         }
 
-        public MemoryQueueServiceClient(
-            Uri serviceUri,
-            TokenCredential credential,
-            QueueClientOptions options) : base(serviceUri, credential, options.AddBrokenTransport())
+        private MemoryQueueServiceClient(MemoryQueueServiceStore store, Uri serviceUri, TokenCredential tokenCredential, QueueClientOptions options)
+            : base(serviceUri, tokenCredential, options.AddBrokenTransport())
         {
-            _tokenCredential = credential;
-            Options = options;
+            _store = store;
+            _options = options;
         }
-
-        public QueueClientOptions Options { get; }
-        public MemoryQueueServiceStore Store { get; } = SharedStore;
 
         public override QueueClient GetQueueClient(
             string queueName)
         {
             var uri = Uri.AppendToPath(queueName);
-            if (_sharedKeyCredential is not null)
-            {
-                return new MemoryQueueClient(this, uri, _sharedKeyCredential);
-            }
-            else
-            {
-                return new MemoryQueueClient(this, uri, _tokenCredential!);
-            }
+            return new MemoryQueueClient(_store, uri, _options);
         }
 
         public override AsyncPageable<QueueItem> GetQueuesAsync(

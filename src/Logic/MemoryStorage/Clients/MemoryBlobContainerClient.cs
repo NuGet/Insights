@@ -3,7 +3,6 @@
 
 using Azure;
 using Azure.Core;
-using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
@@ -14,62 +13,35 @@ namespace NuGet.Insights.MemoryStorage
 {
     public partial class MemoryBlobContainerClient : BlobContainerClient
     {
-        private readonly StorageSharedKeyCredential? _sharedKeyCredential;
-        private readonly TokenCredential? _tokenCredential;
+        private readonly MemoryBlobContainerStore _store;
+        private readonly TokenCredential _credential;
+        private readonly BlobClientOptions _options;
 
-        public MemoryBlobContainerClient(MemoryBlobServiceClient parent, Uri uri, StorageSharedKeyCredential credential)
-            : base(uri, credential, parent.Options)
+        public MemoryBlobContainerClient(MemoryBlobServiceStore store, Uri uri, TokenCredential credential, BlobClientOptions options)
+            : base(uri, credential, options.AddBrokenTransport())
         {
-            _sharedKeyCredential = credential;
-            Options = parent.Options;
-            Parent = parent;
-            Store = parent.Store.GetContainer(Name);
+            _store = store.GetContainer(Name);
+            _credential = credential;
+            _options = options;
         }
-
-        public MemoryBlobContainerClient(MemoryBlobServiceClient parent, Uri uri, TokenCredential credential)
-            : base(uri, credential, parent.Options)
-        {
-            _tokenCredential = credential;
-            Options = parent.Options;
-            Parent = parent;
-            Store = parent.Store.GetContainer(Name);
-        }
-
-        public BlobClientOptions Options { get; }
-        public MemoryBlobServiceClient Parent { get; }
-        public MemoryBlobContainerStore Store { get; }
 
         private Uri GetBlobUri(string blobName)
         {
-            return new BlobUriBuilder(Uri, Options.TrimBlobNameSlashes) { BlobName = blobName }.ToUri();
+            return new BlobUriBuilder(Uri, _options.TrimBlobNameSlashes) { BlobName = blobName }.ToUri();
         }
 
         public override BlobClient GetBlobClient(
             string blobName)
         {
             var uri = GetBlobUri(blobName);
-            if (_sharedKeyCredential is not null)
-            {
-                return new MemoryBlobClient(this, uri, _sharedKeyCredential);
-            }
-            else
-            {
-                return new MemoryBlobClient(this, uri, _tokenCredential!);
-            }
+            return new MemoryBlobClient(_store, uri, _credential, _options);
         }
 
         protected override BlockBlobClient GetBlockBlobClientCore(
             string blobName)
         {
             var uri = GetBlobUri(blobName);
-            if (_sharedKeyCredential is not null)
-            {
-                return new MemoryBlockBlobClient(this, uri, _sharedKeyCredential);
-            }
-            else
-            {
-                return new MemoryBlockBlobClient(this, uri, _tokenCredential!);
-            }
+            return new MemoryBlockBlobClient(_store, uri, _credential, _options);
         }
 
         public override Task<Response<BlobContainerInfo>?> CreateIfNotExistsAsync(

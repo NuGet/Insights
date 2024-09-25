@@ -12,30 +12,13 @@ namespace NuGet.Insights.MemoryStorage
 {
     public partial class MemoryTableClient : TableClient
     {
-        private TableSharedKeyCredential? _sharedKeyCredential;
-        private TokenCredential? _tokenCredential;
+        private readonly MemoryTableStore _store;
 
-        public MemoryTableClient(MemoryTableServiceClient parent, Uri endpoint, string tableName, TableSharedKeyCredential credential)
-            : base(endpoint, tableName, credential, parent.Options)
+        public MemoryTableClient(MemoryTableServiceStore parent, Uri endpoint, string tableName, TokenCredential credential, TableClientOptions options)
+            : base(endpoint, tableName, credential, options.AddBrokenTransport())
         {
-            _sharedKeyCredential = credential;
-            Options = parent.Options;
-            Parent = parent;
-            Store = parent.Store.GetTable(Name);
+            _store = parent.GetTable(Name);
         }
-
-        public MemoryTableClient(MemoryTableServiceClient parent, Uri endpoint, string tableName, TokenCredential tokenCredential)
-            : base(endpoint, tableName, tokenCredential, parent.Options)
-        {
-            _tokenCredential = tokenCredential;
-            Options = parent.Options;
-            Parent = parent;
-            Store = parent.Store.GetTable(Name);
-        }
-
-        public TableClientOptions Options { get; }
-        public MemoryTableServiceClient Parent { get; }
-        public MemoryTableStore Store { get; }
 
         public override Task<Response<TableItem>> CreateIfNotExistsAsync(
             CancellationToken cancellationToken = default)
