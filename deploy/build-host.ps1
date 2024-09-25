@@ -53,8 +53,11 @@ $submoduleDir = Resolve-Path (Join-Path $PSScriptRoot "../submodules")
 $resetFiles = ".editorconfig", "Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props", "NuGet.config"
 $resetFiles | ForEach-Object { Copy-Item (Join-Path $submoduleDir $_) (Join-Path $artifactsDir $_) }
 
+Write-Host "Copying repository level NuGet.config into the host source directory"
+Copy-Item (Resolve-Path (Join-Path $PSScriptRoot "../NuGet.config")) (Resolve-Path (Join-Path $hostSrcDir "NuGet.config")) -Force
+
 Write-Host "Publishing host"
-dotnet restore $hostProjectPath --verbosity Minimal
+dotnet restore $hostProjectPath --verbosity Normal
 dotnet publish $hostProjectPath -c Release --output $hostBinDir --framework "net8.0" --runtime $RuntimeIdentifier --self-contained false
 
 if ($LASTEXITCODE -ne 0) {

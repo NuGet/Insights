@@ -15,8 +15,8 @@ $configPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../markdow
 
 npm list -g markdown-link-check | Out-Null
 if ($LASTEXITCODE) {
-    Write-Host "Installing markdown-link-check."
-    npm install -g markdown-link-check
+    Write-Host "The markdown-link-check global npm tool is not installed. Run this: npm install -g markdown-link-check" -ForegroundColor Red
+    exit 1
 }
 
 $originalOutputEncoding = [Console]::OutputEncoding

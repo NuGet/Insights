@@ -67,7 +67,7 @@ stages:
           targetType: "filePath"
           filePath: $(Build.SourcesDirectory)/src/Forks/download.ps1
 
-      - script: npm install -g markdown-link-check@3.10.0
+      - script: npm install --loglevel verbose --global markdown-link-check@3.10.0
         displayName: "Install markdown-link-check"
 
       - task: PowerShell@2
@@ -96,7 +96,7 @@ stages:
       - task: NuGetAuthenticate@1
         displayName: "NuGet authenticate"
 
-      - script: dotnet restore $(BuildSolution)
+      - script: dotnet restore $(BuildSolution) --verbosity Normal
         displayName: "Restore"
 
       - script: dotnet build $(Build.SourcesDirectory)/src/Website/Website.csproj --configuration $(BuildConfiguration) --runtime ${{ rid }} --self-contained false
@@ -211,11 +211,11 @@ stages:
           displayName: "Save Kusto client certificate"
           condition: eq('${{ storageType }}', 'AzureWithKusto')
 
-        - script: npx --yes --loglevel info azurite --version
-          displayName: "Install Azurite for npx"
+        - script: npm install --loglevel verbose --global azurite
+          displayName: "Install Azurite"
           condition: eq('${{ storageType }}', 'Azurite')
 
-        - bash: npx --yes azurite --silent --inMemoryPersistence &
+        - bash: azurite --silent --inMemoryPersistence &
           displayName: "Start Azurite"
           condition: eq('${{ storageType }}', 'Azurite')
 
