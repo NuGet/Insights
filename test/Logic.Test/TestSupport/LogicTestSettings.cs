@@ -170,10 +170,10 @@ namespace NuGet.Insights
                         // any response is good enough for now
                         break;
                     }
-                    catch when (attempt < 5)
+                    catch when (attempt < 10)
                     {
                         // allow retry
-                        Thread.Sleep(500);
+                        Thread.Sleep(500 * attempt);
                     }
                     catch (Exception ex)
                     {
