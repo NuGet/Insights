@@ -48,8 +48,15 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 // far enough far enough causing other reads to be aligned to the wrong bytes. It's not possible
                 // to know a 3rd party enum size without loading the correct dependency assembly, which is not
                 // tenable in this context.
-                type.IsUnrecognizedEnum = true;
+                type.EdgeCases |= PackageAssemblyEdgeCases.CustomAttributes_UnknownEnum;
                 return PrimitiveTypeCode.Int32;
+            }
+
+            if (type.RecognizedType == typeof(string))
+            {
+                // A couple of packages have a type handle that points to a string.
+                type.EdgeCases |= PackageAssemblyEdgeCases.CustomAttributes_StringTypeHandle;
+                return PrimitiveTypeCode.String;
             }
 
             if (!type.RecognizedType.IsEnum)

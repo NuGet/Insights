@@ -20,5 +20,6 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         CustomAttributes_BrokenValueBlob = 1 << 10,
         CustomAttributes_TypeSpecificationConstructor = 1 << 11,
         CustomAttributes_UnknownEnum = 1 << 12,
+        CustomAttributes_StringTypeHandle = 1 << 13,
     }
 }

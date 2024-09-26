@@ -46,7 +46,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         public SimpleTypeInfo? ArrayType { get; private init; }
         public EntityHandleInfo? UnrecognizedType { get; private init; }
 
-        public bool IsUnrecognizedEnum { get; set; }
+        public PackageAssemblyEdgeCases EdgeCases { get; set; }
 
         public class SimpleTypeInfoJsonConverter : JsonConverter<SimpleTypeInfo>
         {

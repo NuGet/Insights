@@ -182,15 +182,15 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
                 for (var i = 0; i < value.FixedArguments.Length; i++)
                 {
-                    arguments.Add(i.ToString(CultureInfo.InvariantCulture), value.FixedArguments[i].Value);
+                    var argument = value.FixedArguments[i];
+                    arguments.Add(i.ToString(CultureInfo.InvariantCulture), argument.Value);
+
+                    edgeCases |= argument.Type.EdgeCases;
                 }
 
                 foreach (var argument in value.NamedArguments)
                 {
-                    if (argument.Type.IsUnrecognizedEnum)
-                    {
-                        edgeCases |= PackageAssemblyEdgeCases.CustomAttributes_UnknownEnum;
-                    }
+                    edgeCases |= argument.Type.EdgeCases;
 
                     if (!arguments.ContainsKey(argument.Name))
                     {

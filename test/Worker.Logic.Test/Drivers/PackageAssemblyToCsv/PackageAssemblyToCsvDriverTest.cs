@@ -15,6 +15,25 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         public ICatalogLeafToCsvDriver<PackageAssembly> Target => Host.Services.GetRequiredService<ICatalogLeafToCsvDriver<PackageAssembly>>();
 
         [Fact]
+        public async Task HandlesStringTypeHandle()
+        {
+            var leaf = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2018.11.11.05.13.20/sqlprovider.1.1.10-alpha.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "SQLProvider",
+                PackageVersion = "1.1.10-alpha",
+            }.SetDefaults();
+            await Target.InitializeAsync();
+
+            var output = await Target.ProcessLeafAsync(leaf);
+
+            Assert.Equal(DriverResultType.Success, output.Type);
+            var record = output.Value.Single(x => x.Path == "lib/net451/FSharp.Data.SqlProvider.dll");
+            Assert.Equal(PackageAssemblyEdgeCases.CustomAttributes_StringTypeHandle, record.EdgeCases);
+        }
+
+        [Fact]
         public async Task HandlesNullTypeReference()
         {
             var leaf = new CatalogLeafScan

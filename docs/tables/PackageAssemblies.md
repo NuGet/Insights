@@ -75,6 +75,7 @@ The EdgeCases column is a enum with one or more of any of the following values. 
 | CustomAttributes_BrokenValueBlob              | A reference to a custom attribute value blob is broken                                    |
 | CustomAttributes_DuplicateArgumentName        | Multiple instances of the same argument name exist in a custom attribute                  |
 | CustomAttributes_MethodDefinition             | A custom attribute type refers to a method instead of type declaration                    |
+| CustomAttributes_StringTypeHandle             | A type handle in a custom attribute points to a string instead of a type or enum          |
 | CustomAttributes_TruncatedAttributes          | CustomAttributes column is truncated since it exceeded a limit                            |
 | CustomAttributes_TruncatedFailedDecode        | CustomAttributesFailedDecode column is truncated since it exceeded a limit                |
 | CustomAttributes_TypeDefinitionConstructor    | A custom attribute constructor refers to a type definition instead of type declaration    |
