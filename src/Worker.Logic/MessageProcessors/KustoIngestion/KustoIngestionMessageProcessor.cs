@@ -12,6 +12,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly ICslAdminProvider _kustoAdminClient;
         private readonly KustoDataValidator _kustoDataValidator;
+        private readonly FanOutRecoveryService _fanOutRecoveryService;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<KustoIngestionMessageProcessor> _logger;
@@ -22,6 +23,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             IMessageEnqueuer messageEnqueuer,
             ICslAdminProvider kustoAdminClient,
             KustoDataValidator kustoDataValidator,
+            FanOutRecoveryService fanOutRecoveryService,
             ITelemetryClient telemetryClient,
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<KustoIngestionMessageProcessor> logger)
@@ -31,6 +33,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             _messageEnqueuer = messageEnqueuer;
             _kustoAdminClient = kustoAdminClient;
             _kustoDataValidator = kustoDataValidator;
+            _fanOutRecoveryService = fanOutRecoveryService;
             _telemetryClient = telemetryClient;
             _options = options;
             _logger = logger;
@@ -120,11 +123,17 @@ namespace NuGet.Insights.Worker.KustoIngestion
             {
                 var containers = await _storageService.GetContainersAsync(ingestion);
                 var createdContainers = containers.Where(x => x.State == KustoContainerIngestionState.Created).ToList();
-                await _messageEnqueuer.EnqueueAsync(createdContainers.Select(x => new KustoContainerIngestionMessage
-                {
-                    StorageSuffix = x.StorageSuffix,
-                    ContainerName = x.ContainerName,
-                }).ToList());
+                await EnqueueAsync(createdContainers);
+
+                ingestion.State = KustoIngestionState.Working;
+                await _storageService.ReplaceIngestionAsync(ingestion);
+            }
+
+            if (ingestion.State == KustoIngestionState.Requeuing)
+            {
+                await _fanOutRecoveryService.EnqueueUnstartedWorkAsync(
+                    x => _storageService.GetUnstartedCcontainersAsync(ingestion, x),
+                    EnqueueAsync);
 
                 ingestion.State = KustoIngestionState.Working;
                 await _storageService.ReplaceIngestionAsync(ingestion);
@@ -133,6 +142,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             if (ingestion.State == KustoIngestionState.Working)
             {
                 var containers = await _storageService.GetContainersAsync(ingestion);
+                var createdCount = containers.Count(x => x.State == KustoContainerIngestionState.Created);
                 var incompleteCount = containers.Count(x => x.State != KustoContainerIngestionState.Complete && x.State != KustoContainerIngestionState.Failed);
                 var errorCount = containers.Count(x => x.State == KustoContainerIngestionState.Failed);
                 if (containers.Count == 0)
@@ -142,6 +152,14 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 }
                 else if (incompleteCount > 0)
                 {
+                    if (createdCount > 0
+                        && await _fanOutRecoveryService.ShouldRequeueAsync(ingestion.Timestamp.Value, typeof(KustoContainerIngestionMessage)))
+                    {
+                        ingestion.State = KustoIngestionState.Working;
+                        message.AttemptCount = 0;
+                        await _storageService.ReplaceIngestionAsync(ingestion);
+                    }
+
                     _logger.LogInformation("There are {Count} containers still being ingested into Kusto.", incompleteCount);
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
@@ -258,6 +276,15 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 _logger.LogInformation("The Kusto ingestion is complete.");
                 await CleanUpAndSetTerminalStateAsync(ingestion, KustoIngestionState.Complete);
             }
+        }
+
+        private async Task EnqueueAsync(IReadOnlyList<KustoContainerIngestion> containers)
+        {
+            await _messageEnqueuer.EnqueueAsync(containers.Select(x => new KustoContainerIngestionMessage
+            {
+                StorageSuffix = x.StorageSuffix,
+                ContainerName = x.ContainerName,
+            }).ToList());
         }
 
         private async Task CleanUpAndSetTerminalStateAsync(KustoIngestionEntity ingestion, KustoIngestionState terminalState)

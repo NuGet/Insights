@@ -302,22 +302,6 @@ namespace NuGet.Insights.Worker.KustoIngestion
             }
         }
 
-        public async Task<int> GetContainerCountLowerBoundAsync(string storageSuffix)
-        {
-            var table = await GetKustoIngestionTableAsync(storageSuffix);
-            return await table.GetEntityCountLowerBoundAsync(
-                KustoContainerIngestion.DefaultPartitionKey,
-                _telemetryClient.StartQueryLoopMetrics());
-        }
-
-        public async Task<int> GetBlobCountLowerBoundAsync(string storageSuffix, string containerName)
-        {
-            var table = await GetKustoIngestionTableAsync(storageSuffix);
-            return await table.GetEntityCountLowerBoundAsync(
-                containerName,
-                _telemetryClient.StartQueryLoopMetrics());
-        }
-
         public async Task<IReadOnlyList<KustoContainerIngestion>> GetContainersAsync(KustoIngestionEntity ingestion)
         {
             var table = await GetKustoIngestionTableAsync(ingestion.StorageSuffix);
@@ -328,6 +312,16 @@ namespace NuGet.Insights.Worker.KustoIngestion
         {
             var query = table.QueryAsync<KustoContainerIngestion>(filter: x => x.PartitionKey == KustoContainerIngestion.DefaultPartitionKey);
             return await query.ToListAsync();
+        }
+
+        public async Task<IReadOnlyList<KustoContainerIngestion>> GetUnstartedCcontainersAsync(KustoIngestionEntity ingestion, int take)
+        {
+            var table = await GetKustoIngestionTableAsync(ingestion.StorageSuffix);
+            return await table
+                .QueryAsync<KustoContainerIngestion>(filter: x => x.PartitionKey == KustoContainerIngestion.DefaultPartitionKey)
+                .Where(x => x.State == KustoContainerIngestionState.Created)
+                .Take(take)
+                .ToListAsync();
         }
 
         private async Task<TableClientWithRetryContext> GetKustoIngestionTableAsync()
