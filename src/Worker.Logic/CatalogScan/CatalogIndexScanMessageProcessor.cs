@@ -16,6 +16,7 @@ namespace NuGet.Insights.Worker
         private readonly CatalogScanService _catalogScanService;
         private readonly TaskStateStorageService _taskStateStorageService;
         private readonly TableScanService _tableScanService;
+        private readonly FanOutRecoveryService _fanOutRecoveryService;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<CatalogIndexScanMessageProcessor> _logger;
@@ -30,6 +31,7 @@ namespace NuGet.Insights.Worker
             CatalogScanService catalogScanService,
             TaskStateStorageService taskStateStorageService,
             TableScanService tableScanService,
+            FanOutRecoveryService fanOutRecoveryService,
             ITelemetryClient telemetryClient,
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<CatalogIndexScanMessageProcessor> logger)
@@ -43,6 +45,7 @@ namespace NuGet.Insights.Worker
             _catalogScanService = catalogScanService;
             _taskStateStorageService = taskStateStorageService;
             _tableScanService = tableScanService;
+            _fanOutRecoveryService = fanOutRecoveryService;
             _telemetryClient = telemetryClient;
             _options = options;
             _logger = logger;
@@ -188,7 +191,7 @@ namespace NuGet.Insights.Worker
             if (scan.State == CatalogIndexScanState.Enqueuing)
             {
                 var createdPageScans = await _storageService.GetAllPageScansAsync(scan.StorageSuffix, scan.ScanId);
-                await EnqueuePagesAsync(scan, createdPageScans);
+                await EnqueuePagesAsync(createdPageScans);
 
                 scan.State = CatalogIndexScanState.Working;
                 message.AttemptCount = 0;
@@ -202,20 +205,14 @@ namespace NuGet.Insights.Worker
             if (scan.State == CatalogIndexScanState.Requeuing)
             {
                 // requeue a chunk of leaf scans
-                var leafScans = await _storageService.GetUnstartedLeafScansAsync(scan.StorageSuffix, scan.ScanId, StorageUtility.MaxTakeCount);
-                await _expandService.EnqueueLeafScansAsync(leafScans);
+                await _fanOutRecoveryService.EnqueueUnstartedWorkAsync(
+                    take => _storageService.GetUnstartedLeafScansAsync(scan.StorageSuffix, scan.ScanId, take),
+                    _expandService.EnqueueLeafScansAsync);
 
                 // requeue a chunk of page scans
-                var pageScans = await _storageService.GetUnstartedPageScansAsync(scan.StorageSuffix, scan.ScanId, StorageUtility.MaxTakeCount);
-                await EnqueuePagesAsync(scan, pageScans);
-
-                _telemetryClient.TrackMetric($"{nameof(CatalogIndexScanMessageProcessor)}.Requeue", 1, new Dictionary<string, string>
-                {
-                    { "LeafScanCount", leafScans.Count.ToString(CultureInfo.InvariantCulture) },
-                    { "PageScanCount", pageScans.Count.ToString(CultureInfo.InvariantCulture) },
-                    { "DriverType", scan.DriverType.ToString() },
-                    { "ScanId", scan.ScanId },
-                });
+                await _fanOutRecoveryService.EnqueueUnstartedWorkAsync(
+                    take => _storageService.GetUnstartedPageScansAsync(scan.StorageSuffix, scan.ScanId, take),
+                    EnqueuePagesAsync);
 
                 scan.State = CatalogIndexScanState.Working;
                 if (!await TryReplaceAsync(message, scan))
@@ -229,8 +226,15 @@ namespace NuGet.Insights.Worker
             {
                 if (!await ArePageScansCompleteAsync(scan) || !await AreLeafScansCompleteAsync(scan))
                 {
-                    if (await ShouldRequeueAsync(message, scan))
+                    if (await _fanOutRecoveryService.ShouldRequeueAsync(
+                        scan.Timestamp.Value,
+                        typeof(CatalogPageScanMessage),
+                        typeof(CatalogLeafScanMessage)))
                     {
+                        // FAN OUT RECOVERY: it is possible for page scans from a duplicate catalog index scan message to have been
+                        // added after the enqueue state completed. To handle this rare case, we will try to reprocess any page
+                        // scans that are still hanging. This prevents us from being stuck in the working state waiting on page
+                        // scans that have no corresponding catalog page scan queue message.
                         scan.State = CatalogIndexScanState.Requeuing;
                         message.AttemptCount = 0;
                         if (!await TryReplaceAsync(message, scan))
@@ -254,28 +258,6 @@ namespace NuGet.Insights.Worker
             }
 
             await HandleAggregateAndFinalizeStatesAsync(message, scan, driver);
-        }
-
-        private async Task<bool> ShouldRequeueAsync(CatalogIndexScanMessage message, CatalogIndexScan scan)
-        {
-            // FAN OUT RECOVERY: it is possible for page scans from a duplicate catalog index scan message to have been
-            // added after the enqueue state completed. To handle this rare case, we will try to reprocess any page
-            // scans that are still hanging. This prevents us from being stuck in the working state waiting on page
-            // scans that have no corresponding catalog page scan queue message.
-            var workingDuration = DateTimeOffset.UtcNow - scan.Timestamp;
-            if (workingDuration >= _options.Value.FanOutRequeueTime)
-            {
-                var messageCount = await _messageEnqueuer.GetMaxApproximateMessageCountAsync(
-                    typeof(CatalogLeafScanMessage),
-                    typeof(CatalogPageScanMessage));
-
-                if (messageCount <= _options.Value.FanOutRequeueMaxMessageCount)
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         private async Task ExpandLatestLeavesAsync(CatalogIndexScanMessage message, CatalogIndexScan scan, ICatalogScanDriver driver, bool perId)
@@ -732,7 +714,7 @@ namespace NuGet.Insights.Worker
             await _storageService.InsertAsync(uncreatedPageScans);
         }
 
-        private async Task EnqueuePagesAsync(CatalogIndexScan scan, IReadOnlyList<CatalogPageScan> createdPageScans)
+        private async Task EnqueuePagesAsync(IReadOnlyList<CatalogPageScan> createdPageScans)
         {
             _logger.LogInformation("Enqueuing a scan of {PageCount} pages.", createdPageScans.Count);
             await _messageEnqueuer.EnqueueAsync(

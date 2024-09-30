@@ -78,8 +78,8 @@ namespace NuGet.Insights.Worker
                 retryFailedMessages: true);
 
             // Assert
-            var metrics = TelemetryClient.MetricValues.Where(x => x.MetricId == "CatalogIndexScanMessageProcessor.Requeue");
-            Assert.Contains(metrics, x => x.MetricProperties["PageScanCount"] == "1");
+            Assert.True(TelemetryClient.Metrics.TryGetValue(new("FanOutRecoveryService.UnstartedWorkCount", "Type"), out var metric));
+            Assert.Contains(metric.MetricValues, x => x.DimensionValues[0] == "CatalogPageScan" && x.MetricValue == 1);
         }
 
         [NoInMemoryStorageFact]
@@ -154,8 +154,8 @@ namespace NuGet.Insights.Worker
                 retryFailedMessages: true);
 
             // Assert
-            var metrics = TelemetryClient.MetricValues.Where(x => x.MetricId == "CatalogIndexScanMessageProcessor.Requeue");
-            Assert.Contains(metrics, x => x.MetricProperties["LeafScanCount"] == "1");
+            Assert.True(TelemetryClient.Metrics.TryGetValue(new("FanOutRecoveryService.UnstartedWorkCount", "Type"), out var metric));
+            Assert.Contains(metric.MetricValues, x => x.DimensionValues[0] == "CatalogLeafScan" && x.MetricValue == 1);
         }
 
         public CatalogScanFaultInjectionTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

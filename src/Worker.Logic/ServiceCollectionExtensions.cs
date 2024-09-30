@@ -57,6 +57,8 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddSingleton<IMessageBatcher, MessageBatcher>();
             serviceCollection.AddSingleton<IMessageEnqueuer, MessageEnqueuer>();
 
+            serviceCollection.AddSingleton<FanOutRecoveryService>();
+
             serviceCollection.AddSingleton<TableScanService>();
             serviceCollection.AddSingleton(typeof(TableScanDriverFactory<>));
             serviceCollection.AddSingleton(typeof(LatestLeafStorageService<>));
