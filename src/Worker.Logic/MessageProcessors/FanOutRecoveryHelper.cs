@@ -37,10 +37,6 @@ namespace NuGet.Insights.Worker
 
         public async Task<bool> ShouldRequeueAsync(DateTimeOffset lastProgress, params Type[] messageTypes)
         {
-            // FAN OUT RECOVERY: it is possible for page scans from a duplicate catalog index scan message to have been
-            // added after the enqueue state completed. To handle this rare case, we will try to reprocess any page
-            // scans that are still hanging. This prevents us from being stuck in the working state waiting on page
-            // scans that have no corresponding catalog page scan queue message.
             var workingDuration = DateTimeOffset.UtcNow - lastProgress;
             if (workingDuration >= _options.Value.FanOutRequeueTime)
             {

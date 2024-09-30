@@ -12,6 +12,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         private readonly CsvRecordContainers _csvRecordContainers;
         private readonly ICslAdminProvider _kustoAdminClient;
         private readonly IMessageEnqueuer _messageEnqueuer;
+        private readonly FanOutRecoveryService _fanOutRecoveryService;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<KustoContainerIngestionMessageProcessor> _logger;
@@ -22,6 +23,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             CsvRecordContainers csvRecordContainers,
             ICslAdminProvider kustoAdminClient,
             IMessageEnqueuer messageEnqueuer,
+            FanOutRecoveryService fanOutRecoveryService,
             ITelemetryClient telemetryClient,
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<KustoContainerIngestionMessageProcessor> logger)
@@ -31,6 +33,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             _csvRecordContainers = csvRecordContainers;
             _kustoAdminClient = kustoAdminClient;
             _messageEnqueuer = messageEnqueuer;
+            _fanOutRecoveryService = fanOutRecoveryService;
             _telemetryClient = telemetryClient;
             _options = options;
             _logger = logger;
@@ -115,12 +118,17 @@ namespace NuGet.Insights.Worker.KustoIngestion
             if (container.State == KustoContainerIngestionState.Enqueuing)
             {
                 var blobs = await _storageService.GetBlobsAsync(container);
-                await _messageEnqueuer.EnqueueAsync(blobs.Select(x => new KustoBlobIngestionMessage
-                {
-                    StorageSuffix = x.StorageSuffix,
-                    ContainerName = x.ContainerName,
-                    BlobName = x.BlobName,
-                }).ToList());
+                await EnqueueAsync(blobs);
+
+                container.State = KustoContainerIngestionState.Working;
+                await _storageService.ReplaceContainerAsync(container);
+            }
+
+            if (container.State == KustoContainerIngestionState.Requeuing)
+            {
+                await _fanOutRecoveryService.EnqueueUnstartedWorkAsync(
+                    x => _storageService.GetUnstartedBlobsAsync(container, x),
+                    EnqueueAsync);
 
                 container.State = KustoContainerIngestionState.Working;
                 await _storageService.ReplaceContainerAsync(container);
@@ -129,10 +137,19 @@ namespace NuGet.Insights.Worker.KustoIngestion
             if (container.State == KustoContainerIngestionState.Working)
             {
                 var blobs = await _storageService.GetBlobsAsync(container);
+                var createdCount = blobs.Count(x => x.State == KustoBlobIngestionState.Created);
                 var pendingCount = blobs.Count(x => x.State == KustoBlobIngestionState.Created || x.State == KustoBlobIngestionState.Working);
                 var failedCount = blobs.Count - pendingCount; // Successfully completed records are deleted so a row is either incomplete or it failed.
                 if (pendingCount > 0)
                 {
+                    if (createdCount > 0
+                        && await _fanOutRecoveryService.ShouldRequeueAsync(container.Timestamp.Value, typeof(KustoBlobIngestionMessage)))
+                    {
+                        container.State = KustoContainerIngestionState.Requeuing;
+                        message.AttemptCount = 0;
+                        await _storageService.ReplaceContainerAsync(container);
+                    }
+
                     _logger.LogInformation(
                         "There are {Count} blobs in container {ContainerName} still being ingested into Kusto.",
                         pendingCount,
@@ -174,6 +191,16 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     await _storageService.ReplaceContainerAsync(container);
                 }
             }
+        }
+
+        private async Task EnqueueAsync(IReadOnlyList<KustoBlobIngestion> blobs)
+        {
+            await _messageEnqueuer.EnqueueAsync(blobs.Select(x => new KustoBlobIngestionMessage
+            {
+                StorageSuffix = x.StorageSuffix,
+                ContainerName = x.ContainerName,
+                BlobName = x.BlobName,
+            }).ToList());
         }
 
         private async Task<IAsyncDisposable> LeaseOrNullAsync(KustoContainerIngestionMessage message, KustoContainerIngestion container, string finalTableName)
