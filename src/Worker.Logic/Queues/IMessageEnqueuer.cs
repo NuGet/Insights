@@ -13,6 +13,7 @@ namespace NuGet.Insights.Worker
         Task EnqueueAsync<T>(QueueType queue, bool isPoison, IReadOnlyList<T> messages, Func<T, IReadOnlyList<T>> split, TimeSpan notBefore);
         QueueType GetQueueType<T>();
         QueueType GetQueueType(string schemaName);
+        Task<int> GetMaxApproximateMessageCountAsync(params Type[] messageTypes);
         Task InitializeAsync();
     }
 }

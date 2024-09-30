@@ -485,7 +485,7 @@ namespace NuGet.Insights.Worker
             Assert.Equal(expectedNotBefore, actualNotBefore);
             Assert.Equal(1, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixA, ScanId));
             Assert.Equal(0, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixB, ScanId));
-            var remaining = Assert.Single(await CatalogScanStorageService.GetLeafScansAsync(StorageSuffixA, ScanId, PageId));
+            var remaining = Assert.Single(await CatalogScanStorageService.GetLeafScansByPageIdAsync(StorageSuffixA, ScanId, PageId));
             Assert.Equal(scan.LeafId, remaining.LeafId);
             Assert.Equal(0, remaining.AttemptCount);
             Assert.True(remaining.NextAttempt.Value < DateTimeOffset.UtcNow);
@@ -498,7 +498,7 @@ namespace NuGet.Insights.Worker
             Assert.Empty(result.TryAgainLater);
             Assert.Equal(1, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixA, ScanId));
             Assert.Equal(0, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixB, ScanId));
-            var remaining = Assert.Single(await CatalogScanStorageService.GetLeafScansAsync(StorageSuffixA, ScanId, PageId));
+            var remaining = Assert.Single(await CatalogScanStorageService.GetLeafScansByPageIdAsync(StorageSuffixA, ScanId, PageId));
             Assert.Equal(scan.LeafId, remaining.LeafId);
             Assert.Equal(1, remaining.AttemptCount);
             Assert.True(remaining.NextAttempt.Value > DateTimeOffset.UtcNow);
@@ -537,7 +537,7 @@ namespace NuGet.Insights.Worker
             Assert.Equal(TimeSpan.FromMinutes(5), actualNotBefore);
             Assert.Equal(1, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixA, ScanId));
             Assert.Equal(0, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixB, ScanId));
-            var remaining = Assert.Single(await CatalogScanStorageService.GetLeafScansAsync(StorageSuffixA, ScanId, PageId));
+            var remaining = Assert.Single(await CatalogScanStorageService.GetLeafScansByPageIdAsync(StorageSuffixA, ScanId, PageId));
             Assert.Equal(scan.LeafId, remaining.LeafId);
             Assert.Equal(0, remaining.AttemptCount);
             Assert.Equal(scan.NextAttempt, remaining.NextAttempt);

@@ -74,7 +74,18 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        public async Task<IReadOnlyList<CatalogPageScan>> GetPageScansAsync(string storageSuffix, string scanId)
+        public async Task<IReadOnlyList<CatalogPageScan>> GetUnstartedPageScansAsync(string storageSuffix, string scanId, int take)
+        {
+            var table = await GetPageScanTableAsync(storageSuffix);
+            return await table
+                .QueryAsync<CatalogPageScan>(x => x.PartitionKey == scanId)
+                // this can't be part of the query due to https://github.com/Azure/azure-sdk-for-net/issues/29644
+                .Where(x => x.State == CatalogPageScanState.Created)
+                .Take(take)
+                .ToListAsync();
+        }
+
+        public async Task<IReadOnlyList<CatalogPageScan>> GetAllPageScansAsync(string storageSuffix, string scanId)
         {
             var table = await GetPageScanTableAsync(storageSuffix);
             return await table
@@ -82,13 +93,27 @@ namespace NuGet.Insights.Worker
                 .ToListAsync(_telemetryClient.StartQueryLoopMetrics(dimension1Name: "StorageSuffix", storageSuffix, dimension2Name: "ScanId", scanId));
         }
 
-        public async Task<IReadOnlyList<CatalogLeafScan>> GetLeafScansAsync(string storageSuffix, string scanId, string pageId)
+        public async Task<IReadOnlyList<CatalogLeafScan>> GetUnstartedLeafScansAsync(string storageSuffix, string scanId, int take)
         {
             var table = await GetLeafScanTableAsync(storageSuffix);
-            return await GetLeafScansByPageScanAsync(table, storageSuffix, scanId, pageId);
+            var min = CatalogLeafScan.GetPartitionKey(scanId, string.Empty);
+            var max = CatalogLeafScan.GetPartitionKey(scanId, char.MaxValue.ToString());
+            return await table
+                .QueryAsync<CatalogLeafScan>(x =>
+                    string.Compare(x.PartitionKey, min, StringComparison.Ordinal) >= 0
+                    && string.Compare(x.PartitionKey, max, StringComparison.Ordinal) <= 0
+                    && x.AttemptCount == 0)
+                .Take(take)
+                .ToListAsync();
         }
 
-        public async Task<IReadOnlyList<CatalogLeafScan>> GetLeafScansAsync(string storageSuffix)
+        public async Task<IReadOnlyList<CatalogLeafScan>> GetLeafScansByPageIdAsync(string storageSuffix, string scanId, string pageId)
+        {
+            var table = await GetLeafScanTableAsync(storageSuffix);
+            return await GetLeafScansByPageIdAsync(table, storageSuffix, scanId, pageId);
+        }
+
+        public async Task<IReadOnlyList<CatalogLeafScan>> GetAllLeafScansAsync(string storageSuffix)
         {
             var table = await GetLeafScanTableAsync(storageSuffix);
             return await table
@@ -96,7 +121,7 @@ namespace NuGet.Insights.Worker
                 .ToListAsync(_telemetryClient.StartQueryLoopMetrics(dimension1Name: "StorageSuffix", storageSuffix));
         }
 
-        private async Task<IReadOnlyList<CatalogLeafScan>> GetLeafScansByPageScanAsync(TableClientWithRetryContext table, string storageSuffix, string scanId, string pageId)
+        private async Task<IReadOnlyList<CatalogLeafScan>> GetLeafScansByPageIdAsync(TableClientWithRetryContext table, string storageSuffix, string scanId, string pageId)
         {
             return await table
                 .QueryAsync<CatalogLeafScan>(x => x.PartitionKey == CatalogLeafScan.GetPartitionKey(scanId, pageId))
@@ -153,7 +178,7 @@ namespace NuGet.Insights.Worker
             foreach (var group in leafScans.GroupBy(x => new { x.StorageSuffix, x.ScanId, x.PageId }))
             {
                 var table = await GetLeafScanTableAsync(group.Key.StorageSuffix);
-                var createdLeaves = await GetLeafScansByPageScanAsync(table, group.Key.StorageSuffix, group.Key.ScanId, group.Key.PageId);
+                var createdLeaves = await GetLeafScansByPageIdAsync(table, group.Key.StorageSuffix, group.Key.ScanId, group.Key.PageId);
 
                 var allUrls = group.Select(x => x.Url).ToHashSet();
                 var createdUrls = createdLeaves.Select(x => x.Url).ToHashSet();

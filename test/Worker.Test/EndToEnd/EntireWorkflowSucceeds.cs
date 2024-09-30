@@ -175,7 +175,7 @@ namespace NuGet.Insights.Worker
 
                     return false;
                 },
-                parallel: true);
+                workerCount: DefaultParallelWorkers);
 
             // Assert
             // Make sure all scans completed.

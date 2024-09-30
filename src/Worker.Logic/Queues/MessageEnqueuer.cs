@@ -206,9 +206,14 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        public QueueType GetQueueType<T>()
+        public QueueType GetQueueType<TMessage>()
         {
-            return TypeToQueue.GetOrAdd(typeof(T), GetQueueTypeUncached);
+            return GetQueueType(typeof(TMessage));
+        }
+
+        public QueueType GetQueueType(Type messageType)
+        {
+            return TypeToQueue.GetOrAdd(messageType, GetQueueTypeUncached);
         }
 
         public QueueType GetQueueType(string schemaName)
@@ -218,6 +223,31 @@ namespace NuGet.Insights.Worker
                 var deserializer = _serializer.GetDeserializer(s);
                 return TypeToQueue.GetOrAdd(deserializer.Type, GetQueueTypeUncached);
             });
+        }
+
+        public async Task<int> GetMaxApproximateMessageCountAsync(params Type[] messageTypes)
+        {
+            if (messageTypes.Length == 0)
+            {
+                throw new ArgumentException("At least one message type is required.", nameof(messageTypes));
+            }
+
+            var queues = new HashSet<QueueType>();
+            var max = int.MinValue;
+            foreach (var messageType in messageTypes)
+            {
+                var queueType = GetQueueType(messageType);
+                if (queues.Add(queueType))
+                {
+                    var messageCount = await _rawMessageEnqueuer.GetApproximateMessageCountAsync(queueType);
+                    if (messageCount > max)
+                    {
+                        max = messageCount;
+                    }
+                }
+            }
+
+            return max;
         }
 
         private QueueType GetQueueTypeUncached(Type messageType)

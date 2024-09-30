@@ -11,9 +11,8 @@ namespace NuGet.Insights.Worker
         public async Task SkipsMessageThatIsAlreadyBeingProcessed()
         {
             // Arrange
-            RetryFailedMessages = true;
-            FailFastLogLevel = LogLevel.None;
-            AssertLogLevel = LogLevel.None;
+            FailFastLogLevel = LogLevel.Error;
+            AssertLogLevel = LogLevel.Error;
             LogMessages.Limit = int.MaxValue;
 
             await CatalogScanService.InitializeAsync();
@@ -54,8 +53,9 @@ namespace NuGet.Insights.Worker
                         && LogMessages.Any(IsMatchingMessage);
                     return Task.FromResult(complete);
                 },
-                parallel: true,
-                visibilityTimeout: TimeSpan.FromSeconds(1));
+                workerCount: 2,
+                visibilityTimeout: TimeSpan.FromSeconds(1),
+                retryFailedMessages: true);
 
             // Assert
             Assert.Contains(LogMessages, IsMatchingMessage);

@@ -88,7 +88,8 @@ namespace NuGet.Insights.Worker
                     {
                         bool? onlyLatestLeaves = driversUnderTest.Contains(driverType) ? true : null;
                         return await CatalogScanService.UpdateAsync(driverType, Max1, onlyLatestLeaves);
-                    });
+                    },
+                    retryFailedMessages: false);
 
                 Assert.All(driversUnderTest, x => Assert.True(scans[x][0].OnlyLatestLeaves));
             }
@@ -111,7 +112,8 @@ namespace NuGet.Insights.Worker
                     {
                         bool? onlyLatestLeaves = driversUnderTest.Contains(driverType) ? false : null;
                         return await CatalogScanService.UpdateAsync(driverType, Max1, onlyLatestLeaves);
-                    });
+                    },
+                    retryFailedMessages: false);
 
                 Assert.All(driversUnderTest, x => Assert.False(scans[x][0].OnlyLatestLeaves));
             }
@@ -146,7 +148,8 @@ namespace NuGet.Insights.Worker
                             await SetCursorAsync(driverType, Max1);
                             return result;
                         }
-                    });
+                    },
+                    retryFailedMessages: false);
 
                 Assert.All(driversUnderTest, x => Assert.True(scans[x][0].OnlyLatestLeaves));
                 Assert.All(driversUnderTest, x => Assert.Equal("0-999", scans[x][0].BucketRanges));
@@ -231,7 +234,7 @@ namespace NuGet.Insights.Worker
                     continue;
                 }
 
-                var leafScans = await CatalogScanStorageService.GetLeafScansAsync(indexScan.StorageSuffix);
+                var leafScans = await CatalogScanStorageService.GetAllLeafScansAsync(indexScan.StorageSuffix);
                 return leafScans.Min(x => x.AttemptCount);
             }
 
@@ -243,7 +246,6 @@ namespace NuGet.Insights.Worker
             // Arrange
             HttpMessageHandlerFactory.Requests.Limit = int.MaxValue;
             HttpMessageHandlerFactory.RequestAndResponses.Limit = int.MaxValue;
-            RetryFailedMessages = appendCsvError;
             ConfigureWorkerSettings = x =>
             {
                 x.OldCatalogIndexScansToKeep = 0;
@@ -318,7 +320,8 @@ namespace NuGet.Insights.Worker
                     {
                         return await CatalogScanService.UpdateAsync(driverType, max1);
                     }
-                });
+                },
+                retryFailedMessages: appendCsvError);
 
             // Assert
             foreach (var recordType in recordTypes)
@@ -374,7 +377,8 @@ namespace NuGet.Insights.Worker
                     {
                         return await CatalogScanService.UpdateAsync(driverType, max1);
                     }
-                });
+                },
+                retryFailedMessages: appendCsvError);
 
             // Assert
             foreach (var recordType in recordTypes)
@@ -405,7 +409,8 @@ namespace NuGet.Insights.Worker
         private async Task<Dictionary<CatalogScanDriverType, List<CatalogIndexScan>>> RunAllDriversAsync(
             IReadOnlySet<CatalogScanDriverType> driversUnderTest,
             Func<Task> initalizeAsync,
-            Func<CatalogScanDriverType, Task<CatalogScanServiceResult>> startDriverAsync)
+            Func<CatalogScanDriverType, Task<CatalogScanServiceResult>> startDriverAsync,
+            bool retryFailedMessages)
         {
             // Arrange
             var driversAndDependencies = driversUnderTest
@@ -449,7 +454,7 @@ namespace NuGet.Insights.Worker
 
                 foreach (var scan in startedScans)
                 {
-                    await UpdateAsync(scan, parallel: true);
+                    await UpdateAsync(scan, workerCount: DefaultParallelWorkers, retryFailedMessages: retryFailedMessages);
                 }
             }
 

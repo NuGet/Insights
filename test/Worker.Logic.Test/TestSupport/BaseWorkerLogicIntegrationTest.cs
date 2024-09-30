@@ -95,8 +95,6 @@ namespace NuGet.Insights.Worker
         public static IEnumerable<object[]> StartabledDriverTypesData => CatalogScanDriverMetadata.StartableDriverTypes
             .Select(x => new object[] { x.ToString() });
 
-        protected bool RetryFailedMessages { get; set; } = false;
-
         protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
         {
             base.ConfigureHostBuilder(hostBuilder);
@@ -258,13 +256,17 @@ namespace NuGet.Insights.Worker
             return ingestion;
         }
 
-        protected async Task<CatalogIndexScan> UpdateAsync(CatalogScanServiceResult result, bool parallel = false, TimeSpan? visibilityTimeout = null)
+        protected async Task<CatalogIndexScan> UpdateAsync(CatalogScanServiceResult result, int workerCount = 1, TimeSpan? visibilityTimeout = null)
         {
             Assert.Contains(result.Type, new[] { CatalogScanServiceResultType.NewStarted, CatalogScanServiceResultType.AlreadyStarted });
-            return await UpdateAsync(result.Scan, parallel, visibilityTimeout);
+            return await UpdateAsync(result.Scan, workerCount, visibilityTimeout);
         }
 
-        protected async Task<CatalogIndexScan> UpdateAsync(CatalogIndexScan indexScan, bool parallel = false, TimeSpan? visibilityTimeout = null)
+        protected async Task<CatalogIndexScan> UpdateAsync(
+            CatalogIndexScan indexScan,
+            int workerCount = 1,
+            TimeSpan? visibilityTimeout = null,
+            bool retryFailedMessages = false)
         {
             Assert.NotNull(indexScan);
             await ProcessQueueAsync(async () =>
@@ -279,7 +281,7 @@ namespace NuGet.Insights.Worker
                 Assert.Equal(CatalogIndexScanState.Complete, indexScan.State);
 
                 return true;
-            }, parallel, visibilityTimeout);
+            }, workerCount, visibilityTimeout, retryFailedMessages);
 
             ExpectedCatalogIndexScans.Add(indexScan);
 
@@ -319,8 +321,16 @@ namespace NuGet.Insights.Worker
             return expandProperties.ApproximateMessagesCount > 0;
         }
 
-        public async Task ProcessQueueAsync(Func<Task<bool>> isCompleteAsync, bool parallel = false, TimeSpan? visibilityTimeout = null)
+        public const int DefaultParallelWorkers = 8;
+
+        public async Task ProcessQueueAsync(
+            Func<Task<bool>> isCompleteAsync,
+            int workerCount = 1,
+            TimeSpan? visibilityTimeout = null,
+            bool retryFailedMessages = false)
         {
+            Assert.InRange(workerCount, 1, DefaultParallelWorkers);
+
             var expandQueue = await WorkerQueueFactory.GetQueueAsync(QueueType.Expand);
             var workerQueue = await WorkerQueueFactory.GetQueueAsync(QueueType.Work);
 
@@ -418,13 +428,13 @@ namespace NuGet.Insights.Worker
                     catch (Exception ex)
                     {
                         // Log using a new logger to not trigger the fail fast on error logs.
-                        Output.GetLogger<BaseWorkerLogicIntegrationTest>().LogError(
+                        Output.GetLogger<BaseWorkerLogicIntegrationTest>().LogWarning(
                             ex,
                             "Processing message {MessageId} failed. Message body: {Body}",
                             message.MessageId,
                             message.Body.ToString());
 
-                        if (RetryFailedMessages)
+                        if (retryFailedMessages && message.DequeueCount < 10)
                         {
                             skip = true;
                         }
@@ -476,7 +486,7 @@ namespace NuGet.Insights.Worker
 
             var waitForCompleteTask = WaitForCompleteAsync();
             var workersTask = Task.WhenAll(Enumerable
-                .Range(0, parallel ? 8 : 1)
+                .Range(0, workerCount)
                 .Select(async x =>
                 {
                     var sw = Stopwatch.StartNew();

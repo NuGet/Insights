@@ -59,7 +59,7 @@ namespace NuGet.Insights.Worker
 
                 foreach (var scan in scans)
                 {
-                    await UpdateAsync(scan, parallel: true);
+                    await UpdateAsync(scan, workerCount: DefaultParallelWorkers);
                 }
             }
 
@@ -92,7 +92,7 @@ namespace NuGet.Insights.Worker
 
                 foreach (var scan in scans)
                 {
-                    await UpdateAsync(scan, parallel: true);
+                    await UpdateAsync(scan, workerCount: DefaultParallelWorkers);
                 }
             }
 

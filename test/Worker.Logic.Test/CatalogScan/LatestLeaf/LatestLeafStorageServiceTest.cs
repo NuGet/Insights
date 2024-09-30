@@ -330,7 +330,7 @@ namespace NuGet.Insights.Worker
 
         private async Task<string[]> GetInstanceLabelsAsync(int bucket = 0, int? lastId = null)
         {
-            var leafScans = await CatalogScanStorageService.GetLeafScansAsync(IndexScan.StorageSuffix, IndexScan.ScanId, $"B{bucket:D3}");
+            var leafScans = await CatalogScanStorageService.GetLeafScansByPageIdAsync(IndexScan.StorageSuffix, IndexScan.ScanId, $"B{bucket:D3}");
             lastId = lastId ?? leafScans.Max(x => int.Parse(x.PackageId, CultureInfo.InvariantCulture));
             var instanceLabels = new string[lastId.Value + 1];
             Array.Fill(instanceLabels, " ");
