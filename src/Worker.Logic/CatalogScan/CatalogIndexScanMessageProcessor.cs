@@ -385,18 +385,14 @@ namespace NuGet.Insights.Worker
                 foreach (var taskState in bucketRangeTaskStates)
                 {
                     var range = BucketRange.Parse(taskState.RowKey.Substring(bucketRangeRowKeyPrefix.Length));
-                    var started = taskState.Parameters is not null;
-                    if (!started)
+                    if (taskState.Message is null)
                     {
                         await _tableScanService.StartCopyBucketRangeAsync(
-                            taskState.GetKey(),
+                            taskState,
                             range.Min,
                             range.Max,
                             scan.DriverType,
                             scan.ScanId);
-
-                        taskState.Parameters = "started";
-                        await _taskStateStorageService.UpdateAsync(taskState);
                     }
                 }
 
@@ -480,8 +476,9 @@ namespace NuGet.Insights.Worker
             // Enqueueing: start the table scan of the latest leaves table
             if (scan.State == CatalogIndexScanState.Enqueuing)
             {
+                var taskState = await _taskStateStorageService.GetAsync(taskStateKey);
                 await _tableScanService.StartEnqueueCatalogLeafScansAsync(
-                    taskStateKey,
+                    taskState,
                     _storageService.GetLeafScanTableName(scan.StorageSuffix),
                     oneMessagePerId: enqueuePerId);
 

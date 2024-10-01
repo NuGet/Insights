@@ -52,11 +52,11 @@ namespace NuGet.Insights.Worker.TableCopy
             var taskStateStorageSuffix = "copy";
             await TaskStateStorageService.InitializeAsync(taskStateStorageSuffix);
             var taskStateKey = new TaskStateKey(taskStateStorageSuffix, "copy", "copy");
-            await TaskStateStorageService.AddAsync(taskStateKey);
+            var taskState = await TaskStateStorageService.AddAsync(taskStateKey);
 
             // Act
             await tableScanService.StartTableCopyAsync<LatestPackageLeaf>(
-                taskStateKey,
+                taskState,
                 Options.Value.LatestPackageLeafTableName,
                 destTableName,
                 partitionKeyPrefix: string.Empty,

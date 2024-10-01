@@ -34,14 +34,14 @@ namespace NuGet.Insights.Worker
             await (await GetTableAsync(storageSuffix)).DeleteAsync();
         }
 
-        public async Task AddAsync(TaskStateKey taskStateKey)
+        public async Task<TaskState> AddAsync(TaskStateKey taskStateKey)
         {
-            await AddAsync(taskStateKey.StorageSuffix, taskStateKey.PartitionKey, new[] { taskStateKey.RowKey });
+            return (await AddAsync(taskStateKey.StorageSuffix, taskStateKey.PartitionKey, new[] { taskStateKey.RowKey })).Single();
         }
 
-        public async Task AddAsync(TaskState taskState)
+        public async Task<TaskState> AddAsync(TaskState taskState)
         {
-            await AddAsync(taskState.StorageSuffix, taskState.PartitionKey, new[] { taskState });
+            return (await AddAsync(taskState.StorageSuffix, taskState.PartitionKey, new[] { taskState })).Single();
         }
 
         public async Task<List<TaskState>> AddAsync(string storageSuffix, string partitionKey, IReadOnlyList<string> rowKeys)
@@ -126,14 +126,14 @@ namespace NuGet.Insights.Worker
 
         public async Task<TaskState> GetAsync(TaskStateKey key)
         {
-            return await (await GetTableAsync(key.StorageSuffix))
-                .GetEntityOrNullAsync<TaskState>(key.PartitionKey, key.RowKey);
+            var table = await GetTableAsync(key.StorageSuffix);
+            return await table.GetEntityOrNullAsync<TaskState>(key.PartitionKey, key.RowKey);
         }
 
         public async Task<bool> DeleteAsync(TaskState taskState)
         {
-            var response = await (await GetTableAsync(taskState.StorageSuffix))
-                .DeleteEntityAsync(taskState.PartitionKey, taskState.RowKey);
+            var table = await GetTableAsync(taskState.StorageSuffix);
+            var response = await table.DeleteEntityAsync(taskState.PartitionKey, taskState.RowKey);
 
             return response.Status switch
             {

@@ -38,11 +38,11 @@ namespace NuGet.Insights.Worker.CopyBucketRange
             var taskStateStorageSuffix = "buckets";
             await TaskStateStorageService.InitializeAsync(taskStateStorageSuffix);
             var taskStateKey = new TaskStateKey(taskStateStorageSuffix, "buckets", "buckets");
-            await TaskStateStorageService.AddAsync(taskStateKey);
+            var taskState = await TaskStateStorageService.AddAsync(taskStateKey);
 
             // Act
             await TableScanService.StartCopyBucketRangeAsync(
-                taskStateKey,
+                taskState,
                 bucketMin,
                 bucketMax,
                 indexScan.DriverType,
@@ -123,11 +123,11 @@ namespace NuGet.Insights.Worker.CopyBucketRange
             var taskStateStorageSuffix = "buckets";
             await TaskStateStorageService.InitializeAsync(taskStateStorageSuffix);
             var taskStateKey = new TaskStateKey(taskStateStorageSuffix, "buckets", "buckets");
-            await TaskStateStorageService.AddAsync(taskStateKey);
+            var taskState = await TaskStateStorageService.AddAsync(taskStateKey);
 
             // Act
             await TableScanService.StartCopyBucketRangeAsync(
-                taskStateKey,
+                taskState,
                 bucketMin,
                 bucketMax,
                 indexScan.DriverType,

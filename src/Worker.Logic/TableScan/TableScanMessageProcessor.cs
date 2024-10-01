@@ -8,9 +8,10 @@ using NuGet.Insights.TablePrefixScan;
 
 namespace NuGet.Insights.Worker
 {
-    public class TableScanMessageProcessor<T> : IMessageProcessor<TableScanMessage<T>> where T : class, ITableEntity, new()
+    public class TableScanMessageProcessor<T> : ITaskStateMessageProcessor<TableScanMessage<T>> where T : class, ITableEntity, new()
     {
         public const string MetricIdPrefix = $"{nameof(TableScanMessageProcessor<T>)}.";
+        private static readonly string MessageTypeName = typeof(T).Name;
 
         private readonly TaskStateStorageService _taskStateStorageService;
         private readonly ServiceClientFactory _serviceClientFactory;
@@ -21,7 +22,6 @@ namespace NuGet.Insights.Worker
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<TableScanMessageProcessor<T>> _logger;
         private readonly IMetric _sinceStarted;
-        private readonly IMetric _messageProcessed;
         private readonly IMetric _duplicateTaskState;
         private readonly IMetric _entitySegmentCount;
         private readonly IMetric _entitySegmentSize;
@@ -50,8 +50,6 @@ namespace NuGet.Insights.Worker
 
             _sinceStarted = _telemetryClient
                 .GetMetric($"{MetricIdPrefix}SinceStartedSeconds", "Strategy", "MessageType", "DriverType");
-            _messageProcessed = _telemetryClient
-                .GetMetric($"{MetricIdPrefix}MessageProcessed", "Strategy", "MessageType", "DriverType", "IsDuplicate");
             _duplicateTaskState = _telemetryClient
                 .GetMetric($"{MetricIdPrefix}{nameof(TableScanStrategy.PrefixScan)}.DuplicateTaskStateCount", "MessageType", "DriverType");
             _entitySegmentCount = _telemetryClient
@@ -66,17 +64,11 @@ namespace NuGet.Insights.Worker
                 .GetMetric($"{MetricIdPrefix}{nameof(TableScanStrategy.PrefixScan)}.EnqueuePrefixScanQueryCount", "MessageType", "DriverType");
         }
 
-        public async Task ProcessAsync(TableScanMessage<T> message, long dequeueCount)
+        public async Task<TaskStateProcessResult> ProcessAsync(TableScanMessage<T> message, TaskState taskState, long dequeueCount)
         {
-            var taskState = await _taskStateStorageService.GetAsync(message.TaskStateKey);
-            if (taskState == null)
+            if (taskState.Message is null)
             {
-                _logger.LogTransientWarning(
-                    "No matching task state was found for a table scan step. Key: {StorageSuffix} {PartitionKey} {RowKey}",
-                    message.TaskStateKey.StorageSuffix,
-                    message.TaskStateKey.PartitionKey,
-                    message.TaskStateKey.RowKey);
-                return;
+                return dequeueCount == 1 ? TaskStateProcessResult.Continue : TaskStateProcessResult.Delay;
             }
 
             switch (message.Strategy)
@@ -92,13 +84,11 @@ namespace NuGet.Insights.Worker
             }
 
             var strategy = message.Strategy.ToString();
-            var messageType = typeof(T).Name;
             var driverType = message.DriverType.ToString();
-            var duplicate = !(await _taskStateStorageService.DeleteAsync(taskState));
-            _messageProcessed.TrackValue(1, strategy, messageType, driverType, duplicate ? "true" : "false");
-
             var sinceStarted = DateTimeOffset.UtcNow - message.Started;
-            _sinceStarted.TrackValue(sinceStarted.TotalSeconds, strategy, messageType, driverType);
+            _sinceStarted.TrackValue(sinceStarted.TotalSeconds, strategy, MessageTypeName, driverType);
+
+            return TaskStateProcessResult.Complete;
         }
 
         private async Task ProcessSerialAsync(TableScanMessage<T> message)
@@ -278,38 +268,33 @@ namespace NuGet.Insights.Worker
 
             if (tableScanMessages.Any())
             {
+                await _enqueuer.EnqueueAsync(tableScanMessages);
+
                 var newlyAdded = await _taskStateStorageService.AddAsync(
                     originalMessage.TaskStateKey.StorageSuffix,
                     originalMessage.TaskStateKey.PartitionKey,
                     taskStates);
                 _duplicateTaskState.TrackValue(taskStates.Count - newlyAdded.Count, messageType, driverType);
-
-                await _enqueuer.EnqueueAsync(tableScanMessages);
             }
         }
 
         private TableScanMessage<T> GetPrefixScanMessage<TParameters>(TableScanMessage<T> originalMessage, TParameters scanParameters, List<TaskState> addedTaskStates)
         {
-            var serializedParameters = _serializer.Serialize(scanParameters);
+            var serializedscanParameters = _serializer.Serialize(scanParameters);
 
             string rowKey;
             using (var sha256 = SHA256.Create())
             {
-                var bytes = Encoding.UTF8.GetBytes(serializedParameters.AsString());
+                var bytes = Encoding.UTF8.GetBytes(serializedscanParameters.AsString());
                 rowKey = "step-" + sha256.ComputeHash(bytes).ToTrimmedBase32();
             }
 
             var taskState = new TaskState(
                 originalMessage.TaskStateKey.StorageSuffix,
                 originalMessage.TaskStateKey.PartitionKey,
-                rowKey)
-            {
-                Parameters = serializedParameters.AsString(),
-            };
+                rowKey);
 
-            addedTaskStates.Add(taskState);
-
-            return new TableScanMessage<T>
+            var message = new TableScanMessage<T>
             {
                 Started = originalMessage.Started,
                 TaskStateKey = taskState.GetKey(),
@@ -321,9 +306,15 @@ namespace NuGet.Insights.Worker
                 PartitionKeyPrefix = originalMessage.PartitionKeyPrefix,
                 PartitionKeyLowerBound = originalMessage.PartitionKeyLowerBound,
                 PartitionKeyUpperBound = originalMessage.PartitionKeyUpperBound,
-                ScanParameters = serializedParameters.AsJsonElement(),
+                ScanParameters = serializedscanParameters.AsJsonElement(),
                 DriverParameters = originalMessage.DriverParameters,
             };
+
+            taskState.Message = _serializer.Serialize(message).AsString();
+
+            addedTaskStates.Add(taskState);
+
+            return message;
         }
 
         private async Task<TableClientWithRetryContext> GetTableAsync(string name)

@@ -13,25 +13,28 @@ namespace NuGet.Insights.Worker
     {
         private readonly IMessageEnqueuer _enqueuer;
         private readonly SchemaSerializer _serializer;
+        private readonly TaskStateStorageService _taskStateStorageService;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
         public TableScanService(
             IMessageEnqueuer enqueuer,
             SchemaSerializer serializer,
+            TaskStateStorageService taskStateStorageService,
             IOptions<NuGetInsightsWorkerSettings> options)
         {
             _enqueuer = enqueuer;
             _serializer = serializer;
+            _taskStateStorageService = taskStateStorageService;
             _options = options;
         }
 
         public async Task StartEnqueueCatalogLeafScansAsync(
-            TaskStateKey taskStateKey,
+            TaskState taskState,
             string tableName,
             bool oneMessagePerId)
         {
             await StartTableScanAsync<CatalogLeafScan>(
-                taskStateKey,
+                taskState,
                 TableScanDriverType.EnqueueCatalogLeafScans,
                 tableName,
                 TableScanStrategy.PrefixScan,
@@ -48,7 +51,7 @@ namespace NuGet.Insights.Worker
         }
 
         public async Task StartCopyBucketRangeAsync(
-            TaskStateKey taskStateKey,
+            TaskState taskState,
             int minBucketIndex,
             int maxBucketIndex,
             CatalogScanDriverType driverType,
@@ -58,7 +61,7 @@ namespace NuGet.Insights.Worker
             var partitionKeyUpperBound = maxBucketIndex < BucketedPackage.BucketCount - 1 ? BucketedPackage.GetBucketString(maxBucketIndex + 1) : null;
 
             await StartTableScanAsync<BucketedPackage>(
-                taskStateKey,
+                taskState,
                 TableScanDriverType.CopyBucketRange,
                 _options.Value.BucketedPackageTableName,
                 TableScanStrategy.PrefixScan,
@@ -76,7 +79,7 @@ namespace NuGet.Insights.Worker
         }
 
         public async Task StartTableCopyAsync<T>(
-            TaskStateKey taskStateKey,
+            TaskState taskState,
             string sourceTable,
             string destinationTable,
             string partitionKeyPrefix,
@@ -88,7 +91,7 @@ namespace NuGet.Insights.Worker
             where T : class, ITableEntity, new()
         {
             await StartTableScanAsync<T>(
-                taskStateKey,
+                taskState,
                 TableScanDriverType.TableCopy,
                 sourceTable,
                 strategy,
@@ -105,7 +108,7 @@ namespace NuGet.Insights.Worker
         }
 
         private async Task StartTableScanAsync<T>(
-            TaskStateKey taskStateKey,
+            TaskState taskState,
             TableScanDriverType driverType,
             string sourceTable,
             TableScanStrategy strategy,
@@ -135,24 +138,27 @@ namespace NuGet.Insights.Worker
                     throw new NotImplementedException();
             }
 
-            await _enqueuer.EnqueueAsync(new[]
+            var taskStateKey = taskState.GetKey();
+            var message = new TableScanMessage<T>
             {
-                new TableScanMessage<T>
-                {
-                    Started = DateTimeOffset.UtcNow,
-                    TaskStateKey = taskStateKey,
-                    TableName = sourceTable,
-                    Strategy = strategy,
-                    DriverType = driverType,
-                    TakeCount = _options.Value.TableScanTakeCount,
-                    ExpandPartitionKeys = expandPartitionKeys,
-                    PartitionKeyPrefix = partitionKeyPrefix,
-                    PartitionKeyLowerBound = partitionKeyLowerBound,
-                    PartitionKeyUpperBound = partitionKeyUpperBound,
-                    ScanParameters = scanParameters,
-                    DriverParameters = driverParameters,
-                },
-            });
+                Started = DateTimeOffset.UtcNow,
+                TaskStateKey = taskStateKey,
+                TableName = sourceTable,
+                Strategy = strategy,
+                DriverType = driverType,
+                TakeCount = _options.Value.TableScanTakeCount,
+                ExpandPartitionKeys = expandPartitionKeys,
+                PartitionKeyPrefix = partitionKeyPrefix,
+                PartitionKeyLowerBound = partitionKeyLowerBound,
+                PartitionKeyUpperBound = partitionKeyUpperBound,
+                ScanParameters = scanParameters,
+                DriverParameters = driverParameters,
+            };
+
+            await _enqueuer.EnqueueAsync(new[] { message });
+
+            taskState.Message = _serializer.Serialize(message).ToString();
+            await _taskStateStorageService.UpdateAsync(taskState);
         }
     }
 }

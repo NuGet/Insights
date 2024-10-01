@@ -366,8 +366,12 @@ namespace NuGet.Insights.Worker
         private static void AddTableScan<T>(IServiceCollection serviceCollection) where T : ITableEntityWithClientRequestId, new()
         {
             var entityType = typeof(T);
+            var tableScanMessageType = typeof(TableScanMessage<>).MakeGenericType(entityType);
             serviceCollection.AddSingleton(
-                typeof(IMessageProcessor<>).MakeGenericType(typeof(TableScanMessage<>).MakeGenericType(entityType)),
+                typeof(IMessageProcessor<>).MakeGenericType(tableScanMessageType),
+                typeof(TaskStateMessageProcessor<>).MakeGenericType(tableScanMessageType));
+            serviceCollection.AddSingleton(
+                typeof(ITaskStateMessageProcessor<>).MakeGenericType(tableScanMessageType),
                 typeof(TableScanMessageProcessor<>).MakeGenericType(entityType));
             serviceCollection.AddSingleton(
                 typeof(IMessageProcessor<>).MakeGenericType(typeof(TableRowCopyMessage<>).MakeGenericType(entityType)),

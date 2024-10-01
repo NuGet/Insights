@@ -26,6 +26,8 @@ namespace NuGet.Insights.Worker
 
         public string StorageSuffix { get; set; }
         public string Parameters { get; set; }
+        public string Message { get; set; }
+        public DateTimeOffset? Started { get; set; }
 
         public string PartitionKey { get; set; }
         public string RowKey { get; set; }

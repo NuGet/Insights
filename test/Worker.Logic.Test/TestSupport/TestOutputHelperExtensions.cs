@@ -15,7 +15,8 @@ namespace NuGet.Insights.Worker
                 || key.MetricId.StartsWith(TableScanMessageProcessor<LatestPackageLeaf>.MetricIdPrefix, StringComparison.Ordinal)
                 || key.MetricId.StartsWith(LatestLeafStorageService<LatestPackageLeaf>.MetricIdPrefix, StringComparison.Ordinal)
                 || key.MetricId.StartsWith(QueueStorageEnqueuer.MetricIdPrefix, StringComparison.Ordinal)
-                || key.MetricId.StartsWith(TimedReprocessStorageService.MetricIdPrefix, StringComparison.Ordinal);
+                || key.MetricId.StartsWith(TimedReprocessStorageService.MetricIdPrefix, StringComparison.Ordinal)
+                || key.MetricId.StartsWith(TaskStateMessageProcessor<TableScanMessage<LatestPackageLeaf>>.MetricIdPrefix, StringComparison.Ordinal);
         }
 
         public static LoggerTelemetryClient GetTelemetryClient(this ITestOutputHelper output)

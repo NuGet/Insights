@@ -5,13 +5,16 @@ using Azure.Data.Tables;
 
 namespace NuGet.Insights.Worker
 {
-    public class TableScanMessage<T> where T : class, ITableEntity, new()
+    public class TableScanMessage<T> : ITaskStateMessage where T : class, ITableEntity, new()
     {
         [JsonPropertyName("b")]
         public DateTimeOffset Started { get; set; }
 
         [JsonPropertyName("ts")]
         public TaskStateKey TaskStateKey { get; set; }
+
+        [JsonPropertyName("ac")]
+        public int AttemptCount { get; set; }
 
         [JsonPropertyName("t")]
         public TableScanDriverType DriverType { get; set; }
