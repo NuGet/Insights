@@ -24,7 +24,7 @@ namespace NuGet.Insights.Worker
 
         public async Task EnqueueLeafScansAsync(IReadOnlyList<CatalogLeafScan> leafScans)
         {
-            _logger.LogInformation("Enqueuing a scan of {LeafCount} leaves.", leafScans.Count);
+            _logger.LogInformation("Enqueueing a scan of {LeafCount} leaves.", leafScans.Count);
 
             await _messageEnqueuer.EnqueueAsync(leafScans
                 .Select(x => new CatalogLeafScanMessage

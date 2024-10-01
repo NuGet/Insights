@@ -177,7 +177,7 @@ namespace NuGet.Insights.Worker
             {
                 await ExpandPagesAsync(scan);
 
-                scan.State = CatalogIndexScanState.Enqueuing;
+                scan.State = CatalogIndexScanState.Enqueueing;
                 if (!await TryReplaceAsync(message, scan))
                 {
                     return;
@@ -185,7 +185,7 @@ namespace NuGet.Insights.Worker
             }
 
             // Enqueueing: enqueue a message for each page
-            if (scan.State == CatalogIndexScanState.Enqueuing)
+            if (scan.State == CatalogIndexScanState.Enqueueing)
             {
                 var createdPageScans = await _storageService.GetAllPageScansAsync(scan.StorageSuffix, scan.ScanId);
                 await EnqueuePagesAsync(createdPageScans);
@@ -327,7 +327,7 @@ namespace NuGet.Insights.Worker
                 }
 
                 await _tableScanService.InitializeTaskStateAsync(enqueueTaskStateKey);
-                scan.State = CatalogIndexScanState.Enqueuing;
+                scan.State = CatalogIndexScanState.Enqueueing;
                 if (!await TryReplaceAsync(message, scan))
                 {
                     return;
@@ -399,7 +399,7 @@ namespace NuGet.Insights.Worker
                 }
 
                 await _tableScanService.InitializeTaskStateAsync(enqueueTaskStateKey);
-                scan.State = CatalogIndexScanState.Enqueuing;
+                scan.State = CatalogIndexScanState.Enqueueing;
                 if (!await TryReplaceAsync(message, scan))
                 {
                     return;
@@ -457,7 +457,7 @@ namespace NuGet.Insights.Worker
             bool enqueuePerId)
         {
             // Enqueueing: start the table scan of the latest leaves table
-            if (scan.State == CatalogIndexScanState.Enqueuing)
+            if (scan.State == CatalogIndexScanState.Enqueueing)
             {
                 await _tableScanService.StartEnqueueCatalogLeafScansAsync(
                     taskStateKey,
@@ -695,7 +695,7 @@ namespace NuGet.Insights.Worker
 
         private async Task EnqueuePagesAsync(IReadOnlyList<CatalogPageScan> createdPageScans)
         {
-            _logger.LogInformation("Enqueuing a scan of {PageCount} pages.", createdPageScans.Count);
+            _logger.LogInformation("Enqueueing a scan of {PageCount} pages.", createdPageScans.Count);
             await _messageEnqueuer.EnqueueAsync(
                 createdPageScans
                     .Select(x => new CatalogPageScanMessage

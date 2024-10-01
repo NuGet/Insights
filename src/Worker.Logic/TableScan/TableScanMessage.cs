@@ -5,7 +5,7 @@ using Azure.Data.Tables;
 
 namespace NuGet.Insights.Worker
 {
-    public class TableScanMessage<T> : ITaskStateMessage where T : class, ITableEntity, new()
+    public class TableScanMessage<T> : ITaskStateMessage where T : ITableEntity
     {
         [JsonPropertyName("b")]
         public DateTimeOffset Started { get; set; }

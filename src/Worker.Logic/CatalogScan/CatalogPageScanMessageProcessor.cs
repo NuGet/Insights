@@ -86,12 +86,12 @@ namespace NuGet.Insights.Worker
                 var leafScans = await lazyLeafScansTask.Value;
                 await _storageService.InsertMissingAsync(leafScans, allowExtra: false);
 
-                scan.State = CatalogPageScanState.Enqueuing;
+                scan.State = CatalogPageScanState.Enqueueing;
                 await _storageService.ReplaceAsync(scan);
             }
 
             // Enqueueing: enqueue a message for each leaf
-            if (scan.State == CatalogPageScanState.Enqueuing)
+            if (scan.State == CatalogPageScanState.Enqueueing)
             {
                 var leafScans = await lazyLeafScansTask.Value;
                 await _expandService.EnqueueLeafScansAsync(leafScans);

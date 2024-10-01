@@ -111,11 +111,11 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
                 await _storageService.AddBlobsAsync(container, nameToEntity.Values.ToList());
 
-                container.State = KustoContainerIngestionState.Enqueuing;
+                container.State = KustoContainerIngestionState.Enqueueing;
                 await _storageService.ReplaceContainerAsync(container);
             }
 
-            if (container.State == KustoContainerIngestionState.Enqueuing)
+            if (container.State == KustoContainerIngestionState.Enqueueing)
             {
                 var blobs = await _storageService.GetBlobsAsync(container);
                 await EnqueueAsync(blobs);

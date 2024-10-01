@@ -78,7 +78,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
                 await _storageService.AddContainersAsync(ingestion, _csvRecordContainers.ContainerNames);
 
-                ingestion.State = KustoIngestionState.Enqueuing;
+                ingestion.State = KustoIngestionState.Enqueueing;
                 await _storageService.ReplaceIngestionAsync(ingestion);
             }
 
@@ -115,11 +115,11 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 }
                 await _storageService.ReplaceContainersAsync(retryingContainers);
 
-                ingestion.State = KustoIngestionState.Enqueuing;
+                ingestion.State = KustoIngestionState.Enqueueing;
                 await _storageService.ReplaceIngestionAsync(ingestion);
             }
 
-            if (ingestion.State == KustoIngestionState.Enqueuing)
+            if (ingestion.State == KustoIngestionState.Enqueueing)
             {
                 var containers = await _storageService.GetContainersAsync(ingestion);
                 var createdContainers = containers.Where(x => x.State == KustoContainerIngestionState.Created).ToList();

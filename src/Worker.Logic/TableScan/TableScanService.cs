@@ -90,7 +90,7 @@ namespace NuGet.Insights.Worker
             TableScanStrategy strategy,
             int segmentsPerFirstPrefix,
             int segmentsPerSubsequentPrefix)
-            where T : class, ITableEntity, new()
+            where T : ITableEntity
         {
             await StartTableScanAsync<T>(
                 taskState,
@@ -158,7 +158,7 @@ namespace NuGet.Insights.Worker
             int segmentsPerFirstPrefix,
             int segmentsPerSubsequentPrefix,
             JsonElement driverParameters)
-            where T : class, ITableEntity, new()
+            where T : ITableEntity
         {
             JsonElement? scanParameters;
             switch (strategy)

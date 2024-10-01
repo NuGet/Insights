@@ -9,7 +9,7 @@ namespace NuGet.Insights.Worker
         Initialized, // The driver has been initialized
         FindingLatest, // Waiting on the "find latest leaves" scan
         Expanding, // Expanding child entities in storage
-        Enqueuing, // Enqueueing messages for child entities
+        Enqueueing, // Enqueueing messages for child entities
         Requeuing, // Requeue messages for child entities, to handle fan out concurrency issues
         Working, // Waiting for child entities to be completed
         StartingAggregate, // Starting the aggregating processes

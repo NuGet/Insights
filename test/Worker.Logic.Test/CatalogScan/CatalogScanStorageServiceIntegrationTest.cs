@@ -27,7 +27,7 @@ namespace NuGet.Insights.Worker
                     Result = CatalogIndexScanResult.ExpandLatestLeaves,
                     RowKey = "my-scan-id",
                     Started = new DateTimeOffset(2023, 11, 18, 2, 0, 0, TimeSpan.Zero),
-                    State = CatalogIndexScanState.Enqueuing,
+                    State = CatalogIndexScanState.Enqueueing,
                     StorageSuffix = "my-storage-suffix",
                 };
                 await Target.InsertAsync(scan);
@@ -52,7 +52,7 @@ namespace NuGet.Insights.Worker
                       "Result": "ExpandLatestLeaves",
                       "ScanId": "my-scan-id",
                       "Started": "2023-11-18T02:00:00.0000000\u002B00:00",
-                      "State": "Enqueuing",
+                      "State": "Enqueueing",
                       "StorageSuffix": "my-storage-suffix"
                     }
                     """,
