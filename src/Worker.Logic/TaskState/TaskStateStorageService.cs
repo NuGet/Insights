@@ -34,17 +34,17 @@ namespace NuGet.Insights.Worker
             await (await GetTableAsync(storageSuffix)).DeleteAsync();
         }
 
-        public async Task<TaskState> AddAsync(TaskStateKey taskStateKey)
+        public async Task<TaskState> GetOrAddAsync(TaskStateKey taskStateKey)
         {
-            return (await AddAsync(taskStateKey.StorageSuffix, taskStateKey.PartitionKey, new[] { taskStateKey.RowKey })).Single();
+            return (await GetOrAddAsync(taskStateKey.StorageSuffix, taskStateKey.PartitionKey, [taskStateKey.RowKey])).Single();
         }
 
-        public async Task<TaskState> AddAsync(TaskState taskState)
+        public async Task<TaskState> GetOrAddAsync(TaskState taskState)
         {
-            return (await AddAsync(taskState.StorageSuffix, taskState.PartitionKey, new[] { taskState })).Single();
+            return (await AddAsync(taskState.StorageSuffix, taskState.PartitionKey, [taskState])).Single();
         }
 
-        public async Task<List<TaskState>> AddAsync(string storageSuffix, string partitionKey, IReadOnlyList<string> rowKeys)
+        public async Task<List<TaskState>> GetOrAddAsync(string storageSuffix, string partitionKey, IReadOnlyList<string> rowKeys)
         {
             return await AddAsync(
                 storageSuffix,
@@ -77,10 +77,13 @@ namespace NuGet.Insights.Worker
                 .ToList();
             await InsertAsync(toInsert);
 
-            return toInsert;
+            existing.AddRange(toInsert);
+            existing.Sort((a, b) => string.CompareOrdinal(a.RowKey, b.RowKey));
+
+            return existing;
         }
 
-        private async Task<IReadOnlyList<TaskState>> GetAllAsync(string storageSuffix, string partitionKey)
+        private async Task<List<TaskState>> GetAllAsync(string storageSuffix, string partitionKey)
         {
             return await (await GetTableAsync(storageSuffix))
                 .QueryAsync<TaskState>(x => x.PartitionKey == partitionKey)

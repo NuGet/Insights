@@ -36,9 +36,8 @@ namespace NuGet.Insights.Worker.CopyBucketRange
             await CatalogScanStorageService.InitializeLeafScanTableAsync(indexScan.StorageSuffix);
 
             var taskStateStorageSuffix = "buckets";
-            await TaskStateStorageService.InitializeAsync(taskStateStorageSuffix);
             var taskStateKey = new TaskStateKey(taskStateStorageSuffix, "buckets", "buckets");
-            var taskState = await TaskStateStorageService.AddAsync(taskStateKey);
+            var taskState = await TableScanService.InitializeTaskStateAsync(taskStateKey);
 
             // Act
             await TableScanService.StartCopyBucketRangeAsync(
@@ -121,9 +120,8 @@ namespace NuGet.Insights.Worker.CopyBucketRange
             await CatalogScanStorageService.InitializeLeafScanTableAsync(indexScan.StorageSuffix);
 
             var taskStateStorageSuffix = "buckets";
-            await TaskStateStorageService.InitializeAsync(taskStateStorageSuffix);
             var taskStateKey = new TaskStateKey(taskStateStorageSuffix, "buckets", "buckets");
-            var taskState = await TaskStateStorageService.AddAsync(taskStateKey);
+            var taskState = await TableScanService.InitializeTaskStateAsync(taskStateKey);
 
             // Act
             await TableScanService.StartCopyBucketRangeAsync(

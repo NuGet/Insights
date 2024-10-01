@@ -29,10 +29,12 @@ namespace NuGet.Insights.Worker
         }
 
         public async Task StartEnqueueCatalogLeafScansAsync(
-            TaskState taskState,
+            TaskStateKey taskStateKey,
             string tableName,
             bool oneMessagePerId)
         {
+            var taskState = await _taskStateStorageService.GetAsync(taskStateKey);
+
             await StartTableScanAsync<CatalogLeafScan>(
                 taskState,
                 TableScanDriverType.EnqueueCatalogLeafScans,
@@ -105,6 +107,43 @@ namespace NuGet.Insights.Worker
                 {
                     DestinationTableName = destinationTable,
                 }).AsJsonElement());
+        }
+
+        public async Task<TaskState> InitializeTaskStateAsync(TaskStateKey taskStateKey)
+        {
+            await _taskStateStorageService.InitializeAsync(taskStateKey.StorageSuffix);
+            return await _taskStateStorageService.GetOrAddAsync(taskStateKey);
+        }
+
+        public async Task<TaskState> InitializeTaskStateAsync(TaskState taskState)
+        {
+            await _taskStateStorageService.InitializeAsync(taskState.StorageSuffix);
+            return await _taskStateStorageService.GetOrAddAsync(taskState);
+        }
+
+        public async Task<List<TaskState>> InitializeTaskStatesAsync(string storageSuffix, string partitionKey, IReadOnlyList<string> rowKeys)
+        {
+            await _taskStateStorageService.InitializeAsync(storageSuffix);
+            return await _taskStateStorageService.AddAsync(
+                storageSuffix,
+                partitionKey,
+                rowKeys.Select(r => new TaskState(storageSuffix, partitionKey, r)).ToList());
+        }
+
+        public async Task DeleteTaskStateTableAsync(string storageSuffix)
+        {
+            await _taskStateStorageService.DeleteTableAsync(storageSuffix);
+        }
+
+        public async Task<bool> IsCompleteAsync(string storageSuffix, string partitionKey)
+        {
+            var taskStateCountLowerBound = await _taskStateStorageService.GetCountLowerBoundAsync(storageSuffix, partitionKey);
+            return taskStateCountLowerBound == 0;
+        }
+
+        public async Task<IReadOnlyList<TaskState>> GetTaskStatesAsync(string storageSuffix, string partitionKey, string rowKeyPrefix)
+        {
+            return await _taskStateStorageService.GetByRowKeyPrefixAsync(storageSuffix, partitionKey, rowKeyPrefix);
         }
 
         private async Task StartTableScanAsync<T>(

@@ -50,9 +50,8 @@ namespace NuGet.Insights.Worker.TableCopy
             var tableScanService = Host.Services.GetRequiredService<TableScanService>();
 
             var taskStateStorageSuffix = "copy";
-            await TaskStateStorageService.InitializeAsync(taskStateStorageSuffix);
             var taskStateKey = new TaskStateKey(taskStateStorageSuffix, "copy", "copy");
-            var taskState = await TaskStateStorageService.AddAsync(taskStateKey);
+            var taskState = await tableScanService.InitializeTaskStateAsync(taskStateKey);
 
             // Act
             await tableScanService.StartTableCopyAsync<LatestPackageLeaf>(
@@ -92,10 +91,7 @@ namespace NuGet.Insights.Worker.TableCopy
                 Assert.Equal(JsonSerializer.Serialize(pair.First), JsonSerializer.Serialize(pair.Second));
             });
 
-            var countLowerBound = await TaskStateStorageService.GetCountLowerBoundAsync(
-                taskStateKey.StorageSuffix,
-                taskStateKey.PartitionKey);
-            Assert.Equal(0, countLowerBound);
+            Assert.True(await tableScanService.IsCompleteAsync(taskState.StorageSuffix, taskState.PartitionKey));
         }
     }
 }

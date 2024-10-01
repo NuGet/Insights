@@ -31,28 +31,30 @@ namespace NuGet.Insights.Worker
             }
 
             [Fact]
-            public async Task ReturnsNewlyAdded()
+            public async Task ReturnsNewlyAddedAndExisting()
             {
                 var rowKeysA = Enumerable.Range(10, 10).Select(x => x.ToString(CultureInfo.InvariantCulture)).ToList();
                 var rowKeysB = Enumerable.Range(10, 20).Select(x => x.ToString(CultureInfo.InvariantCulture)).ToList();
-                await Target.AddAsync(StorageSuffix, PartitionKey, rowKeysA);
+                await Target.GetOrAddAsync(StorageSuffix, PartitionKey, rowKeysA);
 
-                var newlyAdded = await Target.AddAsync(StorageSuffix, PartitionKey, rowKeysB);
+                var actual = await Target.GetOrAddAsync(StorageSuffix, PartitionKey, rowKeysB);
 
-                Assert.Equal(10, newlyAdded.Count);
-                Assert.Equal(rowKeysB.Skip(10).ToList(), newlyAdded.Select(x => x.RowKey).ToList());
+                Assert.Equal(20, actual.Count);
+                Assert.Equal(rowKeysB.ToList(), actual.Select(x => x.RowKey).ToList());
+                Assert.All(actual, x => Assert.NotEqual(default, x.ETag));
             }
 
             [Fact]
-            public async Task ReturnsEmptyWhenNoneWereNewlyAdded()
+            public async Task ReturnsOnlyInput()
             {
                 var rowKeysA = Enumerable.Range(10, 10).Select(x => x.ToString(CultureInfo.InvariantCulture)).ToList();
                 var rowKeysB = Enumerable.Range(10, 10).Select(x => x.ToString(CultureInfo.InvariantCulture)).ToList();
-                await Target.AddAsync(StorageSuffix, PartitionKey, rowKeysA);
+                await Target.GetOrAddAsync(StorageSuffix, PartitionKey, rowKeysA);
 
-                var newlyAdded = await Target.AddAsync(StorageSuffix, PartitionKey, rowKeysB);
+                var actual = await Target.GetOrAddAsync(StorageSuffix, PartitionKey, rowKeysB);
 
-                Assert.Empty(newlyAdded);
+                Assert.Equal(10, actual.Count);
+                Assert.Equal(rowKeysB.ToList(), actual.Select(x => x.RowKey).ToList());
             }
 
             [Fact]
@@ -60,7 +62,7 @@ namespace NuGet.Insights.Worker
             {
                 var rowKeys = Enumerable.Range(100, 101).Select(x => x.ToString(CultureInfo.InvariantCulture)).ToList();
 
-                await Target.AddAsync(StorageSuffix, PartitionKey, rowKeys);
+                await Target.GetOrAddAsync(StorageSuffix, PartitionKey, rowKeys);
 
                 var taskStates = await GetEntitiesAsync<TaskState>();
                 Assert.Equal(rowKeys, taskStates.Select(x => x.RowKey).ToList());
@@ -79,8 +81,8 @@ namespace NuGet.Insights.Worker
                 var rowKeysA = Enumerable.Range(10, 10).Select(x => x.ToString(CultureInfo.InvariantCulture)).ToList();
                 var rowKeysB = Enumerable.Range(10, 20).Select(x => x.ToString(CultureInfo.InvariantCulture)).ToList();
 
-                await Target.AddAsync(StorageSuffix, PartitionKey, rowKeysA);
-                await Target.AddAsync(StorageSuffix, PartitionKey, rowKeysB);
+                await Target.GetOrAddAsync(StorageSuffix, PartitionKey, rowKeysA);
+                await Target.GetOrAddAsync(StorageSuffix, PartitionKey, rowKeysB);
 
                 var taskStates = await GetEntitiesAsync<TaskState>();
                 Assert.Equal(rowKeysB, taskStates.Select(x => x.RowKey).ToList());
@@ -96,7 +98,7 @@ namespace NuGet.Insights.Worker
             [Fact]
             public async Task HasExpectedPropertiesWithoutParameters()
             {
-                await Target.AddAsync(new TaskStateKey(StorageSuffix, PartitionKey, "foo"));
+                await Target.GetOrAddAsync(new TaskStateKey(StorageSuffix, PartitionKey, "foo"));
 
                 var entities = await GetEntitiesAsync<TableEntity>();
                 var entity = Assert.Single(entities);
@@ -118,7 +120,7 @@ namespace NuGet.Insights.Worker
             {
                 var input = new TaskState(StorageSuffix, PartitionKey, "foo");
 
-                await Target.AddAsync(input);
+                await Target.GetOrAddAsync(input);
 
                 var output = await Target.GetAsync(input.GetKey());
                 Assert.Equal(output.ETag, input.ETag);
@@ -135,7 +137,7 @@ namespace NuGet.Insights.Worker
             public async Task ReturnsTrueIfTaskStateExists()
             {
                 var input = new TaskState(StorageSuffix, PartitionKey, "foo");
-                await Target.AddAsync(input);
+                await Target.GetOrAddAsync(input);
 
                 var output = await Target.DeleteAsync(input);
 
@@ -147,7 +149,7 @@ namespace NuGet.Insights.Worker
             public async Task ReturnsTrueIETagHasChangedAndStateExists()
             {
                 var input = new TaskState(StorageSuffix, PartitionKey, "foo");
-                await Target.AddAsync(input);
+                await Target.GetOrAddAsync(input);
                 await Target.UpdateAsync(new TaskState(StorageSuffix, PartitionKey, "foo") { Parameters = "a", ETag = input.ETag });
 
                 var output = await Target.DeleteAsync(input);
@@ -160,7 +162,7 @@ namespace NuGet.Insights.Worker
             public async Task ReturnsFalseIfTaskStateNoLongerExists()
             {
                 var input = new TaskState(StorageSuffix, PartitionKey, "foo");
-                await Target.AddAsync(input);
+                await Target.GetOrAddAsync(input);
                 await Target.DeleteAsync(input);
 
                 var output = await Target.DeleteAsync(input);
@@ -191,7 +193,7 @@ namespace NuGet.Insights.Worker
             public async Task UpdatesContent()
             {
                 var input = new TaskState(StorageSuffix, PartitionKey, "foo") { Parameters = "a" };
-                await Target.AddAsync(input);
+                await Target.GetOrAddAsync(input);
                 input.Parameters = "b";
 
                 await Target.UpdateAsync(input);
@@ -205,7 +207,7 @@ namespace NuGet.Insights.Worker
             public async Task CanClearParameters()
             {
                 var input = new TaskState(StorageSuffix, PartitionKey, "foo") { Parameters = "a" };
-                await Target.AddAsync(input);
+                await Target.GetOrAddAsync(input);
                 input.Parameters = null;
 
                 await Target.UpdateAsync(input);
@@ -218,7 +220,7 @@ namespace NuGet.Insights.Worker
             public async Task FailsIfETagChanged()
             {
                 var input = new TaskState(StorageSuffix, PartitionKey, "foo") { Parameters = "a" };
-                await Target.AddAsync(input);
+                await Target.GetOrAddAsync(input);
                 await Target.UpdateAsync(new TaskState(StorageSuffix, PartitionKey, "foo") { Parameters = "a", ETag = input.ETag });
                 input.Parameters = "b";
 
@@ -230,7 +232,7 @@ namespace NuGet.Insights.Worker
             public async Task FailsIfDeleted()
             {
                 var input = new TaskState(StorageSuffix, PartitionKey, "foo") { Parameters = "a" };
-                await Target.AddAsync(input);
+                await Target.GetOrAddAsync(input);
                 await Target.DeleteAsync(input);
 
                 var ex = await Assert.ThrowsAsync<RequestFailedException>(() => Target.UpdateAsync(input));
@@ -247,7 +249,7 @@ namespace NuGet.Insights.Worker
             [Fact]
             public async Task ReturnsNothingWhenNoMatch()
             {
-                await Target.AddAsync(new TaskState(StorageSuffix, PartitionKey, "foo"));
+                await Target.GetOrAddAsync(new TaskState(StorageSuffix, PartitionKey, "foo"));
 
                 var actual = await Target.GetByRowKeyPrefixAsync(StorageSuffix, PartitionKey, "bar");
 
@@ -257,7 +259,7 @@ namespace NuGet.Insights.Worker
             [Fact]
             public async Task AllowsEmptyPrefix()
             {
-                await Target.AddAsync(new TaskState(StorageSuffix, PartitionKey, "foo"));
+                await Target.GetOrAddAsync(new TaskState(StorageSuffix, PartitionKey, "foo"));
 
                 var actual = await Target.GetByRowKeyPrefixAsync(StorageSuffix, PartitionKey, "");
 
@@ -268,7 +270,7 @@ namespace NuGet.Insights.Worker
             public async Task ReturnsAllMatches()
             {
                 var rowKeys = Enumerable.Range(0, 10).Select(x => $"foo{x}").ToList();
-                await Target.AddAsync(StorageSuffix, PartitionKey, rowKeys);
+                await Target.GetOrAddAsync(StorageSuffix, PartitionKey, rowKeys);
 
                 var actual = await Target.GetByRowKeyPrefixAsync(StorageSuffix, PartitionKey, "foo");
 

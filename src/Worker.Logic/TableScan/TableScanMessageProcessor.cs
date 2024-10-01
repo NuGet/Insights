@@ -22,7 +22,6 @@ namespace NuGet.Insights.Worker
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<TableScanMessageProcessor<T>> _logger;
         private readonly IMetric _sinceStarted;
-        private readonly IMetric _duplicateTaskState;
         private readonly IMetric _entitySegmentCount;
         private readonly IMetric _entitySegmentSize;
         private readonly IMetric _processEntities;
@@ -50,8 +49,6 @@ namespace NuGet.Insights.Worker
 
             _sinceStarted = _telemetryClient
                 .GetMetric($"{MetricIdPrefix}SinceStartedSeconds", "Strategy", "MessageType", "DriverType");
-            _duplicateTaskState = _telemetryClient
-                .GetMetric($"{MetricIdPrefix}{nameof(TableScanStrategy.PrefixScan)}.DuplicateTaskStateCount", "MessageType", "DriverType");
             _entitySegmentCount = _telemetryClient
                 .GetMetric($"{MetricIdPrefix}{nameof(TableScanStrategy.PrefixScan)}.EntitySegmentCount", "MessageType", "DriverType");
             _entitySegmentSize = _telemetryClient
@@ -270,11 +267,10 @@ namespace NuGet.Insights.Worker
             {
                 await _enqueuer.EnqueueAsync(tableScanMessages);
 
-                var newlyAdded = await _taskStateStorageService.AddAsync(
+                await _taskStateStorageService.AddAsync(
                     originalMessage.TaskStateKey.StorageSuffix,
                     originalMessage.TaskStateKey.PartitionKey,
                     taskStates);
-                _duplicateTaskState.TrackValue(taskStates.Count - newlyAdded.Count, messageType, driverType);
             }
         }
 

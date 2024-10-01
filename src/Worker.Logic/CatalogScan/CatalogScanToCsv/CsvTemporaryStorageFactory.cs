@@ -127,7 +127,7 @@ namespace NuGet.Insights.Worker
                     .ToList();
                 await _parent._messageEnqueuer.EnqueueAsync(messages);
 
-                await _parent._taskStateStorageService.AddAsync(
+                await _parent._taskStateStorageService.GetOrAddAsync(
                     storageSuffix,
                     partitionKey,
                     buckets.Select(x => x.ToString(CultureInfo.InvariantCulture)).ToList());

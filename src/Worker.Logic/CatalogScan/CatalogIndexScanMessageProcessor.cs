@@ -14,7 +14,6 @@ namespace NuGet.Insights.Worker
         private readonly CatalogScanExpandService _expandService;
         private readonly CursorStorageService _cursorStorageService;
         private readonly CatalogScanService _catalogScanService;
-        private readonly TaskStateStorageService _taskStateStorageService;
         private readonly TableScanService _tableScanService;
         private readonly FanOutRecoveryService _fanOutRecoveryService;
         private readonly ITelemetryClient _telemetryClient;
@@ -29,7 +28,6 @@ namespace NuGet.Insights.Worker
             CatalogScanExpandService expandService,
             CursorStorageService cursorStorageService,
             CatalogScanService catalogScanService,
-            TaskStateStorageService taskStateStorageService,
             TableScanService tableScanService,
             FanOutRecoveryService fanOutRecoveryService,
             ITelemetryClient telemetryClient,
@@ -43,7 +41,6 @@ namespace NuGet.Insights.Worker
             _expandService = expandService;
             _cursorStorageService = cursorStorageService;
             _catalogScanService = catalogScanService;
-            _taskStateStorageService = taskStateStorageService;
             _tableScanService = tableScanService;
             _fanOutRecoveryService = fanOutRecoveryService;
             _telemetryClient = telemetryClient;
@@ -329,8 +326,7 @@ namespace NuGet.Insights.Worker
                     await _storageService.DeleteAsync(findLatestLeavesScan);
                 }
 
-                await _taskStateStorageService.InitializeAsync(scan.StorageSuffix);
-                await _taskStateStorageService.AddAsync(enqueueTaskStateKey);
+                await _tableScanService.InitializeTaskStateAsync(enqueueTaskStateKey);
                 scan.State = CatalogIndexScanState.Enqueuing;
                 if (!await TryReplaceAsync(message, scan))
                 {
@@ -361,8 +357,7 @@ namespace NuGet.Insights.Worker
             if (scan.State == CatalogIndexScanState.Initialized)
             {
                 // Create task states.
-                await _taskStateStorageService.InitializeAsync(scan.StorageSuffix);
-                await _taskStateStorageService.AddAsync(
+                await _tableScanService.InitializeTaskStatesAsync(
                     scan.StorageSuffix,
                     copyTaskStatePk,
                     BucketRange.ParseRanges(scan.BucketRanges).Select(x => $"{bucketRangeRowKeyPrefix}{x}").ToList());
@@ -377,7 +372,7 @@ namespace NuGet.Insights.Worker
             // Expanding: start the table scans which create the leaf scans
             if (scan.State == CatalogIndexScanState.Expanding)
             {
-                var bucketRangeTaskStates = await _taskStateStorageService.GetByRowKeyPrefixAsync(
+                var bucketRangeTaskStates = await _tableScanService.GetTaskStatesAsync(
                    scan.StorageSuffix,
                    copyTaskStatePk,
                    bucketRangeRowKeyPrefix);
@@ -396,14 +391,14 @@ namespace NuGet.Insights.Worker
                     }
                 }
 
-                if (!await AreTableScanStepsCompleteAsync(scan.StorageSuffix, copyTaskStatePk))
+                if (!await _tableScanService.IsCompleteAsync(scan.StorageSuffix, copyTaskStatePk))
                 {
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
                     return;
                 }
 
-                await _taskStateStorageService.AddAsync(enqueueTaskStateKey);
+                await _tableScanService.InitializeTaskStateAsync(enqueueTaskStateKey);
                 scan.State = CatalogIndexScanState.Enqueuing;
                 if (!await TryReplaceAsync(message, scan))
                 {
@@ -420,18 +415,6 @@ namespace NuGet.Insights.Worker
             if (countLowerBound > 0)
             {
                 _logger.LogInformation("There are at least {Count} page scans pending.", countLowerBound);
-                return false;
-            }
-
-            return true;
-        }
-
-        private async Task<bool> AreTableScanStepsCompleteAsync(string storageSuffix, string partitionKey)
-        {
-            var taskStateCountLowerBound = await _taskStateStorageService.GetCountLowerBoundAsync(storageSuffix, partitionKey);
-            if (taskStateCountLowerBound > 0)
-            {
-                _logger.LogInformation("There are at least {Count} table scan steps pending for {PartitionKey}.", taskStateCountLowerBound, partitionKey);
                 return false;
             }
 
@@ -476,9 +459,8 @@ namespace NuGet.Insights.Worker
             // Enqueueing: start the table scan of the latest leaves table
             if (scan.State == CatalogIndexScanState.Enqueuing)
             {
-                var taskState = await _taskStateStorageService.GetAsync(taskStateKey);
                 await _tableScanService.StartEnqueueCatalogLeafScansAsync(
-                    taskState,
+                    taskStateKey,
                     _storageService.GetLeafScanTableName(scan.StorageSuffix),
                     oneMessagePerId: enqueuePerId);
 
@@ -493,7 +475,7 @@ namespace NuGet.Insights.Worker
             // Working: wait for the table scan and subsequent leaf scans to complete
             if (scan.State == CatalogIndexScanState.Working)
             {
-                if (!await AreTableScanStepsCompleteAsync(taskStateKey.StorageSuffix, taskStateKey.PartitionKey) || !await AreLeafScansCompleteAsync(scan))
+                if (!await _tableScanService.IsCompleteAsync(taskStateKey.StorageSuffix, taskStateKey.PartitionKey) || !await AreLeafScansCompleteAsync(scan))
                 {
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
@@ -558,7 +540,7 @@ namespace NuGet.Insights.Worker
                 {
                     _logger.LogInformation("Deleting suffixed scan state tables.");
                     await _storageService.DeleteChildTablesAsync(scan.StorageSuffix);
-                    await _taskStateStorageService.DeleteTableAsync(scan.StorageSuffix);
+                    await _tableScanService.DeleteTaskStateTableAsync(scan.StorageSuffix);
                 }
 
                 // Update the cursor, now that the work is done.

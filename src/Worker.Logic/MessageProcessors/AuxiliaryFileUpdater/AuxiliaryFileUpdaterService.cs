@@ -80,7 +80,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
                     _updater.OperationName,
                     StorageUtility.GenerateDescendingId().ToString());
                 await _messageEnqueuer.EnqueueAsync(new[] { new AuxiliaryFileUpdaterMessage<T> { TaskStateKey = taskStateKey } });
-                await _taskStateStorageService.AddAsync(taskStateKey);
+                await _taskStateStorageService.GetOrAddAsync(taskStateKey);
                 return true;
             }
         }

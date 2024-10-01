@@ -75,7 +75,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
                     }
                 });
 
-                await _taskStateStorageService.AddAsync(taskState);
+                await _taskStateStorageService.GetOrAddAsync(taskState);
 
                 return true;
             }

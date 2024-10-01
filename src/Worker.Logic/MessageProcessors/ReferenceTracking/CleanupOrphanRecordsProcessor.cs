@@ -102,7 +102,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
                             orphanRecords);
 
                         // Track the subject references that have been appended to the CSV.
-                        await _taskStateStorageService.AddAsync(
+                        await _taskStateStorageService.GetOrAddAsync(
                             taskState.StorageSuffix,
                             taskState.PartitionKey,
                             orphans
