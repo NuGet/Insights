@@ -194,8 +194,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
                 await AppendResultStorageService.CompactAsync<TestSubjectRecord>(
                     Options.Value.CsvRecordTableNamePrefix,
                     CsvResultStorage.ResultContainerName,
-                    bucket,
-                    force: false);
+                    bucket);
             }
             await AppendResultStorageService.DeleteAsync(Options.Value.CsvRecordTableNamePrefix);
         }
@@ -224,7 +223,8 @@ namespace NuGet.Insights.Worker.ReferenceTracking
                     .Build());
                 serviceCollection.AddCleanupOrphanRecordsService<TestCleanupOrphanRecordsAdapter, TestSubjectRecord>();
                 serviceCollection.AddSingleton<ICsvResultStorage<TestSubjectRecord>, TestSubjectRecordStorage>();
-                serviceCollection.AddSingleton<IMessageProcessor<CsvCompactMessage<TestSubjectRecord>>, CsvCompactorProcessor<TestSubjectRecord>>();
+                serviceCollection.AddSingleton<IMessageProcessor<CsvCompactMessage<TestSubjectRecord>>, TaskStateMessageProcessor<CsvCompactMessage<TestSubjectRecord>>>();
+                serviceCollection.AddSingleton<ITaskStateMessageProcessor<CsvCompactMessage<TestSubjectRecord>>, CsvCompactProcessor<TestSubjectRecord>>();
                 serviceCollection.AddSingleton<ICsvRecordStorage>(x =>
                 {
                     var resultStorage = x.GetRequiredService<ICsvResultStorage<TestSubjectRecord>>();

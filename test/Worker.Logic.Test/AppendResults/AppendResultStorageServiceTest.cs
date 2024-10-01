@@ -38,7 +38,7 @@ namespace NuGet.Insights.Worker
             await Target.AppendAsync(SrcTable, BucketCount, RecordsB);
 
             // Act
-            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket, force: false);
+            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
 
             // Assert
             var metric = TelemetryClient.Metrics[new("AppendResultStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
@@ -58,7 +58,7 @@ namespace NuGet.Insights.Worker
             await Target.AppendAsync(SrcTable, BucketCount, RecordsB);
 
             // Act
-            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket, force: false);
+            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
 
             // Assert
             var metric = TelemetryClient.Metrics[new("AppendResultStorageService.CompactAsync.BigMode.Switch", "DestContainer", "RecordType", "Reason")];
@@ -74,11 +74,11 @@ namespace NuGet.Insights.Worker
             await Target.InitializeAsync(SrcTable, DestContainer);
 
             await Target.AppendAsync(SrcTable, BucketCount, RecordsA);
-            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket, force: false);
+            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
             await Target.AppendAsync(SrcTable, BucketCount, RecordsB);
 
             // Act
-            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket, force: false);
+            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
 
             // Assert
             var metric = TelemetryClient.Metrics[new("AppendResultStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
@@ -96,10 +96,10 @@ namespace NuGet.Insights.Worker
 
             await Target.AppendAsync(SrcTable, BucketCount, RecordsA);
             await Target.AppendAsync(SrcTable, BucketCount, RecordsB);
-            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket, force: false);
+            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
 
             // Act
-            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket, force: false);
+            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
 
             // Assert
             var metric = TelemetryClient.Metrics[new("AppendResultStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
@@ -117,11 +117,11 @@ namespace NuGet.Insights.Worker
 
             await Target.AppendAsync(SrcTable, BucketCount, RecordsA);
             await Target.AppendAsync(SrcTable, BucketCount, RecordsB);
-            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket, force: false);
+            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
             await Target.AppendAsync(SrcTable, BucketCount, RecordsB);
 
             // Act
-            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket, force: false);
+            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
 
             // Assert
             var metric = TelemetryClient.Metrics[new("AppendResultStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
@@ -145,7 +145,7 @@ namespace NuGet.Insights.Worker
             // Act
             await Target.AppendAsync(SrcTable, BucketCount, RecordsA);
             await Target.AppendAsync(SrcTable, BucketCount, RecordsB);
-            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket, force: false);
+            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
 
             // Assert
             await ValidateGzippedFormatAsync(DestContainer, Bucket);
@@ -153,7 +153,7 @@ namespace NuGet.Insights.Worker
             // Step 2: duplicate records
             // Act
             await Target.AppendAsync(SrcTable, BucketCount, RecordsB);
-            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket, force: false);
+            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
 
             // Assert
             await ValidateGzippedFormatAsync(DestContainer, Bucket);
@@ -170,7 +170,7 @@ namespace NuGet.Insights.Worker
 
             await Target.AppendAsync(SrcTable, BucketCount, RecordsA);
             await Target.AppendAsync(SrcTable, BucketCount, RecordsB);
-            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket, force: false);
+            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
 
             // Assert
             await ValidateGzippedFormatAsync(DestContainer, Bucket);
@@ -187,7 +187,7 @@ namespace NuGet.Insights.Worker
 
             await Target.AppendAsync(SrcTable, BucketCount, RecordsA);
             await Target.AppendAsync(SrcTable, BucketCount, RecordsB);
-            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket, force: false);
+            await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
 
             // Assert
             await ValidateGzippedFormatAsync(DestContainer, Bucket);

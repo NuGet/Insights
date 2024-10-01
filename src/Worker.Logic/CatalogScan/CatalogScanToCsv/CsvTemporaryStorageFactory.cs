@@ -114,11 +114,6 @@ namespace NuGet.Insights.Worker
 
                 var partitionKey = GetAggregateTasksPartitionKey(aggregatePartitionKeyPrefix);
 
-                await _parent._taskStateStorageService.AddAsync(
-                    storageSuffix,
-                    partitionKey,
-                    buckets.Select(x => x.ToString(CultureInfo.InvariantCulture)).ToList());
-
                 var messages = buckets
                     .Select(b => new CsvCompactMessage<T>
                     {
@@ -131,6 +126,11 @@ namespace NuGet.Insights.Worker
                     })
                     .ToList();
                 await _parent._messageEnqueuer.EnqueueAsync(messages);
+
+                await _parent._taskStateStorageService.AddAsync(
+                    storageSuffix,
+                    partitionKey,
+                    buckets.Select(x => x.ToString(CultureInfo.InvariantCulture)).ToList());
             }
 
             public async Task<bool> IsAggregateCompleteAsync(string aggregatePartitionKeyPrefix, string storageSuffix)

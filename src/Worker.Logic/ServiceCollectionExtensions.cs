@@ -243,9 +243,13 @@ namespace NuGet.Insights.Worker
                 });
 
                 // Add the CSV compactor processor
+                var messageType = typeof(CsvCompactMessage<>).MakeGenericType(recordType);
                 serviceCollection.AddSingleton(
-                    typeof(IMessageProcessor<>).MakeGenericType(typeof(CsvCompactMessage<>).MakeGenericType(recordType)),
-                    typeof(CsvCompactorProcessor<>).MakeGenericType(recordType));
+                    typeof(IMessageProcessor<>).MakeGenericType(messageType),
+                    typeof(TaskStateMessageProcessor<>).MakeGenericType(messageType));
+                serviceCollection.AddSingleton(
+                    typeof(ITaskStateMessageProcessor<>).MakeGenericType(messageType),
+                    typeof(CsvCompactProcessor<>).MakeGenericType(recordType));
             }
 
             AddCsvNonBatchDrivers(serviceCollection);

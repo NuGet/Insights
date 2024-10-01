@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker
 {
-    public class CsvCompactMessage<T> where T : ICsvRecord
+    public class CsvCompactMessage<T> : ITaskStateMessage where T : ICsvRecord
     {
         [JsonPropertyName("s")]
         public string SourceTable { get; set; }
@@ -14,7 +14,7 @@ namespace NuGet.Insights.Worker
         [JsonPropertyName("ts")]
         public TaskStateKey TaskStateKey { get; set; }
 
-        [JsonPropertyName("f")]
-        public bool Force { get; set; }
+        [JsonPropertyName("ac")]
+        public int AttemptCount { get; set; }
     }
 }

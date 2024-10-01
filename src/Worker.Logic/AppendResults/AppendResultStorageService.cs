@@ -286,8 +286,7 @@ namespace NuGet.Insights.Worker
         public async Task CompactAsync<T>(
             string srcTable,
             string destContainer,
-            int bucket,
-            bool force) where T : IAggregatedCsvRecord<T>
+            int bucket) where T : IAggregatedCsvRecord<T>
         {
             var recordType = typeof(T).Name;
             var stopwatch = Stopwatch.StartNew();
@@ -305,12 +304,12 @@ namespace NuGet.Insights.Worker
                     subdivisions,
                     existingBlob.RecordCount);
                 _bigModeSwitch.TrackValue(1, destContainer, recordType, "ExistingRecordCount");
-                await CompactBigModeAsync<T>(srcTable, destContainer, bucket, subdivisions, force);
+                await CompactBigModeAsync<T>(srcTable, destContainer, bucket, subdivisions);
                 return;
             }
 
             // Step 2: load the new records from table storage into memory
-            (var loadResult, var records, var subdivsions) = await LoadAppendedRecordsToMemoryAsync<T>(srcTable, bucket, destContainer, recordType, force);
+            (var loadResult, var records, var subdivsions) = await LoadAppendedRecordsToMemoryAsync<T>(srcTable, bucket, destContainer, recordType);
             switch (loadResult)
             {
                 case LoadAppendedRecordsToMemoryResult.Loaded:
@@ -319,7 +318,7 @@ namespace NuGet.Insights.Worker
                     return;
                 case LoadAppendedRecordsToMemoryResult.BigMode:
                     _bigModeSwitch.TrackValue(1, destContainer, recordType, "EstimatedRecordCount");
-                    await CompactBigModeAsync<T>(srcTable, destContainer, bucket, subdivsions, force);
+                    await CompactBigModeAsync<T>(srcTable, destContainer, bucket, subdivsions);
                     return;
                 default:
                     throw new NotImplementedException();
@@ -375,8 +374,7 @@ namespace NuGet.Insights.Worker
             string srcTable,
             int bucket,
             string destContainer,
-            string recordType,
-            bool force) where T : IAggregatedCsvRecord<T>
+            string recordType) where T : IAggregatedCsvRecord<T>
         {
             const int PruneEveryNEntity = 500;
             var records = new List<T>();
@@ -385,7 +383,7 @@ namespace NuGet.Insights.Worker
             var result = LoadAppendedRecordsToMemoryResult.Loaded;
             var subdivisions = 0;
 
-            if (!force || srcTable != null)
+            if (srcTable != null)
             {
                 var entities = _wideEntityService.RetrieveAsync(
                     srcTable,
@@ -440,7 +438,7 @@ namespace NuGet.Insights.Worker
                         subdivisions,
                         recordCountEstimate);
                 }
-                else if (records.Count == 0 && !force)
+                else if (records.Count == 0)
                 {
                     // If there are no entities, then there's no new data. We can stop here.
                     result = LoadAppendedRecordsToMemoryResult.NoData;
@@ -473,8 +471,7 @@ namespace NuGet.Insights.Worker
             string srcTable,
             string destContainer,
             int bucket,
-            int subdivisions,
-            bool force) where T : IAggregatedCsvRecord<T>
+            int subdivisions) where T : IAggregatedCsvRecord<T>
         {
             if (subdivisions < 1)
             {
@@ -501,7 +498,7 @@ namespace NuGet.Insights.Worker
                 }
 
                 // Step 2: load the new records from table storage into the temporary files
-                var shouldNoOp = await LoadAppendedRecordsToDiskAsync<T>(tempFiles, srcTable, bucket, destContainer, recordType, subdivisions, force);
+                var shouldNoOp = await LoadAppendedRecordsToDiskAsync<T>(tempFiles, srcTable, bucket, destContainer, recordType, subdivisions);
                 if (shouldNoOp)
                 {
                     return;
@@ -564,8 +561,7 @@ namespace NuGet.Insights.Worker
             int bucket,
             string destContainer,
             string recordType,
-            int subdivisions,
-            bool force) where T : IAggregatedCsvRecord<T>
+            int subdivisions) where T : IAggregatedCsvRecord<T>
         {
             var entityCount = 0;
             var appendRecordCount = 0;
@@ -595,7 +591,7 @@ namespace NuGet.Insights.Worker
                     _bigModeSplitAppendedDurationMs.TrackValue(appendedSw.Elapsed.TotalMilliseconds, destContainer, recordType);
                 }
 
-                if (appendRecordCount == 0 && !force)
+                if (appendRecordCount == 0)
                 {
                     // If there are no entities, then there's no new data. We can stop here.
                     _pruneEntityCount.TrackValue(entityCount, destContainer, recordType);

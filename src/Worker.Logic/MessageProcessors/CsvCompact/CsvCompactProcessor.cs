@@ -3,55 +3,38 @@
 
 namespace NuGet.Insights.Worker
 {
-    public class CsvCompactorProcessor<T> : IMessageProcessor<CsvCompactMessage<T>> where T : IAggregatedCsvRecord<T>
+    public class CsvCompactProcessor<T> : ITaskStateMessageProcessor<CsvCompactMessage<T>> where T : IAggregatedCsvRecord<T>
     {
         private readonly AppendResultStorageService _storageService;
         private readonly TaskStateStorageService _taskStateStorageService;
         private readonly ICsvResultStorage<T> _storage;
-        private readonly ILogger<CsvCompactorProcessor<T>> _logger;
+        private readonly IMessageEnqueuer _messageEnqueuer;
+        private readonly ILogger<CsvCompactProcessor<T>> _logger;
 
-        public CsvCompactorProcessor(
+        public CsvCompactProcessor(
             AppendResultStorageService storageService,
             TaskStateStorageService taskStateStorageService,
             ICsvResultStorage<T> storage,
-            ILogger<CsvCompactorProcessor<T>> logger)
+            IMessageEnqueuer messageEnqueuer,
+            ILogger<CsvCompactProcessor<T>> logger)
         {
             _storageService = storageService;
             _taskStateStorageService = taskStateStorageService;
             _storage = storage;
+            _messageEnqueuer = messageEnqueuer;
             _logger = logger;
         }
 
-        public async Task ProcessAsync(CsvCompactMessage<T> message, long dequeueCount)
+        public async Task<TaskStateProcessResult> ProcessAsync(CsvCompactMessage<T> message, TaskState taskState, long dequeueCount)
         {
-            TaskState taskState;
-            if (message.Force && message.TaskStateKey == null)
-            {
-                taskState = null;
-            }
-            else
-            {
-                taskState = await _taskStateStorageService.GetAsync(message.TaskStateKey);
-            }
-
             using var loggerScope = _logger.BeginScope("CSV compact: {Scope_CsvCompactContainer} {Scope_CsvCompactBucket}", _storage.ResultContainerName, message.Bucket);
-
-            if (!message.Force && taskState == null)
-            {
-                _logger.LogTransientWarning("No matching task state was found.");
-                return;
-            }
 
             await _storageService.CompactAsync<T>(
                 message.SourceTable,
                 _storage.ResultContainerName,
-                message.Bucket,
-                force: message.Force);
+                message.Bucket);
 
-            if (taskState != null)
-            {
-                await _taskStateStorageService.DeleteAsync(taskState);
-            }
+            return TaskStateProcessResult.Complete;
         }
     }
 }
