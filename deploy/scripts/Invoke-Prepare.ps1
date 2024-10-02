@@ -26,7 +26,7 @@ New-AzResourceGroup `
 Write-Status "Ensuring the storage account and base containers exist..."
 
 $storageParameters = New-StorageParameters `
-    -ResourceSettings $ResourceSettings
+    -ResourceSettings $ResourceSettings `
     -DenyTraffic $false `
     -AllowSharedKeyAccess $false
 
