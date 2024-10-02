@@ -368,6 +368,22 @@ namespace NuGet.Insights.Worker
                 }
             }
 
+            // Reexpanding: recover table scan steps for the copied bucket ranges
+            if (scan.State == CatalogIndexScanState.Reexpanding)
+            {
+                // requeue a chunk of table scan steps
+                await _tableScanService.EnqueueUnstartedWorkAsync<BucketedPackage>(
+                    scan.StorageSuffix,
+                    copyTaskStatePk,
+                    metricStepName: $"{nameof(CatalogIndexScan)}.{scan.Result}.CopyLeaf");
+
+                scan.State = CatalogIndexScanState.Expanding;
+                if (!await TryReplaceAsync(message, scan))
+                {
+                    return;
+                }
+            }
+
             // Expanding: start the table scans which create the leaf scans
             if (scan.State == CatalogIndexScanState.Expanding)
             {
@@ -392,6 +408,16 @@ namespace NuGet.Insights.Worker
 
                 if (!await _tableScanService.IsCompleteAsync(scan.StorageSuffix, copyTaskStatePk))
                 {
+                    if (await _tableScanService.ShouldRequeueAsync<BucketedPackage>(scan.Timestamp.Value))
+                    {
+                        scan.State = CatalogIndexScanState.Reexpanding;
+                        message.AttemptCount = 0;
+                        if (!await TryReplaceAsync(message, scan))
+                        {
+                            return;
+                        }
+                    }
+
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
                     return;
