@@ -158,6 +158,62 @@ namespace NuGet.Insights.Worker
             Assert.Contains(metric.MetricValues, x => x.DimensionValues[0] == "CatalogLeafScan" && x.MetricValue == 1);
         }
 
+        [NoInMemoryStorageFact]
+        public async Task CanRecoverEnqueueTableScanFanOutProblemWithRequeue()
+        {
+            // Arrange
+            FailFastLogLevel = LogLevel.Error;
+            AssertLogLevel = LogLevel.Error;
+            ConfigureWorkerSettings = x => x.FanOutRequeueTime = TimeSpan.FromSeconds(10);
+
+            var min0 = DateTimeOffset.Parse("2024-01-01T00:03:03.6703369Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2024-01-01T00:05:46.7438130Z", CultureInfo.InvariantCulture);
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.PackageIconToCsv, min0);
+            var result = await CatalogScanService.UpdateAsync(CatalogScanDriverType.PackageIconToCsv, max1);
+            Assert.Equal(CatalogScanServiceResultType.NewStarted, result.Type);
+            var scan = result.Scan;
+            var taskStateKey = new TaskStateKey(scan.StorageSuffix, $"{scan.ScanId}-{TableScanDriverType.EnqueueCatalogLeafScans}", "start");
+
+            var skippedTaskStateDelete = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
+            {
+                HttpResponseMessage response = null;
+
+                if (r.Method == HttpMethod.Delete
+                    && r.RequestUri.AbsolutePath.EndsWith(
+                        $"/{Options.Value.TaskStateTableNamePrefix}{scan.StorageSuffix}" +
+                        $"(PartitionKey='{taskStateKey.PartitionKey}',RowKey='{taskStateKey.RowKey}')", StringComparison.Ordinal))
+                {
+                    if (skippedTaskStateDelete.TrySetResult())
+                    {
+                        // set the task state to unstarted so it is considered for requeue
+                        var taskState = await TaskStateStorageService.GetAsync(taskStateKey);
+                        taskState.Started = null;
+                        await TaskStateStorageService.UpdateAsync(taskState);
+
+                        // no-op the deletion so the task state record is left over, and requeued later
+                        response = new HttpResponseMessage(HttpStatusCode.NoContent) { RequestMessage = r };
+                    }
+                }
+
+                return response;
+            };
+
+            // Act
+            await UpdateAsync(
+                scan,
+                workerCount: 1,
+                visibilityTimeout: TimeSpan.FromSeconds(1),
+                retryFailedMessages: true);
+
+            // Assert
+            Assert.True(TelemetryClient.Metrics.TryGetValue(new("FanOutRecoveryService.UnstartedWorkCount", "Type"), out var metric));
+            Assert.Contains(metric.MetricValues, x => x.DimensionValues[0] == "TaskState" && x.MetricValue == 1);
+        }
+
         public CatalogScanFaultInjectionTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
         }

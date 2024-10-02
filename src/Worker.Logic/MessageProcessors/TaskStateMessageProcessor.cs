@@ -103,6 +103,7 @@ namespace NuGet.Insights.Worker
             }
 
             var result = await _processor.ProcessAsync(message, taskState, dequeueCount);
+
             switch (result)
             {
                 case TaskStateProcessResult.Complete:

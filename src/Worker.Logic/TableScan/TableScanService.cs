@@ -14,17 +14,20 @@ namespace NuGet.Insights.Worker
         private readonly IMessageEnqueuer _enqueuer;
         private readonly SchemaSerializer _serializer;
         private readonly TaskStateStorageService _taskStateStorageService;
+        private readonly FanOutRecoveryService _fanOutRecoveryService;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
         public TableScanService(
             IMessageEnqueuer enqueuer,
             SchemaSerializer serializer,
             TaskStateStorageService taskStateStorageService,
+            FanOutRecoveryService fanOutRecoveryService,
             IOptions<NuGetInsightsWorkerSettings> options)
         {
             _enqueuer = enqueuer;
             _serializer = serializer;
             _taskStateStorageService = taskStateStorageService;
+            _fanOutRecoveryService = fanOutRecoveryService;
             _options = options;
         }
 
@@ -141,6 +144,28 @@ namespace NuGet.Insights.Worker
             return taskStateCountLowerBound == 0;
         }
 
+        public async Task EnqueueUnstartedWorkAsync<T>(string storageSuffix, string partitionKey) where T : ITableEntity
+        {
+            await _fanOutRecoveryService.EnqueueUnstartedWorkAsync(
+                take => _taskStateStorageService.GetUnstartedAsync(storageSuffix, partitionKey, take),
+                async unstarted =>
+                {
+                    var messages = new List<TableScanMessage<T>>();
+                    foreach (var taskState in unstarted)
+                    {
+                        var message = (TableScanMessage<T>)_serializer.Deserialize(taskState.Message).Data;
+                        messages.Add(message);
+                    }
+
+                    await _enqueuer.EnqueueAsync(messages);
+                });
+        }
+
+        public async Task<bool> ShouldRequeueAsync<T>(DateTimeOffset lastProgress) where T : ITableEntity
+        {
+            return await _fanOutRecoveryService.ShouldRequeueAsync(lastProgress, typeof(TableScanMessage<T>));
+        }
+
         public async Task<IReadOnlyList<TaskState>> GetTaskStatesAsync(string storageSuffix, string partitionKey, string rowKeyPrefix)
         {
             return await _taskStateStorageService.GetByRowKeyPrefixAsync(storageSuffix, partitionKey, rowKeyPrefix);
@@ -196,7 +221,8 @@ namespace NuGet.Insights.Worker
 
             await _enqueuer.EnqueueAsync(new[] { message });
 
-            taskState.Message = _serializer.Serialize(message).ToString();
+            taskState.Message = _serializer.Serialize(message).AsString();
+
             await _taskStateStorageService.UpdateAsync(taskState);
         }
     }

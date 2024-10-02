@@ -83,11 +83,20 @@ namespace NuGet.Insights.Worker
             return existing;
         }
 
-        private async Task<List<TaskState>> GetAllAsync(string storageSuffix, string partitionKey)
+        public async Task<List<TaskState>> GetAllAsync(string storageSuffix, string partitionKey)
         {
             return await (await GetTableAsync(storageSuffix))
                 .QueryAsync<TaskState>(x => x.PartitionKey == partitionKey)
                 .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
+        }
+
+        public async Task<IReadOnlyList<TaskState>> GetUnstartedAsync(string storageSuffix, string partitionKey, int take)
+        {
+            return await (await GetTableAsync(storageSuffix))
+                .QueryAsync<TaskState>(x => x.PartitionKey == partitionKey)
+                .Where(x => x.Message is not null && !x.Started.HasValue)
+                .Take(take)
+                .ToListAsync();
         }
 
         public async Task<IReadOnlyList<TaskState>> GetByRowKeyPrefixAsync(string storageSuffix, string partitionKey, string rowKeyPrefix)

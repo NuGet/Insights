@@ -469,11 +469,43 @@ namespace NuGet.Insights.Worker
                 }
             }
 
+            // Requeueing: recover table scan steps and catalog leaf scan steps
+            if (scan.State == CatalogIndexScanState.Requeueing)
+            {
+                // requeue a chunk of table scan steps
+                await _tableScanService.EnqueueUnstartedWorkAsync<CatalogLeafScan>(
+                    scan.StorageSuffix,
+                    taskStateKey.PartitionKey);
+
+                // requeue a chunk of leaf scans
+                await _fanOutRecoveryService.EnqueueUnstartedWorkAsync(
+                    take => _storageService.GetUnstartedLeafScansAsync(scan.StorageSuffix, scan.ScanId, take),
+                    _expandService.EnqueueLeafScansAsync);
+
+                scan.State = CatalogIndexScanState.Working;
+                if (!await TryReplaceAsync(message, scan))
+                {
+                    return;
+                }
+            }
+
             // Working: wait for the table scan and subsequent leaf scans to complete
             if (scan.State == CatalogIndexScanState.Working)
             {
-                if (!await _tableScanService.IsCompleteAsync(taskStateKey.StorageSuffix, taskStateKey.PartitionKey) || !await AreLeafScansCompleteAsync(scan))
+                if (!await _tableScanService.IsCompleteAsync(taskStateKey.StorageSuffix, taskStateKey.PartitionKey)
+                    || !await AreLeafScansCompleteAsync(scan))
                 {
+                    if (await _tableScanService.ShouldRequeueAsync<CatalogLeafScan>(scan.Timestamp.Value)
+                        || await _fanOutRecoveryService.ShouldRequeueAsync(scan.Timestamp.Value, typeof(CatalogLeafScanMessage)))
+                    {
+                        scan.State = CatalogIndexScanState.Requeueing;
+                        message.AttemptCount = 0;
+                        if (!await TryReplaceAsync(message, scan))
+                        {
+                            return;
+                        }
+                    }
+
                     message.AttemptCount++;
                     await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
                     return;
