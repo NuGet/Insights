@@ -51,11 +51,11 @@ namespace NuGet.Insights.Worker.TableCopy
 
             var taskStateStorageSuffix = "copy";
             var taskStateKey = new TaskStateKey(taskStateStorageSuffix, "copy", "copy");
-            var taskState = await tableScanService.InitializeTaskStateAsync(taskStateKey);
+            await tableScanService.InitializeTaskStateAsync(taskStateKey);
 
             // Act
             await tableScanService.StartTableCopyAsync<LatestPackageLeaf>(
-                taskState,
+                taskStateKey,
                 Options.Value.LatestPackageLeafTableName,
                 destTableName,
                 partitionKeyPrefix: string.Empty,
@@ -91,7 +91,7 @@ namespace NuGet.Insights.Worker.TableCopy
                 Assert.Equal(JsonSerializer.Serialize(pair.First), JsonSerializer.Serialize(pair.Second));
             });
 
-            Assert.True(await tableScanService.IsCompleteAsync(taskState.StorageSuffix, taskState.PartitionKey));
+            Assert.True(await tableScanService.IsCompleteAsync(taskStateKey.StorageSuffix, taskStateKey.PartitionKey));
         }
     }
 }

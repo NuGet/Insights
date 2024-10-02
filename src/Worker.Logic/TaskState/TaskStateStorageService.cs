@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Azure;
 using Azure.Data.Tables;
 using NuGet.Insights.StorageNoOpRetry;
 
@@ -50,6 +51,22 @@ namespace NuGet.Insights.Worker
                 storageSuffix,
                 partitionKey,
                 rowKeys.Select(r => new TaskState(storageSuffix, partitionKey, r)).ToList());
+        }
+
+        public async Task SetStartedAsync(TaskStateKey taskStateKey)
+        {
+            var table = await GetTableAsync(taskStateKey.StorageSuffix);
+            var merge = new TaskState(taskStateKey.StorageSuffix, taskStateKey.PartitionKey, taskStateKey.RowKey);
+            merge.Started = DateTimeOffset.UtcNow;
+            await table.UpdateEntityAsync(merge, ETag.All, TableUpdateMode.Merge);
+        }
+
+        public async Task SetMessageAsync(TaskStateKey taskStateKey, string message)
+        {
+            var table = await GetTableAsync(taskStateKey.StorageSuffix);
+            var merge = new TaskState(taskStateKey.StorageSuffix, taskStateKey.PartitionKey, taskStateKey.RowKey);
+            merge.Message = message;
+            await table.UpdateEntityAsync(merge, ETag.All, TableUpdateMode.Merge);
         }
 
         public async Task UpdateAsync(TaskState taskState)

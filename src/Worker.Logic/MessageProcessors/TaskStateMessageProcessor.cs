@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Azure;
-
 namespace NuGet.Insights.Worker
 {
     public class TaskStateMessageProcessor<T> : IMessageProcessor<T> where T : ITaskStateMessage
@@ -82,24 +80,8 @@ namespace NuGet.Insights.Worker
 
             if (!taskState.Started.HasValue)
             {
-                taskState.Started = DateTimeOffset.UtcNow;
-                try
-                {
-                    await _taskStateStorageService.UpdateAsync(taskState);
-                }
-                catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.PreconditionFailed)
-                {
-                    _logger.LogTransientWarning(
-                        "Attempt {AttemptCount}: task state for storage suffix '{StorageSuffix}', {PartitionKey}, {RowKey} was updated by another worker. Trying again.",
-                        message.AttemptCount,
-                        message.TaskStateKey.StorageSuffix,
-                        message.TaskStateKey.PartitionKey,
-                        message.TaskStateKey.RowKey);
-                    _messageConflict.TrackValue(1, MessageTypeName);
-                    message.AttemptCount++;
-                    await _messageEnqueuer.EnqueueAsync(new[] { message }, StorageUtility.GetMessageDelay(message.AttemptCount));
-                    return;
-                }
+                await _taskStateStorageService.SetStartedAsync(taskState.GetKey());
+                taskState = await _taskStateStorageService.GetAsync(taskState.GetKey());
             }
 
             var result = await _processor.ProcessAsync(message, taskState, dequeueCount);

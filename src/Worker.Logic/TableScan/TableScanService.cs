@@ -36,10 +36,8 @@ namespace NuGet.Insights.Worker
             string tableName,
             bool oneMessagePerId)
         {
-            var taskState = await _taskStateStorageService.GetAsync(taskStateKey);
-
             await StartTableScanAsync<CatalogLeafScan>(
-                taskState,
+                taskStateKey,
                 TableScanDriverType.EnqueueCatalogLeafScans,
                 tableName,
                 TableScanStrategy.PrefixScan,
@@ -56,7 +54,7 @@ namespace NuGet.Insights.Worker
         }
 
         public async Task StartCopyBucketRangeAsync(
-            TaskState taskState,
+            TaskStateKey taskStateKey,
             int minBucketIndex,
             int maxBucketIndex,
             CatalogScanDriverType driverType,
@@ -66,7 +64,7 @@ namespace NuGet.Insights.Worker
             var partitionKeyUpperBound = maxBucketIndex < BucketedPackage.BucketCount - 1 ? BucketedPackage.GetBucketString(maxBucketIndex + 1) : null;
 
             await StartTableScanAsync<BucketedPackage>(
-                taskState,
+                taskStateKey,
                 TableScanDriverType.CopyBucketRange,
                 _options.Value.BucketedPackageTableName,
                 TableScanStrategy.PrefixScan,
@@ -84,7 +82,7 @@ namespace NuGet.Insights.Worker
         }
 
         public async Task StartTableCopyAsync<T>(
-            TaskState taskState,
+            TaskStateKey taskStateKey,
             string sourceTable,
             string destinationTable,
             string partitionKeyPrefix,
@@ -96,7 +94,7 @@ namespace NuGet.Insights.Worker
             where T : ITableEntity
         {
             await StartTableScanAsync<T>(
-                taskState,
+                taskStateKey,
                 TableScanDriverType.TableCopy,
                 sourceTable,
                 strategy,
@@ -173,7 +171,7 @@ namespace NuGet.Insights.Worker
         }
 
         private async Task StartTableScanAsync<T>(
-            TaskState taskState,
+            TaskStateKey taskStateKey,
             TableScanDriverType driverType,
             string sourceTable,
             TableScanStrategy strategy,
@@ -203,7 +201,6 @@ namespace NuGet.Insights.Worker
                     throw new NotImplementedException();
             }
 
-            var taskStateKey = taskState.GetKey();
             var message = new TableScanMessage<T>
             {
                 Started = DateTimeOffset.UtcNow,
@@ -222,9 +219,8 @@ namespace NuGet.Insights.Worker
 
             await _enqueuer.EnqueueAsync(new[] { message });
 
-            taskState.Message = _serializer.Serialize(message).AsString();
-
-            await _taskStateStorageService.UpdateAsync(taskState);
+            var serializedMessage = _serializer.Serialize(message).AsString();
+            await _taskStateStorageService.SetMessageAsync(taskStateKey, serializedMessage);
         }
     }
 }

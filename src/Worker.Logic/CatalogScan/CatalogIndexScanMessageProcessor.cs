@@ -398,7 +398,7 @@ namespace NuGet.Insights.Worker
                     if (taskState.Message is null)
                     {
                         await _tableScanService.StartCopyBucketRangeAsync(
-                            taskState,
+                            taskState.GetKey(),
                             range.Min,
                             range.Max,
                             scan.DriverType,
