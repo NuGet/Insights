@@ -9,7 +9,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         CreatingTable,
         Expanding,
         Enqueueing,
-        Requeuing,
+        Requeueing,
         Working,
         Complete,
         Failed,

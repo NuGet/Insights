@@ -198,8 +198,8 @@ namespace NuGet.Insights.Worker
                 }
             }
 
-            // Requeuing: enqueue a message for the some of the remaining pages and leaves
-            if (scan.State == CatalogIndexScanState.Requeuing)
+            // Requeueing: enqueue a message for the some of the remaining pages and leaves
+            if (scan.State == CatalogIndexScanState.Requeueing)
             {
                 // requeue a chunk of leaf scans
                 await _fanOutRecoveryService.EnqueueUnstartedWorkAsync(
@@ -223,16 +223,13 @@ namespace NuGet.Insights.Worker
             {
                 if (!await ArePageScansCompleteAsync(scan) || !await AreLeafScansCompleteAsync(scan))
                 {
-                    if (await _fanOutRecoveryService.ShouldRequeueAsync(
-                        scan.Timestamp.Value,
-                        typeof(CatalogPageScanMessage),
-                        typeof(CatalogLeafScanMessage)))
+                    if (await _fanOutRecoveryService.ShouldRequeueAsync(scan.Timestamp.Value, typeof(CatalogPageScanMessage), typeof(CatalogLeafScanMessage)))
                     {
                         // FAN OUT RECOVERY: it is possible for page scans from a duplicate catalog index scan message to have been
                         // added after the enqueue state completed. To handle this rare case, we will try to reprocess any page
                         // scans that are still hanging. This prevents us from being stuck in the working state waiting on page
                         // scans that have no corresponding catalog page scan queue message.
-                        scan.State = CatalogIndexScanState.Requeuing;
+                        scan.State = CatalogIndexScanState.Requeueing;
                         message.AttemptCount = 0;
                         if (!await TryReplaceAsync(message, scan))
                         {

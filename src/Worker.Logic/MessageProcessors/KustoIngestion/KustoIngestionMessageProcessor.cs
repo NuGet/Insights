@@ -129,7 +129,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 await _storageService.ReplaceIngestionAsync(ingestion);
             }
 
-            if (ingestion.State == KustoIngestionState.Requeuing)
+            if (ingestion.State == KustoIngestionState.Requeueing)
             {
                 await _fanOutRecoveryService.EnqueueUnstartedWorkAsync(
                     x => _storageService.GetUnstartedCcontainersAsync(ingestion, x),

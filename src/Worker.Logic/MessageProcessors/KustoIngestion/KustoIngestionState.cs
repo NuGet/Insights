@@ -9,7 +9,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         Expanding,
         Retrying,
         Enqueueing,
-        Requeuing,
+        Requeueing,
         Working,
         Validating,
         FailedValidation,

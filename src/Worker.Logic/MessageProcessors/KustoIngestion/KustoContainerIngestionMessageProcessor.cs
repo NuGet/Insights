@@ -124,7 +124,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 await _storageService.ReplaceContainerAsync(container);
             }
 
-            if (container.State == KustoContainerIngestionState.Requeuing)
+            if (container.State == KustoContainerIngestionState.Requeueing)
             {
                 await _fanOutRecoveryService.EnqueueUnstartedWorkAsync(
                     x => _storageService.GetUnstartedBlobsAsync(container, x),
@@ -145,7 +145,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     if (createdCount > 0
                         && await _fanOutRecoveryService.ShouldRequeueAsync(container.Timestamp.Value, typeof(KustoBlobIngestionMessage)))
                     {
-                        container.State = KustoContainerIngestionState.Requeuing;
+                        container.State = KustoContainerIngestionState.Requeueing;
                         message.AttemptCount = 0;
                         await _storageService.ReplaceContainerAsync(container);
                     }
