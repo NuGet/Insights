@@ -144,7 +144,7 @@ namespace NuGet.Insights.Worker
             return taskStateCountLowerBound == 0;
         }
 
-        public async Task EnqueueUnstartedWorkAsync<T>(string storageSuffix, string partitionKey) where T : ITableEntity
+        public async Task EnqueueUnstartedWorkAsync<T>(string storageSuffix, string partitionKey, string metricStepName) where T : ITableEntity
         {
             await _fanOutRecoveryService.EnqueueUnstartedWorkAsync(
                 take => _taskStateStorageService.GetUnstartedAsync(storageSuffix, partitionKey, take),
@@ -158,7 +158,8 @@ namespace NuGet.Insights.Worker
                     }
 
                     await _enqueuer.EnqueueAsync(messages);
-                });
+                },
+                metricStepName);
         }
 
         public async Task<bool> ShouldRequeueAsync<T>(DateTimeOffset lastProgress) where T : ITableEntity

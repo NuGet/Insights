@@ -204,12 +204,14 @@ namespace NuGet.Insights.Worker
                 // requeue a chunk of leaf scans
                 await _fanOutRecoveryService.EnqueueUnstartedWorkAsync(
                     take => _storageService.GetUnstartedLeafScansAsync(scan.StorageSuffix, scan.ScanId, take),
-                    _expandService.EnqueueLeafScansAsync);
+                    _expandService.EnqueueLeafScansAsync,
+                    metricStepName: $"{nameof(CatalogIndexScan)}.{scan.Result}.Leaf");
 
                 // requeue a chunk of page scans
                 await _fanOutRecoveryService.EnqueueUnstartedWorkAsync(
                     take => _storageService.GetUnstartedPageScansAsync(scan.StorageSuffix, scan.ScanId, take),
-                    EnqueuePagesAsync);
+                    EnqueuePagesAsync,
+                    metricStepName: $"{nameof(CatalogIndexScan)}.{scan.Result}.Page");
 
                 scan.State = CatalogIndexScanState.Working;
                 if (!await TryReplaceAsync(message, scan))
@@ -475,12 +477,14 @@ namespace NuGet.Insights.Worker
                 // requeue a chunk of table scan steps
                 await _tableScanService.EnqueueUnstartedWorkAsync<CatalogLeafScan>(
                     scan.StorageSuffix,
-                    taskStateKey.PartitionKey);
+                    taskStateKey.PartitionKey,
+                    metricStepName: $"{nameof(CatalogIndexScan)}.{scan.Result}.EnqueueLeaf");
 
                 // requeue a chunk of leaf scans
                 await _fanOutRecoveryService.EnqueueUnstartedWorkAsync(
                     take => _storageService.GetUnstartedLeafScansAsync(scan.StorageSuffix, scan.ScanId, take),
-                    _expandService.EnqueueLeafScansAsync);
+                    _expandService.EnqueueLeafScansAsync,
+                    metricStepName: $"{nameof(CatalogIndexScan)}.{scan.Result}.Leaf");
 
                 scan.State = CatalogIndexScanState.Working;
                 if (!await TryReplaceAsync(message, scan))

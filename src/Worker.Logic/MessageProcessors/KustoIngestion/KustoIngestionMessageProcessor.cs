@@ -133,7 +133,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
             {
                 await _fanOutRecoveryService.EnqueueUnstartedWorkAsync(
                     x => _storageService.GetUnstartedCcontainersAsync(ingestion, x),
-                    EnqueueAsync);
+                    EnqueueAsync,
+                    metricStepName: $"{nameof(KustoIngestionEntity)}.Container");
 
                 ingestion.State = KustoIngestionState.Working;
                 await _storageService.ReplaceIngestionAsync(ingestion);

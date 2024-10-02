@@ -78,8 +78,8 @@ namespace NuGet.Insights.Worker
                 retryFailedMessages: true);
 
             // Assert
-            Assert.True(TelemetryClient.Metrics.TryGetValue(new("FanOutRecoveryService.UnstartedWorkCount", "Type"), out var metric));
-            Assert.Contains(metric.MetricValues, x => x.DimensionValues[0] == "CatalogPageScan" && x.MetricValue == 1);
+            Assert.True(TelemetryClient.Metrics.TryGetValue(new("FanOutRecoveryService.UnstartedWorkCount", "WorkType", "StepName"), out var metric));
+            Assert.Contains(metric.MetricValues, x => x.DimensionValues[1] == "CatalogIndexScan.ExpandAllLeaves.Page" && x.MetricValue == 1);
         }
 
         [NoInMemoryStorageFact]
@@ -154,8 +154,8 @@ namespace NuGet.Insights.Worker
                 retryFailedMessages: true);
 
             // Assert
-            Assert.True(TelemetryClient.Metrics.TryGetValue(new("FanOutRecoveryService.UnstartedWorkCount", "Type"), out var metric));
-            Assert.Contains(metric.MetricValues, x => x.DimensionValues[0] == "CatalogLeafScan" && x.MetricValue == 1);
+            Assert.True(TelemetryClient.Metrics.TryGetValue(new("FanOutRecoveryService.UnstartedWorkCount", "WorkType", "StepName"), out var metric));
+            Assert.Contains(metric.MetricValues, x => x.DimensionValues[1] == "CatalogIndexScan.ExpandAllLeaves.Leaf" && x.MetricValue == 1);
         }
 
         [NoInMemoryStorageFact]
@@ -210,8 +210,8 @@ namespace NuGet.Insights.Worker
                 retryFailedMessages: true);
 
             // Assert
-            Assert.True(TelemetryClient.Metrics.TryGetValue(new("FanOutRecoveryService.UnstartedWorkCount", "Type"), out var metric));
-            Assert.Contains(metric.MetricValues, x => x.DimensionValues[0] == "TaskState" && x.MetricValue == 1);
+            Assert.True(TelemetryClient.Metrics.TryGetValue(new("FanOutRecoveryService.UnstartedWorkCount", "WorkType", "StepName"), out var metric));
+            Assert.Contains(metric.MetricValues, x => x.DimensionValues[1] == "CatalogIndexScan.ExpandLatestLeaves.EnqueueLeaf" && x.MetricValue == 1);
         }
 
         public CatalogScanFaultInjectionTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

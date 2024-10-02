@@ -127,8 +127,9 @@ namespace NuGet.Insights.Worker.KustoIngestion
             if (container.State == KustoContainerIngestionState.Requeueing)
             {
                 await _fanOutRecoveryService.EnqueueUnstartedWorkAsync(
-                    x => _storageService.GetUnstartedBlobsAsync(container, x),
-                    EnqueueAsync);
+                    take => _storageService.GetUnstartedBlobsAsync(container, take),
+                    EnqueueAsync,
+                    metricStepName: $"{nameof(KustoContainerIngestion)}.Blob");
 
                 container.State = KustoContainerIngestionState.Working;
                 await _storageService.ReplaceContainerAsync(container);

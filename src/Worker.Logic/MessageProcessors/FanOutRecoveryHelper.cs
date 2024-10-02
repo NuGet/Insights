@@ -19,15 +19,16 @@ namespace NuGet.Insights.Worker
             _telemetryClient = telemetryClient;
             _options = options;
 
-            _unstartedWorkCount = _telemetryClient.GetMetric($"{nameof(FanOutRecoveryService)}.UnstartedWorkCount", "Type");
+            _unstartedWorkCount = _telemetryClient.GetMetric($"{nameof(FanOutRecoveryService)}.UnstartedWorkCount", "WorkType", "StepName");
         }
 
         public async Task EnqueueUnstartedWorkAsync<T>(
             Func<int, Task<IReadOnlyList<T>>> getWorkAsync,
-            Func<IReadOnlyList<T>, Task> enqueueWorkAsync)
+            Func<IReadOnlyList<T>, Task> enqueueWorkAsync,
+            string metricStepName)
         {
             var unstartedWork = await getWorkAsync(StorageUtility.MaxTakeCount);
-            _unstartedWorkCount.TrackValue(unstartedWork.Count, typeof(T).Name);
+            _unstartedWorkCount.TrackValue(unstartedWork.Count, typeof(T).Name, metricStepName);
 
             if (unstartedWork.Count > 0)
             {
