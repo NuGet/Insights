@@ -11,8 +11,7 @@ Import-Module (Join-Path $PSScriptRoot "NuGet.Insights.psm1")
 
 Write-Status "Enabling the AAD app for website login..."
 $resource = "https://graph.microsoft.com/"
-
-$graphToken = Get-AzAccessToken -Resource $resource
+$graphToken = Get-ResourceAccessToken $resource
 $attempt = 0;
 $maxRetries = 10
 while ($true) {
@@ -21,7 +20,7 @@ while ($true) {
         $app = Invoke-RestMethod `
             -Method GET `
             -Uri "https://graph.microsoft.com/v1.0/applications/$ObjectId" `
-            -Headers @{ Authorization = "Bearer $($graphToken.Token)" } `
+            -Headers @{ Authorization = "Bearer $graphToken" } `
             -ErrorAction Stop
         break
     }
@@ -101,7 +100,7 @@ catch {
         Write-Host "Failed with 403 (scopes are probably wrong)."
         Write-Status "Updating the AAD app using an Az CLI token."
         try {
-            $graphToken = az account get-access-token --resource "https://graph.microsoft.com/" | ConvertFrom-Json
+            $graphToken = az account get-access-token --resource $resource | ConvertFrom-Json
             if (!$graphToken -or $LASTEXITCODE -ne 0) { throw "Failed to get a token from Az CLI." }
             Set-AadApp($graphToken.accessToken)
             Write-Host "Succeeded."

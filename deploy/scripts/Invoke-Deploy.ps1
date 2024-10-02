@@ -95,7 +95,6 @@ function New-DeploymentFile ($Path, $BlobName) {
             -Context $storageContext `
             -ExpiryTime (Get-Date).AddHours(6) `
             -FullUri `
-            -WarningAction Ignore `
             -ErrorAction Stop
 
         # make sure the SAS URL works (handle RBAC propagation delay)

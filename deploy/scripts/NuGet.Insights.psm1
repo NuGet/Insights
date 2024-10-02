@@ -919,10 +919,15 @@ function Get-DefaultRuntimeIdentifier($RuntimeIdentifier, $WriteDefault = $true)
     return $RuntimeIdentifier
 }
 
+function Get-ResourceAccessToken($resource) {
+    $tokenObj = Get-AzAccessToken -Resource $resource -AsSecureString
+    return (New-Object PSCredential 0, $tokenObj.Token).GetNetworkCredential().Password
+}
+
 function Get-AzCurrentUser() {
     Write-Status "Determining the current user for Az PowerShell operations..."
-    $graphToken = Get-AzAccessToken -Resource "https://graph.microsoft.com/"
-    $graphHeaders = @{ Authorization = "Bearer $($graphToken.Token)" }
+    $graphToken = Get-ResourceAccessToken "https://graph.microsoft.com/"
+    $graphHeaders = @{ Authorization = "Bearer $graphToken" }
     $currentUser = Invoke-RestMethod -Uri "https://graph.microsoft.com/v1.0/me" -Headers $graphHeaders
     return $currentUser
 }
