@@ -111,27 +111,46 @@ namespace NuGet.Insights.Worker
             _rangeWasteRatioMetric = telemetryClient.GetMetric($"{MetricIdPrefix}{nameof(SyncWithRangeQueryAsync)}.WasteRatio", "EntityType");
         }
 
-        public async Task AddAsync(
+        public async Task<List<TEntity>> AddAsync(
             IReadOnlyList<TItem> items,
             IEntityUpsertStorage<TItem, TEntity> storage)
         {
             var strategy = storage.Strategy.ToString();
             _addItemCount.TrackValue(items.Count, _entityType, strategy);
             var sw = Stopwatch.StartNew();
+            var groups = GroupItems(items, storage);
+            var entityCount = groups.Sum(g => g.Items.Count);
+            List<TEntity> entities;
 
             try
             {
                 switch (storage.Strategy)
                 {
                     case EntityUpsertStrategy.ReadThenAdd:
-                        await ReadThenAddAsync(items, storage);
+                        entities = await ReadThenAddAsync(groups, storage);
                         break;
                     case EntityUpsertStrategy.AddOptimistically:
-                        await AddOptimisticallyAsync(items, storage);
+                        entities = await AddOptimisticallyAsync(groups, storage);
                         break;
                     default:
                         throw new NotImplementedException();
                 }
+
+                if (entities.Count != entityCount)
+                {
+                    throw new InvalidOperationException($"The actual entity count ({entities.Count}) did not match the expected ({entityCount}).");
+                }
+
+                entities.Sort((a, b) =>
+                {
+                    var c = string.CompareOrdinal(a.PartitionKey, b.PartitionKey);
+                    if (c != 0)
+                    {
+                        return c;
+                    }
+
+                    return string.CompareOrdinal(a.RowKey, b.RowKey);
+                });
 
                 _addDurationMsCount.TrackValue(sw.Elapsed.TotalMilliseconds, _entityType, strategy, "true");
             }
@@ -140,6 +159,8 @@ namespace NuGet.Insights.Worker
                 _addDurationMsCount.TrackValue(sw.Elapsed.TotalMilliseconds, _entityType, strategy, "false");
                 throw;
             }
+
+            return entities;
         }
 
         private static List<(string PartitionKey, List<ItemWithEntityKey<TItem>> Items)> GroupItems(
@@ -157,10 +178,11 @@ namespace NuGet.Insights.Worker
                 .ToList();
         }
 
-        private async Task AddOptimisticallyAsync(IReadOnlyList<TItem> items, IEntityUpsertStorage<TItem, TEntity> storage)
+        private async Task<List<TEntity>> AddOptimisticallyAsync(
+            List<(string PartitionKey, List<ItemWithEntityKey<TItem>> Items)> groups,
+            IEntityUpsertStorage<TItem, TEntity> storage)
         {
-            var groups = GroupItems(items, storage);
-            var state = new OptimisticGroupState(storage, [], new MutableTableTransactionalBatch(storage.Table), [], [], [], [], [], []);
+            var state = new OptimisticGroupState(storage, [], new MutableTableTransactionalBatch(storage.Table), [], [], [], [], [], [], []);
             _addOptimisticallyPartitionKeyCount.TrackValue(groups.Count, _entityType);
 
             foreach (var (partitionKey, group) in groups)
@@ -182,7 +204,7 @@ namespace NuGet.Insights.Worker
                     // Do this first, so we don't do too many point reads for conflicts.
                     if (state.Conflict.Count > 0)
                     {
-                        var rowKeyToETag = await SyncWithPointReadAsync(partitionKey, state.Conflict, storage);
+                        var rowKeyToETag = await SyncWithPointReadAsync(partitionKey, state.Conflict, state.ResolvedEntities, storage);
                         UpdateRowKeyToETag(state, rowKeyToETag);
                         state.TryAgain.AddRange(state.Conflict);
                         state.Conflict.Clear();
@@ -195,13 +217,13 @@ namespace NuGet.Insights.Worker
                         if (state.Unknown.Count <= PointReadThreshold)
                         {
                             // if there are only a few unknown entities left, get their etags with point reads, remove entities that are not the latest
-                            var rowKeyToETag = await SyncWithPointReadAsync(partitionKey, state.Unknown, storage);
+                            var rowKeyToETag = await SyncWithPointReadAsync(partitionKey, state.Unknown, state.ResolvedEntities, storage);
                             UpdateRowKeyToETag(state, rowKeyToETag);
                         }
                         else
                         {
                             // otherwise fetch a page worth, so we can make at least some progress
-                            var rowKeyToETag = await SyncWithRangeQueryAsync(partitionKey, state.Unknown, storage, pageLimit: 1);
+                            var rowKeyToETag = await SyncWithRangeQueryAsync(partitionKey, state.Unknown, state.ResolvedEntities, storage, pageLimit: 1);
                             UpdateRowKeyToETag(state, rowKeyToETag);
                         }
 
@@ -228,6 +250,8 @@ namespace NuGet.Insights.Worker
                 state.Unknown.Clear();
                 state.RowKeyToETag.Clear();
             }
+
+            return state.ResolvedEntities;
         }
 
         private async Task AddOptimisticallyAsync(OptimisticGroupState state, string partitionKey)
@@ -293,7 +317,8 @@ namespace NuGet.Insights.Worker
             List<ItemWithEntityKey<TItem>> TryAgain,
             List<ItemWithEntityKey<TItem>> Conflict,
             List<ItemWithEntityKey<TItem>> Unknown,
-            Dictionary<string, ETag> RowKeyToETag);
+            Dictionary<string, ETag> RowKeyToETag,
+            List<TEntity> ResolvedEntities);
 
         private async Task SubmitBatchOptimisticallyAsync(OptimisticGroupState state, string partitionKey)
         {
@@ -303,6 +328,7 @@ namespace NuGet.Insights.Worker
                 _addOptimisticallyBatchSize.TrackValue(state.BatchItems.Count, _entityType, "true");
                 foreach (var itemWithKey in state.BatchItems)
                 {
+                    state.ResolvedEntities.Add(state.RowKeyToEntity[itemWithKey.RowKey]);
                     state.RowKeyToEntity.Remove(itemWithKey.RowKey);
                     state.RowKeyToETag.Remove(itemWithKey.RowKey);
                 }
@@ -335,9 +361,11 @@ namespace NuGet.Insights.Worker
             state.BatchItems.Clear();
         }
 
-        private async Task ReadThenAddAsync(IReadOnlyList<TItem> items, IEntityUpsertStorage<TItem, TEntity> storage)
+        private async Task<List<TEntity>> ReadThenAddAsync(
+            List<(string PartitionKey, List<ItemWithEntityKey<TItem>> Items)> groups,
+            IEntityUpsertStorage<TItem, TEntity> storage)
         {
-            var groups = GroupItems(items, storage);
+            var entities = new List<TEntity>();
 
             foreach (var (partitionKey, group) in groups)
             {
@@ -349,7 +377,7 @@ namespace NuGet.Insights.Worker
                     attempt++;
                     try
                     {
-                        await AddAsync(partitionKey, group, storage);
+                        entities.AddRange(await AddAsync(partitionKey, group, storage));
                         break;
                     }
                     catch (RequestFailedException ex) when (attempt < maxAttempts
@@ -365,21 +393,25 @@ namespace NuGet.Insights.Worker
                     }
                 }
             }
+
+            return entities;
         }
 
-        private async Task AddAsync(
+        private async Task<List<TEntity>> AddAsync(
             string partitionKey,
             List<ItemWithEntityKey<TItem>> itemsWithKeys,
             IEntityUpsertStorage<TItem, TEntity> storage)
         {
+            var resolvedEntities = new List<TEntity>();
+
             Dictionary<string, ETag> rowKeyToETag;
             if (itemsWithKeys.Count <= PointReadThreshold)
             {
-                rowKeyToETag = await SyncWithPointReadAsync(partitionKey, itemsWithKeys, storage);
+                rowKeyToETag = await SyncWithPointReadAsync(partitionKey, itemsWithKeys, resolvedEntities, storage);
             }
             else
             {
-                rowKeyToETag = await SyncWithRangeQueryAsync(partitionKey, itemsWithKeys, storage, pageLimit: null);
+                rowKeyToETag = await SyncWithRangeQueryAsync(partitionKey, itemsWithKeys, resolvedEntities, storage, pageLimit: null);
             }
 
             // Update or insert the rows.
@@ -388,6 +420,7 @@ namespace NuGet.Insights.Worker
             foreach (ItemWithEntityKey<TItem> itemWithKey in itemsWithKeys)
             {
                 var entity = await storage.MapAsync(partitionKey, itemWithKey.RowKey, itemWithKey.Item);
+                resolvedEntities.Add(entity);
 
                 if (rowKeyToETag.TryGetValue(itemWithKey.RowKey, out var etag))
                 {
@@ -409,6 +442,8 @@ namespace NuGet.Insights.Worker
             {
                 await batch.SubmitBatchAsync();
             }
+
+            return resolvedEntities;
         }
 
         private static void UpdateRowKeyToETag(OptimisticGroupState state, Dictionary<string, ETag> rowKeyToETag)
@@ -422,6 +457,7 @@ namespace NuGet.Insights.Worker
         private async Task<Dictionary<string, ETag>> SyncWithPointReadAsync(
             string partitionKey,
             List<ItemWithEntityKey<TItem>> itemsWithKeys,
+            List<TEntity> resolvedEntities,
             IEntityUpsertStorage<TItem, TEntity> storage)
         {
             var rowKeyToETag = new Dictionary<string, ETag>();
@@ -440,6 +476,7 @@ namespace NuGet.Insights.Worker
                     {
                         // The version in Table Storage is newer, ignore the version we have.
                         ignoreCount++;
+                        resolvedEntities.Add(entity);
                         continue;
                     }
 
@@ -467,6 +504,7 @@ namespace NuGet.Insights.Worker
         private async Task<Dictionary<string, ETag>> SyncWithRangeQueryAsync(
             string partitionKey,
             List<ItemWithEntityKey<TItem>> itemsWithKeys,
+            List<TEntity> resolvedEntities,
             IEntityUpsertStorage<TItem, TEntity> storage,
             int? pageLimit)
         {
@@ -522,6 +560,7 @@ namespace NuGet.Insights.Worker
                         {
                             // The version in Table Storage is newer, ignore the version we have.
                             rowKeyToItemWithKey.Remove(result.RowKey);
+                            resolvedEntities.Add(result);
                             ignoreCount++;
                         }
                         else
