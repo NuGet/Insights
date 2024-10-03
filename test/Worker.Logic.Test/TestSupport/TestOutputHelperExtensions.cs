@@ -13,7 +13,7 @@ namespace NuGet.Insights.Worker
             return Insights.TestOutputHelperExtensions.ShouldIgnoreMetricLog(key)
                 || key.MetricId.StartsWith(AppendResultStorageService.MetricIdPrefix, StringComparison.Ordinal)
                 || key.MetricId.StartsWith(TableScanMessageProcessor<LatestPackageLeaf>.MetricIdPrefix, StringComparison.Ordinal)
-                || key.MetricId.StartsWith(LatestLeafStorageService<LatestPackageLeaf>.MetricIdPrefix, StringComparison.Ordinal)
+                || key.MetricId.StartsWith(EntityUpsertStorageService<ICatalogLeafItem, LatestPackageLeaf>.MetricIdPrefix, StringComparison.Ordinal)
                 || key.MetricId.StartsWith(QueueStorageEnqueuer.MetricIdPrefix, StringComparison.Ordinal)
                 || key.MetricId.StartsWith(TimedReprocessStorageService.MetricIdPrefix, StringComparison.Ordinal)
                 || key.MetricId.StartsWith(TaskStateMessageProcessor<TableScanMessage<LatestPackageLeaf>>.MetricIdPrefix, StringComparison.Ordinal);

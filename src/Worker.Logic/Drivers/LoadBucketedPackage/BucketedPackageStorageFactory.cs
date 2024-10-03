@@ -41,7 +41,7 @@ namespace NuGet.Insights.Worker.LoadBucketedPackage
 
             public TableClientWithRetryContext Table { get; }
             public string CommitTimestampColumnName => nameof(BucketedPackage.CommitTimestamp);
-            public LatestLeafStorageStrategy Strategy => LatestLeafStorageStrategy.AddOptimistically;
+            public EntityUpsertStrategy Strategy => EntityUpsertStrategy.AddOptimistically;
 
             public (string PartitionKey, string RowKey) GetKey(ICatalogLeafItem item)
             {

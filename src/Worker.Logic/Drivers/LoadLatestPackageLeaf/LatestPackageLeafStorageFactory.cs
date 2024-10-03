@@ -53,7 +53,7 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
 
             public TableClientWithRetryContext Table { get; }
             public string CommitTimestampColumnName => nameof(LatestPackageLeaf.CommitTimestamp);
-            public LatestLeafStorageStrategy Strategy => LatestLeafStorageStrategy.ReadThenAdd;
+            public EntityUpsertStrategy Strategy => EntityUpsertStrategy.ReadThenAdd;
 
             public (string PartitionKey, string RowKey) GetKey(ICatalogLeafItem item)
             {

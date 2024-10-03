@@ -9,7 +9,7 @@ namespace NuGet.Insights.Worker
     {
         TableClientWithRetryContext Table { get; }
         string CommitTimestampColumnName { get; }
-        LatestLeafStorageStrategy Strategy { get; }
+        EntityUpsertStrategy Strategy { get; }
         Task<T> MapAsync(string partitionKey, string rowKey, ICatalogLeafItem item);
         (string PartitionKey, string RowKey) GetKey(ICatalogLeafItem item);
     }
