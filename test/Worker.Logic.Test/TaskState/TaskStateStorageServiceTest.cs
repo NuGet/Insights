@@ -24,6 +24,77 @@ namespace NuGet.Insights.Worker
             }
         }
 
+        public class TheSetStartedAsyncMethod : TaskStateStorageServiceTest
+        {
+            public TheSetStartedAsyncMethod(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+            {
+            }
+
+            [Fact]
+            public async Task ReturnsFalseIfDoesNotExist()
+            {
+                var exists = await Target.SetStartedAsync(new TaskStateKey(StorageSuffix, PartitionKey, "foo"));
+
+                Assert.False(exists);
+            }
+
+            [Fact]
+            public async Task LeavesExistingPropertiesWhenUpdating()
+            {
+                var taskStateBefore = new TaskState(StorageSuffix, PartitionKey, "foo") { Message = "bar", Parameters = "baz" };
+                await Target.GetOrAddAsync(taskStateBefore);
+
+                var exists = await Target.SetStartedAsync(taskStateBefore.GetKey());
+
+                Assert.True(exists);
+                Assert.Null(taskStateBefore.Started);
+                Assert.NotEqual(default, taskStateBefore.ETag);
+                var taskStateAfter = await Target.GetAsync(taskStateBefore.GetKey());
+                Assert.NotNull(taskStateAfter);
+                Assert.NotEqual(taskStateBefore.ETag, taskStateAfter.ETag);
+                Assert.NotNull(taskStateAfter.Started);
+                Assert.Equal("bar", taskStateAfter.Message);
+                Assert.Equal("baz", taskStateAfter.Parameters);
+            }
+        }
+
+        public class TheSetMessageAsyncMethod : TaskStateStorageServiceTest
+        {
+            public TheSetMessageAsyncMethod(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+            {
+            }
+
+            [Fact]
+            public async Task FailsIfDoesNotExist()
+            {
+                var ex = await Assert.ThrowsAsync<RequestFailedException>(
+                    () => Target.SetMessageAsync(new TaskStateKey(StorageSuffix, PartitionKey, "foo"), "bar"));
+                Assert.Equal((int)HttpStatusCode.NotFound, ex.Status);
+            }
+
+            [Fact]
+            public async Task LeavesExistingPropertiesWhenUpdating()
+            {
+                var taskStateBefore = new TaskState(StorageSuffix, PartitionKey, "foo")
+                {
+                    Message = "foo",
+                    Parameters = "bar",
+                    Started = new DateTimeOffset(2024, 10, 1, 9, 5, 0, TimeSpan.Zero),
+                };
+                await Target.GetOrAddAsync(taskStateBefore);
+
+                await Target.SetMessageAsync(taskStateBefore.GetKey(), "qux");
+
+                Assert.NotEqual(default, taskStateBefore.ETag);
+                var taskStateAfter = await Target.GetAsync(taskStateBefore.GetKey());
+                Assert.NotNull(taskStateAfter);
+                Assert.NotEqual(taskStateBefore.ETag, taskStateAfter.ETag);
+                Assert.Equal("qux", taskStateAfter.Message);
+                Assert.Equal("bar", taskStateAfter.Parameters);
+                Assert.Equal(new DateTimeOffset(2024, 10, 1, 9, 5, 0, TimeSpan.Zero), taskStateAfter.Started);
+            }
+        }
+
         public class TheAddAsyncMethod : TaskStateStorageServiceTest
         {
             public TheAddAsyncMethod(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
@@ -108,7 +179,7 @@ namespace NuGet.Insights.Worker
             [Fact]
             public async Task HasExpectedPropertiesWithParameters()
             {
-                await Target.AddAsync(StorageSuffix, PartitionKey, new[] { new TaskState(StorageSuffix, PartitionKey, "bar") { Parameters = "baz" } });
+                await Target.GetOrAddAsync(StorageSuffix, PartitionKey, new[] { new TaskState(StorageSuffix, PartitionKey, "bar") { Parameters = "baz" } });
 
                 var entities = await GetEntitiesAsync<TableEntity>();
                 var entity = Assert.Single(entities);

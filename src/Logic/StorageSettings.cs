@@ -32,13 +32,13 @@ namespace NuGet.Insights
 
         public StorageCredentialType GetStorageCredentialType()
         {
-            if (UseMemoryStorage)
-            {
-                return StorageCredentialType.MemoryStorage;
-            }
-            else if (UseDevelopmentStorage)
+            if (UseDevelopmentStorage)
             {
                 return StorageCredentialType.DevelopmentStorage;
+            }
+            else if (UseMemoryStorage)
+            {
+                return StorageCredentialType.MemoryStorage;
             }
             else if (StorageAccountName is not null)
             {

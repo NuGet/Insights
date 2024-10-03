@@ -42,23 +42,32 @@ namespace NuGet.Insights.Worker
 
         public async Task<TaskState> GetOrAddAsync(TaskState taskState)
         {
-            return (await AddAsync(taskState.StorageSuffix, taskState.PartitionKey, [taskState])).Single();
+            return (await GetOrAddAsync(taskState.StorageSuffix, taskState.PartitionKey, [taskState])).Single();
         }
 
         public async Task<List<TaskState>> GetOrAddAsync(string storageSuffix, string partitionKey, IReadOnlyList<string> rowKeys)
         {
-            return await AddAsync(
+            return await GetOrAddAsync(
                 storageSuffix,
                 partitionKey,
                 rowKeys.Select(r => new TaskState(storageSuffix, partitionKey, r)).ToList());
         }
 
-        public async Task SetStartedAsync(TaskStateKey taskStateKey)
+        public async Task<bool> SetStartedAsync(TaskStateKey taskStateKey)
         {
             var table = await GetTableAsync(taskStateKey.StorageSuffix);
             var merge = new TaskState(taskStateKey.StorageSuffix, taskStateKey.PartitionKey, taskStateKey.RowKey);
             merge.Started = DateTimeOffset.UtcNow;
-            await table.UpdateEntityAsync(merge, ETag.All, TableUpdateMode.Merge);
+
+            try
+            {
+                await table.UpdateEntityAsync(merge, ETag.All, TableUpdateMode.Merge);
+                return true;
+            }
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+            {
+                return false;
+            }
         }
 
         public async Task SetMessageAsync(TaskStateKey taskStateKey, string message)
@@ -76,7 +85,7 @@ namespace NuGet.Insights.Worker
             taskState.UpdateETag(response);
         }
 
-        public async Task<List<TaskState>> AddAsync(string storageSuffix, string partitionKey, IReadOnlyList<TaskState> taskStates)
+        public async Task<List<TaskState>> GetOrAddAsync(string storageSuffix, string partitionKey, IReadOnlyList<TaskState> taskStates)
         {
             if (taskStates.Any(x => x.StorageSuffix != storageSuffix || x.PartitionKey != partitionKey))
             {

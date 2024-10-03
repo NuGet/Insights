@@ -125,7 +125,7 @@ namespace NuGet.Insights.Worker
         public async Task<List<TaskState>> InitializeTaskStatesAsync(string storageSuffix, string partitionKey, IReadOnlyList<string> rowKeys)
         {
             await _taskStateStorageService.InitializeAsync(storageSuffix);
-            return await _taskStateStorageService.AddAsync(
+            return await _taskStateStorageService.GetOrAddAsync(
                 storageSuffix,
                 partitionKey,
                 rowKeys.Select(r => new TaskState(storageSuffix, partitionKey, r)).ToList());

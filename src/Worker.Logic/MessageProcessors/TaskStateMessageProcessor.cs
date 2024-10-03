@@ -80,8 +80,21 @@ namespace NuGet.Insights.Worker
 
             if (!taskState.Started.HasValue)
             {
-                await _taskStateStorageService.SetStartedAsync(taskState.GetKey());
+                // If the task state disappears either while we are marking it as started or when we are pulling the
+                // latest state, we can complete this message and consider it a duplicate.
+
+                if (!await _taskStateStorageService.SetStartedAsync(taskState.GetKey()))
+                {
+                    _messageComplete.TrackValue(1, MessageTypeName, "true");
+                    return;
+                }
+
                 taskState = await _taskStateStorageService.GetAsync(taskState.GetKey());
+                if (taskState is null)
+                {
+                    _messageComplete.TrackValue(1, MessageTypeName, "true");
+                    return;
+                }
             }
 
             var result = await _processor.ProcessAsync(message, taskState, dequeueCount);

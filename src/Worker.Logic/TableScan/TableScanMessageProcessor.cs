@@ -267,7 +267,7 @@ namespace NuGet.Insights.Worker
             {
                 await _enqueuer.EnqueueAsync(tableScanMessages);
 
-                await _taskStateStorageService.AddAsync(
+                await _taskStateStorageService.GetOrAddAsync(
                     originalMessage.TaskStateKey.StorageSuffix,
                     originalMessage.TaskStateKey.PartitionKey,
                     taskStates);
