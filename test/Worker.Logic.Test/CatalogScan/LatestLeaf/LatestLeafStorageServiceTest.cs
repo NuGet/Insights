@@ -5,11 +5,13 @@ namespace NuGet.Insights.Worker
 {
     public class LatestLeafStorageServiceTest : BaseWorkerLogicIntegrationTest
     {
-        [Fact]
-        public async Task HandlesSingleItem()
+        [Theory]
+        [MemberData(nameof(StrategyTestData))]
+        public async Task HandlesSingleItem(EntityUpsertStrategy strategy)
         {
             // Arrange
             await InitializeStorageAsync();
+            MockStorage.Setup(x => x.Strategy).Returns(strategy);
 
             // Act
             await Target.AddAsync(GetItems(firstId: 0, lastId: 0, commitDay: 1, instanceLabel: "a"), Storage);
@@ -19,12 +21,14 @@ namespace NuGet.Insights.Worker
             Assert.Equal(new[] { "a" }, instanceLabels);
         }
 
-        [Fact]
-        public async Task HandlesMultiplePartitionKeys()
+        [Theory]
+        [MemberData(nameof(StrategyTestData))]
+        public async Task HandlesMultiplePartitionKeys(EntityUpsertStrategy strategy)
         {
             // Arrange
             ConfigureWorkerSettings = x => x.AppendResultStorageBucketCount = 3;
             await InitializeStorageAsync();
+            MockStorage.Setup(x => x.Strategy).Returns(strategy);
             var lastId = 20;
             await Target.AddAsync(GetItems(firstId: 0, lastId, commitDay: 1, instanceLabel: "b"), Storage);
 
@@ -40,11 +44,13 @@ namespace NuGet.Insights.Worker
             Assert.Equal(" a    aaaaa aa   aa  ", string.Join(string.Empty, instanceLabels2));
         }
 
-        [Fact]
-        public async Task MergesMixOfNewAndOldData()
+        [Theory]
+        [MemberData(nameof(StrategyTestData))]
+        public async Task MergesMixOfNewAndOldData(EntityUpsertStrategy strategy)
         {
             // Arrange
             await InitializeStorageAsync();
+            MockStorage.Setup(x => x.Strategy).Returns(strategy);
             await Target.AddAsync(GetItems(firstId: 0, lastId: 2, commitDay: 5, instanceLabel: "a"), Storage);
             await Target.AddAsync(GetItems(firstId: 3, lastId: 5, commitDay: 1, instanceLabel: "a"), Storage);
             await Target.AddAsync(GetItems(firstId: 6, lastId: 8, commitDay: 3, instanceLabel: "a"), Storage);
@@ -57,11 +63,13 @@ namespace NuGet.Insights.Worker
             Assert.Equal(new[] { "a", "a", "a", "b", "b", "b", "b", "b", "a" }, instanceLabels);
         }
 
-        [Fact]
-        public async Task KeepsExistingDataIfCommitTimestampIsOlder()
+        [Theory]
+        [MemberData(nameof(StrategyTestData))]
+        public async Task KeepsExistingDataIfCommitTimestampIsOlder(EntityUpsertStrategy strategy)
         {
             // Arrange
             await InitializeStorageAsync();
+            MockStorage.Setup(x => x.Strategy).Returns(strategy);
             await Target.AddAsync(GetItems(firstId: 0, lastId: 2, commitDay: 2, instanceLabel: "a"), Storage);
 
             // Act
@@ -72,11 +80,13 @@ namespace NuGet.Insights.Worker
             Assert.Equal(Enumerable.Repeat("a", 3), instanceLabels);
         }
 
-        [Fact]
-        public async Task KeepsExistingDataIfCommitTimestampMatches()
+        [Theory]
+        [MemberData(nameof(StrategyTestData))]
+        public async Task KeepsExistingDataIfCommitTimestampMatches(EntityUpsertStrategy strategy)
         {
             // Arrange
             await InitializeStorageAsync();
+            MockStorage.Setup(x => x.Strategy).Returns(strategy);
             await Target.AddAsync(GetItems(firstId: 0, lastId: 2, commitDay: 1, instanceLabel: "a"), Storage);
 
             // Act
@@ -87,11 +97,13 @@ namespace NuGet.Insights.Worker
             Assert.Equal(Enumerable.Repeat("a", 3), instanceLabels);
         }
 
-        [Fact]
-        public async Task TakesIncomingDataIfCommitTimestampIsNewer()
+        [Theory]
+        [MemberData(nameof(StrategyTestData))]
+        public async Task TakesIncomingDataIfCommitTimestampIsNewer(EntityUpsertStrategy strategy)
         {
             // Arrange
             await InitializeStorageAsync();
+            MockStorage.Setup(x => x.Strategy).Returns(strategy);
             await Target.AddAsync(GetItems(firstId: 0, lastId: 2, commitDay: 1, instanceLabel: "a"), Storage);
 
             // Act
@@ -102,11 +114,13 @@ namespace NuGet.Insights.Worker
             Assert.Equal(Enumerable.Repeat("b", 3), instanceLabels);
         }
 
-        [Fact]
-        public async Task FirstAfterBatchIsConflict()
+        [Theory]
+        [MemberData(nameof(StrategyTestData))]
+        public async Task FirstAfterBatchIsConflict(EntityUpsertStrategy strategy)
         {
             // Arrange
             await InitializeStorageAsync();
+            MockStorage.Setup(x => x.Strategy).Returns(strategy);
             await Target.AddAsync(GetItems(firstId: 100, lastId: 100, commitDay: 2, instanceLabel: "a"), Storage);
 
             // Act
@@ -117,11 +131,13 @@ namespace NuGet.Insights.Worker
             Assert.Equal(Enumerable.Repeat("b", 100).Concat(["a", "b", "b"]), instanceLabels);
         }
 
-        [Fact]
-        public async Task SecondAfterBatchIsConflict()
+        [Theory]
+        [MemberData(nameof(StrategyTestData))]
+        public async Task SecondAfterBatchIsConflict(EntityUpsertStrategy strategy)
         {
             // Arrange
             await InitializeStorageAsync();
+            MockStorage.Setup(x => x.Strategy).Returns(strategy);
             await Target.AddAsync(GetItems(firstId: 101, lastId: 101, commitDay: 2, instanceLabel: "a"), Storage);
 
             // Act
@@ -132,11 +148,13 @@ namespace NuGet.Insights.Worker
             Assert.Equal(Enumerable.Repeat("b", 100).Concat(["b", "a", "b"]), instanceLabels);
         }
 
-        [Fact]
-        public async Task ThirdAfterBatchIsConflict()
+        [Theory]
+        [MemberData(nameof(StrategyTestData))]
+        public async Task ThirdAfterBatchIsConflict(EntityUpsertStrategy strategy)
         {
             // Arrange
             await InitializeStorageAsync();
+            MockStorage.Setup(x => x.Strategy).Returns(strategy);
             await Target.AddAsync(GetItems(firstId: 102, lastId: 102, commitDay: 2, instanceLabel: "a"), Storage);
 
             // Act
@@ -147,18 +165,18 @@ namespace NuGet.Insights.Worker
             Assert.Equal(Enumerable.Repeat("b", 100).Concat(["b", "b", "a"]), instanceLabels);
         }
 
+        public static IEnumerable<object[]> StrategyNthLeafTestData =>
+            from strategy in Enum.GetValues<EntityUpsertStrategy>()
+            from id in Enumerable.Range(0, 7)
+            select new object[] { strategy, id };
+
         [Theory]
-        [InlineData(0)]
-        [InlineData(1)]
-        [InlineData(2)]
-        [InlineData(3)]
-        [InlineData(4)]
-        [InlineData(5)]
-        [InlineData(6)]
-        public async Task NthLeafIsConflict(int id)
+        [MemberData(nameof(StrategyNthLeafTestData))]
+        public async Task NthLeafIsConflict(EntityUpsertStrategy strategy, int id)
         {
             // Arrange
             await InitializeStorageAsync();
+            MockStorage.Setup(x => x.Strategy).Returns(strategy);
             await Target.AddAsync(GetItems(firstId: id, lastId: id, commitDay: 2, instanceLabel: "a"), Storage);
 
             // Act
@@ -169,11 +187,13 @@ namespace NuGet.Insights.Worker
             Assert.Equal(Enumerable.Repeat("b", id).Append("a").Concat(Enumerable.Repeat("b", 6 - id)), instanceLabels);
         }
 
-        [Fact]
-        public async Task ThirdAndFifthAreConflict()
+        [Theory]
+        [MemberData(nameof(StrategyTestData))]
+        public async Task ThirdAndFifthAreConflict(EntityUpsertStrategy strategy)
         {
             // Arrange
             await InitializeStorageAsync();
+            MockStorage.Setup(x => x.Strategy).Returns(strategy);
             await Target.AddAsync(GetItems(firstId: 2, lastId: 2, commitDay: 2, instanceLabel: "a"), Storage);
             await Target.AddAsync(GetItems(firstId: 4, lastId: 4, commitDay: 2, instanceLabel: "a"), Storage);
 
@@ -185,11 +205,13 @@ namespace NuGet.Insights.Worker
             Assert.Equal(new[] { "b", "b", "a", "b", "a", "b", "b" }, instanceLabels);
         }
 
-        [Fact]
-        public async Task LotsOfOldDuplicatesLessThanOnePage()
+        [Theory]
+        [MemberData(nameof(StrategyTestData))]
+        public async Task LotsOfOldDuplicatesLessThanOnePage(EntityUpsertStrategy strategy)
         {
             // Arrange
             await InitializeStorageAsync();
+            MockStorage.Setup(x => x.Strategy).Returns(strategy);
             await Target.AddAsync(GetItems(firstId: 0, lastId: 59, commitDay: 2, instanceLabel: "a"), Storage);
 
             // Act
@@ -200,11 +222,13 @@ namespace NuGet.Insights.Worker
             Assert.Equal(Enumerable.Repeat("a", 60), instanceLabels);
         }
 
-        [Fact]
-        public async Task LotsOfNewDuplicatesLessThanOnePage()
+        [Theory]
+        [MemberData(nameof(StrategyTestData))]
+        public async Task LotsOfNewDuplicatesLessThanOnePage(EntityUpsertStrategy strategy)
         {
             // Arrange
             await InitializeStorageAsync();
+            MockStorage.Setup(x => x.Strategy).Returns(strategy);
             await Target.AddAsync(GetItems(firstId: 0, lastId: 59, commitDay: 1, instanceLabel: "a"), Storage);
 
             // Act
@@ -215,11 +239,13 @@ namespace NuGet.Insights.Worker
             Assert.Equal(Enumerable.Repeat("b", 60), instanceLabels);
         }
 
-        [Fact]
-        public async Task LotsOfOldDuplicatesLessMoreOnePage()
+        [Theory]
+        [MemberData(nameof(StrategyTestData))]
+        public async Task LotsOfOldDuplicatesLessMoreOnePage(EntityUpsertStrategy strategy)
         {
             // Arrange
             await InitializeStorageAsync();
+            MockStorage.Setup(x => x.Strategy).Returns(strategy);
             await Target.AddAsync(GetItems(firstId: 0, lastId: 3199, commitDay: 2, instanceLabel: "a"), Storage);
 
             // Act
@@ -230,11 +256,13 @@ namespace NuGet.Insights.Worker
             Assert.Equal(Enumerable.Repeat("a", 3200), instanceLabels);
         }
 
-        [Fact]
-        public async Task LotsOfNewDuplicatesMoreThanOnePage()
+        [Theory]
+        [MemberData(nameof(StrategyTestData))]
+        public async Task LotsOfNewDuplicatesMoreThanOnePage(EntityUpsertStrategy strategy)
         {
             // Arrange
             await InitializeStorageAsync();
+            MockStorage.Setup(x => x.Strategy).Returns(strategy);
             await Target.AddAsync(GetItems(firstId: 0, lastId: 3199, commitDay: 1, instanceLabel: "a"), Storage);
 
             // Act
@@ -245,11 +273,13 @@ namespace NuGet.Insights.Worker
             Assert.Equal(Enumerable.Repeat("b", 3200), instanceLabels);
         }
 
-        [Fact]
-        public async Task OldInterleavedDuplicatesMoreThanOnePage()
+        [Theory]
+        [MemberData(nameof(StrategyTestData))]
+        public async Task OldInterleavedDuplicatesMoreThanOnePage(EntityUpsertStrategy strategy)
         {
             // Arrange
             await InitializeStorageAsync();
+            MockStorage.Setup(x => x.Strategy).Returns(strategy);
             await Target.AddAsync(GetItems(firstId: 1, lastId: 3199, commitDay: 1, instanceLabel: "a", skipBy: 2), Storage);
 
             // Act
@@ -260,11 +290,13 @@ namespace NuGet.Insights.Worker
             Assert.Equal(Enumerable.Repeat("b", 3200), instanceLabels);
         }
 
-        [Fact]
-        public async Task NewInterleavedDuplicatesMoreThanOnePage()
+        [Theory]
+        [MemberData(nameof(StrategyTestData))]
+        public async Task NewInterleavedDuplicatesMoreThanOnePage(EntityUpsertStrategy strategy)
         {
             // Arrange
             await InitializeStorageAsync();
+            MockStorage.Setup(x => x.Strategy).Returns(strategy);
             await Target.AddAsync(GetItems(firstId: 1, lastId: 3199, commitDay: 2, instanceLabel: "a", skipBy: 2), Storage);
 
             // Act
@@ -281,7 +313,8 @@ namespace NuGet.Insights.Worker
         public CatalogIndexScan IndexScan { get; }
         public CatalogPageScan PageScan { get; }
         public IReadOnlyDictionary<ICatalogLeafItem, int> LeafItemToRank { get; }
-        public ILatestPackageLeafStorage<CatalogLeafScan> Storage { get; private set; }
+        public Mock<ILatestPackageLeafStorage<CatalogLeafScan>> MockStorage { get; private set; }
+        public ILatestPackageLeafStorage<CatalogLeafScan> Storage => MockStorage?.Object;
 
         protected async Task InitializeStorageAsync()
         {
@@ -289,8 +322,25 @@ namespace NuGet.Insights.Worker
             await CatalogScanStorageService.InitializeLeafScanTableAsync(IndexScan.StorageSuffix);
             await CatalogScanStorageService.InsertAsync(IndexScan);
             await StorageFactory.InitializeAsync();
-            Storage = await StorageFactory.CreateAsync(PageScan, LeafItemToRank);
+
+            var storage = await StorageFactory.CreateAsync(PageScan, LeafItemToRank);
+            MockStorage = new Mock<ILatestPackageLeafStorage<CatalogLeafScan>>();
+            MockStorage.Setup(x => x.Table).Returns(() => storage.Table);
+            MockStorage.Setup(x => x.CommitTimestampColumnName).Returns(() => storage.CommitTimestampColumnName);
+            MockStorage.Setup(x => x.Strategy).Returns(() => storage.Strategy);
+
+            MockStorage
+                .Setup(x => x.MapAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<ICatalogLeafItem>()))
+                .Returns<string, string, ICatalogLeafItem>(storage.MapAsync);
+
+            MockStorage
+                .Setup(x => x.GetKey(It.IsAny<ICatalogLeafItem>()))
+                .Returns<ICatalogLeafItem>(storage.GetKey);
         }
+
+        public static IEnumerable<object[]> StrategyTestData => Enum
+            .GetValues<EntityUpsertStrategy>()
+            .Select(x => new object[] { x });
 
         public LatestLeafStorageServiceTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
