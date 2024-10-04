@@ -5,6 +5,8 @@ using Azure;
 using Azure.Data.Tables;
 using NuGet.Insights.StorageNoOpRetry;
 
+#nullable enable
+
 namespace NuGet.Insights.Worker
 {
     public class TaskStateStorageService
@@ -12,15 +14,18 @@ namespace NuGet.Insights.Worker
         public const string SingletonStorageSuffix = "";
 
         private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly EntityUpsertStorageService<TaskState, TaskState> _upsertStorageService;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
         public TaskStateStorageService(
             ServiceClientFactory serviceClientFactory,
+            EntityUpsertStorageService<TaskState, TaskState> upsertStorageService,
             ITelemetryClient telemetryClient,
             IOptions<NuGetInsightsWorkerSettings> options)
         {
             _serviceClientFactory = serviceClientFactory;
+            _upsertStorageService = upsertStorageService;
             _telemetryClient = telemetryClient;
             _options = options;
         }
@@ -92,21 +97,31 @@ namespace NuGet.Insights.Worker
                 throw new ArgumentException("All task states must have the same provided storage suffix and partition key.");
             }
 
-            var existing = await GetAllAsync(storageSuffix, partitionKey);
-            var existingRowKeys = existing.Select(x => x.RowKey).ToHashSet();
+            var entities = new List<TaskState>();
+            foreach (var group in taskStates.GroupBy(x => x.StorageSuffix))
+            {
+                var table = await GetTableAsync(group.Key);
+                var adapter = new UpsertAdapter(table);
+                entities.AddRange(await _upsertStorageService.AddAsync(group.ToList(), adapter));
+            }
 
-            // Remove row keys we don't care about at all.
-            existingRowKeys.IntersectWith(taskStates.Select(x => x.RowKey));
+            return entities;
+        }
 
-            var toInsert = taskStates
-                .Where(x => !existingRowKeys.Contains(x.RowKey))
-                .ToList();
-            await InsertAsync(toInsert);
+        private class UpsertAdapter : IEntityUpsertStorage<TaskState, TaskState>
+        {
+            public UpsertAdapter(TableClientWithRetryContext table)
+            {
+                Table = table;
+            }
 
-            existing.AddRange(toInsert);
-            existing.Sort((a, b) => string.CompareOrdinal(a.RowKey, b.RowKey));
-
-            return existing;
+            public IReadOnlyList<string>? Select => null;
+            public EntityUpsertStrategy Strategy => EntityUpsertStrategy.AddOptimistically;
+            public TableClientWithRetryContext Table { get; }
+            public ItemWithEntityKey<TaskState> GetItemFromRowKeyGroup(IGrouping<string, ItemWithEntityKey<TaskState>> group) => group.First();
+            public (string PartitionKey, string RowKey) GetKey(TaskState item) => (item.PartitionKey, item.RowKey);
+            public Task<TaskState> MapAsync(string partitionKey, string rowKey, TaskState item) => Task.FromResult(item);
+            public bool ShouldReplace(TaskState item, TaskState entity) => false;
         }
 
         public async Task<List<TaskState>> GetAllAsync(string storageSuffix, string partitionKey)
@@ -135,34 +150,13 @@ namespace NuGet.Insights.Worker
                 .ToListAsync(_telemetryClient.StartQueryLoopMetrics());
         }
 
-        private async Task InsertAsync(IReadOnlyList<TaskState> taskStates)
-        {
-            foreach (var group in taskStates.GroupBy(x => new { x.StorageSuffix, x.PartitionKey }))
-            {
-                var table = await GetTableAsync(group.Key.StorageSuffix);
-                var batch = new MutableTableTransactionalBatch(table);
-                foreach (var taskState in taskStates)
-                {
-                    if (batch.Count >= StorageUtility.MaxBatchSize)
-                    {
-                        await batch.SubmitBatchAsync();
-                        batch = new MutableTableTransactionalBatch(table);
-                    }
-
-                    batch.AddEntity(taskState);
-                }
-
-                await batch.SubmitBatchIfNotEmptyAsync();
-            }
-        }
-
         public async Task<int> GetCountLowerBoundAsync(string storageSuffix, string partitionKey)
         {
             return await (await GetTableAsync(storageSuffix))
                 .GetEntityCountLowerBoundAsync(partitionKey, _telemetryClient.StartQueryLoopMetrics());
         }
 
-        public async Task<TaskState> GetAsync(TaskStateKey key)
+        public async Task<TaskState?> GetAsync(TaskStateKey key)
         {
             var table = await GetTableAsync(key.StorageSuffix);
             return await table.GetEntityOrNullAsync<TaskState>(key.PartitionKey, key.RowKey);

@@ -149,6 +149,8 @@ namespace NuGet.Insights
             serviceCollection.AddSingleton<SymbolPackageFileService>();
             serviceCollection.AddSingleton<SymbolPackageClient>();
 
+            serviceCollection.AddSingleton(typeof(EntityUpsertStorageService<,>));
+
             serviceCollection.AddSingleton<ITelemetryClient, TelemetryClientWrapper>();
 
             serviceCollection.AddSingleton<TempStreamService>();

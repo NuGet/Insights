@@ -6,6 +6,8 @@ using Azure.Data.Tables;
 using Azure.Data.Tables.Models;
 using NuGet.Insights.StorageNoOpRetry;
 
+#nullable enable
+
 namespace NuGet.Insights
 {
     public static class TableExtensions
@@ -17,11 +19,11 @@ namespace NuGet.Insights
                   && string.Compare(x.Name, prefix + char.MaxValue, StringComparison.Ordinal) <= 0);
         }
 
-        public static async Task<T> GetEntityOrNullAsync<T>(
+        public static async Task<T?> GetEntityOrNullAsync<T>(
             this TableClientWithRetryContext table,
             string partitionKey,
             string rowKey,
-            IEnumerable<string> select = null) where T : class, ITableEntity, new()
+            IEnumerable<string>? select = null) where T : class, ITableEntity, new()
         {
             try
             {
@@ -38,7 +40,7 @@ namespace NuGet.Insights
             try
             {
                 await table
-                    .QueryAsync<TableEntity>(x => true, maxPerPage: 1, select: new[] { StorageUtility.PartitionKey })
+                    .QueryAsync<TableEntity>(x => true, maxPerPage: 1, select: [StorageUtility.PartitionKey])
                     .FirstOrDefaultAsync();
                 return true;
             }
@@ -87,7 +89,7 @@ namespace NuGet.Insights
                     .QueryAsync(
                         filter,
                         maxPerPage: 1000,
-                        select: new[] { StorageUtility.RowKey })
+                        select: [StorageUtility.RowKey])
                     .AsPages()
                     .GetAsyncEnumerator();
 
@@ -108,7 +110,7 @@ namespace NuGet.Insights
         /// </summary>
         public static void UpdateETag(this ITableEntity entity, Response response)
         {
-            entity.ETag = response.Headers.ETag.Value;
+            entity.ETag = response.Headers.ETag!.Value;
         }
     }
 }

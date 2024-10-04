@@ -95,9 +95,9 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        public class TheAddAsyncMethod : TaskStateStorageServiceTest
+        public class TheGetOrAddAsyncMethod : TaskStateStorageServiceTest
         {
-            public TheAddAsyncMethod(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+            public TheGetOrAddAsyncMethod(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
             {
             }
 
@@ -365,6 +365,9 @@ namespace NuGet.Insights.Worker
         public string PartitionKey { get; }
         public TaskStateStorageService Target => new TaskStateStorageService(
             _fixture.GetServiceClientFactory(_output.GetLoggerFactory()),
+            new EntityUpsertStorageService<TaskState, TaskState>(
+                _output.GetTelemetryClient(),
+                _output.GetLogger<EntityUpsertStorageService<TaskState, TaskState>>()),
             _output.GetTelemetryClient(),
             _fixture.Options.Object);
 

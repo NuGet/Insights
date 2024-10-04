@@ -61,7 +61,6 @@ namespace NuGet.Insights.Worker
 
             serviceCollection.AddSingleton<TableScanService>();
             serviceCollection.AddSingleton(typeof(TableScanDriverFactory<>));
-            serviceCollection.AddSingleton(typeof(EntityUpsertStorageService<,>));
             serviceCollection.AddSingleton(typeof(LatestLeafStorageService<>));
 
             serviceCollection.AddSingleton<WorkflowStorageService>();

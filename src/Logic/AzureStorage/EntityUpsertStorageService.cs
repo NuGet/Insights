@@ -4,9 +4,10 @@
 using Azure;
 using Azure.Data.Tables;
 using NuGet.Insights.StorageNoOpRetry;
-using static NuGet.Insights.StorageUtility;
 
-namespace NuGet.Insights.Worker
+#nullable enable
+
+namespace NuGet.Insights
 {
     public enum EntityUpsertStrategy
     {
@@ -39,7 +40,7 @@ namespace NuGet.Insights.Worker
         (string PartitionKey, string RowKey) GetKey(TItem item);
         bool ShouldReplace(TItem item, TEntity entity);
         ItemWithEntityKey<TItem> GetItemFromRowKeyGroup(IGrouping<string, ItemWithEntityKey<TItem>> group);
-        IReadOnlyList<string> Select { get; }
+        IReadOnlyList<string>? Select { get; }
         EntityUpsertStrategy Strategy { get; }
         TableClientWithRetryContext Table { get; }
     }
@@ -164,7 +165,7 @@ namespace NuGet.Insights.Worker
         }
 
         private static List<(string PartitionKey, List<ItemWithEntityKey<TItem>> Items)> GroupItems(
-            IReadOnlyList<TItem> items,
+            IEnumerable<TItem> items,
             IEntityUpsertStorage<TItem, TEntity> storage)
         {
             return items
@@ -277,7 +278,7 @@ namespace NuGet.Insights.Worker
                     remaining.Add(itemWithKey);
                 }
 
-                if (state.Batch.Count >= MaxBatchSize)
+                if (state.Batch.Count >= StorageUtility.MaxBatchSize)
                 {
                     await SubmitBatchOptimisticallyAsync(state, partitionKey);
                 }
@@ -294,7 +295,7 @@ namespace NuGet.Insights.Worker
                 state.Batch.AddEntity(state.RowKeyToEntity[itemWithKey.RowKey]);
                 state.BatchItems.Add(itemWithKey);
 
-                if (state.Batch.Count >= MaxBatchSize)
+                if (state.Batch.Count >= StorageUtility.MaxBatchSize)
                 {
                     await SubmitBatchOptimisticallyAsync(state, partitionKey);
                 }
@@ -432,7 +433,7 @@ namespace NuGet.Insights.Worker
                     batch.AddEntity(entity);
                 }
 
-                if (batch.Count >= MaxBatchSize)
+                if (batch.Count >= StorageUtility.MaxBatchSize)
                 {
                     await batch.SubmitBatchAsync();
                 }
@@ -511,8 +512,8 @@ namespace NuGet.Insights.Worker
             using var metrics = _telemetryClient.StartQueryLoopMetrics(dimension1Name: "EntityType", _entityType);
 
             var rowKeyToItemWithKey = new Dictionary<string, ItemWithEntityKey<TItem>>();
-            string minRowKey = null;
-            string maxRowKey = null;
+            string? minRowKey = null;
+            string? maxRowKey = null;
             foreach (var itemWithKey in itemsWithKeys)
             {
                 rowKeyToItemWithKey.Add(itemWithKey.RowKey, itemWithKey);
@@ -539,7 +540,7 @@ namespace NuGet.Insights.Worker
             var query = storage.Table
                 .QueryAsync(
                     filter,
-                    maxPerPage: MaxTakeCount,
+                    maxPerPage: StorageUtility.MaxTakeCount,
                     select: storage.Select)
                 .AsPages();
 
