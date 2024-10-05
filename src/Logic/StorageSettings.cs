@@ -19,6 +19,12 @@ namespace NuGet.Insights
         public TimeSpan ServiceClientRefreshPeriod { get; set; } = TimeSpan.FromMinutes(30);
         public TimeSpan ServiceClientSasDuration { get; set; } = TimeSpan.FromHours(12);
 
+        /// <summary>
+        /// This defaults to false because credential caching is typically done inside the service clients, which are
+        /// long lived via <see cref="ServiceClientFactory"/> and similar. Additional caching is not needed.
+        /// </summary>
+        public bool UseAccessTokenCaching { get; set; } = false;
+
         public int AzureServiceClientMaxRetries { get; set; } = 2;
 
         /// <summary>

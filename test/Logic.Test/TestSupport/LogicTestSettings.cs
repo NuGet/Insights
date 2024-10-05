@@ -66,6 +66,8 @@ namespace NuGet.Insights
             settings.StorageClientCertificateKeyVault = StorageClientCertificateKeyVaultEnv;
             settings.StorageClientCertificateKeyVaultCertificateName = StorageClientCertificateKeyVaultCertificateNameEnv;
 
+            settings.UseAccessTokenCaching = true;
+
             // if no settings are provided, use in-memory storage
             if (UseMemoryStorageEnv.GetValueOrDefault(true)
                 && !UseDevelopmentStorageEnv.GetValueOrDefault(false)
