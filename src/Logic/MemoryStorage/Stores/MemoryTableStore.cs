@@ -234,7 +234,7 @@ namespace NuGet.Insights.MemoryStorage
             {
                 if (!_exists)
                 {
-                    return new(StorageResultType.DoesNotExist);
+                    return new(StorageResultType.ContainerDoesNotExist);
                 }
 
                 if (!_entityData.TryGetValue((partitionKey, rowKey), out var entityData))

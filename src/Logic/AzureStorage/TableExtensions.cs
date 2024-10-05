@@ -39,14 +39,12 @@ namespace NuGet.Insights
         {
             try
             {
-                await table
-                    .QueryAsync<TableEntity>(x => true, maxPerPage: 1, select: [StorageUtility.PartitionKey])
-                    .FirstOrDefaultAsync();
+                await table.GetEntityAsync<TableEntity>("does-table-exist", "", select: []);
                 return true;
             }
             catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
             {
-                return false;
+                return ex.ErrorCode != TableErrorCode.TableNotFound.ToString();
             }
         }
 

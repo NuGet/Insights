@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Azure;
+using Azure.Data.Tables.Models;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Queues;
@@ -38,7 +39,7 @@ namespace NuGet.Insights
                 () => tableClient.ExistsAsync(),
                 () => tableClient.CreateIfNotExistsAsync(),
                 retry,
-                "TableBeingDeleted");
+                TableErrorCode.TableBeingDeleted.ToString());
         }
 
         private static async Task CreateIfNotExistsAsync(

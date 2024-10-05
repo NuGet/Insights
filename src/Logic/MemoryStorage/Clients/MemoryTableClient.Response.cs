@@ -158,7 +158,16 @@ namespace NuGet.Insights.MemoryStorage
             var result = _store.GetEntity<T>(partitionKey, rowKey, select?.ToList());
             return result.Type switch
             {
-                StorageResultType.DoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
+                StorageResultType.ContainerDoesNotExist => throw new RequestFailedException(
+                    status: (int)HttpStatusCode.NotFound,
+                    message: string.Empty,
+                    TableErrorCode.TableNotFound.ToString(),
+                    innerException: null),
+                StorageResultType.DoesNotExist => throw new RequestFailedException(
+                    status: (int)HttpStatusCode.NotFound,
+                    message: string.Empty,
+                    TableErrorCode.EntityNotFound.ToString(),
+                    innerException: null),
                 StorageResultType.Success => Response.FromValue(result.Value, new MemoryResponse(HttpStatusCode.OK)),
                 _ => throw new NotImplementedException("Unexpected result type: " + result.Type),
             };

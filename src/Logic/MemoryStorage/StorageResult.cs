@@ -11,6 +11,7 @@ namespace NuGet.Insights.MemoryStorage
         BlockedByLease,
         BlockedByDifferentLease,
         DoesNotExist,
+        ContainerDoesNotExist,
         AlreadyExists,
         HasNoLease,
         ETagMismatch,
