@@ -46,3 +46,18 @@ Patches:
   - [Trim unneeded code from Utils.cs to allow just simple tag splitting](0004-Remove-unused-code-from-Utils.cs.patch)
   - [Remove unnecessary usings in Utils.cs](0005-Remove-unnecessary-usings-in-Forks-Utils.cs.patch)
 
+# [Azure/azure-sdk-for-net](https://github.com/Azure/azure-sdk-for-net)
+
+Copied license: [`LICENSE.txt`](Azure/azure-sdk-for-net/LICENSE.txt)
+
+Copied revision: [`3288d385d85106150bb697d2b37e27f4cfd57d91`](https://github.com/Azure/azure-sdk-for-net/tree/3288d385d85106150bb697d2b37e27f4cfd57d91)
+
+Files:
+  - [`sdk/core/Azure.Core/src/Pipeline/BearerTokenAuthenticationPolicy.cs`](Azure/azure-sdk-for-net/sdk/core/Azure.Core/src/Pipeline/BearerTokenAuthenticationPolicy.cs)
+  - [`sdk/core/Azure.Core/src/Shared/Argument.cs`](Azure/azure-sdk-for-net/sdk/core/Azure.Core/src/Shared/Argument.cs)
+  - [`sdk/core/Azure.Core/src/Shared/AuthorizationChallengeParser.cs`](Azure/azure-sdk-for-net/sdk/core/Azure.Core/src/Shared/AuthorizationChallengeParser.cs)
+  - [`sdk/core/Azure.Core/src/Shared/TaskExtensions.cs`](Azure/azure-sdk-for-net/sdk/core/Azure.Core/src/Shared/TaskExtensions.cs)
+
+Patches:
+  - [Make AccessTokenCache reusable, use ILogger instead of Azure event source, cache AccessToken instead of HeaderValue, use StringComparison.Ordinal for string.Equals](0006-Make-AccessTokenCache-reusable.patch)
+

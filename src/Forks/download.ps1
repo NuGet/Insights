@@ -1,5 +1,5 @@
 $files = [ordered]@{
-    "dotnet/aspnetcore"  = @{
+    "dotnet/aspnetcore"       = @{
         License  = "LICENSE.txt";
         Files    = @(
             "src/Shared/ThrowHelpers/ArgumentNullThrowHelper.cs",
@@ -13,7 +13,7 @@ $files = [ordered]@{
             }
         )
     };
-    "NuGet/NuGetGallery" = @{
+    "NuGet/NuGetGallery"      = @{
         License  = "LICENSE.txt"
         Files    = @(
             "src/Catalog/Helpers/Utils.cs",
@@ -53,6 +53,22 @@ $files = [ordered]@{
             @{
                 Description = "Remove unnecessary usings in Utils.cs"
                 Path        = "0005-Remove-unnecessary-usings-in-Forks-Utils.cs.patch"
+            }
+        )
+    };
+    "Azure/azure-sdk-for-net" = @{
+        License  = "LICENSE.txt"
+        Files    = @(
+            "sdk/core/Azure.Core/src/Pipeline/BearerTokenAuthenticationPolicy.cs",
+            "sdk/core/Azure.Core/src/Shared/Argument.cs",
+            "sdk/core/Azure.Core/src/Shared/AuthorizationChallengeParser.cs",
+            "sdk/core/Azure.Core/src/Shared/TaskExtensions.cs"
+        );
+        Revision = "3288d385d85106150bb697d2b37e27f4cfd57d91";
+        Patches  = @(
+            @{
+                Description = "Make AccessTokenCache reusable, use ILogger instead of Azure event source, cache AccessToken instead of HeaderValue, use StringComparison.Ordinal for string.Equals"
+                Path        = "0006-Make-AccessTokenCache-reusable.patch"
             }
         )
     };
