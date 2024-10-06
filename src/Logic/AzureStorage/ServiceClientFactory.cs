@@ -223,14 +223,16 @@ namespace NuGet.Insights
                     tokenCredential = new ClientCertificateCredential(
                         settings.StorageClientTenantId,
                         settings.StorageClientApplicationId,
-                        certificate);
+                        certificate,
+                        new ClientCertificateCredentialOptions { SendCertificateChain = true });
                     break;
 
                 case StorageCredentialType.ClientCertificateCredentialFromPath:
                     tokenCredential = new ClientCertificateCredential(
                         settings.StorageClientTenantId,
                         settings.StorageClientApplicationId,
-                        settings.StorageClientCertificatePath);
+                        settings.StorageClientCertificatePath,
+                        new ClientCertificateCredentialOptions { SendCertificateChain = true });
                     break;
 
                 case StorageCredentialType.StorageAccessKey:
