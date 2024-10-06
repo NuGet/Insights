@@ -51,12 +51,16 @@ Here's are some Azure PowerShell (Az) commands you can do to create a storage ac
 with the proper permissions.
 
 ```powershell
-$resourceGroupName = "jver-insights-tests"
-$storageAccountName = "jverinsightstests"
-$region = "eastus"
+$resourceGroupName = "joel-insights-tests"
+$storageAccountName = "joelinsightstests"
+$region = "northcentralus"
 $signInName = (Get-AzContext).Account.Id
 
-# create the storage account, usually takes less than 1 minutes
+# create the resource group, completes very quickly
+New-AzResourceGroup -Name $resourceGroupName `
+  -Location $region
+
+# create the storage account, usually takes less than 1 minute
 New-AzStorageAccount -ResourceGroupName $resourceGroupName `
   -Name $storageAccountName `
   -Location $region `
@@ -94,14 +98,18 @@ foreach ($pair in $settings.GetEnumerator()) {
 This is the same as the previous option but also set up the tests for ingesting into Kusto.
 
 ```powershell
-$resourceGroupName = "jver-insights-tests"
-$storageAccountName = "jverinsightstests"
-$kustoClusterName = "jverinsightstests"
-$kustoDatabaseName = "JverTestDb"
-$region = "eastus"
+$resourceGroupName = "joel-insights-tests"
+$storageAccountName = "joelinsightstests"
+$kustoClusterName = "joelinsightstests"
+$kustoDatabaseName = "JoelTestDb"
+$region = "northcentralus"
 $signInName = (Get-AzContext).Account.Id
 
-# create the storage account, usually takes less than 1 minutes
+# create the resource group, completes very quickly
+New-AzResourceGroup -Name $resourceGroupName `
+  -Location $region
+
+# create the storage account, usually takes less than 1 minute
 New-AzStorageAccount -ResourceGroupName $resourceGroupName `
   -Name $storageAccountName `
   -Location $region `
