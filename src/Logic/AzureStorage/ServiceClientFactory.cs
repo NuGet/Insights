@@ -6,6 +6,7 @@ using Azure.Core;
 using Azure.Core.Pipeline;
 using Azure.Data.Tables;
 using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
@@ -203,7 +204,7 @@ namespace NuGet.Insights
             switch (storageCredentialType)
             {
                 case StorageCredentialType.DefaultAzureCredential:
-                    tokenCredential = CredentialCache.DefaultAzureCredential;
+                    tokenCredential = new DefaultAzureCredential();
                     break;
 
                 case StorageCredentialType.UserAssignedManagedIdentityCredential:
@@ -212,23 +213,24 @@ namespace NuGet.Insights
                     break;
 
                 case StorageCredentialType.ClientCertificateCredentialFromKeyVault:
-                    tokenCredential = await CredentialCache.GetLazyClientCertificateCredentialTask(
+                    var secretReader = new SecretClient(
+                        new Uri(settings.StorageClientCertificateKeyVault),
+                        new DefaultAzureCredential());
+                    KeyVaultSecret certificateContent = await secretReader.GetSecretAsync(
+                        settings.StorageClientCertificateKeyVaultCertificateName);
+                    var certificateBytes = Convert.FromBase64String(certificateContent.Value);
+                    var certificate = new X509Certificate2(certificateBytes);
+                    tokenCredential = new ClientCertificateCredential(
                         settings.StorageClientTenantId,
                         settings.StorageClientApplicationId,
-                        () => CredentialCache.GetLazyCertificateTask(
-                            settings.StorageClientCertificateKeyVault,
-                            settings.StorageClientCertificateKeyVaultCertificateName).Value).Value;
+                        certificate);
                     break;
 
                 case StorageCredentialType.ClientCertificateCredentialFromPath:
-                    tokenCredential = await CredentialCache.GetLazyClientCertificateCredentialTask(
+                    tokenCredential = new ClientCertificateCredential(
                         settings.StorageClientTenantId,
                         settings.StorageClientApplicationId,
-                        () =>
-                        {
-                            var certificate = new X509Certificate2(settings.StorageClientCertificatePath);
-                            return Task.FromResult(certificate);
-                        }).Value;
+                        settings.StorageClientCertificatePath);
                     break;
 
                 case StorageCredentialType.StorageAccessKey:
@@ -246,6 +248,11 @@ namespace NuGet.Insights
 
                 default:
                     throw new NotImplementedException();
+            }
+
+            if (tokenCredential is not null)
+            {
+                tokenCredential = CachingTokenCredential.MaybeWrap(tokenCredential, loggerFactory, settings);
             }
 
             // build the client options

@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Kusto.Data.Common;
+using NuGet.Insights.Kusto;
 
 namespace NuGet.Insights.Worker.KustoIngestion
 {
@@ -10,7 +10,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         private readonly KustoIngestionStorageService _storageService;
         private readonly CsvRecordContainers _csvRecordContainers;
         private readonly IMessageEnqueuer _messageEnqueuer;
-        private readonly ICslAdminProvider _kustoAdminClient;
+        private readonly CachingKustoClientFactory _kustoClientFactory;
         private readonly KustoDataValidator _kustoDataValidator;
         private readonly FanOutRecoveryService _fanOutRecoveryService;
         private readonly ITelemetryClient _telemetryClient;
@@ -21,7 +21,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             KustoIngestionStorageService storageService,
             CsvRecordContainers csvRecordContainers,
             IMessageEnqueuer messageEnqueuer,
-            ICslAdminProvider kustoAdminClient,
+            CachingKustoClientFactory kustoClientFactory,
             KustoDataValidator kustoDataValidator,
             FanOutRecoveryService fanOutRecoveryService,
             ITelemetryClient telemetryClient,
@@ -31,7 +31,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             _storageService = storageService;
             _csvRecordContainers = csvRecordContainers;
             _messageEnqueuer = messageEnqueuer;
-            _kustoAdminClient = kustoAdminClient;
+            _kustoClientFactory = kustoClientFactory;
             _kustoDataValidator = kustoDataValidator;
             _fanOutRecoveryService = fanOutRecoveryService;
             _telemetryClient = telemetryClient;
@@ -339,7 +339,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
         private async Task ExecuteKustoCommandAsync(string command)
         {
             _logger.LogInformation("Executing Kusto command: {Command}", command);
-            using (await _kustoAdminClient.ExecuteControlCommandAsync(_options.Value.KustoDatabaseName, command))
+            var adminClient = await _kustoClientFactory.GetAdminClientAsync();
+            using (await adminClient.ExecuteControlCommandAsync(_options.Value.KustoDatabaseName, command))
             {
             }
         }

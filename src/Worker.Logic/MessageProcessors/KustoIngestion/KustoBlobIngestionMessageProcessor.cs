@@ -4,6 +4,7 @@
 using Azure.Data.Tables;
 using Kusto.Data.Common;
 using Kusto.Ingest;
+using NuGet.Insights.Kusto;
 using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights.Worker.KustoIngestion
@@ -14,7 +15,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly CsvRecordContainers _csvRecordContainers;
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly IKustoQueuedIngestClient _kustoQueuedIngestClient;
+        private readonly CachingKustoClientFactory _kustoClientFactory;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -25,7 +26,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             AutoRenewingStorageLeaseService leaseService,
             CsvRecordContainers csvRecordContainers,
             ServiceClientFactory serviceClientFactory,
-            IKustoQueuedIngestClient kustoQueuedIngestClient,
+            CachingKustoClientFactory kustoClientFactory,
             IMessageEnqueuer messageEnqueuer,
             ITelemetryClient telemetryClient,
             IOptions<NuGetInsightsWorkerSettings> options,
@@ -35,7 +36,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             _leaseService = leaseService;
             _csvRecordContainers = csvRecordContainers;
             _serviceClientFactory = serviceClientFactory;
-            _kustoQueuedIngestClient = kustoQueuedIngestClient;
+            _kustoClientFactory = kustoClientFactory;
             _messageEnqueuer = messageEnqueuer;
             _telemetryClient = telemetryClient;
             _options = options;
@@ -91,7 +92,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     blob.ContainerName,
                     blob.BlobName,
                     tempTableName);
-                var result = await _kustoQueuedIngestClient.IngestFromStorageAsync(
+                var ingestClient = await _kustoClientFactory.GetIngestClientAsync();
+                var result = await ingestClient.IngestFromStorageAsync(
                     blobUrlWithSas.AbsoluteUri,
                     ingestionProperties,
                     sourceOptions);

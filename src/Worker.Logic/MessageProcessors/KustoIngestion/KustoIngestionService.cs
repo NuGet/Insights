@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Azure;
-using Kusto.Data.Common;
+using NuGet.Insights.Kusto;
 
 namespace NuGet.Insights.Worker.KustoIngestion
 {
@@ -12,7 +12,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly CsvRecordContainers _csvRecordContainers;
-        private readonly ICslAdminProvider _kustoAdminClient;
+        private readonly CachingKustoClientFactory _kustoClientFactory;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<KustoIngestionService> _logger;
 
@@ -21,7 +21,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             IMessageEnqueuer messageEnqueuer,
             AutoRenewingStorageLeaseService leaseService,
             CsvRecordContainers csvRecordContainers,
-            ICslAdminProvider kustoAdminClient,
+            CachingKustoClientFactory kustoClientFactory,
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<KustoIngestionService> logger)
         {
@@ -29,7 +29,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             _messageEnqueuer = messageEnqueuer;
             _leaseService = leaseService;
             _csvRecordContainers = csvRecordContainers;
-            _kustoAdminClient = kustoAdminClient;
+            _kustoClientFactory = kustoClientFactory;
             _options = options;
             _logger = logger;
         }
@@ -112,7 +112,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
         private async Task ExecuteKustoCommandAsync(string command)
         {
             _logger.LogInformation("Executing Kusto command: {Command}", command);
-            using (await _kustoAdminClient.ExecuteControlCommandAsync(_options.Value.KustoDatabaseName, command))
+            var adminClient = await _kustoClientFactory.GetAdminClientAsync();
+            using (await adminClient.ExecuteControlCommandAsync(_options.Value.KustoDatabaseName, command))
             {
             }
         }

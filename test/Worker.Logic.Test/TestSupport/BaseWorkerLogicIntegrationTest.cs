@@ -19,6 +19,7 @@ using MessagePack;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Linq;
+using NuGet.Insights.Kusto;
 using NuGet.Insights.ReferenceTracking;
 using NuGet.Insights.StorageNoOpRetry;
 using NuGet.Insights.Worker.BuildVersionSet;
@@ -1062,11 +1063,12 @@ namespace NuGet.Insights.Worker
                 fileName: fileName ?? "subject-to-owner.json");
         }
 
-        private static ICslAdminProvider GetKustoAdminClient()
+        private static async Task<ICslAdminProvider> GetKustoAdminClientAsync(ILoggerFactory loggerFactory)
         {
-            var connectionStringBuilder = ServiceCollectionExtensions.GetKustoConnectionStringBuilder(
-                new NuGetInsightsWorkerSettings().WithTestKustoSettings(),
-                addIngest: false);
+            var connectionStringBuilder = await CachingKustoClientFactory.GetKustoConnectionStringBuilderAsync(
+                addIngest: false,
+                new NuGetInsightsWorkerSettings().WithTestStorageSettings().WithTestKustoSettings(),
+                loggerFactory);
 
             return KustoClientFactory.CreateCslAdminProvider(connectionStringBuilder);
         }
@@ -1081,7 +1083,7 @@ namespace NuGet.Insights.Worker
                     attempts++;
                     var tables = await GetKustoTablesAsync(shouldDelete);
 
-                    using var adminClient = GetKustoAdminClient();
+                    using var adminClient = await GetKustoAdminClientAsync(Output.GetLoggerFactory());
                     foreach (var table in tables)
                     {
                         Logger.LogInformation("Deleting Kusto table: {Name}", table);
@@ -1104,7 +1106,7 @@ namespace NuGet.Insights.Worker
                 shouldInclude = x => x.StartsWith(StoragePrefix, StringComparison.Ordinal);
             }
 
-            using var adminClient = GetKustoAdminClient();
+            using var adminClient = await GetKustoAdminClientAsync(Output.GetLoggerFactory());
 
             var tables = new List<string>();
             using (var reader = await adminClient.ExecuteControlCommandAsync(Options.Value.KustoDatabaseName, ".show tables"))

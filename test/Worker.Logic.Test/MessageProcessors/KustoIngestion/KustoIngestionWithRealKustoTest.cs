@@ -3,6 +3,7 @@
 
 using Kusto.Cloud.Platform.Data;
 using Kusto.Data.Common;
+using NuGet.Insights.Kusto;
 
 namespace NuGet.Insights.Worker.KustoIngestion
 {
@@ -65,8 +66,9 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 x => containers.GetKustoTableName(x),
                 x => containers.GetDefaultKustoTableName(x));
 
-            var queryProvider = Host.Services.GetRequiredService<ICslQueryProvider>();
-            using var reader = await queryProvider.ExecuteQueryAsync(
+            var clientFactory = Host.Services.GetRequiredService<CachingKustoClientFactory>();
+            var queryClient = await clientFactory.GetQueryClientAsync();
+            using var reader = await queryClient.ExecuteQueryAsync(
                 Options.Value.KustoDatabaseName,
                 table,
                 new ClientRequestProperties());

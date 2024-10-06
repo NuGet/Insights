@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Kusto.Data.Common;
+using NuGet.Insights.Kusto;
 using NuGet.Insights.Worker.CatalogDataToCsv;
 
 namespace NuGet.Insights.Worker.KustoIngestion
 {
     public class KustoDataValidator
     {
-        private readonly ICslQueryProvider _queryProvider;
+        private readonly CachingKustoClientFactory _kustoClientFactory;
         private readonly IReadOnlyList<IKustoValidationProvider> _validationProviders;
         private readonly IReadOnlyDictionary<Type, ICsvRecordStorage> _typeToStorage;
         private readonly CsvRecordContainers _containers;
@@ -17,7 +18,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
         private readonly ILogger<KustoDataValidator> _logger;
 
         public KustoDataValidator(
-            ICslQueryProvider queryProvider,
+            CachingKustoClientFactory kustoClientFactory,
             IEnumerable<IKustoValidationProvider> validationProviders,
             IEnumerable<ICsvRecordStorage> csvResultStorage,
             CsvRecordContainers containers,
@@ -25,7 +26,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             ITelemetryClient telemetryClient,
             ILogger<KustoDataValidator> logger)
         {
-            _queryProvider = queryProvider;
+            _kustoClientFactory = kustoClientFactory;
             _validationProviders = validationProviders.ToList();
             _typeToStorage = csvResultStorage.ToDictionary(x => x.RecordType);
             _containers = containers;
@@ -92,7 +93,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 )
                 """;
 
-            using var dataReader = await _queryProvider.ExecuteQueryAsync(
+            var queryClient = await _kustoClientFactory.GetQueryClientAsync();
+            using var dataReader = await queryClient.ExecuteQueryAsync(
                 _options.Value.KustoDatabaseName,
                 query,
                 new ClientRequestProperties { ClientRequestId = clientRequestId });
@@ -140,7 +142,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 "Getting table list in Kusto with client request ID {ClientRequestId}.",
                 clientRequestId);
 
-            using var dataReader = await _queryProvider.ExecuteQueryAsync(
+            var queryClient = await _kustoClientFactory.GetQueryClientAsync();
+            using var dataReader = await queryClient.ExecuteQueryAsync(
                 _options.Value.KustoDatabaseName,
                 ".show tables | project TableName",
                 new ClientRequestProperties { ClientRequestId = clientRequestId });
@@ -179,7 +182,8 @@ namespace NuGet.Insights.Worker.KustoIngestion
                             validation.Label,
                             clientRequestId);
                         var stopwatch = Stopwatch.StartNew();
-                        using var dataReader = await _queryProvider.ExecuteQueryAsync(
+                        var queryClient = await _kustoClientFactory.GetQueryClientAsync();
+                        using var dataReader = await queryClient.ExecuteQueryAsync(
                             _options.Value.KustoDatabaseName,
                             validation.Query,
                             new ClientRequestProperties { ClientRequestId = clientRequestId });
