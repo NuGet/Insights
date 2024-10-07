@@ -34,5 +34,12 @@ namespace NuGet.Insights.Worker
         /// package.
         /// </summary>
         static abstract IEqualityComparer<T> GetKeyComparer();
+
+        /// <summary>
+        /// Get a list of field names that operate as a natural, composite key for the record. This list of fields should
+        /// be the same as the fields that are used in the comparer returned by the <see cref="GetKeyComparer"/> method.
+        /// </summary>
+        /// <returns></returns>
+        static abstract IReadOnlyList<string> KeyFields { get; }
     }
 }

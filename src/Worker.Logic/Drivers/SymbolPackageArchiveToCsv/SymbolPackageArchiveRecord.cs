@@ -23,6 +23,8 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
 
         public static IEqualityComparer<SymbolPackageArchiveRecord> GetKeyComparer() => IdentityComparer<SymbolPackageArchiveRecord>.Instance;
 
+        public static IReadOnlyList<string> KeyFields { get; } = IdentityKeyField;
+
         public static List<SymbolPackageArchiveRecord> Prune(List<SymbolPackageArchiveRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

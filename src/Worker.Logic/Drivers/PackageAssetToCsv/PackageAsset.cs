@@ -52,6 +52,8 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
         public static IEqualityComparer<PackageAsset> GetKeyComparer() => KeyComparer.Instance;
 
+        public static IReadOnlyList<string> KeyFields { get; } = [nameof(Identity), nameof(Path)];
+
         public static List<PackageAsset> Prune(List<PackageAsset> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

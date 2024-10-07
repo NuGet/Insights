@@ -47,6 +47,8 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 
         public static IEqualityComparer<TestSubjectRecord> GetKeyComparer() => KeyComparer.Instance;
 
+        public static IReadOnlyList<string> KeyFields { get; } = [nameof(Id)];
+
         public class KeyComparer : IEqualityComparer<TestSubjectRecord>
         {
             public static KeyComparer Instance { get; } = new();

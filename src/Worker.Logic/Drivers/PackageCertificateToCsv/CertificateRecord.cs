@@ -257,6 +257,8 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
         public static IEqualityComparer<CertificateRecord> GetKeyComparer() => KeyComparer.Instance;
 
+        public static IReadOnlyList<string> KeyFields { get; } = [nameof(Fingerprint)];
+
         public class KeyComparer : IEqualityComparer<CertificateRecord>
         {
             public static KeyComparer Instance { get; } = new();
