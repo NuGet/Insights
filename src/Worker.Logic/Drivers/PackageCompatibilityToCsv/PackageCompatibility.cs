@@ -51,7 +51,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         [KustoType("dynamic")]
         public string NuGetGalleryBadges { get; set; }
 
-        public static string GetCsvCompactMessageSchemaName() => "cc.pco";
+        public static string CsvCompactMessageSchemaName => "cc.pco";
 
         public static IEqualityComparer<PackageCompatibility> GetKeyComparer() => IdentityComparer<PackageCompatibility>.Instance;
 

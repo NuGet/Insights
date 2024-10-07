@@ -17,7 +17,7 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
         {
         }
 
-        public static string GetCsvCompactMessageSchemaName() => "cc.pf";
+        public static string CsvCompactMessageSchemaName => "cc.pf";
 
         public static IEqualityComparer<PackageFileRecord> GetKeyComparer() => IPackageEntryRecord.PackageEntryKeyComparer<PackageFileRecord>.Instance;
 

@@ -46,7 +46,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
         public string FileSHA256 { get; set; }
         public string FileContent { get; set; }
 
-        public static string GetCsvCompactMessageSchemaName() => "cc.pl";
+        public static string CsvCompactMessageSchemaName => "cc.pl";
 
         public static IEqualityComparer<PackageLicense> GetKeyComparer() => IdentityComparer<PackageLicense>.Instance;
 
