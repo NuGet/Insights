@@ -254,5 +254,33 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         {
             return Fingerprint;
         }
+
+        public static IEqualityComparer<CertificateRecord> GetKeyComparer() => KeyComparer.Instance;
+
+        public class KeyComparer : IEqualityComparer<CertificateRecord>
+        {
+            public static KeyComparer Instance { get; } = new();
+
+            public bool Equals(CertificateRecord x, CertificateRecord y)
+            {
+                if ((x is null && y is null)
+                    || ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                if (x is null || y is null)
+                {
+                    return false;
+                }
+
+                return x.Fingerprint == y.Fingerprint;
+            }
+
+            public int GetHashCode([DisallowNull] CertificateRecord obj)
+            {
+                return obj.Fingerprint.GetHashCode(StringComparison.Ordinal);
+            }
+        }
     }
 }

@@ -47,6 +47,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
 
         public static string GetCsvCompactMessageSchemaName() => "cc.pi";
 
+        public static IEqualityComparer<PackageIcon> GetKeyComparer() => IdentityComparer<PackageIcon>.Instance;
+
         public static List<PackageIcon> Prune(List<PackageIcon> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

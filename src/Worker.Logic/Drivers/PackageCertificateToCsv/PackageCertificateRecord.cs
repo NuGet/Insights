@@ -35,6 +35,8 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
         public static string GetCsvCompactMessageSchemaName() => "cc.pc";
 
+        public static IEqualityComparer<PackageCertificateRecord> GetKeyComparer() => KeyComparer.Instance;
+
         public static List<PackageCertificateRecord> Prune(List<PackageCertificateRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);
@@ -54,6 +56,35 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         public string GetBucketKey()
         {
             return Identity;
+        }
+
+        public class KeyComparer : IEqualityComparer<PackageCertificateRecord>
+        {
+            public static KeyComparer Instance { get; } = new();
+
+            public bool Equals(PackageCertificateRecord x, PackageCertificateRecord y)
+            {
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                if (x is null || y is null)
+                {
+                    return false;
+                }
+
+                return x.Identity == y.Identity
+                    && x.Fingerprint == y.Fingerprint;
+            }
+
+            public int GetHashCode([DisallowNull] PackageCertificateRecord obj)
+            {
+                var hashCode = new HashCode();
+                hashCode.Add(obj.Identity);
+                hashCode.Add(obj.Fingerprint);
+                return hashCode.ToHashCode();
+            }
         }
     }
 }

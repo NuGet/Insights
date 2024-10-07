@@ -102,6 +102,8 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
 
         public static string GetCsvCompactMessageSchemaName() => "cc.pv";
 
+        public static IEqualityComparer<PackageVersionRecord> GetKeyComparer() => IdentityComparer<PackageVersionRecord>.Instance;
+
         public static List<PackageVersionRecord> Prune(List<PackageVersionRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

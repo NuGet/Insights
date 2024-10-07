@@ -34,6 +34,8 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
 
         public static string GetCsvCompactMessageSchemaName() => "cc.npe";
 
+        public static IEqualityComparer<NuGetPackageExplorerRecord> GetKeyComparer() => IdentityComparer<NuGetPackageExplorerRecord>.Instance;
+
         public static List<NuGetPackageExplorerRecord> Prune(List<NuGetPackageExplorerRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

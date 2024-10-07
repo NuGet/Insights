@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NuGet.Insights.Worker.PackageContentToCsv
 {
-    public partial record PackageContent : PackageRecord, IAggregatedCsvRecord<PackageContent>
+    public partial record PackageContent : PackageRecord, IAggregatedCsvRecord<PackageContent>, IPackageEntryRecord
     {
         public PackageContent()
         {
@@ -37,6 +37,8 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
         public bool? DuplicateContent { get; set; }
 
         public static string GetCsvCompactMessageSchemaName() => "cc.pcn";
+
+        public static IEqualityComparer<PackageContent> GetKeyComparer() => IPackageEntryRecord.PackageEntryKeyComparer<PackageContent>.Instance;
 
         public static List<PackageContent> Prune(List<PackageContent> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {

@@ -50,6 +50,8 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
         public static string GetCsvCompactMessageSchemaName() => "cc.pat";
 
+        public static IEqualityComparer<PackageAsset> GetKeyComparer() => KeyComparer.Instance;
+
         public static List<PackageAsset> Prune(List<PackageAsset> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);
@@ -75,6 +77,37 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
         public string GetBucketKey()
         {
             return Identity;
+        }
+
+        public class KeyComparer : IEqualityComparer<PackageAsset>
+        {
+            public static KeyComparer Instance { get; } = new();
+
+            public bool Equals(PackageAsset x, PackageAsset y)
+            {
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                if (x is null || y is null)
+                {
+                    return false;
+                }
+
+                return x.PatternSet == y.PatternSet
+                    && x.Identity == y.Identity
+                    && x.Path == y.Path;
+            }
+
+            public int GetHashCode([DisallowNull] PackageAsset obj)
+            {
+                var hashCode = new HashCode();
+                hashCode.Add(obj.PatternSet);
+                hashCode.Add(obj.Identity);
+                hashCode.Add(obj.Path);
+                return hashCode.ToHashCode();
+            }
         }
     }
 }

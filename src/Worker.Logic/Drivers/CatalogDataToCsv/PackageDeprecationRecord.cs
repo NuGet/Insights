@@ -33,6 +33,8 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
 
         public static string GetCsvCompactMessageSchemaName() => "cc.pd";
 
+        public static IEqualityComparer<PackageDeprecationRecord> GetKeyComparer() => IdentityComparer<PackageDeprecationRecord>.Instance;
+
         public static List<PackageDeprecationRecord> Prune(List<PackageDeprecationRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

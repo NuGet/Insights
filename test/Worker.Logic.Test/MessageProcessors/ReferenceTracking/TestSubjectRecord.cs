@@ -44,5 +44,32 @@ namespace NuGet.Insights.Worker.ReferenceTracking
         {
             return BucketKey;
         }
+
+        public static IEqualityComparer<TestSubjectRecord> GetKeyComparer() => KeyComparer.Instance;
+
+        public class KeyComparer : IEqualityComparer<TestSubjectRecord>
+        {
+            public static KeyComparer Instance { get; } = new();
+
+            public bool Equals(TestSubjectRecord x, TestSubjectRecord y)
+            {
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                if (x is null || y is null)
+                {
+                    return false;
+                }
+
+                return x.Id == y.Id;
+            }
+
+            public int GetHashCode([DisallowNull] TestSubjectRecord obj)
+            {
+                return obj.Id.GetHashCode(StringComparison.Ordinal);
+            }
+        }
     }
 }

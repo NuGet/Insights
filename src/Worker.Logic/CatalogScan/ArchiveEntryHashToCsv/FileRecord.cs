@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NuGet.Insights.Worker
 {
-    public abstract record FileRecord : PackageRecord
+    public abstract record FileRecord : PackageRecord, IPackageEntryRecord
     {
         public FileRecord()
         {

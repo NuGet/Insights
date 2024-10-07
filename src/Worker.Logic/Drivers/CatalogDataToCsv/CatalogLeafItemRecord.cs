@@ -101,6 +101,8 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
 
         public static string GetCsvCompactMessageSchemaName() => "cc.cl";
 
+        public static IEqualityComparer<CatalogLeafItemRecord> GetKeyComparer() => KeyComparer.Instance;
+
         public static List<CatalogLeafItemRecord> Prune(List<CatalogLeafItemRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return records
@@ -123,6 +125,31 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         public string GetBucketKey()
         {
             return Identity;
+        }
+
+        public class KeyComparer : IEqualityComparer<CatalogLeafItemRecord>
+        {
+            public static KeyComparer Instance { get; } = new KeyComparer();
+
+            public bool Equals(CatalogLeafItemRecord x, CatalogLeafItemRecord y)
+            {
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                if (x is null || y is null)
+                {
+                    return false;
+                }
+
+                return x.Url == y.Url;
+            }
+
+            public int GetHashCode([DisallowNull] CatalogLeafItemRecord obj)
+            {
+                return obj.Url.GetHashCode(StringComparison.Ordinal);
+            }
         }
     }
 }

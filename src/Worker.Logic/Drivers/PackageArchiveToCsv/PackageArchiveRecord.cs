@@ -21,6 +21,8 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
 
         public static string GetCsvCompactMessageSchemaName() => "cc.pa";
 
+        public static IEqualityComparer<PackageArchiveRecord> GetKeyComparer() => IdentityComparer<PackageArchiveRecord>.Instance;
+
         public static List<PackageArchiveRecord> Prune(List<PackageArchiveRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

@@ -848,6 +848,24 @@ namespace NuGet.Insights.Worker
                 _pruneRecordDelta.TrackValue(records.Count - initialCount, destContainer, recordType, isFinalPrune ? "true" : "false");
             }
 
+            if (isFinalPrune)
+            {
+                var unique = new HashSet<T>(records.Count, T.GetKeyComparer());
+                foreach (var record in records)
+                {
+                    if (!unique.Add(record))
+                    {
+                        using var errorCsv = new StringWriter();
+                        T.WriteHeader(errorCsv);
+                        record.Write(errorCsv);
+                        throw new InvalidOperationException(
+                            $"At least two records had the same key.{Environment.NewLine}" +
+                            $"Type: {typeof(T).FullName}{Environment.NewLine}" +
+                            $"Duplicate record (as CSV):{Environment.NewLine}{errorCsv}");
+                    }
+                }
+            }
+
             return records;
         }
 
