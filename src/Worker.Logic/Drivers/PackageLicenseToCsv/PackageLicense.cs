@@ -50,6 +50,8 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
 
         public static IEqualityComparer<PackageLicense> GetKeyComparer() => IdentityComparer<PackageLicense>.Instance;
 
+        public static IReadOnlyList<string> KeyFields { get; } = IdentityKeyField;
+
         public static List<PackageLicense> Prune(List<PackageLicense> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);
