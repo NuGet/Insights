@@ -33,6 +33,8 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
 
         public static string GetCsvCompactMessageSchemaName() => "cc.pr";
 
+        public static IEqualityComparer<PackageReadme> GetKeyComparer() => IdentityComparer<PackageReadme>.Instance;
+
         public static List<PackageReadme> Prune(List<PackageReadme> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

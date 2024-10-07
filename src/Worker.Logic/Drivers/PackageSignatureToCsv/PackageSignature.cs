@@ -69,6 +69,8 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
 
         public static string GetCsvCompactMessageSchemaName() => "cc.ps";
 
+        public static IEqualityComparer<PackageSignature> GetKeyComparer() => IdentityComparer<PackageSignature>.Instance;
+
         public static List<PackageSignature> Prune(List<PackageSignature> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);
