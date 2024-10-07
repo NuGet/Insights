@@ -269,6 +269,7 @@ namespace NuGet.Insights
                     sortedProperties.AddRange(currentType
                         .GetMembers()
                         .Where(x => !x.IsImplicitlyDeclared)
+                        .Where(x => !x.IsStatic)
                         .OfType<IPropertySymbol>()
                         .OrderByDescending(x => x.Locations.First().SourceSpan.Start));
                     currentType = currentType.BaseType;
