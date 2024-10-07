@@ -141,6 +141,8 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.c";
         public static string CleanupOrphanRecordsMessageSchemaName => "co.c";
+        public static IEqualityComparer<CertificateRecord> KeyComparer { get; } = CertificateRecordKeyComparer.Instance;
+        public static IReadOnlyList<string> KeyFields { get; } = [nameof(Fingerprint)];
 
         public static List<CertificateRecord> Prune(List<CertificateRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
@@ -255,13 +257,9 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             return Fingerprint;
         }
 
-        public static IEqualityComparer<CertificateRecord> GetKeyComparer() => KeyComparer.Instance;
-
-        public static IReadOnlyList<string> KeyFields { get; } = [nameof(Fingerprint)];
-
-        public class KeyComparer : IEqualityComparer<CertificateRecord>
+        public class CertificateRecordKeyComparer : IEqualityComparer<CertificateRecord>
         {
-            public static KeyComparer Instance { get; } = new();
+            public static CertificateRecordKeyComparer Instance { get; } = new();
 
             public bool Equals(CertificateRecord x, CertificateRecord y)
             {

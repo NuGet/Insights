@@ -53,7 +53,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.pco";
 
-        public static IEqualityComparer<PackageCompatibility> GetKeyComparer() => IdentityComparer<PackageCompatibility>.Instance;
+        public static IEqualityComparer<PackageCompatibility> KeyComparer { get; } = IdentityComparer<PackageCompatibility>.Instance;
 
         public static IReadOnlyList<string> KeyFields { get; } = IdentityKeyField;
 

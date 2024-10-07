@@ -17,6 +17,8 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 
         public static string CsvCompactMessageSchemaName => "cc.ts";
         public static string CleanupOrphanRecordsMessageSchemaName => "co.ts";
+        public static IEqualityComparer<TestSubjectRecord> KeyComparer { get; } = TestSubjectRecordKeyComparer.Instance;
+        public static IReadOnlyList<string> KeyFields { get; } = [nameof(Id)];
 
         public static List<TestSubjectRecord> Prune(List<TestSubjectRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
@@ -45,13 +47,9 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             return BucketKey;
         }
 
-        public static IEqualityComparer<TestSubjectRecord> GetKeyComparer() => KeyComparer.Instance;
-
-        public static IReadOnlyList<string> KeyFields { get; } = [nameof(Id)];
-
-        public class KeyComparer : IEqualityComparer<TestSubjectRecord>
+        public class TestSubjectRecordKeyComparer : IEqualityComparer<TestSubjectRecord>
         {
-            public static KeyComparer Instance { get; } = new();
+            public static TestSubjectRecordKeyComparer Instance { get; } = new();
 
             public bool Equals(TestSubjectRecord x, TestSubjectRecord y)
             {

@@ -33,7 +33,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.pd";
 
-        public static IEqualityComparer<PackageDeprecationRecord> GetKeyComparer() => IdentityComparer<PackageDeprecationRecord>.Instance;
+        public static IEqualityComparer<PackageDeprecationRecord> KeyComparer { get; } = IdentityComparer<PackageDeprecationRecord>.Instance;
 
         public static IReadOnlyList<string> KeyFields { get; } = IdentityKeyField;
 

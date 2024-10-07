@@ -49,9 +49,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
         public string PlatformVersion { get; set; }
 
         public static string CsvCompactMessageSchemaName => "cc.pat";
-
-        public static IEqualityComparer<PackageAsset> GetKeyComparer() => KeyComparer.Instance;
-
+        public static IEqualityComparer<PackageAsset> KeyComparer { get; } = PackageAssetKeyComparer.Instance;
         public static IReadOnlyList<string> KeyFields { get; } = [nameof(Identity), nameof(Path)];
 
         public static List<PackageAsset> Prune(List<PackageAsset> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
@@ -81,9 +79,9 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             return Identity;
         }
 
-        public class KeyComparer : IEqualityComparer<PackageAsset>
+        public class PackageAssetKeyComparer : IEqualityComparer<PackageAsset>
         {
-            public static KeyComparer Instance { get; } = new();
+            public static PackageAssetKeyComparer Instance { get; } = new();
 
             public bool Equals(PackageAsset x, PackageAsset y)
             {

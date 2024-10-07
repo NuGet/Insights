@@ -21,7 +21,7 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.spae";
 
-        public static IEqualityComparer<SymbolPackageArchiveEntry> GetKeyComparer() => IPackageEntryRecord.PackageEntryKeyComparer<SymbolPackageArchiveEntry>.Instance;
+        public static IEqualityComparer<SymbolPackageArchiveEntry> KeyComparer { get; } = IPackageEntryRecord.PackageEntryKeyComparer<SymbolPackageArchiveEntry>.Instance;
 
         public static IReadOnlyList<string> KeyFields { get; } = PackageEntryKeyFields;
 

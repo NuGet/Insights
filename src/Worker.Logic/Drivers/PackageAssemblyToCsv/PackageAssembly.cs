@@ -59,7 +59,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.as";
 
-        public static IEqualityComparer<PackageAssembly> GetKeyComparer() => IPackageEntryRecord.PackageEntryKeyComparer<PackageAssembly>.Instance;
+        public static IEqualityComparer<PackageAssembly> KeyComparer { get; } = IPackageEntryRecord.PackageEntryKeyComparer<PackageAssembly>.Instance;
 
         public static IReadOnlyList<string> KeyFields { get; } = PackageEntryKeyFields;
 
