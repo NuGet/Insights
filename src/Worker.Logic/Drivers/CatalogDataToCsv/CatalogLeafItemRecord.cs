@@ -100,9 +100,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         public string SignaturePackageEntry { get; set; }
 
         public static string CsvCompactMessageSchemaName => "cc.cl";
-
-        public static IEqualityComparer<CatalogLeafItemRecord> GetKeyComparer() => KeyComparer.Instance;
-
+        public static IEqualityComparer<CatalogLeafItemRecord> KeyComparer { get; } = CatalogLeafItemRecordKeyComparer.Instance;
         public static IReadOnlyList<string> KeyFields { get; } = [nameof(Url)];
 
         public static List<CatalogLeafItemRecord> Prune(List<CatalogLeafItemRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
@@ -129,9 +127,9 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             return Identity;
         }
 
-        public class KeyComparer : IEqualityComparer<CatalogLeafItemRecord>
+        public class CatalogLeafItemRecordKeyComparer : IEqualityComparer<CatalogLeafItemRecord>
         {
-            public static KeyComparer Instance { get; } = new KeyComparer();
+            public static CatalogLeafItemRecordKeyComparer Instance { get; } = new CatalogLeafItemRecordKeyComparer();
 
             public bool Equals(CatalogLeafItemRecord x, CatalogLeafItemRecord y)
             {

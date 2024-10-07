@@ -69,7 +69,7 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.ps";
 
-        public static IEqualityComparer<PackageSignature> GetKeyComparer() => IdentityComparer<PackageSignature>.Instance;
+        public static IEqualityComparer<PackageSignature> KeyComparer { get; } = IdentityComparer<PackageSignature>.Instance;
 
         public static IReadOnlyList<string> KeyFields { get; } = IdentityKeyField;
 

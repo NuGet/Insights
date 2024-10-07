@@ -34,7 +34,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.npe";
 
-        public static IEqualityComparer<NuGetPackageExplorerRecord> GetKeyComparer() => IdentityComparer<NuGetPackageExplorerRecord>.Instance;
+        public static IEqualityComparer<NuGetPackageExplorerRecord> KeyComparer { get; } = IdentityComparer<NuGetPackageExplorerRecord>.Instance;
 
         public static IReadOnlyList<string> KeyFields { get; } = IdentityKeyField;
 

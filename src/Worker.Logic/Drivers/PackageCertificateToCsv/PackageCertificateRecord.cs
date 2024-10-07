@@ -34,9 +34,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         public CertificateRelationshipTypes? RelationshipTypes { get; set; }
 
         public static string CsvCompactMessageSchemaName => "cc.pc";
-
-        public static IEqualityComparer<PackageCertificateRecord> GetKeyComparer() => KeyComparer.Instance;
-
+        public static IEqualityComparer<PackageCertificateRecord> KeyComparer { get; } = PackageCertificateRecordKeyComparer.Instance;
         public static IReadOnlyList<string> KeyFields { get; } = [nameof(Identity), nameof(Fingerprint)];
 
         public static List<PackageCertificateRecord> Prune(List<PackageCertificateRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
@@ -60,9 +58,9 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             return Identity;
         }
 
-        public class KeyComparer : IEqualityComparer<PackageCertificateRecord>
+        public class PackageCertificateRecordKeyComparer : IEqualityComparer<PackageCertificateRecord>
         {
-            public static KeyComparer Instance { get; } = new();
+            public static PackageCertificateRecordKeyComparer Instance { get; } = new();
 
             public bool Equals(PackageCertificateRecord x, PackageCertificateRecord y)
             {

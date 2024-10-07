@@ -47,7 +47,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.pi";
 
-        public static IEqualityComparer<PackageIcon> GetKeyComparer() => IdentityComparer<PackageIcon>.Instance;
+        public static IEqualityComparer<PackageIcon> KeyComparer { get; } = IdentityComparer<PackageIcon>.Instance;
 
         public static IReadOnlyList<string> KeyFields { get; } = IdentityKeyField;
 

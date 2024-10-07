@@ -102,7 +102,7 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.pv";
 
-        public static IEqualityComparer<PackageVersionRecord> GetKeyComparer() => IdentityComparer<PackageVersionRecord>.Instance;
+        public static IEqualityComparer<PackageVersionRecord> KeyComparer { get; } = IdentityComparer<PackageVersionRecord>.Instance;
 
         public static IReadOnlyList<string> KeyFields { get; } = IdentityKeyField;
 

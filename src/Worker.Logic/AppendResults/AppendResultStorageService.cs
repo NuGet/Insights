@@ -850,7 +850,7 @@ namespace NuGet.Insights.Worker
 
             if (isFinalPrune)
             {
-                var unique = new HashSet<T>(records.Count, T.GetKeyComparer());
+                var unique = new HashSet<T>(records.Count, T.KeyComparer);
                 foreach (var record in records)
                 {
                     if (!unique.Add(record))

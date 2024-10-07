@@ -25,6 +25,10 @@ namespace NuGet.Insights.Worker
         /// <returns>The records, after pruning out undesired records.</returns>
         static abstract List<T> Prune(List<T> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger);
 
+        /// <summary>
+        /// The message schema name for the <see cref="CsvCompactMessage{T}"/> specific to this record type. Must start
+        /// with "cc." and be unique, e.g. "cc.fb" for "FooBarRecord".
+        /// </summary>
         static abstract string CsvCompactMessageSchemaName { get; }
 
         /// <summary>
@@ -33,11 +37,11 @@ namespace NuGet.Insights.Worker
         /// the <see cref="PackageRecord.Identity"/> column but other record types may have multiple records per
         /// package.
         /// </summary>
-        static abstract IEqualityComparer<T> GetKeyComparer();
+        static abstract IEqualityComparer<T> KeyComparer { get; }
 
         /// <summary>
         /// Get a list of field names that operate as a natural, composite key for the record. This list of fields should
-        /// be the same as the fields that are used in the comparer returned by the <see cref="GetKeyComparer"/> method.
+        /// be the same as the fields that are used in the comparer returned by the <see cref="KeyComparer"/> property.
         /// </summary>
         /// <returns></returns>
         static abstract IReadOnlyList<string> KeyFields { get; }

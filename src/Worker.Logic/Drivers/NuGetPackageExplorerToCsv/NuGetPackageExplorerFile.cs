@@ -43,9 +43,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
         public PdbType? PdbType { get; set; }
 
         public static string CsvCompactMessageSchemaName => "cc.npef";
-
-        public static IEqualityComparer<NuGetPackageExplorerFile> GetKeyComparer() => KeyComparer.Instance;
-
+        public static IEqualityComparer<NuGetPackageExplorerFile> KeyComparer { get; } = NuGetPackageExplorerFileKeyComparer.Instance;
         public static IReadOnlyList<string> KeyFields { get; } = [nameof(Identity), nameof(Path)];
 
         public static List<NuGetPackageExplorerFile> Prune(List<NuGetPackageExplorerFile> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
@@ -69,9 +67,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             return Identity;
         }
 
-        public class KeyComparer : IEqualityComparer<NuGetPackageExplorerFile>
+        public class NuGetPackageExplorerFileKeyComparer : IEqualityComparer<NuGetPackageExplorerFile>
         {
-            public static KeyComparer Instance { get; } = new();
+            public static NuGetPackageExplorerFileKeyComparer Instance { get; } = new();
 
             public bool Equals(NuGetPackageExplorerFile x, NuGetPackageExplorerFile y)
             {

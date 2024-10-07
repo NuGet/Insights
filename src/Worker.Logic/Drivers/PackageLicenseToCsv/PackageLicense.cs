@@ -48,7 +48,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.pl";
 
-        public static IEqualityComparer<PackageLicense> GetKeyComparer() => IdentityComparer<PackageLicense>.Instance;
+        public static IEqualityComparer<PackageLicense> KeyComparer { get; } = IdentityComparer<PackageLicense>.Instance;
 
         public static IReadOnlyList<string> KeyFields { get; } = IdentityKeyField;
 

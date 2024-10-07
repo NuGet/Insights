@@ -33,7 +33,7 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.pr";
 
-        public static IEqualityComparer<PackageReadme> GetKeyComparer() => IdentityComparer<PackageReadme>.Instance;
+        public static IEqualityComparer<PackageReadme> KeyComparer { get; } = IdentityComparer<PackageReadme>.Instance;
 
         public static IReadOnlyList<string> KeyFields { get; } = IdentityKeyField;
 
