@@ -67,7 +67,7 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
         [KustoType("dynamic")]
         public string PackageOwners { get; set; }
 
-        public static string GetCsvCompactMessageSchemaName() => "cc.ps";
+        public static string CsvCompactMessageSchemaName => "cc.ps";
 
         public static IEqualityComparer<PackageSignature> GetKeyComparer() => IdentityComparer<PackageSignature>.Instance;
 

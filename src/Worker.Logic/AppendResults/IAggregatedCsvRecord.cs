@@ -25,7 +25,7 @@ namespace NuGet.Insights.Worker
         /// <returns>The records, after pruning out undesired records.</returns>
         static abstract List<T> Prune(List<T> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger);
 
-        static abstract string GetCsvCompactMessageSchemaName();
+        static abstract string CsvCompactMessageSchemaName { get; }
 
         /// <summary>
         /// Get an equality comparer that can compare records based on their natural, unique key. This is used to ensure

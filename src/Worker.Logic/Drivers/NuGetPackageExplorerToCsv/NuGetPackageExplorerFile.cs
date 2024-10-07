@@ -42,7 +42,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
 
         public PdbType? PdbType { get; set; }
 
-        public static string GetCsvCompactMessageSchemaName() => "cc.npef";
+        public static string CsvCompactMessageSchemaName => "cc.npef";
 
         public static IEqualityComparer<NuGetPackageExplorerFile> GetKeyComparer() => KeyComparer.Instance;
 

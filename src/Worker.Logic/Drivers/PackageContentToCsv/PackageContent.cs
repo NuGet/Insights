@@ -36,7 +36,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
         public string Content { get; set; }
         public bool? DuplicateContent { get; set; }
 
-        public static string GetCsvCompactMessageSchemaName() => "cc.pcn";
+        public static string CsvCompactMessageSchemaName => "cc.pcn";
 
         public static IEqualityComparer<PackageContent> GetKeyComparer() => IPackageEntryRecord.PackageEntryKeyComparer<PackageContent>.Instance;
 

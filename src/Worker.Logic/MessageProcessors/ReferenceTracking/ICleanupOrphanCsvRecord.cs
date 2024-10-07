@@ -5,6 +5,6 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 {
     public interface ICleanupOrphanCsvRecord : ICsvRecord
     {
-        static abstract string GetCleanupOrphanRecordsMessageSchemaName();
+        static abstract string CleanupOrphanRecordsMessageSchemaName { get; }
     }
 }

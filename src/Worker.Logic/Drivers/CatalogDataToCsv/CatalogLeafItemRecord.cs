@@ -99,7 +99,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         [KustoType("dynamic")]
         public string SignaturePackageEntry { get; set; }
 
-        public static string GetCsvCompactMessageSchemaName() => "cc.cl";
+        public static string CsvCompactMessageSchemaName => "cc.cl";
 
         public static IEqualityComparer<CatalogLeafItemRecord> GetKeyComparer() => KeyComparer.Instance;
 

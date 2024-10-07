@@ -100,7 +100,7 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
         public DateTimeOffset? Published { get; set; }
         public DateTimeOffset? LastEdited { get; set; }
 
-        public static string GetCsvCompactMessageSchemaName() => "cc.pv";
+        public static string CsvCompactMessageSchemaName => "cc.pv";
 
         public static IEqualityComparer<PackageVersionRecord> GetKeyComparer() => IdentityComparer<PackageVersionRecord>.Instance;
 

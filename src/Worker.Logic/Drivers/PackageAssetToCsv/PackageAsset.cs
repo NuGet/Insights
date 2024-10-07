@@ -48,7 +48,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
         public string PlatformName { get; set; }
         public string PlatformVersion { get; set; }
 
-        public static string GetCsvCompactMessageSchemaName() => "cc.pat";
+        public static string CsvCompactMessageSchemaName => "cc.pat";
 
         public static IEqualityComparer<PackageAsset> GetKeyComparer() => KeyComparer.Instance;
 
