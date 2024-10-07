@@ -86,7 +86,7 @@ namespace NuGet.Insights.Worker
 
         private static string GetCsvCompactMessageSchemaName<T>() where T : IAggregatedCsvRecord<T>
         {
-            return T.GetCsvCompactMessageSchemaName();
+            return T.CsvCompactMessageSchemaName;
         }
 
         private static IEnumerable<ISchemaDeserializer> GetCleanupOrphanRecordsMessageSchemaForDrivers()
@@ -106,7 +106,7 @@ namespace NuGet.Insights.Worker
 
         private static string GetCleanupOrphanRecordsMessageSchemaName<T>() where T : ICleanupOrphanCsvRecord
         {
-            return T.GetCleanupOrphanRecordsMessageSchemaName();
+            return T.CleanupOrphanRecordsMessageSchemaName;
         }
 
         private static IEnumerable<Type> GetCsvRecordTypes()

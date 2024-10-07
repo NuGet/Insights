@@ -45,7 +45,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         [KustoType("dynamic")]
         public string FrameAttributeNames { get; set; }
 
-        public static string GetCsvCompactMessageSchemaName() => "cc.pi";
+        public static string CsvCompactMessageSchemaName => "cc.pi";
 
         public static IEqualityComparer<PackageIcon> GetKeyComparer() => IdentityComparer<PackageIcon>.Instance;
 

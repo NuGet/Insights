@@ -81,7 +81,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         [KustoType("dynamic")]
         public string SplitTags { get; set; }
 
-        public static string GetCsvCompactMessageSchemaName() => "cc.pm";
+        public static string CsvCompactMessageSchemaName => "cc.pm";
 
         public static IEqualityComparer<PackageManifestRecord> GetKeyComparer() => IdentityComparer<PackageManifestRecord>.Instance;
 

@@ -139,8 +139,8 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         [KustoType("dynamic")]
         public string Policies { get; set; }
 
-        public static string GetCsvCompactMessageSchemaName() => "cc.c";
-        public static string GetCleanupOrphanRecordsMessageSchemaName() => "co.c";
+        public static string CsvCompactMessageSchemaName => "cc.c";
+        public static string CleanupOrphanRecordsMessageSchemaName => "co.c";
 
         public static List<CertificateRecord> Prune(List<CertificateRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {

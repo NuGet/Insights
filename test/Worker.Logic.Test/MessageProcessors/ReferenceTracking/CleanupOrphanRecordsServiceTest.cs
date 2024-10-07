@@ -218,8 +218,8 @@ namespace NuGet.Insights.Worker.ReferenceTracking
                 serviceCollection.AddSingleton(this);
                 serviceCollection.AddSingleton(x => SchemaCollectionBuilder
                     .Default
-                    .Add(new SchemaV1<CsvCompactMessage<TestSubjectRecord>>(TestSubjectRecord.GetCsvCompactMessageSchemaName()))
-                    .Add(new SchemaV1<CleanupOrphanRecordsMessage<TestSubjectRecord>>(TestSubjectRecord.GetCleanupOrphanRecordsMessageSchemaName()))
+                    .Add(new SchemaV1<CsvCompactMessage<TestSubjectRecord>>(TestSubjectRecord.CsvCompactMessageSchemaName))
+                    .Add(new SchemaV1<CleanupOrphanRecordsMessage<TestSubjectRecord>>(TestSubjectRecord.CleanupOrphanRecordsMessageSchemaName))
                     .Build());
                 serviceCollection.AddCleanupOrphanRecordsService<TestCleanupOrphanRecordsAdapter, TestSubjectRecord>();
                 serviceCollection.AddSingleton<ICsvResultStorage<TestSubjectRecord>, TestSubjectRecordStorage>();
