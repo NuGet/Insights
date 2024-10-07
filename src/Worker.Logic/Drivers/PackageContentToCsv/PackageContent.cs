@@ -38,7 +38,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.pcn";
 
-        public static IEqualityComparer<PackageContent> GetKeyComparer() => IPackageEntryRecord.PackageEntryKeyComparer<PackageContent>.Instance;
+        public static IEqualityComparer<PackageContent> KeyComparer { get; } = IPackageEntryRecord.PackageEntryKeyComparer<PackageContent>.Instance;
 
         public static IReadOnlyList<string> KeyFields { get; } = PackageEntryKeyFields;
 
