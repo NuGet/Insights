@@ -103,6 +103,8 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
 
         public static IEqualityComparer<CatalogLeafItemRecord> GetKeyComparer() => KeyComparer.Instance;
 
+        public static IReadOnlyList<string> KeyFields { get; } = [nameof(Url)];
+
         public static List<CatalogLeafItemRecord> Prune(List<CatalogLeafItemRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return records

@@ -49,6 +49,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
 
         public static IEqualityComparer<PackageIcon> GetKeyComparer() => IdentityComparer<PackageIcon>.Instance;
 
+        public static IReadOnlyList<string> KeyFields { get; } = IdentityKeyField;
+
         public static List<PackageIcon> Prune(List<PackageIcon> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);
