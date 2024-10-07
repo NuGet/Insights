@@ -21,6 +21,8 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
 
         public static IEqualityComparer<PackageFileRecord> GetKeyComparer() => IPackageEntryRecord.PackageEntryKeyComparer<PackageFileRecord>.Instance;
 
+        public static IReadOnlyList<string> KeyFields { get; } = PackageEntryKeyFields;
+
         public static List<PackageFileRecord> Prune(List<PackageFileRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

@@ -37,6 +37,8 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
         public static IEqualityComparer<PackageCertificateRecord> GetKeyComparer() => KeyComparer.Instance;
 
+        public static IReadOnlyList<string> KeyFields { get; } = [nameof(Identity), nameof(Fingerprint)];
+
         public static List<PackageCertificateRecord> Prune(List<PackageCertificateRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

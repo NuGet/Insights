@@ -35,6 +35,8 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
 
         public static IEqualityComparer<PackageDeprecationRecord> GetKeyComparer() => IdentityComparer<PackageDeprecationRecord>.Instance;
 
+        public static IReadOnlyList<string> KeyFields { get; } = IdentityKeyField;
+
         public static List<PackageDeprecationRecord> Prune(List<PackageDeprecationRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);

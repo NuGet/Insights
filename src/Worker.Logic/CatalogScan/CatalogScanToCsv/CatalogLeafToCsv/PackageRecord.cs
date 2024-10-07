@@ -114,6 +114,9 @@ namespace NuGet.Insights.Worker
             return $"{lowerId}/{normalizedVersion.ToLowerInvariant()}";
         }
 
+        public static IReadOnlyList<string> IdentityKeyField { get; } = [nameof(Identity)];
+        public static IReadOnlyList<string> PackageEntryKeyFields { get; } = [nameof(Identity), nameof(IPackageEntryRecord.SequenceNumber)];
+
         public class IdentityComparer<T> : IEqualityComparer<T> where T : PackageRecord
         {
             public static IdentityComparer<T> Instance { get; } = new();

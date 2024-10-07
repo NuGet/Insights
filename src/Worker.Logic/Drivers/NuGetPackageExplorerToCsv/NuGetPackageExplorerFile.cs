@@ -46,6 +46,8 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
 
         public static IEqualityComparer<NuGetPackageExplorerFile> GetKeyComparer() => KeyComparer.Instance;
 
+        public static IReadOnlyList<string> KeyFields { get; } = [nameof(Identity), nameof(Path)];
+
         public static List<NuGetPackageExplorerFile> Prune(List<NuGetPackageExplorerFile> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);
