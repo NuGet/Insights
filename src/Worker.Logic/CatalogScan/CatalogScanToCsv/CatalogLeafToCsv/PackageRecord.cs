@@ -113,5 +113,30 @@ namespace NuGet.Insights.Worker
 
             return $"{lowerId}/{normalizedVersion.ToLowerInvariant()}";
         }
+
+        public class IdentityComparer<T> : IEqualityComparer<T> where T : PackageRecord
+        {
+            public static IdentityComparer<T> Instance { get; } = new();
+
+            public bool Equals(T x, T y)
+            {
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                if (x is null || y is null)
+                {
+                    return false;
+                }
+
+                return x.Identity == y.Identity;
+            }
+
+            public int GetHashCode([DisallowNull] T obj)
+            {
+                return obj.Identity.GetHashCode(StringComparison.Ordinal);
+            }
+        }
     }
 }

@@ -26,5 +26,13 @@ namespace NuGet.Insights.Worker
         static abstract List<T> Prune(List<T> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger);
 
         static abstract string GetCsvCompactMessageSchemaName();
+
+        /// <summary>
+        /// Get an equality comparer that can compare records based on their natural, unique key. This is used to ensure
+        /// that rows are unique identifiable by a small number of fields on the record. For many records, this will be
+        /// the <see cref="PackageRecord.Identity"/> column but other record types may have multiple records per
+        /// package.
+        /// </summary>
+        static abstract IEqualityComparer<T> GetKeyComparer();
     }
 }
