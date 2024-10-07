@@ -17,7 +17,7 @@ namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
         {
         }
 
-        public static string GetCsvCompactMessageSchemaName() => "cc.spf";
+        public static string CsvCompactMessageSchemaName => "cc.spf";
 
         public static IEqualityComparer<SymbolPackageFileRecord> GetKeyComparer() => IPackageEntryRecord.PackageEntryKeyComparer<SymbolPackageFileRecord>.Instance;
 

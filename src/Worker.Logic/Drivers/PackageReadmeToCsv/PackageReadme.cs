@@ -31,7 +31,7 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
         public string SHA256 { get; set; }
         public string Content { get; set; }
 
-        public static string GetCsvCompactMessageSchemaName() => "cc.pr";
+        public static string CsvCompactMessageSchemaName => "cc.pr";
 
         public static IEqualityComparer<PackageReadme> GetKeyComparer() => IdentityComparer<PackageReadme>.Instance;
 

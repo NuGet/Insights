@@ -15,8 +15,8 @@ namespace NuGet.Insights.Worker.ReferenceTracking
         [Required]
         public bool IsOrphan { get; set; }
 
-        public static string GetCsvCompactMessageSchemaName() => "cc.ts";
-        public static string GetCleanupOrphanRecordsMessageSchemaName() => "co.ts";
+        public static string CsvCompactMessageSchemaName => "cc.ts";
+        public static string CleanupOrphanRecordsMessageSchemaName => "co.ts";
 
         public static List<TestSubjectRecord> Prune(List<TestSubjectRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {

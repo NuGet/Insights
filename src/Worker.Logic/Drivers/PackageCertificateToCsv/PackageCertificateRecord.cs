@@ -33,7 +33,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
         public CertificateRelationshipTypes? RelationshipTypes { get; set; }
 
-        public static string GetCsvCompactMessageSchemaName() => "cc.pc";
+        public static string CsvCompactMessageSchemaName => "cc.pc";
 
         public static IEqualityComparer<PackageCertificateRecord> GetKeyComparer() => KeyComparer.Instance;
 

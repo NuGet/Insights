@@ -31,7 +31,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         public string AlternatePackageId { get; set; }
         public string AlternateVersionRange { get; set; }
 
-        public static string GetCsvCompactMessageSchemaName() => "cc.pd";
+        public static string CsvCompactMessageSchemaName => "cc.pd";
 
         public static IEqualityComparer<PackageDeprecationRecord> GetKeyComparer() => IdentityComparer<PackageDeprecationRecord>.Instance;
 

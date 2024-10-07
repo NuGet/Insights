@@ -32,7 +32,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
         public HasCompilerFlagsResult? CompilerFlagsResult { get; set; }
         public bool? IsSignedByAuthor { get; set; }
 
-        public static string GetCsvCompactMessageSchemaName() => "cc.npe";
+        public static string CsvCompactMessageSchemaName => "cc.npe";
 
         public static IEqualityComparer<NuGetPackageExplorerRecord> GetKeyComparer() => IdentityComparer<NuGetPackageExplorerRecord>.Instance;
 

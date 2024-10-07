@@ -57,7 +57,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
         public int? CustomAttributesTotalCount { get; set; }
         public int? CustomAttributesTotalDataLength { get; set; }
 
-        public static string GetCsvCompactMessageSchemaName() => "cc.as";
+        public static string CsvCompactMessageSchemaName => "cc.as";
 
         public static IEqualityComparer<PackageAssembly> GetKeyComparer() => IPackageEntryRecord.PackageEntryKeyComparer<PackageAssembly>.Instance;
 
