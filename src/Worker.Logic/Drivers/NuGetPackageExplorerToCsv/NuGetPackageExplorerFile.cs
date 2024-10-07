@@ -44,6 +44,8 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
 
         public static string GetCsvCompactMessageSchemaName() => "cc.npef";
 
+        public static IEqualityComparer<NuGetPackageExplorerFile> GetKeyComparer() => KeyComparer.Instance;
+
         public static List<NuGetPackageExplorerFile> Prune(List<NuGetPackageExplorerFile> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);
@@ -63,6 +65,35 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
         public string GetBucketKey()
         {
             return Identity;
+        }
+
+        public class KeyComparer : IEqualityComparer<NuGetPackageExplorerFile>
+        {
+            public static KeyComparer Instance { get; } = new();
+
+            public bool Equals(NuGetPackageExplorerFile x, NuGetPackageExplorerFile y)
+            {
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                if (x is null || y is null)
+                {
+                    return false;
+                }
+
+                return x.Identity == y.Identity
+                    && x.Path == y.Path;
+            }
+
+            public int GetHashCode([DisallowNull] NuGetPackageExplorerFile obj)
+            {
+                var hashCode = new HashCode();
+                hashCode.Add(obj.Identity);
+                hashCode.Add(obj.Path);
+                return hashCode.ToHashCode();
+            }
         }
     }
 }

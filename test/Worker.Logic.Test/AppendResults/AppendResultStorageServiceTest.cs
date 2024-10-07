@@ -162,6 +162,7 @@ namespace NuGet.Insights.Worker
             // Act
             foreach (var record in RecordsA.Concat(RecordsB))
             {
+                record.ScanId = new Guid("fbdc63ed-d515-487a-a0d1-0c75fe594493");
                 record.ScanTimestamp = new DateTimeOffset(2024, 8, 30, 11, 23, 0, TimeSpan.Zero);
                 var buffer = new byte[5000];
                 random.NextBytes(buffer);
@@ -179,6 +180,7 @@ namespace NuGet.Insights.Worker
             // Act
             foreach (var record in RecordsA.Concat(RecordsB))
             {
+                record.ScanId = new Guid("95883cea-169f-40c5-b72c-ae053531a7e5");
                 record.ScanTimestamp = new DateTimeOffset(2024, 8, 31, 11, 23, 0, TimeSpan.Zero);
                 var buffer = new byte[10];
                 random.NextBytes(buffer);

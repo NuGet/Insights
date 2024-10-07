@@ -53,6 +53,8 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 
         public static string GetCsvCompactMessageSchemaName() => "cc.pco";
 
+        public static IEqualityComparer<PackageCompatibility> GetKeyComparer() => IdentityComparer<PackageCompatibility>.Instance;
+
         public static List<PackageCompatibility> Prune(List<PackageCompatibility> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
             return Prune(records, isFinalPrune);
