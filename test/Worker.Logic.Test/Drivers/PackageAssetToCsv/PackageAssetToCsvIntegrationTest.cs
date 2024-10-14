@@ -83,7 +83,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             // 1 catalog leaf scan batch
             Assert.True(TelemetryClient.Metrics.TryGetValue(new(MetricNames.MessageProcessedCount, "Status", "SchemaName", "IsBatch"), out var messageProcessedMetric));
-            var catalogLeafScanMessageValue = Assert.Single(messageProcessedMetric.MetricValues.Where(x => x.DimensionValues[1] == "cls"));
+            var catalogLeafScanMessageValue = Assert.Single(messageProcessedMetric.MetricValues, x => x.DimensionValues[1] == "cls");
             Assert.Equal(5, catalogLeafScanMessageValue.MetricValue);
             Assert.Equal("true", catalogLeafScanMessageValue.DimensionValues[2]);
 

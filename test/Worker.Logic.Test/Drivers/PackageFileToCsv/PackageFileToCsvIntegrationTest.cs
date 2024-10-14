@@ -182,7 +182,7 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
                 .SuccessRequests
                 .Where(x => x.RequestUri.GetLeftPart(UriPartial.Path).EndsWith("/gosms.ge-sms-api.1.0.1.nupkg", StringComparison.Ordinal))
                 .ToList();
-            Assert.Single(duplicatePackageRequests.Where(r => r.Method == HttpMethod.Head));
+            Assert.Single(duplicatePackageRequests, r => r.Method == HttpMethod.Head);
             Assert.Equal(LatestLeavesTypes.Contains(DriverType) ? 2 : 3, duplicatePackageRequests.Where(r => r.Method == HttpMethod.Get).Count());
         }
     }

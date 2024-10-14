@@ -285,7 +285,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
             Assert.All(catchUpBatches.Where(x => x.Count > 0), x => Assert.Equal(100, x.Count));
 
             Assert.Equal(Enumerable.Range(0, BucketedPackage.BucketCount).Append(0), scheduledBatches.SelectMany(x => x));
-            Assert.Single(scheduledBatches.Where(x => x.Count == 1));
+            Assert.Single(scheduledBatches, x => x.Count == 1);
             Assert.All(scheduledBatches.Where(x => x.Count > 1), x => Assert.InRange(x.Count, 71, 72));
         }
 

@@ -114,7 +114,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
                             var frameFormats = new List<string>();
                             var frameDimensions = new List<object>();
                             var uniqueFrameFormats = new HashSet<string>();
-                            var uniqueFrameDimensions = new HashSet<(int, int)>();
+                            var uniqueFrameDimensions = new HashSet<(long, long)>();
 
                             var frameAttributeNames = new HashSet<string>();
                             foreach (var frame in frames)

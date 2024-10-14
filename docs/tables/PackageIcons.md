@@ -32,8 +32,8 @@ icons and icon URL icons downloaded to NuGet.org. The processing of images is do
 | HeaderFormat           | string           | Yes, for existing    | String representing image format detected from header bytes, e.g. "Png" or "Gif" |
 | AutoDetectedFormat     | bool             | Yes, for Available   | Whether Magick.NET could automatically detect the image format from bytes        |
 | Signature              | string           | Yes, for Available   | Base64 encoded hash of the pixel data, independent from image format/codec       |
-| Width                  | int              | Yes, for Available   | Width of the image in pixels                                                     |
-| Height                 | int              | Yes, for Available   | Height of the image in pixels                                                    |
+| Width                  | long             | Yes, for Available   | Width of the image in pixels                                                     |
+| Height                 | long             | Yes, for Available   | Height of the image in pixels                                                    |
 | FrameCount             | int              | Yes, for Available   | Number of frames in an animated image, or one with multiple resolutions          |
 | IsOpaque               | bool             | Yes, for Available   | Whether or not all pixels are opaque (no transparency)                           |
 | FrameFormats           | array of strings | Yes, for Available   | Unique formats found in image frames, same order as frames                       |

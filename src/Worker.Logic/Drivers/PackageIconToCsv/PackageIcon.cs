@@ -31,8 +31,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
 
         public bool? AutoDetectedFormat { get; set; }
         public string Signature { get; set; }
-        public int? Width { get; set; }
-        public int? Height { get; set; }
+        public long? Width { get; set; }
+        public long? Height { get; set; }
         public int? FrameCount { get; set; }
         public bool? IsOpaque { get; set; }
 

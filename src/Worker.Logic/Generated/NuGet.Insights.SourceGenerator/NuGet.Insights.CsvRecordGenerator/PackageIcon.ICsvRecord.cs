@@ -29,8 +29,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         HeaderFormat: string,
         AutoDetectedFormat: bool,
         Signature: string,
-        Width: int,
-        Height: int,
+        Width: long,
+        Height: long,
         FrameCount: int,
         IsOpaque: bool,
         FrameFormats: dynamic,
@@ -68,8 +68,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         '{"Column":"HeaderFormat","DataType":"string","Properties":{"Ordinal":12}},'
         '{"Column":"AutoDetectedFormat","DataType":"bool","Properties":{"Ordinal":13}},'
         '{"Column":"Signature","DataType":"string","Properties":{"Ordinal":14}},'
-        '{"Column":"Width","DataType":"int","Properties":{"Ordinal":15}},'
-        '{"Column":"Height","DataType":"int","Properties":{"Ordinal":16}},'
+        '{"Column":"Width","DataType":"long","Properties":{"Ordinal":15}},'
+        '{"Column":"Height","DataType":"long","Properties":{"Ordinal":16}},'
         '{"Column":"FrameCount","DataType":"int","Properties":{"Ordinal":17}},'
         '{"Column":"IsOpaque","DataType":"bool","Properties":{"Ordinal":18}},'
         '{"Column":"FrameFormats","DataType":"dynamic","Properties":{"Ordinal":19}},'
@@ -228,8 +228,8 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
                 HeaderFormat = getNextField(),
                 AutoDetectedFormat = CsvUtility.ParseNullable(getNextField(), bool.Parse),
                 Signature = getNextField(),
-                Width = CsvUtility.ParseNullable(getNextField(), int.Parse),
-                Height = CsvUtility.ParseNullable(getNextField(), int.Parse),
+                Width = CsvUtility.ParseNullable(getNextField(), long.Parse),
+                Height = CsvUtility.ParseNullable(getNextField(), long.Parse),
                 FrameCount = CsvUtility.ParseNullable(getNextField(), int.Parse),
                 IsOpaque = CsvUtility.ParseNullable(getNextField(), bool.Parse),
                 FrameFormats = getNextField(),

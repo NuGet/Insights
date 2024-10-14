@@ -111,9 +111,9 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             // Assert
             await AssertCsvBlobAsync(DownloadsToCsv_JustV2Dir, Step1, "downloads_08585909578854775807.csv.gz");
             await AssertCsvBlobAsync(DownloadsToCsv_JustV2Dir, Step1, "latest_downloads.csv.gz");
-            Assert.Single(HttpMessageHandlerFactory.SuccessRequests.Where(r => r.Method == HttpMethod.Head && r.RequestUri.AbsolutePath.EndsWith("/downloads.v2.json", StringComparison.Ordinal)));
-            Assert.Single(HttpMessageHandlerFactory.SuccessRequests.Where(r => r.Method == HttpMethod.Head && r.RequestUri.AbsolutePath.EndsWith("/downloads.v1.json", StringComparison.Ordinal)));
-            Assert.Single(HttpMessageHandlerFactory.SuccessRequests.Where(r => r.Method == HttpMethod.Get && r.RequestUri.AbsolutePath.EndsWith("/downloads.v2.json", StringComparison.Ordinal)));
+            Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Head && r.RequestUri.AbsolutePath.EndsWith("/downloads.v2.json", StringComparison.Ordinal));
+            Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Head && r.RequestUri.AbsolutePath.EndsWith("/downloads.v1.json", StringComparison.Ordinal));
+            Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Get && r.RequestUri.AbsolutePath.EndsWith("/downloads.v2.json", StringComparison.Ordinal));
             Assert.DoesNotContain(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Get && r.RequestUri.AbsolutePath.EndsWith("/downloads.v1.json", StringComparison.Ordinal));
 
             // Arrange
