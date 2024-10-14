@@ -53,9 +53,9 @@ namespace {0}
     */
     partial {5} {6}
     {{
-        public int FieldCount => {7};
+        public static int FieldCount => {7};
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {{
 {8}
         }}
@@ -75,7 +75,7 @@ namespace {0}
 {11}
         }}
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static {6} ReadNew(Func<string> getNextField)
         {{
             return new {6}
             {{
@@ -209,7 +209,7 @@ namespace NuGet.Insights
                 var hasNoDDLAttribute = attributes.Any(x => SymbolEqualityComparer.Default.Equals(x.AttributeClass, noKustoDDLAttributeType));
 
                 ITypeSymbol typeSymbol = symbol;
-                if (!typeSymbol.Interfaces.OfType<INamedTypeSymbol>().Any(x => SymbolEqualityComparer.Default.Equals(interfaceType, x.OriginalDefinition)))
+                if (!typeSymbol.AllInterfaces.OfType<INamedTypeSymbol>().Any(x => SymbolEqualityComparer.Default.Equals(interfaceType, x.OriginalDefinition)))
                 {
                     continue;
                 }
@@ -389,25 +389,22 @@ namespace NuGet.Insights
             public List<RecordDeclarationSyntax> CandidateRecords { get; } = new List<RecordDeclarationSyntax>();
 
             public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
-            {
-                if (syntaxNode is ClassDeclarationSyntax classDeclarationSyntax && HasInterface(classDeclarationSyntax.BaseList))
+            { 
+                if (syntaxNode is ClassDeclarationSyntax classDeclarationSyntax && IsCandidateDeclaration(classDeclarationSyntax))
                 {
                     CandidateClasses.Add(classDeclarationSyntax);
                 }
-                else if (syntaxNode is RecordDeclarationSyntax recordDeclarationSyntax && HasInterface(recordDeclarationSyntax.BaseList))
+                else if (syntaxNode is RecordDeclarationSyntax recordDeclarationSyntax && IsCandidateDeclaration(recordDeclarationSyntax))
                 {
                     CandidateRecords.Add(recordDeclarationSyntax);
                 }
             }
 
-            private static bool HasInterface(BaseListSyntax baseList)
+            private static bool IsCandidateDeclaration<T>(T declaration) where T : TypeDeclarationSyntax
             {
-                return baseList?
-                    .Types
-                    .Select(x => x.Type)
-                    .OfType<SimpleNameSyntax>()
-                    .Select(x => x.Identifier.Text)
-                    .Any(x => x.IndexOf(InterfaceNameSuffix, StringComparison.OrdinalIgnoreCase) > -1) ?? false;
+                return declaration.BaseList?.Types.Any() == true
+                    && declaration.Modifiers.Any(SyntaxKind.PublicKeyword)
+                    && !declaration.Modifiers.Any(SyntaxKind.AbstractKeyword);
             }
         }
     }

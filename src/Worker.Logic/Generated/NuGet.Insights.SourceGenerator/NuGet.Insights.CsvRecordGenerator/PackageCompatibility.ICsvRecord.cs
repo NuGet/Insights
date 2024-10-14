@@ -78,9 +78,9 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
     */
     partial record PackageCompatibility
     {
-        public int FieldCount => 21;
+        public static int FieldCount => 21;
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {
             writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,HasError,DoesNotRoundTrip,HasAny,HasUnsupported,HasAgnostic,BrokenFrameworks,NuspecReader,NU1202,NuGetGallery,NuGetGalleryEscaped,NuGetGallerySupported,NuGetGalleryBadges");
         }
@@ -202,7 +202,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
             await writer.WriteLineAsync();
         }
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static PackageCompatibility ReadNew(Func<string> getNextField)
         {
             return new PackageCompatibility
             {

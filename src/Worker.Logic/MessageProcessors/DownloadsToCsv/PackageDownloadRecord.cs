@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NuGet.Insights.Worker.DownloadsToCsv
 {
-    public partial record PackageDownloadRecord : IPackageDownloadRecord, ICsvRecord
+    public partial record PackageDownloadRecord : IPackageDownloadRecord<PackageDownloadRecord>
     {
         [KustoIgnore]
         public DateTimeOffset AsOfTimestamp { get; set; }

@@ -169,7 +169,7 @@ namespace NuGet.Insights.Worker
             await _wideEntityService.DeleteTableAsync(srcTable);
         }
 
-        public async Task<IReadOnlyList<T>> ReadAsync<T>(string destContainer, int bucket) where T : ICsvRecord
+        public async Task<IReadOnlyList<T>> ReadAsync<T>(string destContainer, int bucket) where T : ICsvRecord<T>
         {
             var compactBlob = await GetCompactBlobClientAsync(destContainer, bucket);
 
@@ -888,7 +888,7 @@ namespace NuGet.Insights.Worker
             return recordCount;
         }
 
-        private async Task<(List<T> records, BlobDownloadDetails details)> DeserializeBlobAsync<T>(BlockBlobClient blob) where T : ICsvRecord
+        private async Task<(List<T> records, BlobDownloadDetails details)> DeserializeBlobAsync<T>(BlockBlobClient blob) where T : ICsvRecord<T>
         {
             var bufferSize = 32 * 1024;
             do
@@ -913,7 +913,7 @@ namespace NuGet.Insights.Worker
         }
 
         private async Task<(CsvReaderResult<T> result, BlobDownloadDetails details)> DeserializeBlobAsync<T>(BlockBlobClient blob, int bufferSize)
-            where T : ICsvRecord
+            where T : ICsvRecord<T>
         {
             using BlobDownloadStreamingResult info = await blob.DownloadStreamingAsync();
             var readStream = info.Content;
@@ -982,7 +982,7 @@ namespace NuGet.Insights.Worker
             return MessagePackSerializer.Deserialize<List<T>>(stream, NuGetInsightsMessagePack.Options);
         }
 
-        private MemoryStream SerializeToMemory<T>(IEnumerable<T> records, bool writeHeader, out long uncompressedSize) where T : ICsvRecord
+        private MemoryStream SerializeToMemory<T>(IEnumerable<T> records, bool writeHeader, out long uncompressedSize) where T : ICsvRecord<T>
         {
             var memoryStream = new MemoryStream();
             using (var gzipStream = new GZipStream(memoryStream, CompressionLevel.Optimal, leaveOpen: true))
@@ -996,13 +996,13 @@ namespace NuGet.Insights.Worker
             return memoryStream;
         }
 
-        private void SerializeRecords<T>(IEnumerable<T> records, Stream destination, bool writeHeader) where T : ICsvRecord
+        private void SerializeRecords<T>(IEnumerable<T> records, Stream destination, bool writeHeader) where T : ICsvRecord<T>
         {
             using StreamWriter streamWriter = GetStreamWriter<T>(destination, writeHeader);
             SerializeRecords(records, streamWriter);
         }
 
-        private StreamWriter GetStreamWriter<T>(Stream destination, bool writeHeader) where T : ICsvRecord
+        private StreamWriter GetStreamWriter<T>(Stream destination, bool writeHeader) where T : ICsvRecord<T>
         {
             var streamWriter = new StreamWriter(destination, new UTF8Encoding(false), bufferSize: 1024, leaveOpen: true)
             {
@@ -1017,7 +1017,7 @@ namespace NuGet.Insights.Worker
             return streamWriter;
         }
 
-        private static void SerializeRecords<T>(IEnumerable<T> records, TextWriter streamWriter) where T : ICsvRecord
+        private static void SerializeRecords<T>(IEnumerable<T> records, TextWriter streamWriter) where T : ICsvRecord<T>
         {
             foreach (var record in records)
             {

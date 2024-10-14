@@ -7,7 +7,7 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace NuGet.Insights.Worker.PackageSignatureToCsv
 {
-    public partial record PackageSignature : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageSignature>
+    public partial record PackageSignature : PackageRecord, IAggregatedCsvRecord<PackageSignature>
     {
         public PackageSignature()
         {

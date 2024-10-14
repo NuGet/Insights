@@ -5,12 +5,9 @@ namespace NuGet.Insights
 {
     public interface ICsvRecord
     {
-        int FieldCount { get; }
-        void WriteHeader(TextWriter writer);
         void Write(List<string> fields);
         void Write(TextWriter writer);
         Task WriteAsync(TextWriter writer);
-        ICsvRecord ReadNew(Func<string> getNextField);
 
         /// <summary>
         /// Set all null properties on the CSV record to an empty string. This is done as an initialization step prior
@@ -20,5 +17,13 @@ namespace NuGet.Insights
         /// against deserialized ones.
         /// </summary>
         void SetEmptyStrings();
+    }
+
+    public interface ICsvRecord<T> : ICsvRecord, IEquatable<T> where T : ICsvRecord
+    {
+        static abstract int FieldCount { get; }
+        static abstract void WriteHeader(TextWriter writer);
+
+        static abstract T ReadNew(Func<string> getNextField);
     }
 }

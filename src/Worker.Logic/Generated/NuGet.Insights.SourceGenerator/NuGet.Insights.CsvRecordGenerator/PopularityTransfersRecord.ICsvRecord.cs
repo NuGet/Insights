@@ -48,9 +48,9 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
     */
     partial record PopularityTransfersRecord
     {
-        public int FieldCount => 5;
+        public static int FieldCount => 5;
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {
             writer.WriteLine("AsOfTimestamp,LowerId,Id,TransferIds,TransferLowerIds");
         }
@@ -92,7 +92,7 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             await writer.WriteLineAsync();
         }
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static PopularityTransfersRecord ReadNew(Func<string> getNextField)
         {
             return new PopularityTransfersRecord
             {

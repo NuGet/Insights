@@ -46,9 +46,9 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
     */
     partial record VerifiedPackageRecord
     {
-        public int FieldCount => 4;
+        public static int FieldCount => 4;
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {
             writer.WriteLine("AsOfTimestamp,LowerId,Id,IsVerified");
         }
@@ -85,7 +85,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             await writer.WriteLineAsync();
         }
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static VerifiedPackageRecord ReadNew(Func<string> getNextField)
         {
             return new VerifiedPackageRecord
             {

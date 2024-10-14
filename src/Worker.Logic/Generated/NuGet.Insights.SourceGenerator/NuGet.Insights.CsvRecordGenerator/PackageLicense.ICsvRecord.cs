@@ -78,9 +78,9 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
     */
     partial record PackageLicense
     {
-        public int FieldCount => 21;
+        public static int FieldCount => 21;
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {
             writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Url,Expression,File,GeneratedUrl,ExpressionParsed,ExpressionLicenses,ExpressionExceptions,ExpressionNonStandardLicenses,ExpressionHasDeprecatedIdentifier,FileLength,FileSHA256,FileContent");
         }
@@ -202,7 +202,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             await writer.WriteLineAsync();
         }
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static PackageLicense ReadNew(Func<string> getNextField)
         {
             return new PackageLicense
             {

@@ -46,9 +46,9 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
     */
     partial record ExcludedPackageRecord
     {
-        public int FieldCount => 4;
+        public static int FieldCount => 4;
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {
             writer.WriteLine("AsOfTimestamp,LowerId,Id,IsExcluded");
         }
@@ -85,7 +85,7 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
             await writer.WriteLineAsync();
         }
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static ExcludedPackageRecord ReadNew(Func<string> getNextField)
         {
             return new ExcludedPackageRecord
             {

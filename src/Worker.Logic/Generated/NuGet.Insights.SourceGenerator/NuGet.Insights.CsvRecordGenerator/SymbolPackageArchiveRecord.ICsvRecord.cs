@@ -78,9 +78,9 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
     */
     partial record SymbolPackageArchiveRecord
     {
-        public int FieldCount => 21;
+        public static int FieldCount => 21;
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {
             writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Size,OffsetAfterEndOfCentralDirectory,CentralDirectorySize,OffsetOfCentralDirectory,EntryCount,Comment,HeaderMD5,HeaderSHA512,MD5,SHA1,SHA256,SHA512");
         }
@@ -202,7 +202,7 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
             await writer.WriteLineAsync();
         }
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static SymbolPackageArchiveRecord ReadNew(Func<string> getNextField)
         {
             return new SymbolPackageArchiveRecord
             {

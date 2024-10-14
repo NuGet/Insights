@@ -34,10 +34,11 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
 
         public async Task<long> WriteAsync(IVersionSet versionSet, AsOfData<PopularityTransfer> data, TextWriter writer)
         {
-            var record = new PopularityTransfersRecord { AsOfTimestamp = data.AsOfTimestamp };
-            record.WriteHeader(writer);
+            PopularityTransfersRecord.WriteHeader(writer);
+
             long recordCount = 0;
 
+            var record = new PopularityTransfersRecord { AsOfTimestamp = data.AsOfTimestamp };
             var idToTransferIds = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
             await foreach (var entry in data.Entries)
             {

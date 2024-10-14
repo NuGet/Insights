@@ -94,9 +94,9 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
     */
     partial record PackageVersionRecord
     {
-        public int FieldCount => 29;
+        public static int FieldCount => 29;
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {
             writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,OriginalVersion,FullVersion,Major,Minor,Patch,Revision,Release,ReleaseLabels,Metadata,IsPrerelease,IsListed,IsSemVer2,SemVerType,SemVerOrder,IsLatest,IsLatestStable,IsLatestSemVer2,IsLatestStableSemVer2,Published,LastEdited");
         }
@@ -258,7 +258,7 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
             await writer.WriteLineAsync();
         }
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static PackageVersionRecord ReadNew(Func<string> getNextField)
         {
             return new PackageVersionRecord
             {

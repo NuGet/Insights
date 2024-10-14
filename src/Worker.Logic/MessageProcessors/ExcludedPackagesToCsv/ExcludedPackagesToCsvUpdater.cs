@@ -34,8 +34,8 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
 
         public async Task<long> WriteAsync(IVersionSet versionSet, AsOfData<ExcludedPackage> data, TextWriter writer)
         {
-            var record = new ExcludedPackageRecord { AsOfTimestamp = data.AsOfTimestamp };
-            record.WriteHeader(writer);
+            ExcludedPackageRecord.WriteHeader(writer);
+
             long recordCount = 0;
 
             var verifiedPackageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -50,6 +50,7 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
                 verifiedPackageIds.Add(id);
             }
 
+            var record = new ExcludedPackageRecord { AsOfTimestamp = data.AsOfTimestamp };
             foreach (var packageId in verifiedPackageIds)
             {
                 record.LowerId = packageId.ToLowerInvariant();

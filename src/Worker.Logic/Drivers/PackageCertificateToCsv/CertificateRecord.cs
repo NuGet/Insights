@@ -8,7 +8,7 @@ using NuGet.Services.Validation;
 
 namespace NuGet.Insights.Worker.PackageCertificateToCsv
 {
-    public partial record CertificateRecord : ICsvRecord, IAggregatedCsvRecord<CertificateRecord>, ICleanupOrphanCsvRecord
+    public partial record CertificateRecord : IAggregatedCsvRecord<CertificateRecord>, ICleanupOrphanCsvRecord
     {
         public CertificateRecord()
         {

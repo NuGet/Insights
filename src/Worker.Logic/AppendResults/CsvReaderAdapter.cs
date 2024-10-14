@@ -25,19 +25,18 @@ namespace NuGet.Insights.Worker
             _logger = logger;
         }
 
-        public string GetHeader<T>() where T : ICsvRecord
+        public string GetHeader<T>() where T : ICsvRecord<T>
         {
             var type = typeof(T);
             return TypeToHeader.GetOrAdd(type, _ =>
             {
-                var headerWriter = Activator.CreateInstance<T>();
                 using var stringWriter = new StringWriter();
-                headerWriter.WriteHeader(stringWriter);
+                T.WriteHeader(stringWriter);
                 return stringWriter.ToString().TrimEnd();
             });
         }
 
-        public IEnumerable<T> GetRecordsEnumerable<T>(TextReader reader, int bufferSize) where T : ICsvRecord
+        public IEnumerable<T> GetRecordsEnumerable<T>(TextReader reader, int bufferSize) where T : ICsvRecord<T>
         {
             ValidateHeader<T>(reader);
 
@@ -46,12 +45,11 @@ namespace NuGet.Insights.Worker
             try
             {
                 using var csvReader = GetCsvDataReader(reader, buffer);
-                var factory = Activator.CreateInstance<T>();
 
                 while (csvReader.Read())
                 {
                     var i = 0;
-                    var record = (T)factory.ReadNew(() => csvReader.GetString(i++));
+                    var record = T.ReadNew(() => csvReader.GetString(i++));
                     yield return record;
                 }
             }
@@ -61,7 +59,7 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        public CsvReaderResult<T> GetRecords<T>(TextReader reader, int bufferSize) where T : ICsvRecord
+        public CsvReaderResult<T> GetRecords<T>(TextReader reader, int bufferSize) where T : ICsvRecord<T>
         {
             ValidateHeader<T>(reader);
 
@@ -71,7 +69,6 @@ namespace NuGet.Insights.Worker
             try
             {
                 using var csvReader = GetCsvDataReader(reader, buffer);
-                var factory = Activator.CreateInstance<T>();
 
                 while (csvReader.Read())
                 {
@@ -79,7 +76,7 @@ namespace NuGet.Insights.Worker
                     ICsvRecord record;
                     try
                     {
-                        record = factory.ReadNew(() => csvReader.GetString(i++));
+                        record = T.ReadNew(() => csvReader.GetString(i++));
                     }
                     catch (Exception ex)
                     {
@@ -114,7 +111,7 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        private void ValidateHeader<T>(TextReader reader) where T : ICsvRecord
+        private void ValidateHeader<T>(TextReader reader) where T : ICsvRecord<T>
         {
             var actualHeader = reader.ReadLine();
             var expectedHeader = GetHeader<T>();

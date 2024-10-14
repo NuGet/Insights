@@ -62,9 +62,9 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
     */
     partial record PackageReadme
     {
-        public int FieldCount => 13;
+        public static int FieldCount => 13;
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {
             writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Size,LastModified,SHA256,Content");
         }
@@ -146,7 +146,7 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
             await writer.WriteLineAsync();
         }
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static PackageReadme ReadNew(Func<string> getNextField)
         {
             return new PackageReadme
             {

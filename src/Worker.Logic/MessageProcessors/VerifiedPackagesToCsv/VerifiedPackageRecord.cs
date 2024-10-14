@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
 {
-    public partial record VerifiedPackageRecord : ICsvRecord
+    public partial record VerifiedPackageRecord : ICsvRecord<VerifiedPackageRecord>
     {
         [KustoIgnore]
         public DateTimeOffset AsOfTimestamp { get; set; }

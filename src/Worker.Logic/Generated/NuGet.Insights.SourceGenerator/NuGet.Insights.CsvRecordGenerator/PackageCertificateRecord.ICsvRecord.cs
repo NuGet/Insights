@@ -58,9 +58,9 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
     */
     partial record PackageCertificateRecord
     {
-        public int FieldCount => 11;
+        public static int FieldCount => 11;
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {
             writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Fingerprint,RelationshipTypes");
         }
@@ -132,7 +132,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             await writer.WriteLineAsync();
         }
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static PackageCertificateRecord ReadNew(Func<string> getNextField)
         {
             return new PackageCertificateRecord
             {

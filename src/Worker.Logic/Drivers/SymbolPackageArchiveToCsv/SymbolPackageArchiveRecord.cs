@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
 {
-    public partial record SymbolPackageArchiveRecord : ArchiveRecord, ICsvRecord, IAggregatedCsvRecord<SymbolPackageArchiveRecord>
+    public partial record SymbolPackageArchiveRecord : ArchiveRecord, IAggregatedCsvRecord<SymbolPackageArchiveRecord>
     {
         public SymbolPackageArchiveRecord()
         {

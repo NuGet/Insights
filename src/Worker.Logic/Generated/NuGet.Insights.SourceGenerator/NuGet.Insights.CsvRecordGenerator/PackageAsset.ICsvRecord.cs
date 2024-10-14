@@ -92,9 +92,9 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
     */
     partial record PackageAsset
     {
-        public int FieldCount => 28;
+        public static int FieldCount => 28;
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {
             writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,PatternSet,PropertyAnyValue,PropertyCodeLanguage,PropertyTargetFrameworkMoniker,PropertyLocale,PropertyManagedAssembly,PropertyMSBuild,PropertyRuntimeIdentifier,PropertySatelliteAssembly,Path,FileName,FileExtension,TopLevelFolder,RoundTripTargetFrameworkMoniker,FrameworkName,FrameworkVersion,FrameworkProfile,PlatformName,PlatformVersion");
         }
@@ -251,7 +251,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             await writer.WriteLineAsync();
         }
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static PackageAsset ReadNew(Func<string> getNextField)
         {
             return new PackageAsset
             {

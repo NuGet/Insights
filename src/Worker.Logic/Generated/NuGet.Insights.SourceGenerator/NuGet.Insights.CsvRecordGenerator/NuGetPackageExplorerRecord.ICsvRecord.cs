@@ -62,9 +62,9 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
     */
     partial record NuGetPackageExplorerRecord
     {
-        public int FieldCount => 13;
+        public static int FieldCount => 13;
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {
             writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,SourceLinkResult,DeterministicResult,CompilerFlagsResult,IsSignedByAuthor");
         }
@@ -146,7 +146,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             await writer.WriteLineAsync();
         }
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static NuGetPackageExplorerRecord ReadNew(Func<string> getNextField)
         {
             return new NuGetPackageExplorerRecord
             {

@@ -8,7 +8,7 @@ namespace NuGet.Insights.Worker
         string GetBucketKey();
     }
 
-    public interface IAggregatedCsvRecord<T> : IAggregatedCsvRecord, IEquatable<T>, IComparable<T>
+    public interface IAggregatedCsvRecord<T> : IAggregatedCsvRecord, ICsvRecord<T>, IComparable<T> where T : IAggregatedCsvRecord<T>
     {
         /// <summary>
         /// Prune the provided records to remove duplicate or old data. Packages are unlisted, relisted, reflowed, or

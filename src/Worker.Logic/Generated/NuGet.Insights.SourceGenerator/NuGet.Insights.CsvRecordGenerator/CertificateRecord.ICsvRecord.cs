@@ -98,9 +98,9 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
     */
     partial record CertificateRecord
     {
-        public int FieldCount => 31;
+        public static int FieldCount => 31;
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {
             writer.WriteLine("ScanId,ScanTimestamp,ResultType,Fingerprint,FingerprintSHA256Hex,FingerprintSHA1Hex,Subject,Issuer,NotBefore,NotAfter,SerialNumber,SignatureAlgorithmOid,Version,Extensions,PublicKeyOid,RawDataLength,RawData,IssuerFingerprint,RootFingerprint,ChainLength,CodeSigningCommitTimestamp,CodeSigningStatus,CodeSigningStatusFlags,CodeSigningStatusUpdateTime,CodeSigningRevocationTime,TimestampingCommitTimestamp,TimestampingStatus,TimestampingStatusFlags,TimestampingStatusUpdateTime,TimestampingRevocationTime,Policies");
         }
@@ -272,7 +272,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             await writer.WriteLineAsync();
         }
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static CertificateRecord ReadNew(Func<string> getNextField)
         {
             return new CertificateRecord
             {

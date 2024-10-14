@@ -80,9 +80,9 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
     */
     partial record PackageIcon
     {
-        public int FieldCount => 22;
+        public static int FieldCount => 22;
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {
             writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,FileLength,FileSHA256,ContentType,HeaderFormat,AutoDetectedFormat,Signature,Width,Height,FrameCount,IsOpaque,FrameFormats,FrameDimensions,FrameAttributeNames");
         }
@@ -209,7 +209,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             await writer.WriteLineAsync();
         }
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static PackageIcon ReadNew(Func<string> getNextField)
         {
             return new PackageIcon
             {

@@ -52,9 +52,9 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
     */
     partial record PackageDownloadRecord
     {
-        public int FieldCount => 7;
+        public static int FieldCount => 7;
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {
             writer.WriteLine("AsOfTimestamp,LowerId,Identity,Id,Version,Downloads,TotalDownloads");
         }
@@ -106,7 +106,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             await writer.WriteLineAsync();
         }
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static PackageDownloadRecord ReadNew(Func<string> getNextField)
         {
             return new PackageDownloadRecord
             {

@@ -34,8 +34,8 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
 
         public async Task<long> WriteAsync(IVersionSet versionSet, AsOfData<VerifiedPackage> data, TextWriter writer)
         {
-            var record = new VerifiedPackageRecord { AsOfTimestamp = data.AsOfTimestamp };
-            record.WriteHeader(writer);
+            VerifiedPackageRecord.WriteHeader(writer);
+
             long recordCount = 0;
 
             var verifiedPackageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -50,6 +50,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
                 verifiedPackageIds.Add(id);
             }
 
+            var record = new VerifiedPackageRecord { AsOfTimestamp = data.AsOfTimestamp };
             foreach (var packageId in verifiedPackageIds)
             {
                 record.LowerId = packageId.ToLowerInvariant();

@@ -74,9 +74,9 @@ namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
     */
     partial record SymbolPackageFileRecord
     {
-        public int FieldCount => 19;
+        public static int FieldCount => 19;
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {
             writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,SequenceNumber,Path,FileName,FileExtension,TopLevelFolder,CompressedLength,EntryUncompressedLength,ActualUncompressedLength,SHA256,First16Bytes");
         }
@@ -188,7 +188,7 @@ namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
             await writer.WriteLineAsync();
         }
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static SymbolPackageFileRecord ReadNew(Func<string> getNextField)
         {
             return new SymbolPackageFileRecord
             {

@@ -6,7 +6,7 @@ using MessagePack.Formatters;
 
 namespace NuGet.Insights
 {
-    public class CsvRecordFormatter<T> : IMessagePackFormatter<T> where T : ICsvRecord
+    public class CsvRecordFormatter<T> : IMessagePackFormatter<T> where T : ICsvRecord<T>
     {
         public void Serialize(ref MessagePackWriter writer, T value, MessagePackSerializerOptions options)
         {
@@ -19,13 +19,13 @@ namespace NuGet.Insights
             var fields = CsvRecordFormatterResolver.ListPool.Get();
             try
             {
-                if (value.FieldCount > fields.Capacity)
+                if (T.FieldCount > fields.Capacity)
                 {
-                    fields.Capacity = value.FieldCount;
+                    fields.Capacity = T.FieldCount;
                 }
 
                 value.Write(fields);
-                writer.WriteArrayHeader(value.FieldCount);
+                writer.WriteArrayHeader(T.FieldCount);
                 foreach (var field in fields)
                 {
                     writer.Write(field);
@@ -36,8 +36,6 @@ namespace NuGet.Insights
                 CsvRecordFormatterResolver.ListPool.Return(fields);
             }
         }
-
-        private static readonly T Factory = Activator.CreateInstance<T>();
 
         public T Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
@@ -61,7 +59,7 @@ namespace NuGet.Insights
                 reader.Depth--;
 
                 i = 0;
-                return (T)Factory.ReadNew(() => fields[i++]);
+                return T.ReadNew(() => fields[i++]);
             }
             finally
             {

@@ -6,7 +6,7 @@ using NuGetPe;
 
 namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
 {
-    public partial record NuGetPackageExplorerRecord : PackageRecord, ICsvRecord, IAggregatedCsvRecord<NuGetPackageExplorerRecord>
+    public partial record NuGetPackageExplorerRecord : PackageRecord, IAggregatedCsvRecord<NuGetPackageExplorerRecord>
     {
         public NuGetPackageExplorerRecord()
         {

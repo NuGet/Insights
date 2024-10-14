@@ -46,9 +46,9 @@ namespace NuGet.Insights.Worker.OwnersToCsv
     */
     partial record PackageOwnerRecord
     {
-        public int FieldCount => 4;
+        public static int FieldCount => 4;
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {
             writer.WriteLine("AsOfTimestamp,LowerId,Id,Owners");
         }
@@ -85,7 +85,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             await writer.WriteLineAsync();
         }
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static PackageOwnerRecord ReadNew(Func<string> getNextField)
         {
             return new PackageOwnerRecord
             {

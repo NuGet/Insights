@@ -34,10 +34,11 @@ namespace NuGet.Insights.Worker.OwnersToCsv
 
         public async Task<long> WriteAsync(IVersionSet versionSet, AsOfData<PackageOwner> data, TextWriter writer)
         {
-            var record = new PackageOwnerRecord { AsOfTimestamp = data.AsOfTimestamp };
-            record.WriteHeader(writer);
+            PackageOwnerRecord.WriteHeader(writer);
+
             long recordCount = 0;
 
+            var record = new PackageOwnerRecord { AsOfTimestamp = data.AsOfTimestamp };
             var idToOwners = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
             await foreach (var entry in data.Entries)
             {

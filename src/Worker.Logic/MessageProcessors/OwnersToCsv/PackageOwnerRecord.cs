@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker.OwnersToCsv
 {
-    public partial record PackageOwnerRecord : ICsvRecord
+    public partial record PackageOwnerRecord : ICsvRecord<PackageOwnerRecord>
     {
         [KustoIgnore]
         public DateTimeOffset AsOfTimestamp { get; set; }

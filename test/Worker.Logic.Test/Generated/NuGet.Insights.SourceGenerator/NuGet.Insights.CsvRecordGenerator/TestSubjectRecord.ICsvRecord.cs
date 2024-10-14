@@ -46,9 +46,9 @@ namespace NuGet.Insights.Worker.ReferenceTracking
     */
     partial record TestSubjectRecord
     {
-        public int FieldCount => 3;
+        public static int FieldCount => 3;
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {
             writer.WriteLine("BucketKey,Id,IsOrphan");
         }
@@ -80,7 +80,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             await writer.WriteLineAsync();
         }
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static TestSubjectRecord ReadNew(Func<string> getNextField)
         {
             return new TestSubjectRecord
             {

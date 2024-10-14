@@ -38,9 +38,14 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             return await WriteAsync(versionSet, record, data.Entries, writer);
         }
 
-        public static async Task<long> WriteAsync(IVersionSet versionSet, IPackageDownloadRecord record, IAsyncEnumerable<PackageDownloads> entries, TextWriter writer)
+        public static async Task<long> WriteAsync<T>(
+            IVersionSet versionSet,
+            IPackageDownloadRecord<T> record,
+            IAsyncEnumerable<PackageDownloads> entries,
+            TextWriter writer) where T : IPackageDownloadRecord<T>
         {
-            record.WriteHeader(writer);
+            T.WriteHeader(writer);
+
             long recordCount = 0;
 
             var idToVersions = new CaseInsensitiveDictionary<CaseInsensitiveDictionary<long>>();
@@ -103,7 +108,11 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             return recordCount;
         }
 
-        private static long WriteAndClear(TextWriter writer, IPackageDownloadRecord record, CaseInsensitiveDictionary<CaseInsensitiveDictionary<long>> idToVersions, IVersionSet versionSet)
+        private static long WriteAndClear<T>(
+            TextWriter writer,
+            IPackageDownloadRecord<T> record,
+            CaseInsensitiveDictionary<CaseInsensitiveDictionary<long>> idToVersions,
+            IVersionSet versionSet) where T : IPackageDownloadRecord<T>
         {
             var recordCount = 0;
 

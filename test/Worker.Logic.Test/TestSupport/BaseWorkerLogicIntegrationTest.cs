@@ -575,9 +575,8 @@ namespace NuGet.Insights.Worker
             decompressedStream.Position = 0;
 
             // verify the header
-            var headerFactory = (ICsvRecord)Activator.CreateInstance(recordType);
             var stringWriter = new StringWriter { NewLine = "\n" };
-            headerFactory.WriteHeader(stringWriter);
+            recordType.GetMethod(nameof(ICsvRecord<ICsvRecord>.WriteHeader)).Invoke(null, [stringWriter]);
             Assert.StartsWith(stringWriter.ToString(), actual, StringComparison.Ordinal);
 
             // verify the record count

@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker.PackageFileToCsv
 {
-    public partial record PackageFileRecord : FileRecord, ICsvRecord, IAggregatedCsvRecord<PackageFileRecord>
+    public partial record PackageFileRecord : FileRecord, IAggregatedCsvRecord<PackageFileRecord>
     {
         public PackageFileRecord()
         {

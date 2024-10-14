@@ -116,9 +116,9 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
     */
     partial record PackageSignature
     {
-        public int FieldCount => 40;
+        public static int FieldCount => 40;
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {
             writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,HashAlgorithm,HashValue,AuthorSHA1,AuthorSHA256,AuthorSubject,AuthorNotBefore,AuthorNotAfter,AuthorIssuer,AuthorTimestampSHA1,AuthorTimestampSHA256,AuthorTimestampSubject,AuthorTimestampNotBefore,AuthorTimestampNotAfter,AuthorTimestampIssuer,AuthorTimestampValue,AuthorTimestampHasASN1Error,RepositorySHA1,RepositorySHA256,RepositorySubject,RepositoryNotBefore,RepositoryNotAfter,RepositoryIssuer,RepositoryTimestampSHA1,RepositoryTimestampSHA256,RepositoryTimestampSubject,RepositoryTimestampNotBefore,RepositoryTimestampNotAfter,RepositoryTimestampIssuer,RepositoryTimestampValue,RepositoryTimestampHasASN1Error,PackageOwners");
         }
@@ -335,7 +335,7 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
             await writer.WriteLineAsync();
         }
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static PackageSignature ReadNew(Func<string> getNextField)
         {
             return new PackageSignature
             {

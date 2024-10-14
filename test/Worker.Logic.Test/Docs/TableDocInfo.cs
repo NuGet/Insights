@@ -14,9 +14,9 @@ namespace NuGet.Insights.Worker
             TableName = tableName;
             RecordType = KustoDDL.TypeToDefaultTableName.Single(x => x.Value == tableName).Key;
 
-            var recordInstance = (ICsvRecord)Activator.CreateInstance(RecordType);
-            using var csvHeaderWriter = new StringWriter();
-            recordInstance.WriteHeader(csvHeaderWriter);
+            var csvHeaderWriter = new StringWriter();
+            RecordType.GetMethod(nameof(ICsvRecord<ICsvRecord>.WriteHeader)).Invoke(null, [csvHeaderWriter]);
+
             NameToIndex = csvHeaderWriter
                 .ToString()
                 .Split(',')
@@ -26,7 +26,7 @@ namespace NuGet.Insights.Worker
             var nameToProperty = RecordType
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
                 .ToDictionary(x => x.Name);
-            nameToProperty.Remove(nameof(ICsvRecord.FieldCount));
+            nameToProperty.Remove(nameof(ICsvRecord<ICsvRecord>.FieldCount));
             NameToProperty = nameToProperty;
 
             var settings = new NuGetInsightsWorkerSettings();

@@ -118,9 +118,9 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
     */
     partial record PackageManifestRecord
     {
-        public int FieldCount => 41;
+        public static int FieldCount => 41;
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {
             writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Size,OriginalId,OriginalVersion,MinClientVersion,DevelopmentDependency,IsServiceable,Authors,Copyright,Description,Icon,IconUrl,Language,LicenseUrl,Owners,ProjectUrl,Readme,ReleaseNotes,RequireLicenseAcceptance,Summary,Tags,Title,PackageTypes,LicenseMetadata,RepositoryMetadata,ReferenceGroups,ContentFiles,DependencyGroups,FrameworkAssemblyGroups,FrameworkRefGroups,ContentFilesHasFormatException,DependencyGroupsHasMissingId,SplitTags");
         }
@@ -342,7 +342,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             await writer.WriteLineAsync();
         }
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static PackageManifestRecord ReadNew(Func<string> getNextField)
         {
             return new PackageManifestRecord
             {

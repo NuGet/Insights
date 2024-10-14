@@ -72,9 +72,9 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
     */
     partial record PackageContent
     {
-        public int FieldCount => 18;
+        public static int FieldCount => 18;
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {
             writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Path,FileExtension,SequenceNumber,Size,Truncated,TruncatedSize,SHA256,Content,DuplicateContent");
         }
@@ -181,7 +181,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             await writer.WriteLineAsync();
         }
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static PackageContent ReadNew(Func<string> getNextField)
         {
             return new PackageContent
             {

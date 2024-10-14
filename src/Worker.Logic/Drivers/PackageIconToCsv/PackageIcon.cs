@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NuGet.Insights.Worker.PackageIconToCsv
 {
-    public partial record PackageIcon : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageIcon>
+    public partial record PackageIcon : PackageRecord, IAggregatedCsvRecord<PackageIcon>
     {
         public PackageIcon()
         {

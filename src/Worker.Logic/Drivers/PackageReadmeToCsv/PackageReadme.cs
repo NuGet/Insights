@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NuGet.Insights.Worker.PackageReadmeToCsv
 {
-    public partial record PackageReadme : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageReadme>
+    public partial record PackageReadme : PackageRecord, IAggregatedCsvRecord<PackageReadme>
     {
         public PackageReadme()
         {

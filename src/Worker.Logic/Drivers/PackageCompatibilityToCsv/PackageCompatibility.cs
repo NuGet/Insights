@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 {
-    public partial record PackageCompatibility : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageCompatibility>
+    public partial record PackageCompatibility : PackageRecord, IAggregatedCsvRecord<PackageCompatibility>
     {
         public PackageCompatibility()
         {

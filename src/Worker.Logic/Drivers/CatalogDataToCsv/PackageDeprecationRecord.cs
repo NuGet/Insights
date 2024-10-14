@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NuGet.Insights.Worker.CatalogDataToCsv
 {
-    public partial record PackageDeprecationRecord : PackageRecord, ICsvRecord, IAggregatedCsvRecord<PackageDeprecationRecord>
+    public partial record PackageDeprecationRecord : PackageRecord, IAggregatedCsvRecord<PackageDeprecationRecord>
     {
         public PackageDeprecationRecord()
         {

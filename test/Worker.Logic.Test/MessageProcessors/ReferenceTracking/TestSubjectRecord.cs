@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NuGet.Insights.Worker.ReferenceTracking
 {
-    public partial record TestSubjectRecord : ICsvRecord, IAggregatedCsvRecord<TestSubjectRecord>, ICleanupOrphanCsvRecord
+    public partial record TestSubjectRecord : IAggregatedCsvRecord<TestSubjectRecord>, ICleanupOrphanCsvRecord
     {
         [KustoPartitionKey]
         public string BucketKey { get; set; }

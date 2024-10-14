@@ -92,9 +92,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
     */
     partial record PackageAssembly
     {
-        public int FieldCount => 28;
+        public static int FieldCount => 28;
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {
             writer.WriteLine("ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,SequenceNumber,Path,FileName,FileExtension,TopLevelFolder,FileLength,EdgeCases,AssemblyName,AssemblyVersion,Culture,PublicKeyToken,HashAlgorithm,HasPublicKey,PublicKeyLength,PublicKeySHA1,CustomAttributes,CustomAttributesFailedDecode,CustomAttributesTotalCount,CustomAttributesTotalDataLength");
         }
@@ -251,7 +251,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             await writer.WriteLineAsync();
         }
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static PackageAssembly ReadNew(Func<string> getNextField)
         {
             return new PackageAssembly
             {

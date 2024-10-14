@@ -84,9 +84,9 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
     */
     partial record CatalogLeafItemRecord
     {
-        public int FieldCount => 22;
+        public static int FieldCount => 22;
 
-        public void WriteHeader(TextWriter writer)
+        public static void WriteHeader(TextWriter writer)
         {
             writer.WriteLine("CommitId,CommitTimestamp,LowerId,Identity,Id,Version,Type,Url,PageUrl,Published,IsListed,Created,LastEdited,PackageSize,PackageHash,PackageHashAlgorithm,Deprecation,Vulnerabilities,HasRepositoryProperty,PackageEntryCount,NuspecPackageEntry,SignaturePackageEntry");
         }
@@ -213,7 +213,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             await writer.WriteLineAsync();
         }
 
-        public ICsvRecord ReadNew(Func<string> getNextField)
+        public static CatalogLeafItemRecord ReadNew(Func<string> getNextField)
         {
             return new CatalogLeafItemRecord
             {

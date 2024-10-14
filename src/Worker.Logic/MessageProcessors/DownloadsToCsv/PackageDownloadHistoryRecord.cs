@@ -4,7 +4,7 @@
 namespace NuGet.Insights.Worker.DownloadsToCsv
 {
     [NoKustoDDL]
-    public partial record PackageDownloadHistoryRecord : IPackageDownloadRecord, ICsvRecord
+    public partial record PackageDownloadHistoryRecord : IPackageDownloadRecord<PackageDownloadHistoryRecord>
     {
         public DateTimeOffset AsOfTimestamp { get; set; }
 
