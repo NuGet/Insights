@@ -389,7 +389,7 @@ namespace NuGet.Insights
             public List<RecordDeclarationSyntax> CandidateRecords { get; } = new List<RecordDeclarationSyntax>();
 
             public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
-            { 
+            {
                 if (syntaxNode is ClassDeclarationSyntax classDeclarationSyntax && IsCandidateDeclaration(classDeclarationSyntax))
                 {
                     CandidateClasses.Add(classDeclarationSyntax);
