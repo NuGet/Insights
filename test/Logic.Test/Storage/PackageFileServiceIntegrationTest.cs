@@ -100,7 +100,7 @@ namespace NuGet.Insights
             Assert.NotNull(info);
             Assert.True(info.Available);
             var nupkgRequests = HttpMessageHandlerFactory.SuccessRequests.Where(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg", StringComparison.Ordinal));
-            Assert.NotEmpty(nupkgRequests.Where(x => x.Method == HttpMethod.Get && x.Headers.Range is null));
+            Assert.Contains(nupkgRequests, x => x.Method == HttpMethod.Get && x.Headers.Range is null);
         }
 
         [Fact]
@@ -168,7 +168,7 @@ namespace NuGet.Insights
             Assert.NotNull(info);
             Assert.True(info.Available);
             var nupkgRequests = HttpMessageHandlerFactory.SuccessRequests.Where(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg", StringComparison.Ordinal));
-            Assert.NotEmpty(nupkgRequests.Where(x => x.Method == HttpMethod.Get && x.Headers.Range is null));
+            Assert.Contains(nupkgRequests, x => x.Method == HttpMethod.Get && x.Headers.Range is null);
         }
 
         [Fact]
