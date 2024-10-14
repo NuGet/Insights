@@ -154,7 +154,7 @@ namespace NuGet.Insights
                 table = StorageUtility.GetTableEndpoint(settings.StorageAccountName);
             }
 
-            using var httpClient = new HttpClient();
+            var httpClient = new HttpClient();
             httpClient.Timeout = TimeSpan.FromSeconds(20);
 
             foreach (var (endpoint, uri) in new[] { ("blob", blob), ("queue", queue), ("table", table) })
@@ -165,6 +165,12 @@ namespace NuGet.Insights
                     try
                     {
                         attempt++;
+
+                        if (attempt % 3 == 0)
+                        {
+                            httpClient.Dispose();
+                            httpClient = new HttpClient();
+                        }
 
                         using var request = new HttpRequestMessage(HttpMethod.Get, uri);
                         using var response = httpClient.Send(request);
@@ -199,6 +205,8 @@ namespace NuGet.Insights
                         {
                             messages.AppendLine("Ensure that the storage account exists.");
                         }
+
+                        httpClient.Dispose();
 
                         return new InvalidOperationException(
                             $"""
