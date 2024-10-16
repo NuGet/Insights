@@ -31,12 +31,8 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             return await _popularityTransfersClient.GetAsync();
         }
 
-        public async Task<long> WriteAsync(IVersionSet versionSet, AsOfData<PopularityTransfer> data, TextWriter writer)
+        public async IAsyncEnumerable<PopularityTransfersRecord> ProduceRecordsAsync(IVersionSet versionSet, AsOfData<PopularityTransfer> data)
         {
-            PopularityTransfersRecord.WriteHeader(writer);
-
-            long recordCount = 0;
-
             var record = new PopularityTransfersRecord { AsOfTimestamp = data.AsOfTimestamp };
             var idToTransferIds = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
             await foreach (var entry in data.Entries)
@@ -52,7 +48,10 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
                     // Only write when we move to the next ID. This ensures all of the popularity transfers from a given ID are in the same record.
                     if (idToTransferIds.Any())
                     {
-                        recordCount += WriteAndClear(writer, record, idToTransferIds);
+                        foreach (var inner in WriteAndClear(record, idToTransferIds))
+                        {
+                            yield return inner;
+                        }
                     }
 
                     transferIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -64,7 +63,10 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
 
             if (idToTransferIds.Any())
             {
-                recordCount += WriteAndClear(writer, record, idToTransferIds);
+                foreach (var inner in WriteAndClear(record, idToTransferIds))
+                {
+                    yield return inner;
+                }
             }
 
             // Add IDs that are not mentioned in the data and therefore have no popularity transfers. This makes joins on the
@@ -75,17 +77,12 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
                 record.Id = id;
                 record.TransferIds = "[]";
                 record.TransferLowerIds = "[]";
-                record.Write(writer);
-                recordCount++;
+                yield return record;
             }
-
-            return recordCount;
         }
 
-        private static long WriteAndClear(TextWriter writer, PopularityTransfersRecord record, Dictionary<string, HashSet<string>> fromIdToToIds)
+        private static IEnumerable<PopularityTransfersRecord> WriteAndClear(PopularityTransfersRecord record, Dictionary<string, HashSet<string>> fromIdToToIds)
         {
-            long recordCount = 0;
-
             foreach (var pair in fromIdToToIds)
             {
                 record.LowerId = pair.Key.ToLowerInvariant();
@@ -94,13 +91,10 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
                 var transferLowerIds = transferIds.Select(x => x.ToLowerInvariant()).ToList();
                 record.TransferIds = KustoDynamicSerializer.Serialize(transferIds);
                 record.TransferLowerIds = KustoDynamicSerializer.Serialize(transferLowerIds);
-                record.Write(writer);
-                recordCount++;
+                yield return record;
             }
 
             fromIdToToIds.Clear();
-
-            return recordCount;
         }
     }
 }
