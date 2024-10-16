@@ -18,5 +18,38 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
 
         [KustoType("dynamic")]
         public string TransferLowerIds { get; set; }
+
+        public static IEqualityComparer<PopularityTransfersRecord> KeyComparer => PopularityTransfersRecordKeyComparer.Instance;
+        public static IReadOnlyList<string> KeyFields { get; } = [nameof(LowerId)];
+
+        public int CompareTo(PopularityTransfersRecord other)
+        {
+            return string.CompareOrdinal(LowerId, other.LowerId);
+        }
+
+        public class PopularityTransfersRecordKeyComparer : IEqualityComparer<PopularityTransfersRecord>
+        {
+            public static PopularityTransfersRecordKeyComparer Instance { get; } = new PopularityTransfersRecordKeyComparer();
+
+            public bool Equals(PopularityTransfersRecord x, PopularityTransfersRecord y)
+            {
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                if (x is null || y is null)
+                {
+                    return false;
+                }
+
+                return x.LowerId == y.LowerId;
+            }
+
+            public int GetHashCode([DisallowNull] PopularityTransfersRecord obj)
+            {
+                return obj.LowerId.GetHashCode(StringComparison.Ordinal);
+            }
+        }
     }
 }

@@ -23,5 +23,38 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
 
         [Required]
         public long TotalDownloads { get; set; }
+
+        public static IEqualityComparer<PackageDownloadRecord> KeyComparer => PackageDownloadRecordKeyComparer.Instance;
+        public static IReadOnlyList<string> KeyFields { get; } = [nameof(Identity)];
+
+        public int CompareTo(PackageDownloadRecord other)
+        {
+            return string.CompareOrdinal(Identity, other.Identity);
+        }
+
+        public class PackageDownloadRecordKeyComparer : IEqualityComparer<PackageDownloadRecord>
+        {
+            public static PackageDownloadRecordKeyComparer Instance { get; } = new PackageDownloadRecordKeyComparer();
+
+            public bool Equals(PackageDownloadRecord x, PackageDownloadRecord y)
+            {
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                if (x is null || y is null)
+                {
+                    return false;
+                }
+
+                return x.Identity == y.Identity;
+            }
+
+            public int GetHashCode([DisallowNull] PackageDownloadRecord obj)
+            {
+                return obj.Identity.GetHashCode(StringComparison.Ordinal);
+            }
+        }
     }
 }

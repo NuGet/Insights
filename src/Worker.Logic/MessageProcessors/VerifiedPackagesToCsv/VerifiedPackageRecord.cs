@@ -17,5 +17,38 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
 
         [Required]
         public bool IsVerified { get; set; }
+
+        public static IEqualityComparer<VerifiedPackageRecord> KeyComparer => VerifiedPackageRecordKeyComparer.Instance;
+        public static IReadOnlyList<string> KeyFields { get; } = [nameof(LowerId)];
+
+        public int CompareTo(VerifiedPackageRecord other)
+        {
+            return string.CompareOrdinal(LowerId, other.LowerId);
+        }
+
+        public class VerifiedPackageRecordKeyComparer : IEqualityComparer<VerifiedPackageRecord>
+        {
+            public static VerifiedPackageRecordKeyComparer Instance { get; } = new VerifiedPackageRecordKeyComparer();
+
+            public bool Equals(VerifiedPackageRecord x, VerifiedPackageRecord y)
+            {
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                if (x is null || y is null)
+                {
+                    return false;
+                }
+
+                return x.LowerId == y.LowerId;
+            }
+
+            public int GetHashCode([DisallowNull] VerifiedPackageRecord obj)
+            {
+                return obj.LowerId.GetHashCode(StringComparison.Ordinal);
+            }
+        }
     }
 }
