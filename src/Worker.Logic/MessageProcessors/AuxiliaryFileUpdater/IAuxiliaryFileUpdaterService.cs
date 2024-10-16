@@ -3,7 +3,9 @@
 
 namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 {
-    public interface IAuxiliaryFileUpdaterService<T> : IAuxiliaryFileUpdaterService
+    public interface IAuxiliaryFileUpdaterService<TInput, TRecord> : IAuxiliaryFileUpdaterService
+        where TInput : IAsOfData
+        where TRecord : ICsvRecord<TRecord>
     {
     }
 

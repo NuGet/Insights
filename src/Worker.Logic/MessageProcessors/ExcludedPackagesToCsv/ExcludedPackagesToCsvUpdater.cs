@@ -6,7 +6,7 @@ using NuGet.Insights.Worker.BuildVersionSet;
 
 namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
 {
-    public class ExcludedPackagesToCsvUpdater : IAuxiliaryFileUpdater<AsOfData<ExcludedPackage>>
+    public class ExcludedPackagesToCsvUpdater : IAuxiliaryFileUpdater<AsOfData<ExcludedPackage>, ExcludedPackageRecord>
     {
         private readonly ExcludedPackagesClient _client;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -25,7 +25,6 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
         public TimeSpan Frequency => _options.Value.ExcludedPackagesToCsvFrequency;
         public bool HasRequiredConfiguration => _options.Value.ExcludedPackagesV1Urls is not null && _options.Value.ExcludedPackagesV1Urls.Count > 0;
         public bool AutoStart => _options.Value.AutoStartVerifiedPackagesToCsv;
-        public Type RecordType => typeof(ExcludedPackageRecord);
 
         public async Task<AsOfData<ExcludedPackage>> GetDataAsync()
         {

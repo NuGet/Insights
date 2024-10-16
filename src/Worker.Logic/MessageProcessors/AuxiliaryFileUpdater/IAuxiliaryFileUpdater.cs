@@ -10,15 +10,16 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
         string OperationName { get; }
         string BlobName { get; }
         string ContainerName { get; }
-        Type RecordType { get; }
         bool HasRequiredConfiguration { get; }
         bool AutoStart { get; }
         TimeSpan Frequency { get; }
     }
 
-    public interface IAuxiliaryFileUpdater<T> : IAuxiliaryFileUpdater where T : IAsOfData
+    public interface IAuxiliaryFileUpdater<TInput, TRecord> : IAuxiliaryFileUpdater
+        where TInput : IAsOfData
+        where TRecord : ICsvRecord<TRecord>
     {
-        Task<T> GetDataAsync();
-        Task<long> WriteAsync(IVersionSet versionSet, T data, TextWriter writer);
+        Task<TInput> GetDataAsync();
+        Task<long> WriteAsync(IVersionSet versionSet, TInput data, TextWriter writer);
     }
 }

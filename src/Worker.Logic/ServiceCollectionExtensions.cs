@@ -4,6 +4,7 @@
 using NuGet.Insights.Kusto;
 using NuGet.Insights.StorageNoOpRetry;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
+using NuGet.Insights.Worker.DownloadsToCsv;
 using NuGet.Insights.Worker.KustoIngestion;
 using NuGet.Insights.Worker.ReferenceTracking;
 using NuGet.Insights.Worker.TableCopy;
@@ -123,34 +124,34 @@ namespace NuGet.Insights.Worker
                 serviceCollection.AddSingleton(serviceType, implementationType);
             }
 
-            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IAuxiliaryFileUpdater<>)))
+            foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(IAuxiliaryFileUpdater<,>)))
             {
                 serviceCollection.AddSingleton(serviceType, implementationType);
                 serviceCollection.AddSingleton(typeof(IAuxiliaryFileUpdater), implementationType);
 
-                var dataType = serviceType.GenericTypeArguments.Single();
-                var messageType = typeof(AuxiliaryFileUpdaterMessage<>).MakeGenericType(dataType);
+                var inputType = serviceType.GenericTypeArguments[0];
+                var recordType = serviceType.GenericTypeArguments[1];
+                var messageType = typeof(AuxiliaryFileUpdaterMessage<>).MakeGenericType(inputType);
 
                 // Add the service
                 serviceCollection.AddSingleton(
-                    typeof(IAuxiliaryFileUpdaterService<>).MakeGenericType(dataType),
-                    typeof(AuxiliaryFileUpdaterService<>).MakeGenericType(dataType));
+                    typeof(IAuxiliaryFileUpdaterService<,>).MakeGenericType(inputType, recordType),
+                    typeof(AuxiliaryFileUpdaterService<,>).MakeGenericType(inputType, recordType));
 
                 serviceCollection.AddSingleton(
                     typeof(IAuxiliaryFileUpdaterService),
-                    typeof(AuxiliaryFileUpdaterService<>).MakeGenericType(dataType));
+                    typeof(AuxiliaryFileUpdaterService<,>).MakeGenericType(inputType, recordType));
 
                 // Add the generic CSV storage
                 var getContainerName = typeof(IAuxiliaryFileUpdater).GetProperty(nameof(IAuxiliaryFileUpdater.ContainerName));
-                var getRecordType = typeof(IAuxiliaryFileUpdater).GetProperty(nameof(IAuxiliaryFileUpdater.RecordType));
                 var getBlobName = typeof(IAuxiliaryFileUpdater).GetProperty(nameof(IAuxiliaryFileUpdater.BlobName));
                 serviceCollection.AddSingleton<ICsvRecordStorage>(x =>
                 {
                     var updater = x.GetRequiredService(serviceType);
-                    var blobName = AuxiliaryFileUpdaterProcessor<IAsOfData>.GetLatestBlobName((string)getBlobName.GetValue(updater));
+                    var blobName = AuxiliaryFileUpdaterProcessor<IAsOfData, PackageDownloadRecord>.GetLatestBlobName((string)getBlobName.GetValue(updater));
                     return new CsvRecordStorage(
                         (string)getContainerName.GetValue(updater),
-                        (Type)getRecordType.GetValue(updater),
+                        recordType,
                         blobName);
                 });
 
@@ -162,15 +163,15 @@ namespace NuGet.Insights.Worker
                 // Add the task state message processor
                 serviceCollection.AddSingleton(
                     typeof(ITaskStateMessageProcessor<>).MakeGenericType(messageType),
-                    typeof(AuxiliaryFileUpdaterProcessor<>).MakeGenericType(dataType));
+                    typeof(AuxiliaryFileUpdaterProcessor<,>).MakeGenericType(inputType, recordType));
 
                 // Add the timer
                 serviceCollection.AddSingleton(
                     typeof(ITimer),
-                    typeof(AuxiliaryFileUpdaterTimer<>).MakeGenericType(dataType));
+                    typeof(AuxiliaryFileUpdaterTimer<,>).MakeGenericType(inputType, recordType));
                 serviceCollection.AddSingleton(
                     typeof(IAuxiliaryFileUpdaterTimer),
-                    typeof(AuxiliaryFileUpdaterTimer<>).MakeGenericType(dataType));
+                    typeof(AuxiliaryFileUpdaterTimer<,>).MakeGenericType(inputType, recordType));
             }
 
             foreach ((var serviceType, var implementationType) in typeof(ServiceCollectionExtensions).Assembly.GetClassesImplementingGeneric(typeof(ITaskStateMessageProcessor<>)))

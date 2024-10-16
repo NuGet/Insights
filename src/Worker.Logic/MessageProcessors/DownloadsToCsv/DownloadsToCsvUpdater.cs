@@ -6,7 +6,7 @@ using NuGet.Insights.Worker.BuildVersionSet;
 
 namespace NuGet.Insights.Worker.DownloadsToCsv
 {
-    public class DownloadsToCsvUpdater : IAuxiliaryFileUpdater<AsOfData<PackageDownloads>>
+    public class DownloadsToCsvUpdater : IAuxiliaryFileUpdater<AsOfData<PackageDownloads>, PackageDownloadRecord>
     {
         private readonly PackageDownloadsClient _packageDownloadsClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -25,7 +25,6 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
         public TimeSpan Frequency => _options.Value.DownloadToCsvFrequency;
         public bool HasRequiredConfiguration => _options.Value.DownloadsV1Urls is not null && _options.Value.DownloadsV1Urls.Count > 0;
         public bool AutoStart => _options.Value.AutoStartDownloadToCsv;
-        public Type RecordType => typeof(PackageDownloadRecord);
 
         public async Task<AsOfData<PackageDownloads>> GetDataAsync()
         {

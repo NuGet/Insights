@@ -5,18 +5,20 @@ using Azure.Storage.Blobs;
 
 namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 {
-    public class AuxiliaryFileUpdaterService<T> : IAuxiliaryFileUpdaterService<T> where T : IAsOfData
+    public class AuxiliaryFileUpdaterService<TInput, TRecord> : IAuxiliaryFileUpdaterService<TInput, TRecord>
+        where TInput : IAsOfData
+        where TRecord : ICsvRecord<TRecord>
     {
         private static readonly string StorageSuffix = string.Empty;
 
-        private readonly IAuxiliaryFileUpdater<T> _updater;
+        private readonly IAuxiliaryFileUpdater<TInput, TRecord> _updater;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly TaskStateStorageService _taskStateStorageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly ServiceClientFactory _serviceClientFactory;
 
         public AuxiliaryFileUpdaterService(
-            IAuxiliaryFileUpdater<T> updater,
+            IAuxiliaryFileUpdater<TInput, TRecord> updater,
             IMessageEnqueuer messageEnqueuer,
             TaskStateStorageService taskStateStorageService,
             AutoRenewingStorageLeaseService leaseService,
@@ -79,7 +81,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
                     StorageSuffix,
                     _updater.OperationName,
                     StorageUtility.GenerateDescendingId().ToString());
-                await _messageEnqueuer.EnqueueAsync(new[] { new AuxiliaryFileUpdaterMessage<T> { TaskStateKey = taskStateKey } });
+                await _messageEnqueuer.EnqueueAsync(new[] { new AuxiliaryFileUpdaterMessage<TInput> { TaskStateKey = taskStateKey } });
                 await _taskStateStorageService.GetOrAddAsync(taskStateKey);
                 return true;
             }

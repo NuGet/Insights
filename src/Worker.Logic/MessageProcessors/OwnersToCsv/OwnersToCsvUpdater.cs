@@ -6,7 +6,7 @@ using NuGet.Insights.Worker.BuildVersionSet;
 
 namespace NuGet.Insights.Worker.OwnersToCsv
 {
-    public class OwnersToCsvUpdater : IAuxiliaryFileUpdater<AsOfData<PackageOwner>>
+    public class OwnersToCsvUpdater : IAuxiliaryFileUpdater<AsOfData<PackageOwner>, PackageOwnerRecord>
     {
         private readonly PackageOwnersClient _packageOwnersClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -25,7 +25,6 @@ namespace NuGet.Insights.Worker.OwnersToCsv
         public TimeSpan Frequency => _options.Value.OwnersToCsvFrequency;
         public bool HasRequiredConfiguration => _options.Value.OwnersV2Urls is not null && _options.Value.OwnersV2Urls.Count > 0;
         public bool AutoStart => _options.Value.AutoStartOwnersToCsv;
-        public Type RecordType => typeof(PackageOwnerRecord);
 
         public async Task<AsOfData<PackageOwner>> GetDataAsync()
         {

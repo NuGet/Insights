@@ -227,7 +227,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             Writer = new StringWriter();
         }
 
-        public IAuxiliaryFileUpdater<AsOfData<PackageDownloads>> Target => Host.Services.GetRequiredService<IAuxiliaryFileUpdater<AsOfData<PackageDownloads>>>();
+        public IAuxiliaryFileUpdater<AsOfData<PackageDownloads>, PackageDownloadRecord> Target => Host.Services.GetRequiredService<IAuxiliaryFileUpdater<AsOfData<PackageDownloads>, PackageDownloadRecord>>();
         public StringWriter Writer { get; }
 
         private void AssertLines(IEnumerable<string> expectedLines)

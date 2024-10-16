@@ -2,6 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
+using NuGet.Insights.Worker.DownloadsToCsv;
+using NuGet.Insights.Worker.ExcludedPackagesToCsv;
+using NuGet.Insights.Worker.OwnersToCsv;
+using NuGet.Insights.Worker.PopularityTransfersToCsv;
+using NuGet.Insights.Worker.VerifiedPackagesToCsv;
 
 namespace NuGet.Insights.Worker.Workflow
 {
@@ -55,7 +60,7 @@ namespace NuGet.Insights.Worker.Workflow
         public async Task DoesNotStartWhenOwnersToCsvIsRunning()
         {
             await WorkflowService.InitializeAsync();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>, PackageOwnerRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -69,7 +74,7 @@ namespace NuGet.Insights.Worker.Workflow
         public async Task DoesNotStartWhenDownloadsToCsvIsRunning()
         {
             await WorkflowService.InitializeAsync();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>, PackageDownloadRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -83,7 +88,7 @@ namespace NuGet.Insights.Worker.Workflow
         public async Task DoesNotStartWhenVerifiedPackagesToCsvIsRunning()
         {
             await WorkflowService.InitializeAsync();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>, VerifiedPackageRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -97,7 +102,7 @@ namespace NuGet.Insights.Worker.Workflow
         public async Task DoesNotStartWhenExcludedPackagesToCsvIsRunning()
         {
             await WorkflowService.InitializeAsync();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<ExcludedPackage>>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<ExcludedPackage>, ExcludedPackageRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -111,7 +116,7 @@ namespace NuGet.Insights.Worker.Workflow
         public async Task DoesNotStartWhenPopularityTransfersToCsvIsRunning()
         {
             await WorkflowService.InitializeAsync();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PopularityTransfer>>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PopularityTransfer>, PopularityTransfersRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 

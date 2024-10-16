@@ -6,7 +6,7 @@ using NuGet.Insights.Worker.BuildVersionSet;
 
 namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
 {
-    public class VerifiedPackagesToCsvUpdater : IAuxiliaryFileUpdater<AsOfData<VerifiedPackage>>
+    public class VerifiedPackagesToCsvUpdater : IAuxiliaryFileUpdater<AsOfData<VerifiedPackage>, VerifiedPackageRecord>
     {
         private readonly VerifiedPackagesClient _client;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -25,7 +25,6 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
         public TimeSpan Frequency => _options.Value.VerifiedPackagesToCsvFrequency;
         public bool HasRequiredConfiguration => _options.Value.VerifiedPackagesV1Urls is not null && _options.Value.VerifiedPackagesV1Urls.Count > 0;
         public bool AutoStart => _options.Value.AutoStartVerifiedPackagesToCsv;
-        public Type RecordType => typeof(VerifiedPackageRecord);
 
         public async Task<AsOfData<VerifiedPackage>> GetDataAsync()
         {
