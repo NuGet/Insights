@@ -129,7 +129,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
             var memoryStream = new MemoryStream();
 
             long uncompressedLength;
-            long recordCount;
+            long recordCount = 0;
             using (var gzipStream = new GZipStream(memoryStream, CompressionLevel.Optimal, leaveOpen: true))
             {
                 using var countingStream = new CountingWriterStream(gzipStream);
@@ -138,7 +138,13 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
                     NewLine = "\n",
                 };
 
-                recordCount = await _updater.WriteAsync(versionSet, data, writer);
+                TRecord.WriteHeader(writer);
+
+                await foreach (var record in _updater.ProduceRecordsAsync(versionSet, data))
+                {
+                    record.Write(writer);
+                    recordCount++;
+                }
 
                 await writer.FlushAsync();
                 await gzipStream.FlushAsync();

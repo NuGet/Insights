@@ -20,7 +20,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 new PackageDownloads("knapcode.TORSHARP", "1.0.1", 456));
 
             // Act
-            await Target.WriteAsync(versionSet, asOfData, Writer);
+            await WriteAsync(versionSet, asOfData);
 
             // Assert
             AssertLines(
@@ -43,7 +43,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 new PackageDownloads("Knapcode.TorSharp", "1.0.1-beta", 456));
 
             // Act
-            await Target.WriteAsync(versionSet, asOfData, Writer);
+            await WriteAsync(versionSet, asOfData);
 
             // Assert
             AssertLines(
@@ -67,7 +67,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 new PackageDownloads("Knapcode.TorSharp", "zzz", 789));
 
             // Act
-            await Target.WriteAsync(versionSet, asOfData, Writer);
+            await WriteAsync(versionSet, asOfData);
 
             // Assert
             AssertLines(
@@ -90,7 +90,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 new PackageDownloads("Knapcode.TorSharp", "1.0.1.0", 456));
 
             // Act
-            await Target.WriteAsync(versionSet, asOfData, Writer);
+            await WriteAsync(versionSet, asOfData);
 
             // Assert
             AssertLines(
@@ -113,7 +113,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 new PackageDownloads("Knapcode.TorSharp", "9.9.9", 456));
 
             // Act
-            await Target.WriteAsync(versionSet, asOfData, Writer);
+            await WriteAsync(versionSet, asOfData);
 
             // Assert
             AssertLines(
@@ -137,7 +137,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 new PackageDownloads("Knapcode.TorSharp", "1.0.2", 456));
 
             // Act
-            await Target.WriteAsync(versionSet, asOfData, Writer);
+            await WriteAsync(versionSet, asOfData);
 
             // Assert
             AssertLines(
@@ -160,7 +160,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             var asOfData = GetAsOfData(new PackageDownloads("Newtonsoft.Json", "9.0.1", 123));
 
             // Act
-            await Target.WriteAsync(versionSet, asOfData, Writer);
+            await WriteAsync(versionSet, asOfData);
 
             // Assert
             AssertLines(
@@ -185,7 +185,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 new PackageDownloads("Knapcode.TorSharp", "1.0.2", 789));
 
             // Act
-            await Target.WriteAsync(versionSet, asOfData, Writer);
+            await WriteAsync(versionSet, asOfData);
 
             // Assert
             AssertLines(
@@ -210,7 +210,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 new PackageDownloads("Knapcode.TorSharp", "1.0.2", 789));
 
             // Act
-            await Target.WriteAsync(versionSet, asOfData, Writer);
+            await WriteAsync(versionSet, asOfData);
 
             // Assert
             AssertLines(
@@ -227,6 +227,14 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             Writer = new StringWriter();
         }
 
+        protected async Task WriteAsync(IVersionSet versionSet, AsOfData<PackageDownloads> data)
+        {
+            await foreach (var record in Target.ProduceRecordsAsync(versionSet, data))
+            {
+                record.Write(Writer);
+            }
+        }
+
         public IAuxiliaryFileUpdater<AsOfData<PackageDownloads>, PackageDownloadRecord> Target => Host.Services.GetRequiredService<IAuxiliaryFileUpdater<AsOfData<PackageDownloads>, PackageDownloadRecord>>();
         public StringWriter Writer { get; }
 
@@ -240,8 +248,6 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 .Split('\n')
                 .Select(x => x.Trim('\r', '\n'))
                 .ToList();
-            Assert.Equal("AsOfTimestamp,LowerId,Identity,Id,Version,Downloads,TotalDownloads", actual[0]);
-            actual.RemoveAt(0);
 
             for (var i = 0; i < Math.Min(expected.Count, actual.Count); i++)
             {

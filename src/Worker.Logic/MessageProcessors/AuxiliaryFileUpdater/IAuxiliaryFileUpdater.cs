@@ -20,6 +20,6 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
         where TRecord : ICsvRecord<TRecord>
     {
         Task<TInput> GetDataAsync();
-        Task<long> WriteAsync(IVersionSet versionSet, TInput data, TextWriter writer);
+        IAsyncEnumerable<TRecord> ProduceRecordsAsync(IVersionSet versionSet, TInput data);
     }
 }
