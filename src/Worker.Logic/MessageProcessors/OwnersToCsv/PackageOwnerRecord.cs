@@ -15,5 +15,38 @@ namespace NuGet.Insights.Worker.OwnersToCsv
 
         [KustoType("dynamic")]
         public string Owners { get; set; }
+
+        public static IEqualityComparer<PackageOwnerRecord> KeyComparer => PackageOwnerRecordKeyComparer.Instance;
+        public static IReadOnlyList<string> KeyFields { get; } = [nameof(LowerId)];
+
+        public int CompareTo(PackageOwnerRecord other)
+        {
+            return string.CompareOrdinal(LowerId, other.LowerId);
+        }
+
+        public class PackageOwnerRecordKeyComparer : IEqualityComparer<PackageOwnerRecord>
+        {
+            public static PackageOwnerRecordKeyComparer Instance { get; } = new PackageOwnerRecordKeyComparer();
+
+            public bool Equals(PackageOwnerRecord x, PackageOwnerRecord y)
+            {
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                if (x is null || y is null)
+                {
+                    return false;
+                }
+
+                return x.LowerId == y.LowerId;
+            }
+
+            public int GetHashCode([DisallowNull] PackageOwnerRecord obj)
+            {
+                return obj.LowerId.GetHashCode(StringComparison.Ordinal);
+            }
+        }
     }
 }

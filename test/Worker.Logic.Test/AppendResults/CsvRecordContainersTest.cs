@@ -118,7 +118,7 @@ namespace NuGet.Insights.Worker
         }
 
         [Theory]
-        [MemberData(nameof(CatalogScanRecordTypesData))]
+        [MemberData(nameof(RecordTypesData))]
         public void CatalogScanRecordIsUniquelyIdentifiedByKeyFields(Type recordType)
         {
             var keyComparer = GetKeyComparer(recordType);
@@ -136,7 +136,7 @@ namespace NuGet.Insights.Worker
         }
 
         [Theory]
-        [MemberData(nameof(CatalogScanRecordTypesData))]
+        [MemberData(nameof(RecordTypesData))]
         public void CatalogScanRecordIsKeyComparerDoesNotConsiderOtherFields(Type recordType)
         {
             var keyComparer = GetKeyComparer(recordType);
@@ -153,6 +153,11 @@ namespace NuGet.Insights.Worker
             {
                 PopulateFields(recordA, [nameof(CatalogLeafItemRecord.CommitTimestamp)], seed: 1);
                 PopulateFields(recordB, [nameof(CatalogLeafItemRecord.CommitTimestamp)], seed: 1);
+            }
+            else if (recordType.GetProperty(nameof(PackageDownloadRecord.AsOfTimestamp)) is not null)
+            {
+                PopulateFields(recordA, [nameof(PackageDownloadRecord.AsOfTimestamp)], seed: 1);
+                PopulateFields(recordB, [nameof(PackageDownloadRecord.AsOfTimestamp)], seed: 1);
             }
             else
             {
@@ -172,12 +177,12 @@ namespace NuGet.Insights.Worker
 
         private static object GetKeyComparer(Type recordType)
         {
-            return recordType.GetProperty(nameof(IAggregatedCsvRecord<CatalogLeafItemRecord>.KeyComparer)).GetValue(null);
+            return recordType.GetProperty(nameof(ICsvRecord<CatalogLeafItemRecord>.KeyComparer)).GetValue(null);
         }
 
         private static IReadOnlyList<string> GetKeyFields(Type recordType)
         {
-            return (IReadOnlyList<string>)recordType.GetProperty(nameof(IAggregatedCsvRecord<CatalogLeafItemRecord>.KeyFields)).GetValue(null);
+            return (IReadOnlyList<string>)recordType.GetProperty(nameof(ICsvRecord<CatalogLeafItemRecord>.KeyFields)).GetValue(null);
         }
 
         private static object PopulateFields(object record, IReadOnlyList<string> fields, int seed)

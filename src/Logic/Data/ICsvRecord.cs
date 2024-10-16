@@ -19,11 +19,26 @@ namespace NuGet.Insights
         void SetEmptyStrings();
     }
 
-    public interface ICsvRecord<T> : ICsvRecord, IEquatable<T> where T : ICsvRecord
+    public interface ICsvRecord<T> : ICsvRecord, IEquatable<T>, IComparable<T> where T : ICsvRecord
     {
         static abstract int FieldCount { get; }
         static abstract void WriteHeader(TextWriter writer);
 
         static abstract T ReadNew(Func<string> getNextField);
+
+        /// <summary>
+        /// Get an equality comparer that can compare records based on their natural, unique key. This is used to ensure
+        /// that rows are unique identifiable by a small number of fields on the record. For many records, this will be
+        /// the <c>Identity</c> column (e.g. from <c>PackageRecord.Identity</c>) but other record types may have
+        /// multiple records per package.
+        /// </summary>
+        static abstract IEqualityComparer<T> KeyComparer { get; }
+
+        /// <summary>
+        /// Get a list of field names that operate as a natural, composite key for the record. This list of fields should
+        /// be the same as the fields that are used in the comparer returned by the <see cref="KeyComparer"/> property.
+        /// </summary>
+        /// <returns></returns>
+        static abstract IReadOnlyList<string> KeyFields { get; }
     }
 }
