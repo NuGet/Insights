@@ -17,5 +17,38 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
 
         [Required]
         public bool IsExcluded { get; set; }
+
+        public static IEqualityComparer<ExcludedPackageRecord> KeyComparer => ExcludedPackageRecordKeyComparer.Instance;
+        public static IReadOnlyList<string> KeyFields { get; } = [nameof(LowerId)];
+
+        public int CompareTo(ExcludedPackageRecord other)
+        {
+            return string.CompareOrdinal(LowerId, other.LowerId);
+        }
+
+        public class ExcludedPackageRecordKeyComparer : IEqualityComparer<ExcludedPackageRecord>
+        {
+            public static ExcludedPackageRecordKeyComparer Instance { get; } = new ExcludedPackageRecordKeyComparer();
+
+            public bool Equals(ExcludedPackageRecord x, ExcludedPackageRecord y)
+            {
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                if (x is null || y is null)
+                {
+                    return false;
+                }
+
+                return x.LowerId == y.LowerId;
+            }
+
+            public int GetHashCode([DisallowNull] ExcludedPackageRecord obj)
+            {
+                return obj.LowerId.GetHashCode(StringComparison.Ordinal);
+            }
+        }
     }
 }

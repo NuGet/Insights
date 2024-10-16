@@ -8,7 +8,7 @@ namespace NuGet.Insights.Worker
         string GetBucketKey();
     }
 
-    public interface IAggregatedCsvRecord<T> : IAggregatedCsvRecord, ICsvRecord<T>, IComparable<T> where T : IAggregatedCsvRecord<T>
+    public interface IAggregatedCsvRecord<T> : IAggregatedCsvRecord, ICsvRecord<T> where T : IAggregatedCsvRecord<T>
     {
         /// <summary>
         /// Prune the provided records to remove duplicate or old data. Packages are unlisted, relisted, reflowed, or
@@ -30,20 +30,5 @@ namespace NuGet.Insights.Worker
         /// with "cc." and be unique, e.g. "cc.fb" for "FooBarRecord".
         /// </summary>
         static abstract string CsvCompactMessageSchemaName { get; }
-
-        /// <summary>
-        /// Get an equality comparer that can compare records based on their natural, unique key. This is used to ensure
-        /// that rows are unique identifiable by a small number of fields on the record. For many records, this will be
-        /// the <see cref="PackageRecord.Identity"/> column but other record types may have multiple records per
-        /// package.
-        /// </summary>
-        static abstract IEqualityComparer<T> KeyComparer { get; }
-
-        /// <summary>
-        /// Get a list of field names that operate as a natural, composite key for the record. This list of fields should
-        /// be the same as the fields that are used in the comparer returned by the <see cref="KeyComparer"/> property.
-        /// </summary>
-        /// <returns></returns>
-        static abstract IReadOnlyList<string> KeyFields { get; }
     }
 }
