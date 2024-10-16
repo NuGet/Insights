@@ -6,7 +6,7 @@ using NuGet.Insights.Worker.BuildVersionSet;
 
 namespace NuGet.Insights.Worker.PopularityTransfersToCsv
 {
-    public class PopularityTransfersToCsvUpdater : IAuxiliaryFileUpdater<AsOfData<PopularityTransfer>>
+    public class PopularityTransfersToCsvUpdater : IAuxiliaryFileUpdater<AsOfData<PopularityTransfer>, PopularityTransfersRecord>
     {
         private readonly PopularityTransfersClient _popularityTransfersClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -25,7 +25,6 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
         public TimeSpan Frequency => _options.Value.PopularityTransfersToCsvFrequency;
         public bool HasRequiredConfiguration => _options.Value.PopularityTransfersV1Urls is not null && _options.Value.PopularityTransfersV1Urls.Count > 0;
         public bool AutoStart => _options.Value.AutoStartPopularityTransfersToCsv;
-        public Type RecordType => typeof(PopularityTransfersRecord);
 
         public async Task<AsOfData<PopularityTransfer>> GetDataAsync()
         {

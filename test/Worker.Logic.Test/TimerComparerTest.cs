@@ -2,9 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
+using NuGet.Insights.Worker.DownloadsToCsv;
+using NuGet.Insights.Worker.ExcludedPackagesToCsv;
 using NuGet.Insights.Worker.KustoIngestion;
+using NuGet.Insights.Worker.OwnersToCsv;
+using NuGet.Insights.Worker.PopularityTransfersToCsv;
 using NuGet.Insights.Worker.ReferenceTracking;
 using NuGet.Insights.Worker.TimedReprocess;
+using NuGet.Insights.Worker.VerifiedPackagesToCsv;
 using NuGet.Insights.Worker.Workflow;
 
 namespace NuGet.Insights.Worker
@@ -43,11 +48,11 @@ namespace NuGet.Insights.Worker
 
                 new List<Type>
                 {
-                    typeof(AuxiliaryFileUpdaterTimer<AsOfData<ExcludedPackage>>),
-                    typeof(AuxiliaryFileUpdaterTimer<AsOfData<PackageDownloads>>),
-                    typeof(AuxiliaryFileUpdaterTimer<AsOfData<PackageOwner>>),
-                    typeof(AuxiliaryFileUpdaterTimer<AsOfData<PopularityTransfer>>),
-                    typeof(AuxiliaryFileUpdaterTimer<AsOfData<VerifiedPackage>>),
+                    typeof(AuxiliaryFileUpdaterTimer<AsOfData<ExcludedPackage>, ExcludedPackageRecord>),
+                    typeof(AuxiliaryFileUpdaterTimer<AsOfData<PackageDownloads>, PackageDownloadRecord>),
+                    typeof(AuxiliaryFileUpdaterTimer<AsOfData<PackageOwner>, PackageOwnerRecord>),
+                    typeof(AuxiliaryFileUpdaterTimer<AsOfData<PopularityTransfer>, PopularityTransfersRecord>),
+                    typeof(AuxiliaryFileUpdaterTimer<AsOfData<VerifiedPackage>, VerifiedPackageRecord>),
                 },
 
                 new List<Type>

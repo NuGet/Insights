@@ -18,7 +18,7 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             // Arrange
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PopularityTransfer>>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PopularityTransfer>, PopularityTransfersRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -48,7 +48,7 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
         {
             // Arrange
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PopularityTransfer>>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PopularityTransfer>, PopularityTransfersRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -79,7 +79,7 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
         {
             // Arrange
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PopularityTransfer>>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PopularityTransfer>, PopularityTransfersRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -112,7 +112,7 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             // Arrange
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PopularityTransfer>>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PopularityTransfer>, PopularityTransfersRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
             string id;
@@ -150,7 +150,7 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
 
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PopularityTransfer>>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PopularityTransfer>, PopularityTransfersRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
             MockVersionSet.Setup(x => x.GetUncheckedIds()).Returns(new[] { "UncheckedB", "UncheckedA" });
@@ -168,7 +168,7 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
         {
             // Arrange
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PopularityTransfer>>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PopularityTransfer>, PopularityTransfersRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -190,7 +190,7 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             await AssertCsvBlobAsync(PopularityTransfersToCsvDir, Step2, "latest_popularity_transfers.csv.gz");
         }
 
-        private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<AsOfData<PopularityTransfer>> service)
+        private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<AsOfData<PopularityTransfer>, PopularityTransfersRecord> service)
         {
             await ProcessQueueAsync(async () => !await service.IsRunningAsync());
         }

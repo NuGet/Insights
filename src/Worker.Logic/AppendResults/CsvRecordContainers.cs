@@ -62,7 +62,16 @@ namespace NuGet.Insights.Worker
 
             foreach (var updater in auxiliaryFileUpdaters)
             {
-                output.Add(updater.RecordType, new CsvRecordProducer(CsvRecordProducerType.AuxiliaryFileUpdater, CatalogScanDriverType: null));
+                var recordType = updater
+                    .GetType()
+                    .GetInterfaces()
+                    .Where(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IAuxiliaryFileUpdater<,>))
+                    .Single()
+                    .GenericTypeArguments
+                    .Where(x => x.IsAssignableTo(typeof(ICsvRecord)))
+                    .Single();
+
+                output.Add(recordType, new CsvRecordProducer(CsvRecordProducerType.AuxiliaryFileUpdater, CatalogScanDriverType: null));
             }
 
             return output.ToFrozenDictionary();
