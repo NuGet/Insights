@@ -31,12 +31,8 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             return await _client.GetAsync();
         }
 
-        public async Task<long> WriteAsync(IVersionSet versionSet, AsOfData<VerifiedPackage> data, TextWriter writer)
+        public async IAsyncEnumerable<VerifiedPackageRecord> ProduceRecordsAsync(IVersionSet versionSet, AsOfData<VerifiedPackage> data)
         {
-            VerifiedPackageRecord.WriteHeader(writer);
-
-            long recordCount = 0;
-
             var verifiedPackageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             await foreach (var entry in data.Entries)
             {
@@ -55,8 +51,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
                 record.LowerId = packageId.ToLowerInvariant();
                 record.Id = packageId;
                 record.IsVerified = true;
-                record.Write(writer);
-                recordCount++;
+                yield return record;
             }
 
             // Add IDs that are not mentioned in the data and therefore are not verified. This makes joins on the
@@ -66,11 +61,8 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
                 record.LowerId = id.ToLowerInvariant();
                 record.Id = id;
                 record.IsVerified = false;
-                record.Write(writer);
-                recordCount++;
+                yield return record;
             }
-
-            return recordCount;
         }
     }
 }

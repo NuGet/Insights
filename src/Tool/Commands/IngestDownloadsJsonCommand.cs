@@ -248,7 +248,11 @@ namespace NuGet.Insights.Tool
                 using var inputStream = await blobClient.OpenReadAsync();
                 var data = PackageDownloadsClient.DeserializeV1Async(inputStream);
                 var record = new PackageDownloadHistoryRecord { AsOfTimestamp = asOf };
-                await DownloadsToCsvUpdater.WriteAsync(versionSet, record, data, outputWriter);
+                PackageDownloadHistoryRecord.WriteHeader(outputWriter);
+                await foreach (var updatedRecord in DownloadsToCsvUpdater.ProduceRecordsAsync(record, versionSet, data))
+                {
+                    updatedRecord.Write(outputWriter);
+                }
             }
 
             tempFile.Position = 0;
