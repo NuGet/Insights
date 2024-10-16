@@ -25,7 +25,7 @@ namespace NuGet.Insights.Worker
 
             x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(CleanupOrphanRecordsTimer<>),
 
-            x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(AuxiliaryFileUpdaterTimer<>),
+            x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(AuxiliaryFileUpdaterTimer<,>),
 
             x => x.IsAssignableTo(typeof(KustoIngestionTimer)),
         };

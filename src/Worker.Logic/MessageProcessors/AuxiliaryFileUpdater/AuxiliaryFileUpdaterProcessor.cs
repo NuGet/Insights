@@ -9,23 +9,25 @@ using NuGet.Insights.Worker.BuildVersionSet;
 
 namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 {
-    public class AuxiliaryFileUpdaterProcessor<T> : ITaskStateMessageProcessor<AuxiliaryFileUpdaterMessage<T>> where T : IAsOfData
+    public class AuxiliaryFileUpdaterProcessor<TInput, TRecord> : ITaskStateMessageProcessor<AuxiliaryFileUpdaterMessage<TInput>>
+        where TInput : IAsOfData
+        where TRecord : ICsvRecord<TRecord>
     {
         private const string AsOfTimestampMetadata = "asOfTimestamp";
         private const string VersionSetCommitTimestampMetadata = "versionSetCommitTimestamp";
 
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IVersionSetProvider _versionSetProvider;
-        private readonly IAuxiliaryFileUpdater<T> _updater;
+        private readonly IAuxiliaryFileUpdater<TInput, TRecord> _updater;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
-        private readonly ILogger<AuxiliaryFileUpdaterProcessor<T>> _logger;
+        private readonly ILogger<AuxiliaryFileUpdaterProcessor<TInput, TRecord>> _logger;
 
         public AuxiliaryFileUpdaterProcessor(
             ServiceClientFactory serviceClientFactory,
             IVersionSetProvider versionSetProvider,
-            IAuxiliaryFileUpdater<T> updater,
+            IAuxiliaryFileUpdater<TInput, TRecord> updater,
             IOptions<NuGetInsightsWorkerSettings> options,
-            ILogger<AuxiliaryFileUpdaterProcessor<T>> logger)
+            ILogger<AuxiliaryFileUpdaterProcessor<TInput, TRecord>> logger)
         {
             _serviceClientFactory = serviceClientFactory;
             _versionSetProvider = versionSetProvider;
@@ -39,7 +41,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
             return $"latest_{blobName}.csv.gz";
         }
 
-        public async Task<TaskStateProcessResult> ProcessAsync(AuxiliaryFileUpdaterMessage<T> message, TaskState taskState, long dequeueCount)
+        public async Task<TaskStateProcessResult> ProcessAsync(AuxiliaryFileUpdaterMessage<TInput> message, TaskState taskState, long dequeueCount)
         {
             await using var data = await _updater.GetDataAsync();
 
@@ -100,7 +102,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
             return TaskStateProcessResult.Complete;
         }
 
-        private async Task<(long uncompressedLength, long recordCount, ETag etag)> WriteDataAsync(IVersionSet versionSet, T data, BlobClient destBlob)
+        private async Task<(long uncompressedLength, long recordCount, ETag etag)> WriteDataAsync(IVersionSet versionSet, TInput data, BlobClient destBlob)
         {
             (var stream, var uncompressedLength, var recordCount) = await SerializeDataAsync(versionSet, data);
 
@@ -122,7 +124,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
             }
         }
 
-        private async Task<(MemoryStream stream, long uncompressedLength, long recordCount)> SerializeDataAsync(IVersionSet versionSet, T data)
+        private async Task<(MemoryStream stream, long uncompressedLength, long recordCount)> SerializeDataAsync(IVersionSet versionSet, TInput data)
         {
             var memoryStream = new MemoryStream();
 

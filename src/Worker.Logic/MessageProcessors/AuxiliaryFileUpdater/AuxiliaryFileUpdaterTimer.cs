@@ -3,14 +3,16 @@
 
 namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 {
-    public class AuxiliaryFileUpdaterTimer<T> : IAuxiliaryFileUpdaterTimer, ITimer where T : IAsOfData
+    public class AuxiliaryFileUpdaterTimer<TInput, TRecord> : IAuxiliaryFileUpdaterTimer, ITimer
+        where TInput : IAsOfData
+        where TRecord : ICsvRecord<TRecord>
     {
-        private readonly IAuxiliaryFileUpdaterService<T> _service;
-        private readonly IAuxiliaryFileUpdater<T> _updater;
+        private readonly IAuxiliaryFileUpdaterService<TInput, TRecord> _service;
+        private readonly IAuxiliaryFileUpdater<TInput, TRecord> _updater;
 
         public AuxiliaryFileUpdaterTimer(
-            IAuxiliaryFileUpdaterService<T> service,
-            IAuxiliaryFileUpdater<T> updater)
+            IAuxiliaryFileUpdaterService<TInput, TRecord> service,
+            IAuxiliaryFileUpdater<TInput, TRecord> updater)
         {
             _service = service;
             _updater = updater;
