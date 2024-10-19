@@ -124,13 +124,7 @@ namespace NuGet.Insights.Tool
                 new AzureSasCredential(_outSas.ParsedValue));
 
             var tempFilePath = $"temp-{Process.GetCurrentProcess().Id}.csv";
-            using var tempFile = new FileStream(
-                tempFilePath,
-                FileMode.Create,
-                FileAccess.ReadWrite,
-                FileShare.None,
-                bufferSize: 4096,
-                FileOptions.DeleteOnClose);
+            using var tempFile = TempStreamWriter.NewTempFile(tempFilePath);
 
             await foreach ((var inputBlobItem, var inputBlob) in GetBlobsAsync())
             {
