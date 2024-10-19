@@ -8,24 +8,21 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 {
     public class FingerprintSHA256KustoValidationProvider : BaseKustoValidationProvider, IKustoValidationProvider
     {
-        public FingerprintSHA256KustoValidationProvider(
-            IEnumerable<ICsvRecordStorage> csvResultStorage,
-            CsvRecordContainers containers)
-            : base(csvResultStorage, containers)
+        public FingerprintSHA256KustoValidationProvider(CsvRecordContainers containers) : base(containers)
         {
         }
 
         public async Task<IReadOnlyList<KustoValidation>> GetValidationsAsync()
         {
-            var packageSignatureStorage = _typeToStorage[typeof(PackageSignature)];
-            var certificatesStorage = _typeToStorage[typeof(CertificateRecord)];
-            if (!await HasBlobsAsync(packageSignatureStorage) || !await HasBlobsAsync(certificatesStorage))
+            var packageSignatureInfo = _containers.GetInfoByRecordType<PackageSignature>();
+            var certificatesInfo = _containers.GetInfoByRecordType<CertificateRecord>();
+            if (!await HasBlobsAsync(packageSignatureInfo) || !await HasBlobsAsync(certificatesInfo))
             {
                 return [];
             }
 
-            var leftTable = _containers.GetTempKustoTableName(packageSignatureStorage.ContainerName);
-            var rightTable = _containers.GetTempKustoTableName(certificatesStorage.ContainerName);
+            var leftTable = _containers.GetTempKustoTableName(packageSignatureInfo.ContainerName);
+            var rightTable = _containers.GetTempKustoTableName(certificatesInfo.ContainerName);
             var column = nameof(CertificateRecord.FingerprintSHA256Hex);
             var joinQuery = @$"{leftTable}
 | mv-expand {column} = pack_array(

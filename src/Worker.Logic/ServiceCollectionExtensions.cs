@@ -144,11 +144,11 @@ namespace NuGet.Insights.Worker
                 // Add the generic CSV storage
                 var getContainerName = typeof(IAuxiliaryFileUpdater).GetProperty(nameof(IAuxiliaryFileUpdater.ContainerName));
                 var getBlobName = typeof(IAuxiliaryFileUpdater).GetProperty(nameof(IAuxiliaryFileUpdater.BlobName));
-                serviceCollection.AddSingleton<ICsvRecordStorage>(x =>
+                serviceCollection.AddSingleton<CsvRecordContainerInfo>(x =>
                 {
                     var updater = x.GetRequiredService(serviceType);
                     var blobName = AuxiliaryFileUpdaterProcessor<IAsOfData, PackageDownloadRecord>.GetLatestBlobName((string)getBlobName.GetValue(updater));
-                    return new CsvRecordStorage(
+                    return new CsvRecordContainerInfo(
                         (string)getContainerName.GetValue(updater),
                         recordType,
                         blobName);
@@ -193,10 +193,10 @@ namespace NuGet.Insights.Worker
                 // Add the generic CSV storage
                 var recordType = serviceType.GenericTypeArguments.Single();
                 var getContainerName = serviceType.GetProperty("ResultContainerName");
-                serviceCollection.AddSingleton<ICsvRecordStorage>(x =>
+                serviceCollection.AddSingleton(x =>
                 {
                     var storage = x.GetRequiredService(serviceType);
-                    return new CsvRecordStorage(
+                    return new CsvRecordContainerInfo(
                         (string)getContainerName.GetValue(storage),
                         recordType,
                         CsvRecordStorageService.CompactPrefix);

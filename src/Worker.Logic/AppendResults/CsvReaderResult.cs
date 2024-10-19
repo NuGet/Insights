@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker
 {
-    public class CsvReaderResult<T> where T : ICsvRecord
+    public class CsvReaderResult<T> where T : ICsvRecord<T>
     {
         public CsvReaderResult(CsvReaderResultType type, List<T> records)
         {

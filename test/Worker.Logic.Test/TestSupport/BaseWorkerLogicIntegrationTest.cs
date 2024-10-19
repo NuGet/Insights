@@ -23,6 +23,7 @@ using NuGet.Insights.Kusto;
 using NuGet.Insights.ReferenceTracking;
 using NuGet.Insights.StorageNoOpRetry;
 using NuGet.Insights.Worker.BuildVersionSet;
+using NuGet.Insights.Worker.CatalogDataToCsv;
 using NuGet.Insights.Worker.KustoIngestion;
 using NuGet.Insights.Worker.TimedReprocess;
 using NuGet.Insights.Worker.Workflow;
@@ -586,7 +587,7 @@ namespace NuGet.Insights.Worker
                 var csvReader = Host.Services.GetRequiredService<ICsvReader>();
                 var getRecordMethod = csvReader.GetType().GetMethod(nameof(ICsvReader.GetRecords)).MakeGenericMethod(recordType);
                 var result = getRecordMethod.Invoke(csvReader, [reader, CsvReaderAdapter.MaxBufferSize]);
-                var records = (System.Collections.IList)result.GetType().GetProperty(nameof(CsvReaderResult<ICsvRecord>.Records)).GetValue(result);
+                var records = (System.Collections.IList)result.GetType().GetProperty(nameof(CsvReaderResult<CatalogLeafItemRecord>.Records)).GetValue(result);
                 actualRecordCount = records.Count;
             }
             decompressedStream.Position = 0;

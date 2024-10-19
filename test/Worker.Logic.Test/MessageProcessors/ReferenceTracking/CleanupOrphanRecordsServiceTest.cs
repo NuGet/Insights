@@ -225,10 +225,10 @@ namespace NuGet.Insights.Worker.ReferenceTracking
                 serviceCollection.AddSingleton<ICsvResultStorage<TestSubjectRecord>, TestSubjectRecordStorage>();
                 serviceCollection.AddSingleton<IMessageProcessor<CsvCompactMessage<TestSubjectRecord>>, TaskStateMessageProcessor<CsvCompactMessage<TestSubjectRecord>>>();
                 serviceCollection.AddSingleton<ITaskStateMessageProcessor<CsvCompactMessage<TestSubjectRecord>>, CsvCompactProcessor<TestSubjectRecord>>();
-                serviceCollection.AddSingleton<ICsvRecordStorage>(x =>
+                serviceCollection.AddSingleton(x =>
                 {
                     var resultStorage = x.GetRequiredService<ICsvResultStorage<TestSubjectRecord>>();
-                    return new CsvRecordStorage(
+                    return new CsvRecordContainerInfo(
                         resultStorage.ResultContainerName,
                         typeof(TestSubjectRecord),
                         CsvRecordStorageService.CompactPrefix);

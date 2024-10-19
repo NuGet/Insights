@@ -7,35 +7,31 @@ namespace NuGet.Insights.Worker.KustoIngestion
 {
     public abstract class BaseKustoValidationProvider
     {
-        protected readonly IReadOnlyDictionary<Type, ICsvRecordStorage> _typeToStorage;
         protected readonly CsvRecordContainers _containers;
 
-        public BaseKustoValidationProvider(
-            IEnumerable<ICsvRecordStorage> csvResultStorage,
-            CsvRecordContainers containers)
+        public BaseKustoValidationProvider(CsvRecordContainers containers)
         {
-            _typeToStorage = csvResultStorage.ToDictionary(x => x.RecordType);
             _containers = containers;
         }
 
-        protected async Task<bool> HasBlobsAsync(ICsvRecordStorage storage)
+        protected async Task<bool> HasBlobsAsync(CsvRecordContainerInfo info)
         {
-            var blobs = await _containers.GetBlobsAsync(storage.ContainerName);
+            var blobs = await _containers.GetBlobsAsync(info.ContainerName);
             return blobs.Count > 0;
         }
 
         protected async Task<IReadOnlyList<KustoValidation>> GetSetValidationsAsync(string column, bool required)
         {
-            var storageWithBlobs = new List<ICsvRecordStorage>();
-            foreach (var storage in _typeToStorage.Values)
+            var containersWithBlobs = new List<CsvRecordContainerInfo>();
+            foreach (var info in _containers.ContainerInfo)
             {
-                if (await HasBlobsAsync(storage))
+                if (await HasBlobsAsync(info))
                 {
-                    storageWithBlobs.Add(storage);
+                    containersWithBlobs.Add(info);
                 }
             }
 
-            var tables = storageWithBlobs
+            var tables = containersWithBlobs
                 .Where(x => x.RecordType.GetProperty(column) != null)
                 .Select(x => _containers.GetTempKustoTableName(x.ContainerName))
                 .OrderBy(x => x, StringComparer.Ordinal)
