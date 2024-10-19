@@ -56,9 +56,13 @@ namespace NuGet.Insights
 
         private static T PopulateSettings<T>(T settings) where T : NuGetInsightsSettings
         {
-            settings.UseDevelopmentStorage = UseDevelopmentStorageEnv.GetValueOrDefault(false);
-            settings.UseMemoryStorage = UseMemoryStorageEnv.GetValueOrDefault(false);
-            settings.StorageAccountName = StorageAccountNameEnv;
+            var useMemoryStorage = TestLevers.UseMemoryStorage ?? UseMemoryStorageEnv;
+            var useDevelopmentStorage = TestLevers.UseDevelopmentStorage ?? UseDevelopmentStorageEnv;
+            var storageAccountName = TestLevers.StorageAccountName ?? StorageAccountNameEnv;
+
+            settings.UseMemoryStorage = useMemoryStorage.GetValueOrDefault(false);
+            settings.UseDevelopmentStorage = useDevelopmentStorage.GetValueOrDefault(false);
+            settings.StorageAccountName = storageAccountName;
 
             settings.StorageClientApplicationId = StorageClientApplicationIdEnv;
             settings.StorageClientTenantId = StorageClientTenantIdEnv;
@@ -69,9 +73,9 @@ namespace NuGet.Insights
             settings.UseAccessTokenCaching = true;
 
             // if no settings are provided, use in-memory storage
-            if (UseMemoryStorageEnv.GetValueOrDefault(true)
-                && !UseDevelopmentStorageEnv.GetValueOrDefault(false)
-                && StorageAccountNameEnv is null)
+            if (useMemoryStorage.GetValueOrDefault(true)
+                && !useDevelopmentStorage.GetValueOrDefault(false)
+                && storageAccountName is null)
             {
                 settings.UseMemoryStorage = true;
             }

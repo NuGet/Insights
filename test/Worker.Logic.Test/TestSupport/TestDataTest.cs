@@ -12,10 +12,19 @@ namespace NuGet.Insights.Worker
         }
 
         [Fact]
-        public void IsNotOverwritingTestData()
+        public void AllTestLeversAreOff()
         {
-            Assert.False(OverwriteTestData);
-            Assert.False(DriverDocsTest.OverwriteDriverDocs);
+            Assert.Empty(typeof(TestLevers).GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic));
+            Assert.Empty(typeof(TestLevers).GetFields(BindingFlags.Static | BindingFlags.NonPublic));
+
+            var levers = typeof(TestLevers).GetFields(BindingFlags.Static | BindingFlags.Public);
+            var sb = new StringBuilder();
+            Assert.All(levers, lever =>
+            {
+                var value = lever.GetValue(obj: null);
+                var defaultValue = lever.FieldType.IsValueType ? Activator.CreateInstance(lever.FieldType) : null;
+                Assert.Equal(defaultValue, value);
+            });
         }
 
         [Fact]

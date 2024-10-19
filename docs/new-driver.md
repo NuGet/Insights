@@ -108,12 +108,11 @@ the actual output is compared against this expected test data.
 
 **To produce this test data for the first time:**
 
-1. Set the [`BaseLogicIntegrationTest`](../test/Logic.Test/TestSupport/BaseLogicIntegrationTest.cs) `OverwriteTestData`
-   static property to `true`.
-1. Run your new tests.
-1. Take a look the pending changes in Git (perhaps using `git diff`) and check if they make sense.
-1. Set the `OverwriteTestData` to `false`.
-1. Run the tests again to make sure the tests are passing.
+1. Set the [`TestLevers`](../test/Logic.Test/TestLevers.cs) `OverwriteTestData` static property to `true`.
+2. Run your new tests.
+3. Take a look the pending changes in Git (perhaps using `git diff`) and check if they make sense.
+4. Set the `OverwriteTestData` to `false`.
+5. Run the tests again to make sure the tests are passing.
 
 You've now locked your test results into static files in the Git repository so future regressions can be caught.
 

@@ -14,11 +14,6 @@ namespace NuGet.Insights
 {
     public abstract class BaseLogicIntegrationTest : IClassFixture<DefaultWebApplicationFactory<StaticFilesStartup>>, IAsyncLifetime
     {
-        /// <summary>
-        /// This should only be on when generating new test data locally. It should never be checked in as true.
-        /// </summary>
-        protected static readonly bool OverwriteTestData = false;
-
         static BaseLogicIntegrationTest()
         {
             // move temp directory to isolate test file leaks

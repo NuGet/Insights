@@ -5,11 +5,6 @@ namespace NuGet.Insights.Worker
 {
     public partial class DriverDocsTest : BaseWorkerLogicIntegrationTest
     {
-        /// <summary>
-        /// Use this to overwrite existing driver docs. Do not enable this if you have uncommitted driver docs changes!
-        /// </summary>
-        public static readonly bool OverwriteDriverDocs = false;
-
         [Theory]
         [MemberData(nameof(DriverNameTestData))]
         public void DriverIsDocumented(string driverName)

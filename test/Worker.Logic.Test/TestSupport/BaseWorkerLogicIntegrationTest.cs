@@ -535,7 +535,7 @@ namespace NuGet.Insights.Worker
 
             fileName ??= blobName.Substring(0, blobName.Length - ".gz".Length);
             var testDataFile = Path.Combine(TestData, testName, stepName, fileName);
-            if (OverwriteTestData)
+            if (TestLevers.OverwriteTestData)
             {
                 OverwriteTestDataAndCopyToSource(testDataFile, actual);
             }
@@ -724,7 +724,7 @@ namespace NuGet.Insights.Worker
 
         protected void AssertEqualWithDiff(string expectedPath, string actual)
         {
-            if (OverwriteTestData)
+            if (TestLevers.OverwriteTestData)
             {
                 OverwriteTestDataAndCopyToSource(expectedPath, actual);
             }
