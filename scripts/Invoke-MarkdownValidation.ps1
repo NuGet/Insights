@@ -1,10 +1,10 @@
 ﻿[CmdletBinding()]
 param (
     [Parameter(Mandatory = $false)]
-    [string]$RootDirectory,
-
+    [string[]]$Files,
+    
     [Parameter(Mandatory = $false)]
-    [string[]]$Files
+    [string]$RootDirectory
 )
 
 if (!$RootDirectory) {
