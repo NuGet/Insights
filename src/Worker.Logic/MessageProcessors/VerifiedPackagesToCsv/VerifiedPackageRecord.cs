@@ -18,6 +18,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
         [Required]
         public bool IsVerified { get; set; }
 
+        public string GetBucketKey() => LowerId;
         public static IEqualityComparer<VerifiedPackageRecord> KeyComparer => VerifiedPackageRecordKeyComparer.Instance;
         public static IReadOnlyList<string> KeyFields { get; } = [nameof(LowerId)];
 

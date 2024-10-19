@@ -18,6 +18,7 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
         [Required]
         public bool IsExcluded { get; set; }
 
+        public string GetBucketKey() => LowerId;
         public static IEqualityComparer<ExcludedPackageRecord> KeyComparer => ExcludedPackageRecordKeyComparer.Instance;
         public static IReadOnlyList<string> KeyFields { get; } = [nameof(LowerId)];
 

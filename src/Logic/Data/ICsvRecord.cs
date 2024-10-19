@@ -17,6 +17,13 @@ namespace NuGet.Insights
         /// against deserialized ones.
         /// </summary>
         void SetEmptyStrings();
+
+        /// <summary>
+        /// Get the bucket key for the record. This is used to partition records into buckets for intermediate storage
+        /// on disk or final storage in Azure Blob Storage. For package related records, this is typically the package
+        /// identity (e.g. from <c>PackageRecord.Identity</c>) or the package ID (e.g. from <c>PackageRecord.LowerId</c>).
+        /// </summary>
+        string GetBucketKey();
     }
 
     public interface ICsvRecord<T> : ICsvRecord, IEquatable<T>, IComparable<T> where T : ICsvRecord
