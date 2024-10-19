@@ -17,7 +17,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 
     public interface IAuxiliaryFileUpdater<TInput, TRecord> : IAuxiliaryFileUpdater
         where TInput : IAsOfData
-        where TRecord : ICsvRecord<TRecord>
+        where TRecord : IAuxiliaryFileCsvRecord<TRecord>
     {
         Task<TInput> GetDataAsync();
         IAsyncEnumerable<TRecord> ProduceRecordsAsync(IVersionSet versionSet, TInput data);

@@ -5,9 +5,9 @@ using Azure.Storage.Blobs;
 
 namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 {
-    public class AuxiliaryFileUpdaterService<TInput, TRecord> : IAuxiliaryFileUpdaterService<TInput, TRecord>
+    public class AuxiliaryFileUpdaterService<TInput, TRecord> : IAuxiliaryFileUpdaterService<TRecord>
         where TInput : IAsOfData
-        where TRecord : ICsvRecord<TRecord>
+        where TRecord : IAuxiliaryFileCsvRecord<TRecord>
     {
         private static readonly string StorageSuffix = string.Empty;
 
@@ -81,7 +81,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
                     StorageSuffix,
                     _updater.OperationName,
                     StorageUtility.GenerateDescendingId().ToString());
-                await _messageEnqueuer.EnqueueAsync(new[] { new AuxiliaryFileUpdaterMessage<TInput> { TaskStateKey = taskStateKey } });
+                await _messageEnqueuer.EnqueueAsync(new[] { new AuxiliaryFileUpdaterMessage<TRecord> { TaskStateKey = taskStateKey } });
                 await _taskStateStorageService.GetOrAddAsync(taskStateKey);
                 return true;
             }

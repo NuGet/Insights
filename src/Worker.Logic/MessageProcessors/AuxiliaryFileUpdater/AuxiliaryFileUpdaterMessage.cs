@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 {
-    public class AuxiliaryFileUpdaterMessage<T> : ITaskStateMessage
+    public class AuxiliaryFileUpdaterMessage<T> : ITaskStateMessage where T : IAuxiliaryFileCsvRecord<T>
     {
         [JsonPropertyName("ts")]
         public TaskStateKey TaskStateKey { get; set; }

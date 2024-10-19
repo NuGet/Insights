@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker.PopularityTransfersToCsv
 {
-    public partial record PopularityTransfersRecord : ICsvRecord<PopularityTransfersRecord>
+    public partial record PopularityTransfersRecord : IAuxiliaryFileCsvRecord<PopularityTransfersRecord>
     {
         [KustoIgnore]
         public DateTimeOffset AsOfTimestamp { get; set; }

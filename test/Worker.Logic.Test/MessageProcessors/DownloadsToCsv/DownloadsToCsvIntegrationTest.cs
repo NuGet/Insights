@@ -37,7 +37,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
 
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>, PackageDownloadRecord>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -69,7 +69,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
 
             Configure(useV1: false, useV2: true);
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>, PackageDownloadRecord>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -101,7 +101,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
 
             Configure(useV1: true, useV2: true);
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>, PackageDownloadRecord>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -135,7 +135,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
         {
             // Arrange
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>, PackageDownloadRecord>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -166,7 +166,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
         {
             // Arrange
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>, PackageDownloadRecord>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -200,7 +200,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
 
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>, PackageDownloadRecord>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
             string id;
@@ -239,7 +239,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
 
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>, PackageDownloadRecord>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
             string version;
@@ -278,7 +278,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
 
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>, PackageDownloadRecord>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
             string version;
@@ -301,7 +301,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
         {
             // Arrange
             Configure(DownloadsToCsv_UnicodeDuplicatesDir);
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>, PackageDownloadRecord>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -318,7 +318,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
         {
             // Arrange
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>, PackageDownloadRecord>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -347,7 +347,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             Assert.Equal(2, HttpMessageHandlerFactory.SuccessRequests.Count(r => r.RequestUri.AbsoluteUri.EndsWith("/downloads.v1.json", StringComparison.Ordinal)));
         }
 
-        private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<AsOfData<PackageDownloads>, PackageDownloadRecord> service)
+        private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<PackageDownloadRecord> service)
         {
             await ProcessQueueAsync(async () => !await service.IsRunningAsync());
         }

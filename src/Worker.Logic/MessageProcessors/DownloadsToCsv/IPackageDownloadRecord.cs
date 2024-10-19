@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker.DownloadsToCsv
 {
-    public interface IPackageDownloadRecord<T> : ICsvRecord<T> where T : IPackageDownloadRecord<T>
+    public interface IPackageDownloadRecord<T> : IAuxiliaryFileCsvRecord<T> where T : IPackageDownloadRecord<T>
     {
         public DateTimeOffset AsOfTimestamp { get; set; }
 

@@ -9,9 +9,9 @@ using NuGet.Insights.Worker.BuildVersionSet;
 
 namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 {
-    public class AuxiliaryFileUpdaterProcessor<TInput, TRecord> : ITaskStateMessageProcessor<AuxiliaryFileUpdaterMessage<TInput>>
+    public class AuxiliaryFileUpdaterProcessor<TInput, TRecord> : ITaskStateMessageProcessor<AuxiliaryFileUpdaterMessage<TRecord>>
         where TInput : IAsOfData
-        where TRecord : ICsvRecord<TRecord>
+        where TRecord : IAuxiliaryFileCsvRecord<TRecord>
     {
         private const string AsOfTimestampMetadata = "asOfTimestamp";
         private const string VersionSetCommitTimestampMetadata = "versionSetCommitTimestamp";
@@ -41,7 +41,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
             return $"latest_{blobName}.csv.gz";
         }
 
-        public async Task<TaskStateProcessResult> ProcessAsync(AuxiliaryFileUpdaterMessage<TInput> message, TaskState taskState, long dequeueCount)
+        public async Task<TaskStateProcessResult> ProcessAsync(AuxiliaryFileUpdaterMessage<TRecord> message, TaskState taskState, long dequeueCount)
         {
             await using var data = await _updater.GetDataAsync();
 

@@ -99,11 +99,12 @@ namespace NuGet.Insights.Worker
 
         [Theory]
         [MemberData(nameof(AuxiliaryFileRecordTypesData))]
-        public void AuxiliaryRecordTypesAreIAggregatedRecord(Type recordType)
+        public void AuxiliaryRecordTypesAreIAuxiliaryFileRecords(Type recordType)
         {
             var producer = CsvRecordContainers.GetProducer(recordType);
 
             Assert.Equal(CsvRecordProducerType.AuxiliaryFileUpdater, producer.Type);
+            Assert.True(recordType.IsAssignableTo(typeof(IAuxiliaryFileCsvRecord<>).MakeGenericType(recordType)));
             Assert.Throws<ArgumentException>(() => recordType.IsAssignableTo(typeof(IAggregatedCsvRecord<>).MakeGenericType(recordType)));
         }
 
@@ -115,6 +116,7 @@ namespace NuGet.Insights.Worker
 
             Assert.Equal(CsvRecordProducerType.CatalogScanDriver, producer.Type);
             Assert.True(recordType.IsAssignableTo(typeof(IAggregatedCsvRecord<>).MakeGenericType(recordType)));
+            Assert.Throws<ArgumentException>(() => recordType.IsAssignableTo(typeof(IAuxiliaryFileCsvRecord<>).MakeGenericType(recordType)));
         }
 
         [Theory]
