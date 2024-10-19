@@ -10,6 +10,8 @@ using Azure.Storage.Blobs.Specialized;
 using MessagePack;
 using NuGet.Insights.WideEntities;
 
+#nullable enable
+
 namespace NuGet.Insights.Worker
 {
     public class AppendResultStorageService
@@ -347,7 +349,7 @@ namespace NuGet.Insights.Worker
             _compactDurationMs.TrackValue(stopwatch.Elapsed.TotalMilliseconds, destContainer, recordType);
         }
 
-        private async Task<CsvRecordBlob> GetCsvRecordBlobAsync(BlockBlobClient compactBlob)
+        private async Task<CsvRecordBlob?> GetCsvRecordBlobAsync(BlockBlobClient compactBlob)
         {
             try
             {
@@ -383,66 +385,63 @@ namespace NuGet.Insights.Worker
             var result = LoadAppendedRecordsToMemoryResult.Loaded;
             var subdivisions = 0;
 
-            if (srcTable != null)
+            var entities = _wideEntityService.RetrieveAsync(
+                srcTable,
+                partitionKey: bucket.ToString(CultureInfo.InvariantCulture),
+                minRowKey: null,
+                maxRowKey: null,
+                includeData: true,
+                maxPerPage: StorageUtility.MaxTakeCount);
+            string? lastRowKey = null;
+            await foreach (var entity in entities)
             {
-                var entities = _wideEntityService.RetrieveAsync(
+                entityCount++;
+                lastRowKey = entity.RowKey;
+
+                using var stream = entity.GetStream();
+                var entityRecords = Deserialize<T>(stream);
+                recordCount += entityRecords.Count;
+
+                if (recordCount > _options.Value.AppendResultBigModeRecordThreshold)
+                {
+                    records.Clear();
+                    result = LoadAppendedRecordsToMemoryResult.BigMode;
+                    break;
+                }
+
+                records.AddRange(entityRecords);
+
+                // Proactively prune to avoid out of memory exceptions.
+                if (entityCount % PruneEveryNEntity == PruneEveryNEntity - 1 && records.Count != 0)
+                {
+                    records = Prune(records, destContainer, recordType, isFinalPrune: false);
+                }
+            }
+
+            if (result == LoadAppendedRecordsToMemoryResult.BigMode)
+            {
+                var averageRecordCount = Math.Ceiling(1.0 * recordCount / entityCount);
+
+                var additionalEntityCount = await _wideEntityService.RetrieveAsync(
                     srcTable,
                     partitionKey: bucket.ToString(CultureInfo.InvariantCulture),
-                    minRowKey: null,
-                    maxRowKey: null,
-                    includeData: true,
-                    maxPerPage: StorageUtility.MaxTakeCount);
-                string lastRowKey = null;
-                await foreach (var entity in entities)
-                {
-                    entityCount++;
-                    lastRowKey = entity.RowKey;
+                    minRowKey: lastRowKey,
+                    maxRowKey: new string(char.MaxValue, 1),
+                    includeData: false,
+                    maxPerPage: StorageUtility.MaxTakeCount).CountAsync();
+                entityCount += additionalEntityCount - 1; // -1 because the min bound is inclusive
 
-                    using var stream = entity.GetStream();
-                    var entityRecords = Deserialize<T>(stream);
-                    recordCount += entityRecords.Count;
-
-                    if (recordCount > _options.Value.AppendResultBigModeRecordThreshold)
-                    {
-                        records.Clear();
-                        result = LoadAppendedRecordsToMemoryResult.BigMode;
-                        break;
-                    }
-
-                    records.AddRange(entityRecords);
-
-                    // Proactively prune to avoid out of memory exceptions.
-                    if (entityCount % PruneEveryNEntity == PruneEveryNEntity - 1 && records.Count != 0)
-                    {
-                        records = Prune(records, destContainer, recordType, isFinalPrune: false);
-                    }
-                }
-
-                if (result == LoadAppendedRecordsToMemoryResult.BigMode)
-                {
-                    var averageRecordCount = Math.Ceiling(1.0 * recordCount / entityCount);
-
-                    var additionalEntityCount = await _wideEntityService.RetrieveAsync(
-                        srcTable,
-                        partitionKey: bucket.ToString(CultureInfo.InvariantCulture),
-                        minRowKey: lastRowKey,
-                        maxRowKey: new string(char.MaxValue, 1),
-                        includeData: false,
-                        maxPerPage: StorageUtility.MaxTakeCount).CountAsync();
-                    entityCount += additionalEntityCount - 1; // -1 because the min bound is inclusive
-
-                    double recordCountEstimate = averageRecordCount * entityCount;
-                    subdivisions = (int)Math.Max(2, Math.Ceiling(recordCountEstimate / _options.Value.AppendResultBigModeSubdivisionSize));
-                    _logger.LogInformation(
-                        "Switching to big mode with {Subdivisions} subdivisions, based on append record count estimate of {RecordCountEstimate}.",
-                        subdivisions,
-                        recordCountEstimate);
-                }
-                else if (records.Count == 0)
-                {
-                    // If there are no entities, then there's no new data. We can stop here.
-                    result = LoadAppendedRecordsToMemoryResult.NoData;
-                }
+                double recordCountEstimate = averageRecordCount * entityCount;
+                subdivisions = (int)Math.Max(2, Math.Ceiling(recordCountEstimate / _options.Value.AppendResultBigModeSubdivisionSize));
+                _logger.LogInformation(
+                    "Switching to big mode with {Subdivisions} subdivisions, based on append record count estimate of {RecordCountEstimate}.",
+                    subdivisions,
+                    recordCountEstimate);
+            }
+            else if (records.Count == 0)
+            {
+                // If there are no entities, then there's no new data. We can stop here.
+                result = LoadAppendedRecordsToMemoryResult.NoData;
             }
 
             _pruneEntityCount.TrackValue(entityCount, destContainer, recordType);
@@ -566,37 +565,31 @@ namespace NuGet.Insights.Worker
             var entityCount = 0;
             var appendRecordCount = 0;
 
-            if (srcTable != null)
-            {
-                var entities = _wideEntityService.RetrieveAsync(
+            var entities = _wideEntityService.RetrieveAsync(
                 srcTable,
-                    partitionKey: bucket.ToString(CultureInfo.InvariantCulture),
-                    minRowKey: null,
-                    maxRowKey: null,
-                    includeData: true,
-                    maxPerPage: StorageUtility.MaxTakeCount);
-                await foreach (var entity in entities)
-                {
-                    entityCount++;
-                    var appendedSw = Stopwatch.StartNew();
-                    using var stream = entity.GetStream();
-                    var records = Deserialize<T>(stream);
+                partitionKey: bucket.ToString(CultureInfo.InvariantCulture),
+                minRowKey: null,
+                maxRowKey: null,
+                includeData: true,
+                maxPerPage: StorageUtility.MaxTakeCount);
 
-                    var initialCount = records.Count;
-                    records = Prune(records, destContainer, recordType, isFinalPrune: false);
-                    appendRecordCount += records.Count;
+            await foreach (var entity in entities)
+            {
+                entityCount++;
+                var appendedSw = Stopwatch.StartNew();
+                using var stream = entity.GetStream();
+                var records = Deserialize<T>(stream);
+                appendRecordCount += records.Count;
+                DivideAndWriteRecords(subdivisions, tempFiles, records);
+                appendedSw.Stop();
+                _bigModeSplitAppendedDurationMs.TrackValue(appendedSw.Elapsed.TotalMilliseconds, destContainer, recordType);
+            }
 
-                    DivideAndWriteRecords(subdivisions, tempFiles, records);
-                    appendedSw.Stop();
-                    _bigModeSplitAppendedDurationMs.TrackValue(appendedSw.Elapsed.TotalMilliseconds, destContainer, recordType);
-                }
-
-                if (appendRecordCount == 0)
-                {
-                    // If there are no entities, then there's no new data. We can stop here.
-                    _pruneEntityCount.TrackValue(entityCount, destContainer, recordType);
-                    return true;
-                }
+            if (appendRecordCount == 0)
+            {
+                // If there are no entities, then there's no new data. We can stop here.
+                _pruneEntityCount.TrackValue(entityCount, destContainer, recordType);
+                return true;
             }
 
             _pruneEntityCount.TrackValue(entityCount, destContainer, recordType);
@@ -836,7 +829,7 @@ namespace NuGet.Insights.Worker
 
         private record ExistingBlobInfo(
             BlobRequestConditions RequestConditions,
-            byte[] PreviousHash);
+            byte[]? PreviousHash);
 
         private List<T> Prune<T>(List<T> records, string destContainer, string recordType, bool isFinalPrune) where T : IAggregatedCsvRecord<T>
         {
@@ -874,7 +867,7 @@ namespace NuGet.Insights.Worker
             List<StreamWriter> tempFiles,
             IEnumerable<T> records) where T : IAggregatedCsvRecord<T>
         {
-            string lastBucketKey = null;
+            string? lastBucketKey = null;
             int lastBucket = -1;
             long recordCount = 0;
             foreach (var record in records)
