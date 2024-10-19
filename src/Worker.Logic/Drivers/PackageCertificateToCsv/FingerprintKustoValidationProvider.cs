@@ -7,10 +7,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 {
     public class FingerprintKustoValidationProvider : BaseKustoValidationProvider, IKustoValidationProvider
     {
-        public FingerprintKustoValidationProvider(
-            IEnumerable<ICsvRecordStorage> csvResultStorage,
-            CsvRecordContainers containers)
-            : base(csvResultStorage, containers)
+        public FingerprintKustoValidationProvider(CsvRecordContainers containers) : base(containers)
         {
         }
 

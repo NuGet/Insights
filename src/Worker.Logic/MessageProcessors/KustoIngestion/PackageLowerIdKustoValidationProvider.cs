@@ -5,10 +5,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
 {
     public class PackageLowerIdKustoValidationProvider : BaseKustoValidationProvider, IKustoValidationProvider
     {
-        public PackageLowerIdKustoValidationProvider(
-            IEnumerable<ICsvRecordStorage> csvResultStorage,
-            CsvRecordContainers containers)
-            : base(csvResultStorage, containers)
+        public PackageLowerIdKustoValidationProvider(CsvRecordContainers containers) : base(containers)
         {
         }
 

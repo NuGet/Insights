@@ -11,7 +11,6 @@ namespace NuGet.Insights.Worker.KustoIngestion
     {
         private readonly CachingKustoClientFactory _kustoClientFactory;
         private readonly IReadOnlyList<IKustoValidationProvider> _validationProviders;
-        private readonly IReadOnlyDictionary<Type, ICsvRecordStorage> _typeToStorage;
         private readonly CsvRecordContainers _containers;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ITelemetryClient _telemetryClient;
@@ -20,7 +19,6 @@ namespace NuGet.Insights.Worker.KustoIngestion
         public KustoDataValidator(
             CachingKustoClientFactory kustoClientFactory,
             IEnumerable<IKustoValidationProvider> validationProviders,
-            IEnumerable<ICsvRecordStorage> csvResultStorage,
             CsvRecordContainers containers,
             IOptions<NuGetInsightsWorkerSettings> options,
             ITelemetryClient telemetryClient,
@@ -28,7 +26,6 @@ namespace NuGet.Insights.Worker.KustoIngestion
         {
             _kustoClientFactory = kustoClientFactory;
             _validationProviders = validationProviders.ToList();
-            _typeToStorage = csvResultStorage.ToDictionary(x => x.RecordType);
             _containers = containers;
             _options = options;
             _telemetryClient = telemetryClient;
@@ -39,10 +36,10 @@ namespace NuGet.Insights.Worker.KustoIngestion
         {
             var tableNames = await GetTableNamesAsync();
 
-            if (_typeToStorage.TryGetValue(typeof(CatalogLeafItemRecord), out var storage))
+            if (_containers.TryGetInfoByRecordType<CatalogLeafItemRecord>(out var catalogLeafItemInfo))
             {
-                var newTable = _containers.GetTempKustoTableName(storage.ContainerName);
-                var existingTable = _containers.GetKustoTableName(storage.ContainerName);
+                var newTable = _containers.GetTempKustoTableName(catalogLeafItemInfo.ContainerName);
+                var existingTable = _containers.GetKustoTableName(catalogLeafItemInfo.ContainerName);
 
                 if (tableNames.Contains(existingTable) && tableNames.Contains(newTable))
                 {
@@ -50,15 +47,14 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 }
             }
 
-            var recordTypesWithCatalogCommitTimestamp = _typeToStorage
-                .Where(x => x.Value.RecordType.GetProperty(nameof(PackageRecord.CatalogCommitTimestamp)) != null)
-                .Select(x => x.Key);
+            var containersWithCatalogCommitTimestamp = _containers
+                .ContainerInfo
+                .Where(x => x.RecordType.GetProperty(nameof(PackageRecord.CatalogCommitTimestamp)) != null);
 
-            foreach (var recordType in recordTypesWithCatalogCommitTimestamp)
+            foreach (var info in containersWithCatalogCommitTimestamp)
             {
-                storage = _typeToStorage[recordType];
-                var newTable = _containers.GetTempKustoTableName(storage.ContainerName);
-                var existingTable = _containers.GetKustoTableName(storage.ContainerName);
+                var newTable = _containers.GetTempKustoTableName(info.ContainerName);
+                var existingTable = _containers.GetKustoTableName(info.ContainerName);
 
                 if (tableNames.Contains(existingTable) && tableNames.Contains(newTable))
                 {

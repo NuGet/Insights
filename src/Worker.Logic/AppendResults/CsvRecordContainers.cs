@@ -7,20 +7,25 @@ using Azure.Storage.Blobs.Models;
 using NuGet.Insights;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 
+#nullable enable
+
 namespace NuGet.Insights.Worker
 {
+    public record CsvRecordContainerInfo(string ContainerName, Type RecordType, string BlobNamePrefix);
+
     public class CsvRecordContainers
     {
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ServiceClientFactory _serviceClientFactory;
-        private readonly FrozenDictionary<string, ICsvRecordStorage> _containerNameToStorage;
-        private readonly FrozenDictionary<Type, ICsvRecordStorage> _recordTypeToStorage;
+        private readonly List<CsvRecordContainerInfo> _containers;
+        private readonly FrozenDictionary<string, CsvRecordContainerInfo> _containerNameToInfo;
+        private readonly FrozenDictionary<Type, CsvRecordContainerInfo> _recordTypeToInfo;
         private readonly IReadOnlyList<string> _containerNames;
         private readonly IReadOnlyList<Type> _recordTypes;
         private readonly FrozenDictionary<Type, CsvRecordProducer> _recordTypeToProducer;
 
         public CsvRecordContainers(
-            IEnumerable<ICsvRecordStorage> csvResultStorage,
+            IEnumerable<CsvRecordContainerInfo> containerInfo,
             ServiceClientFactory serviceClientFactory,
             ICatalogScanDriverFactory catalogScanDriverFactory,
             IEnumerable<IAuxiliaryFileUpdater> auxiliaryFileUpdaters,
@@ -28,10 +33,11 @@ namespace NuGet.Insights.Worker
         {
             _options = options;
             _serviceClientFactory = serviceClientFactory;
-            _containerNameToStorage = csvResultStorage.ToDictionary(x => x.ContainerName).ToFrozenDictionary();
-            _recordTypeToStorage = csvResultStorage.ToDictionary(x => x.RecordType).ToFrozenDictionary();
-            _containerNames = _containerNameToStorage.Keys.OrderBy(x => x, StringComparer.Ordinal).ToList();
-            _recordTypes = _recordTypeToStorage.Keys.OrderBy(x => x.FullName, StringComparer.Ordinal).ToList();
+            _containers = containerInfo.ToList();
+            _containerNameToInfo = _containers.ToDictionary(x => x.ContainerName).ToFrozenDictionary();
+            _recordTypeToInfo = _containers.ToDictionary(x => x.RecordType).ToFrozenDictionary();
+            _containerNames = _containerNameToInfo.Keys.OrderBy(x => x, StringComparer.Ordinal).ToList();
+            _recordTypes = _recordTypeToInfo.Keys.OrderBy(x => x.FullName, StringComparer.Ordinal).ToList();
             _recordTypeToProducer = ComputeCsvResultProducers(catalogScanDriverFactory, auxiliaryFileUpdaters);
         }
 
@@ -43,11 +49,17 @@ namespace NuGet.Insights.Worker
 
             foreach (var driverType in CatalogScanDriverMetadata.StartableDriverTypes)
             {
-                ICatalogScanDriver driver = catalogScanDriverFactory.CreateNonBatchDriverOrNull(driverType);
+                ICatalogScanDriver? driver = catalogScanDriverFactory.CreateNonBatchDriverOrNull(driverType);
                 if (driver is null)
                 {
                     driver = catalogScanDriverFactory.CreateBatchDriverOrNull(driverType);
                 }
+
+                if (driver is null)
+                {
+                    throw new InvalidOperationException("No driver implementation could be found.");
+                }
+
                 var recordTypes = driver
                     .GetType()
                     .GenericTypeArguments
@@ -81,7 +93,7 @@ namespace NuGet.Insights.Worker
         {
             var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
             var container = serviceClient.GetBlobContainerClient(containerName);
-            var storage = _containerNameToStorage[containerName];
+            var storage = _containerNameToInfo[containerName];
 
             try
             {
@@ -106,25 +118,46 @@ namespace NuGet.Insights.Worker
 
         public IReadOnlyList<string> ContainerNames => _containerNames;
         public IReadOnlyList<Type> RecordTypes => _recordTypes;
+        public IReadOnlyList<CsvRecordContainerInfo> ContainerInfo => _containers;
 
         public Type GetRecordType(string containerName)
         {
-            if (!_containerNameToStorage.TryGetValue(containerName, out var storage))
+            if (!_containerNameToInfo.TryGetValue(containerName, out var info))
             {
                 throw new ArgumentException("The provided container name is not known.", nameof(containerName));
             }
 
-            return storage.RecordType;
+            return info.RecordType;
         }
 
-        public string GetContainerName(Type recordType)
+        public bool TryGetInfoByRecordType<T>([NotNullWhen(true)] out CsvRecordContainerInfo? info) where T : ICsvRecord<T>
         {
-            if (!_recordTypeToStorage.TryGetValue(recordType, out var storage))
+            return TryGetInfoByRecordType(typeof(T), out info);
+        }
+
+        public bool TryGetInfoByRecordType(Type recordType, [NotNullWhen(true)] out CsvRecordContainerInfo? info)
+        {
+            return _recordTypeToInfo.TryGetValue(recordType, out info);
+        }
+
+        public CsvRecordContainerInfo GetInfoByRecordType<T>() where T : ICsvRecord<T>
+        {
+            return GetInfoByRecordType(typeof(T));
+        }
+
+        public CsvRecordContainerInfo GetInfoByRecordType(Type recordType)
+        {
+            if (!TryGetInfoByRecordType(recordType, out var info))
             {
                 throw new ArgumentException("The provided record type is not known.", nameof(recordType));
             }
 
-            return storage.ContainerName;
+            return info;
+        }
+
+        public string GetContainerName(Type recordType)
+        {
+            return GetInfoByRecordType(recordType).ContainerName;
         }
 
         public string GetDefaultKustoTableName(Type recordType)
