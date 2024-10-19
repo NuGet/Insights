@@ -89,6 +89,7 @@ namespace NuGet.Insights.Worker
             serviceCollection.AddSingleton<TimerExecutionService>();
             serviceCollection.AddSingleton<SpecificTimerExecutionService>();
             serviceCollection.AddSingleton<AppendResultStorageService>();
+            serviceCollection.AddSingleton<CsvRecordStorageService>();
             serviceCollection.AddSingleton<TaskStateStorageService>();
             serviceCollection.AddSingleton<ICsvReader, CsvReaderAdapter>();
             serviceCollection.AddSingleton<CsvRecordContainers>();
@@ -198,7 +199,7 @@ namespace NuGet.Insights.Worker
                     return new CsvRecordStorage(
                         (string)getContainerName.GetValue(storage),
                         recordType,
-                        AppendResultStorageService.CompactPrefix);
+                        CsvRecordStorageService.CompactPrefix);
                 });
 
                 // Add the CSV compactor processor

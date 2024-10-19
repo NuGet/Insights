@@ -88,7 +88,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             Assert.Equal("true", catalogLeafScanMessageValue.DimensionValues[2]);
 
             // 1 compacted blob
-            Assert.True(TelemetryClient.Metrics.TryGetValue(new("AppendResultStorageService.CompactAsync.RecordCount", "DestContainer", "RecordType"), out var compactMetric));
+            Assert.True(TelemetryClient.Metrics.TryGetValue(new("CsvRecordStorageService.CompactAsync.RecordCount", "DestContainer", "RecordType"), out var compactMetric));
             var compactValue = Assert.Single(compactMetric.MetricValues);
             Assert.Equal(10, compactValue.MetricValue);
             Assert.Equal(Options.Value.PackageAssetContainerName, compactValue.DimensionValues[0]);
@@ -137,7 +137,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             // Assert
             await AssertOutputAsync(PackageAssetToCsvDir, Step1, 0);
-            TelemetryClient.Metrics.TryGetValue(new("AppendResultStorageService.CompactAsync.BigMode.Switch", "DestContainer", "RecordType", "Reason"), out var metric);
+            TelemetryClient.Metrics.TryGetValue(new("CsvRecordStorageService.CompactAsync.BigMode.Switch", "DestContainer", "RecordType", "Reason"), out var metric);
             Assert.NotNull(metric);
             Assert.All(metric.MetricValues, x => Assert.Equal(Options.Value.PackageAssetContainerName, x.DimensionValues[0]));
             Assert.All(metric.MetricValues, x => Assert.Equal("PackageAsset", x.DimensionValues[1]));
@@ -149,7 +149,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             // Assert
             await AssertOutputAsync(PackageAssetToCsvDir, Step2, 0);
-            TelemetryClient.Metrics.TryGetValue(new("AppendResultStorageService.CompactAsync.BigMode.Switch", "DestContainer", "RecordType", "Reason"), out metric);
+            TelemetryClient.Metrics.TryGetValue(new("CsvRecordStorageService.CompactAsync.BigMode.Switch", "DestContainer", "RecordType", "Reason"), out metric);
             Assert.NotNull(metric);
             Assert.All(metric.MetricValues, x => Assert.Equal(Options.Value.PackageAssetContainerName, x.DimensionValues[0]));
             Assert.All(metric.MetricValues, x => Assert.Equal("PackageAsset", x.DimensionValues[1]));

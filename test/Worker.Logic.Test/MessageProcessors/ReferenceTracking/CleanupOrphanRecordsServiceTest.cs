@@ -231,7 +231,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
                     return new CsvRecordStorage(
                         resultStorage.ResultContainerName,
                         typeof(TestSubjectRecord),
-                        AppendResultStorageService.CompactPrefix);
+                        CsvRecordStorageService.CompactPrefix);
                 });
             });
         }
