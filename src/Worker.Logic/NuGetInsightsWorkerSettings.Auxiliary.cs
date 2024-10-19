@@ -5,8 +5,6 @@ namespace NuGet.Insights.Worker
 {
     public partial class NuGetInsightsWorkerSettings
     {
-        public bool OnlyKeepLatestInAuxiliaryFileUpdater { get; set; } = true;
-
         public bool AutoStartDownloadToCsv { get; set; } = false;
         public bool AutoStartOwnersToCsv { get; set; } = false;
         public bool AutoStartVerifiedPackagesToCsv { get; set; } = false;

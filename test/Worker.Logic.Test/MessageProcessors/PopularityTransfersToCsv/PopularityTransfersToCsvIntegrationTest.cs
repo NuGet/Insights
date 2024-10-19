@@ -16,7 +16,6 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
         public async Task PopularityTransfersToCsv()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
             Configure();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PopularityTransfersRecord>>();
             await service.InitializeAsync();
@@ -26,7 +25,6 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(PopularityTransfersToCsvDir, Step1, "popularity_transfers_08585907868854775807.csv.gz");
             await AssertCsvBlobAsync(PopularityTransfersToCsvDir, Step1, "latest_popularity_transfers.csv.gz");
 
             // Arrange
@@ -37,9 +35,6 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvCountAsync(3);
-            await AssertCsvBlobAsync(PopularityTransfersToCsvDir, Step1, "popularity_transfers_08585907868854775807.csv.gz");
-            await AssertCsvBlobAsync(PopularityTransfersToCsvDir, Step2, "popularity_transfers_08585906968854775807.csv.gz");
             await AssertCsvBlobAsync(PopularityTransfersToCsvDir, Step2, "latest_popularity_transfers.csv.gz");
         }
 
@@ -67,7 +62,6 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvCountAsync(1);
             await AssertCsvBlobAsync(PopularityTransfersToCsvDir, Step1, "latest_popularity_transfers.csv.gz");
             var blobB = await GetBlobAsync(Options.Value.PopularityTransferContainerName, "latest_popularity_transfers.csv.gz");
             var propertiesB = await blobB.GetPropertiesAsync();
@@ -99,7 +93,6 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvCountAsync(1);
             await AssertCsvBlobAsync(PopularityTransfersToCsvDir, Step1, "latest_popularity_transfers.csv.gz");
             var blobB = await GetBlobAsync(Options.Value.PopularityTransferContainerName, "latest_popularity_transfers.csv.gz");
             var propertiesB = await blobB.GetPropertiesAsync();
@@ -110,7 +103,6 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
         public async Task PopularityTransfersToCsv_NonExistentId()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
             Configure();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PopularityTransfersRecord>>();
             await service.InitializeAsync();
@@ -122,7 +114,6 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(PopularityTransfersToCsv_NonExistentIdDir, Step1, "popularity_transfers_08585907868854775807.csv.gz");
             await AssertCsvBlobAsync(PopularityTransfersToCsv_NonExistentIdDir, Step1, "latest_popularity_transfers.csv.gz");
 
             // Arrange
@@ -137,9 +128,6 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvCountAsync(3);
-            await AssertCsvBlobAsync(PopularityTransfersToCsv_NonExistentIdDir, Step1, "popularity_transfers_08585907868854775807.csv.gz");
-            await AssertCsvBlobAsync(PopularityTransfersToCsv_NonExistentIdDir, Step2, "popularity_transfers_08585906968854775807.csv.gz");
             await AssertCsvBlobAsync(PopularityTransfersToCsv_NonExistentIdDir, Step2, "latest_popularity_transfers.csv.gz");
         }
 
@@ -147,8 +135,6 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
         public async Task PopularityTransfersToCsv_UncheckedId()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
-
             Configure();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PopularityTransfersRecord>>();
             await service.InitializeAsync();
@@ -159,35 +145,7 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(PopularityTransfersToCsv_UncheckedIdDir, Step1, "popularity_transfers_08585907868854775807.csv.gz");
             await AssertCsvBlobAsync(PopularityTransfersToCsv_UncheckedIdDir, Step1, "latest_popularity_transfers.csv.gz");
-        }
-
-        [Fact]
-        public async Task PopularityTransfersToCsv_JustLatest()
-        {
-            // Arrange
-            Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PopularityTransfersRecord>>();
-            await service.InitializeAsync();
-            Assert.True(await service.StartAsync());
-
-            // Act
-            await ProcessQueueAsync(service);
-
-            // Assert
-            await AssertCsvBlobAsync(PopularityTransfersToCsvDir, Step1, "latest_popularity_transfers.csv.gz");
-
-            // Arrange
-            SetData(Step2);
-            Assert.True(await service.StartAsync());
-
-            // Act
-            await ProcessQueueAsync(service);
-
-            // Assert
-            await AssertCsvCountAsync(1);
-            await AssertCsvBlobAsync(PopularityTransfersToCsvDir, Step2, "latest_popularity_transfers.csv.gz");
         }
 
         private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<PopularityTransfersRecord> service)
@@ -214,11 +172,6 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
 
                 return null;
             };
-        }
-
-        protected async Task AssertCsvCountAsync(int expected)
-        {
-            await AssertBlobCountAsync(Options.Value.PopularityTransferContainerName, expected);
         }
 
         private Task AssertCsvBlobAsync(string testName, string stepName, string blobName)
