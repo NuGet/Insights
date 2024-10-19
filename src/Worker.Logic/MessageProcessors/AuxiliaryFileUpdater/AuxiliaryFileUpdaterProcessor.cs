@@ -124,37 +124,45 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
             }
         }
 
-        private async Task<(MemoryStream stream, long uncompressedLength, long recordCount)> SerializeDataAsync(IVersionSet versionSet, TInput data)
+        private async Task<(FileStream stream, long uncompressedLength, long recordCount)> SerializeDataAsync(IVersionSet versionSet, TInput data)
         {
-            var memoryStream = new MemoryStream();
-
-            long uncompressedLength;
-            long recordCount = 0;
-            using (var gzipStream = new GZipStream(memoryStream, CompressionLevel.Optimal, leaveOpen: true))
+            var tempFilePath = Path.Combine(Path.GetTempPath(), $"NuGet.Insights_{_updater.BlobName}_{Guid.NewGuid().ToByteArray().ToTrimmedBase32()}.csv.gz");
+            var tempStream = TempStreamWriter.NewTempFile(tempFilePath);
+            try
             {
-                using var countingStream = new CountingWriterStream(gzipStream);
-                using var writer = new StreamWriter(countingStream)
+                long uncompressedLength;
+                long recordCount = 0;
+                using (var gzipStream = new GZipStream(tempStream, CompressionLevel.Optimal, leaveOpen: true))
                 {
-                    NewLine = "\n",
-                };
+                    using var countingStream = new CountingWriterStream(gzipStream);
+                    using var writer = new StreamWriter(countingStream)
+                    {
+                        NewLine = "\n",
+                    };
 
-                TRecord.WriteHeader(writer);
+                    TRecord.WriteHeader(writer);
 
-                await foreach (var record in _updater.ProduceRecordsAsync(versionSet, data))
-                {
-                    record.Write(writer);
-                    recordCount++;
+                    await foreach (var record in _updater.ProduceRecordsAsync(versionSet, data))
+                    {
+                        record.Write(writer);
+                        recordCount++;
+                    }
+
+                    await writer.FlushAsync();
+                    await gzipStream.FlushAsync();
+
+                    uncompressedLength = countingStream.Length;
                 }
 
-                await writer.FlushAsync();
-                await gzipStream.FlushAsync();
+                tempStream.Position = 0;
 
-                uncompressedLength = countingStream.Length;
+                return (tempStream, uncompressedLength, recordCount);
             }
-
-            memoryStream.Position = 0;
-
-            return (memoryStream, uncompressedLength, recordCount);
+            catch
+            {
+                tempStream.Dispose();
+                throw;
+            }
         }
 
         private async Task CopyLatestAsync(
