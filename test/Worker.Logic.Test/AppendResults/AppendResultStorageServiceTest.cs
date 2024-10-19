@@ -41,7 +41,7 @@ namespace NuGet.Insights.Worker
             await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
 
             // Assert
-            var metric = TelemetryClient.Metrics[new("AppendResultStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
+            var metric = TelemetryClient.Metrics[new("CsvRecordStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
             var value = Assert.Single(metric.MetricValues);
             Assert.Equal(1, value.MetricValue);
             Assert.Equal<string[]>([DestContainer, typeof(PackageDeprecationRecord).Name], value.DimensionValues);
@@ -61,7 +61,7 @@ namespace NuGet.Insights.Worker
             await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
 
             // Assert
-            var metric = TelemetryClient.Metrics[new("AppendResultStorageService.CompactAsync.BigMode.Switch", "DestContainer", "RecordType", "Reason")];
+            var metric = TelemetryClient.Metrics[new("CsvRecordStorageService.CompactAsync.BigMode.Switch", "DestContainer", "RecordType", "Reason")];
             var value = Assert.Single(metric.MetricValues);
             Assert.Equal(1, value.MetricValue);
             Assert.Equal<string[]>([DestContainer, typeof(PackageDeprecationRecord).Name, "EstimatedRecordCount"], value.DimensionValues);
@@ -81,7 +81,7 @@ namespace NuGet.Insights.Worker
             await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
 
             // Assert
-            var metric = TelemetryClient.Metrics[new("AppendResultStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
+            var metric = TelemetryClient.Metrics[new("CsvRecordStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
             Assert.Equal(2, metric.MetricValues.Count);
             var values = metric.MetricValues.ToList();
             Assert.Equal(1, values[0].MetricValue);
@@ -102,7 +102,7 @@ namespace NuGet.Insights.Worker
             await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
 
             // Assert
-            var metric = TelemetryClient.Metrics[new("AppendResultStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
+            var metric = TelemetryClient.Metrics[new("CsvRecordStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
             Assert.Equal(2, metric.MetricValues.Count);
             var values = metric.MetricValues.ToList();
             Assert.Equal(1, values[0].MetricValue);
@@ -124,7 +124,7 @@ namespace NuGet.Insights.Worker
             await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
 
             // Assert
-            var metric = TelemetryClient.Metrics[new("AppendResultStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
+            var metric = TelemetryClient.Metrics[new("CsvRecordStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
             Assert.Equal(2, metric.MetricValues.Count);
             var values = metric.MetricValues.ToList();
             Assert.Equal(1, values[0].MetricValue);
@@ -196,6 +196,7 @@ namespace NuGet.Insights.Worker
         }
 
         public AppendResultStorageService Target => Host.Services.GetRequiredService<AppendResultStorageService>();
+        public CsvRecordStorageService StorageService => Host.Services.GetRequiredService<CsvRecordStorageService>();
 
         public string SrcTable { get; }
         public string DestContainer { get; }
@@ -217,7 +218,7 @@ namespace NuGet.Insights.Worker
 
         private async Task ValidateGzippedFormatAsync(string destContainer, int bucket)
         {
-            var client = await Target.GetCompactBlobClientAsync(destContainer, bucket);
+            var client = await StorageService.GetCompactBlobClientAsync(destContainer, bucket);
             BlobDownloadResult result = await client.DownloadContentAsync();
 
             var compressedBytes = result.Content.ToArray();
