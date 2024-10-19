@@ -18,7 +18,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             // Arrange
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>, PackageOwnerRecord>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -48,7 +48,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
         {
             // Arrange
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>, PackageOwnerRecord>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -79,7 +79,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
         {
             // Arrange
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>, PackageOwnerRecord>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -112,7 +112,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             // Arrange
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>, PackageOwnerRecord>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
             string id;
@@ -151,7 +151,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
 
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>, PackageOwnerRecord>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
             MockVersionSet.Setup(x => x.GetUncheckedIds()).Returns(new[] { "UncheckedB", "UncheckedA" });
@@ -169,7 +169,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
         {
             // Arrange
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>, PackageOwnerRecord>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -191,7 +191,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             await AssertCsvBlobAsync(OwnersToCsvDir, Step2, "latest_owners.csv.gz");
         }
 
-        private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<AsOfData<PackageOwner>, PackageOwnerRecord> service)
+        private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<PackageOwnerRecord> service)
         {
             await ProcessQueueAsync(async () => !await service.IsRunningAsync());
         }

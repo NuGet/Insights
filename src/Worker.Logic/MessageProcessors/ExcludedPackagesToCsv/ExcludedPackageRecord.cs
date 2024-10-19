@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
 {
-    public partial record ExcludedPackageRecord : ICsvRecord<ExcludedPackageRecord>
+    public partial record ExcludedPackageRecord : IAuxiliaryFileCsvRecord<ExcludedPackageRecord>
     {
         [KustoIgnore]
         public DateTimeOffset AsOfTimestamp { get; set; }

@@ -19,7 +19,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
 
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>, VerifiedPackageRecord>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<VerifiedPackageRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -49,7 +49,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
         {
             // Arrange
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>, VerifiedPackageRecord>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<VerifiedPackageRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -80,7 +80,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
         {
             // Arrange
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>, VerifiedPackageRecord>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<VerifiedPackageRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -114,7 +114,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
 
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>, VerifiedPackageRecord>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<VerifiedPackageRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
             string id;
@@ -153,7 +153,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
 
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>, VerifiedPackageRecord>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<VerifiedPackageRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
             MockVersionSet.Setup(x => x.GetUncheckedIds()).Returns(new[] { "UncheckedB", "UncheckedA" });
@@ -171,7 +171,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
         {
             // Arrange
             Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>, VerifiedPackageRecord>>();
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<VerifiedPackageRecord>>();
             await service.InitializeAsync();
             Assert.True(await service.StartAsync());
 
@@ -193,7 +193,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step2, "latest_verified_packages.csv.gz");
         }
 
-        private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<AsOfData<VerifiedPackage>, VerifiedPackageRecord> service)
+        private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<VerifiedPackageRecord> service)
         {
             await ProcessQueueAsync(async () => !await service.IsRunningAsync());
         }

@@ -131,16 +131,14 @@ namespace NuGet.Insights.Worker
 
                 var inputType = serviceType.GenericTypeArguments[0];
                 var recordType = serviceType.GenericTypeArguments[1];
-                var messageType = typeof(AuxiliaryFileUpdaterMessage<>).MakeGenericType(inputType);
+                var messageType = typeof(AuxiliaryFileUpdaterMessage<>).MakeGenericType(recordType);
 
                 // Add the service
                 serviceCollection.AddSingleton(
-                    typeof(IAuxiliaryFileUpdaterService<,>).MakeGenericType(inputType, recordType),
+                    typeof(IAuxiliaryFileUpdaterService<>).MakeGenericType(recordType),
                     typeof(AuxiliaryFileUpdaterService<,>).MakeGenericType(inputType, recordType));
 
-                serviceCollection.AddSingleton(
-                    typeof(IAuxiliaryFileUpdaterService),
-                    typeof(AuxiliaryFileUpdaterService<,>).MakeGenericType(inputType, recordType));
+                serviceCollection.AddSingleton(x => (IAuxiliaryFileUpdaterService)x.GetRequiredService(typeof(IAuxiliaryFileUpdaterService<>).MakeGenericType(recordType)));
 
                 // Add the generic CSV storage
                 var getContainerName = typeof(IAuxiliaryFileUpdater).GetProperty(nameof(IAuxiliaryFileUpdater.ContainerName));

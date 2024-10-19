@@ -5,13 +5,13 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 {
     public class AuxiliaryFileUpdaterTimer<TInput, TRecord> : IAuxiliaryFileUpdaterTimer, ITimer
         where TInput : IAsOfData
-        where TRecord : ICsvRecord<TRecord>
+        where TRecord : IAuxiliaryFileCsvRecord<TRecord>
     {
-        private readonly IAuxiliaryFileUpdaterService<TInput, TRecord> _service;
+        private readonly IAuxiliaryFileUpdaterService<TRecord> _service;
         private readonly IAuxiliaryFileUpdater<TInput, TRecord> _updater;
 
         public AuxiliaryFileUpdaterTimer(
-            IAuxiliaryFileUpdaterService<TInput, TRecord> service,
+            IAuxiliaryFileUpdaterService<TRecord> service,
             IAuxiliaryFileUpdater<TInput, TRecord> updater)
         {
             _service = service;

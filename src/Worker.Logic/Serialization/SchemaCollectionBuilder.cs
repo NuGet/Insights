@@ -3,13 +3,18 @@
 
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.CopyBucketRange;
+using NuGet.Insights.Worker.DownloadsToCsv;
 using NuGet.Insights.Worker.EnqueueCatalogLeafScan;
+using NuGet.Insights.Worker.ExcludedPackagesToCsv;
 using NuGet.Insights.Worker.KustoIngestion;
 using NuGet.Insights.Worker.LoadBucketedPackage;
 using NuGet.Insights.Worker.LoadLatestPackageLeaf;
+using NuGet.Insights.Worker.OwnersToCsv;
+using NuGet.Insights.Worker.PopularityTransfersToCsv;
 using NuGet.Insights.Worker.ReferenceTracking;
 using NuGet.Insights.Worker.TableCopy;
 using NuGet.Insights.Worker.TimedReprocess;
+using NuGet.Insights.Worker.VerifiedPackagesToCsv;
 using NuGet.Insights.Worker.Workflow;
 
 namespace NuGet.Insights.Worker
@@ -40,11 +45,11 @@ namespace NuGet.Insights.Worker
 
             new SchemaV1<TableRowCopyMessage<LatestPackageLeaf>>("trc.lpf"),
 
-            new SchemaV1<AuxiliaryFileUpdaterMessage<AsOfData<PackageDownloads>>>("d2c"),
-            new SchemaV1<AuxiliaryFileUpdaterMessage<AsOfData<PackageOwner>>>("o2c"),
-            new SchemaV1<AuxiliaryFileUpdaterMessage<AsOfData<VerifiedPackage>>>("vp2c"),
-            new SchemaV1<AuxiliaryFileUpdaterMessage<AsOfData<ExcludedPackage>>>("ep2c"),
-            new SchemaV1<AuxiliaryFileUpdaterMessage<AsOfData<PopularityTransfer>>>("pt2c"),
+            new SchemaV1<AuxiliaryFileUpdaterMessage<PackageDownloadRecord>>("d2c"),
+            new SchemaV1<AuxiliaryFileUpdaterMessage<PackageOwnerRecord>>("o2c"),
+            new SchemaV1<AuxiliaryFileUpdaterMessage<VerifiedPackageRecord>>("vp2c"),
+            new SchemaV1<AuxiliaryFileUpdaterMessage<ExcludedPackageRecord>>("ep2c"),
+            new SchemaV1<AuxiliaryFileUpdaterMessage<PopularityTransfersRecord>>("pt2c"),
 
             .. GetCsvCompactMessageSchemaForDrivers(),
             .. GetCleanupOrphanRecordsMessageSchemaForDrivers(),
