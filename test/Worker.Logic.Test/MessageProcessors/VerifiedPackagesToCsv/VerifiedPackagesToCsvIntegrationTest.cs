@@ -16,8 +16,6 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
         public async Task VerifiedPackagesToCsv()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
-
             Configure();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<VerifiedPackageRecord>>();
             await service.InitializeAsync();
@@ -27,7 +25,6 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step1, "verified_packages_08585909596854775807.csv.gz");
             await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step1, "latest_verified_packages.csv.gz");
 
             // Arrange
@@ -38,9 +35,6 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvCountAsync(3);
-            await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step1, "verified_packages_08585909596854775807.csv.gz");
-            await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step2, "verified_packages_08585908696854775807.csv.gz");
             await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step2, "latest_verified_packages.csv.gz");
         }
 
@@ -68,7 +62,6 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvCountAsync(1);
             await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step1, "latest_verified_packages.csv.gz");
             var blobB = await GetBlobAsync(Options.Value.VerifiedPackageContainerName, "latest_verified_packages.csv.gz");
             var propertiesB = await blobB.GetPropertiesAsync();
@@ -100,7 +93,6 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvCountAsync(1);
             await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step1, "latest_verified_packages.csv.gz");
             var blobB = await GetBlobAsync(Options.Value.VerifiedPackageContainerName, "latest_verified_packages.csv.gz");
             var propertiesB = await blobB.GetPropertiesAsync();
@@ -111,8 +103,6 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
         public async Task VerifiedPackagesToCsv_NonExistentId()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
-
             Configure();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<VerifiedPackageRecord>>();
             await service.InitializeAsync();
@@ -125,7 +115,6 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(VerifiedPackagesToCsv_NonExistentIdDir, Step1, "verified_packages_08585909596854775807.csv.gz");
             await AssertCsvBlobAsync(VerifiedPackagesToCsv_NonExistentIdDir, Step1, "latest_verified_packages.csv.gz");
 
             // Arrange
@@ -140,9 +129,6 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvCountAsync(3);
-            await AssertCsvBlobAsync(VerifiedPackagesToCsv_NonExistentIdDir, Step1, "verified_packages_08585909596854775807.csv.gz");
-            await AssertCsvBlobAsync(VerifiedPackagesToCsv_NonExistentIdDir, Step2, "verified_packages_08585908696854775807.csv.gz");
             await AssertCsvBlobAsync(VerifiedPackagesToCsv_NonExistentIdDir, Step2, "latest_verified_packages.csv.gz");
         }
 
@@ -150,8 +136,6 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
         public async Task VerifiedPackagesToCsv_UncheckedId()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
-
             Configure();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<VerifiedPackageRecord>>();
             await service.InitializeAsync();
@@ -162,35 +146,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(VerifiedPackagesToCsv_UncheckedIdDir, Step1, "verified_packages_08585909596854775807.csv.gz");
             await AssertCsvBlobAsync(VerifiedPackagesToCsv_UncheckedIdDir, Step1, "latest_verified_packages.csv.gz");
-        }
-
-        [Fact]
-        public async Task VerifiedPackagesToCsv_JustLatest()
-        {
-            // Arrange
-            Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<VerifiedPackageRecord>>();
-            await service.InitializeAsync();
-            Assert.True(await service.StartAsync());
-
-            // Act
-            await ProcessQueueAsync(service);
-
-            // Assert
-            await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step1, "latest_verified_packages.csv.gz");
-
-            // Arrange
-            SetData(Step2);
-            Assert.True(await service.StartAsync());
-
-            // Act
-            await ProcessQueueAsync(service);
-
-            // Assert
-            await AssertCsvCountAsync(1);
-            await AssertCsvBlobAsync(VerifiedPackagesToCsvDir, Step2, "latest_verified_packages.csv.gz");
         }
 
         private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<VerifiedPackageRecord> service)
@@ -217,11 +173,6 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
 
                 return null;
             };
-        }
-
-        protected async Task AssertCsvCountAsync(int expected)
-        {
-            await AssertBlobCountAsync(Options.Value.VerifiedPackageContainerName, expected);
         }
 
         private Task AssertCsvBlobAsync(string testName, string stepName, string blobName)

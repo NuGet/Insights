@@ -16,7 +16,6 @@ namespace NuGet.Insights.Worker.OwnersToCsv
         public async Task OwnersToCsv()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
             Configure();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerRecord>>();
             await service.InitializeAsync();
@@ -26,7 +25,6 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(OwnersToCsvDir, Step1, "owners_08585909596854775807.csv.gz");
             await AssertCsvBlobAsync(OwnersToCsvDir, Step1, "latest_owners.csv.gz");
 
             // Arrange
@@ -37,9 +35,6 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvCountAsync(3);
-            await AssertCsvBlobAsync(OwnersToCsvDir, Step1, "owners_08585909596854775807.csv.gz");
-            await AssertCsvBlobAsync(OwnersToCsvDir, Step2, "owners_08585908696854775807.csv.gz");
             await AssertCsvBlobAsync(OwnersToCsvDir, Step2, "latest_owners.csv.gz");
         }
 
@@ -67,7 +62,6 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvCountAsync(1);
             await AssertCsvBlobAsync(OwnersToCsvDir, Step1, "latest_owners.csv.gz");
             var blobB = await GetBlobAsync(Options.Value.PackageOwnerContainerName, "latest_owners.csv.gz");
             var propertiesB = await blobB.GetPropertiesAsync();
@@ -99,7 +93,6 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvCountAsync(1);
             await AssertCsvBlobAsync(OwnersToCsvDir, Step1, "latest_owners.csv.gz");
             var blobB = await GetBlobAsync(Options.Value.PackageOwnerContainerName, "latest_owners.csv.gz");
             var propertiesB = await blobB.GetPropertiesAsync();
@@ -110,7 +103,6 @@ namespace NuGet.Insights.Worker.OwnersToCsv
         public async Task OwnersToCsv_NonExistentId()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
             Configure();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerRecord>>();
             await service.InitializeAsync();
@@ -123,7 +115,6 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(OwnersToCsv_NonExistentIdDir, Step1, "owners_08585909596854775807.csv.gz");
             await AssertCsvBlobAsync(OwnersToCsv_NonExistentIdDir, Step1, "latest_owners.csv.gz");
 
             // Arrange
@@ -138,9 +129,6 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvCountAsync(3);
-            await AssertCsvBlobAsync(OwnersToCsv_NonExistentIdDir, Step1, "owners_08585909596854775807.csv.gz");
-            await AssertCsvBlobAsync(OwnersToCsv_NonExistentIdDir, Step2, "owners_08585908696854775807.csv.gz");
             await AssertCsvBlobAsync(OwnersToCsv_NonExistentIdDir, Step2, "latest_owners.csv.gz");
         }
 
@@ -148,8 +136,6 @@ namespace NuGet.Insights.Worker.OwnersToCsv
         public async Task OwnersToCsv_UncheckedId()
         {
             // Arrange
-            ConfigureWorkerSettings = x => x.OnlyKeepLatestInAuxiliaryFileUpdater = false;
-
             Configure();
             var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerRecord>>();
             await service.InitializeAsync();
@@ -160,35 +146,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(OwnersToCsv_UncheckedIdDir, Step1, "owners_08585909596854775807.csv.gz");
             await AssertCsvBlobAsync(OwnersToCsv_UncheckedIdDir, Step1, "latest_owners.csv.gz");
-        }
-
-        [Fact]
-        public async Task OwnersToCsv_JustLatest()
-        {
-            // Arrange
-            Configure();
-            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageOwnerRecord>>();
-            await service.InitializeAsync();
-            Assert.True(await service.StartAsync());
-
-            // Act
-            await ProcessQueueAsync(service);
-
-            // Assert
-            await AssertCsvBlobAsync(OwnersToCsvDir, Step1, "latest_owners.csv.gz");
-
-            // Arrange
-            SetData(Step2);
-            Assert.True(await service.StartAsync());
-
-            // Act
-            await ProcessQueueAsync(service);
-
-            // Assert
-            await AssertCsvCountAsync(1);
-            await AssertCsvBlobAsync(OwnersToCsvDir, Step2, "latest_owners.csv.gz");
         }
 
         private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<PackageOwnerRecord> service)
@@ -215,11 +173,6 @@ namespace NuGet.Insights.Worker.OwnersToCsv
 
                 return null;
             };
-        }
-
-        protected async Task AssertCsvCountAsync(int expected)
-        {
-            await AssertBlobCountAsync(Options.Value.PackageOwnerContainerName, expected);
         }
 
         private Task AssertCsvBlobAsync(string testName, string stepName, string blobName)

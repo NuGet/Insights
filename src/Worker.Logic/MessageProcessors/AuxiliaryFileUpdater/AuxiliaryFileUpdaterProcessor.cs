@@ -45,7 +45,9 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
         {
             await using var data = await _updater.GetDataAsync();
 
-            var latestBlob = await GetBlobAsync(GetLatestBlobName(_updater.BlobName));
+            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
+            var container = serviceClient.GetBlobContainerClient(_updater.ContainerName);
+            var latestBlob = container.GetBlobClient(GetLatestBlobName(_updater.BlobName));
 
             BlobRequestConditions latestRequestConditions;
             BlobProperties properties = null;
@@ -79,25 +81,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
                 }
             }
 
-            if (_options.Value.OnlyKeepLatestInAuxiliaryFileUpdater)
-            {
-                await WriteDataAsync(versionSetHandle.Value, data, latestBlob);
-            }
-            else
-            {
-                var dataBlob = await GetBlobAsync($"{_updater.BlobName}_{StorageUtility.GetDescendingId(data.AsOfTimestamp)}.csv.gz");
-                (var uncompressedLength, var recordCount, var etag) = await WriteDataAsync(versionSetHandle.Value, data, dataBlob);
-                var dataRequestConditions = new BlobRequestConditions { IfMatch = etag };
-                await CopyLatestAsync(
-                    uncompressedLength,
-                    recordCount,
-                    data.AsOfTimestamp,
-                    versionSetHandle.Value.CommitTimestamp,
-                    dataBlob,
-                    dataRequestConditions,
-                    latestBlob,
-                    latestRequestConditions);
-            }
+            await WriteDataAsync(versionSetHandle.Value, data, latestBlob);
 
             return TaskStateProcessResult.Complete;
         }
@@ -165,28 +149,6 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
             }
         }
 
-        private async Task CopyLatestAsync(
-            long uncompressedLength,
-            long recordCount,
-            DateTimeOffset asOfTimestamp,
-            DateTimeOffset versionSetCommitTimestamp,
-            BlobClient dataBlob,
-            BlobRequestConditions dataRequestConditions,
-            BlobClient latestBlob,
-            BlobRequestConditions latestRequestConditions)
-        {
-            var operation = await latestBlob.StartCopyFromUriAsync(
-                dataBlob.Uri,
-                new BlobCopyFromUriOptions
-                {
-                    SourceConditions = dataRequestConditions,
-                    DestinationConditions = latestRequestConditions,
-                    Metadata = GetMetadata(uncompressedLength, recordCount, asOfTimestamp, versionSetCommitTimestamp),
-                });
-
-            await operation.WaitForCompletionAsync();
-        }
-
         private static Dictionary<string, string> GetMetadata(long uncompressedLength, long recordCount, DateTimeOffset asOfTimestamp, DateTimeOffset versionSetCommitTimestamp)
         {
             return new Dictionary<string, string>
@@ -208,16 +170,6 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
                     asOfTimestamp.ToString("O")
                 },
             };
-        }
-
-        private async Task<BlobClient> GetBlobAsync(string blobName)
-        {
-            return (await GetContainerAsync()).GetBlobClient(blobName);
-        }
-
-        private async Task<BlobContainerClient> GetContainerAsync()
-        {
-            return (await _serviceClientFactory.GetBlobServiceClientAsync()).GetBlobContainerClient(_updater.ContainerName);
         }
     }
 }
