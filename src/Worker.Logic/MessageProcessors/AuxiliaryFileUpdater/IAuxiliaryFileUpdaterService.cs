@@ -14,6 +14,5 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
         Task DestroyAsync();
         Task<bool> StartAsync();
         Task<bool> IsRunningAsync();
-        bool HasRequiredConfiguration { get; }
     }
 }
