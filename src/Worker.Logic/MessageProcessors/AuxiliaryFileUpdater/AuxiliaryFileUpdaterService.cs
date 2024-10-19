@@ -59,8 +59,6 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
             return container;
         }
 
-        public bool HasRequiredConfiguration => _updater.HasRequiredConfiguration;
-
         public async Task<bool> StartAsync()
         {
             await using (var lease = await _leaseService.TryAcquireWithRetryAsync($"Start-AuxiliaryFileUpdater-{_updater.OperationName}"))
