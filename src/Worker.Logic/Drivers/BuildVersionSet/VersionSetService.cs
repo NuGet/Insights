@@ -210,12 +210,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             var sw = Stopwatch.StartNew();
             _logger.LogInformation("Writing the version set to the temporary file with commit timestamp {CommitTimestamp:O}...", commitTimestamp);
             var tempPath = Path.Combine(Path.GetTempPath(), $"NuGet.Insights.VersionSet.{Guid.NewGuid().ToByteArray().ToTrimmedBase32()}.dat");
-            using var stream = new FileStream(tempPath, new FileStreamOptions
-            {
-                Access = FileAccess.ReadWrite,
-                Mode = FileMode.CreateNew,
-                Options = FileOptions.DeleteOnClose,
-            });
+            using var stream = TempStreamWriter.NewTempFile(tempPath);
             await MessagePackSerializer.SerializeAsync(stream, data, NuGetInsightsMessagePack.Options);
             stream.Flush();
             stream.Position = 0;

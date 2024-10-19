@@ -493,7 +493,7 @@ namespace NuGet.Insights.Worker
                 for (var i = 0; i < subdivisions; i++)
                 {
                     var tempPath = Path.Combine(TempDir, $"{recordType}_{CompactPrefix}{bucket}_{i}_{uniqueFileNamePiece}.csv");
-                    var fileStream = GetTemporaryFileStream(tempPath);
+                    var fileStream = TempStreamWriter.NewTempFile(tempPath);
                     tempFiles.Add(GetStreamWriter<T>(fileStream, writeHeader: true));
                 }
 
@@ -513,7 +513,7 @@ namespace NuGet.Insights.Worker
 
                 // Step 5: combine the temporary files into one merged, gzipped file
                 var finalPath = Path.Combine(TempDir, $"{recordType}_{CompactPrefix}{bucket}_final_{uniqueFileNamePiece}.csv.gz");
-                using var finalStream = GetTemporaryFileStream(finalPath);
+                using var finalStream = TempStreamWriter.NewTempFile(finalPath);
                 finalStream.SetLengthAndWrite(totalUncompressedSize);
                 _bigModePreallocateOutputFileSize.TrackValue(totalUncompressedSize, destContainer, recordType);
                 var (combineRecordCount, uncompressedSize) = CombineSubdivisionsOnDisk<T>(tempFiles, destContainer, subdivisions, recordType, finalStream);
@@ -623,7 +623,7 @@ namespace NuGet.Insights.Worker
                 var extension = isGzip ? ".csv.gz" : ".csv";
 
                 var existingPath = Path.Combine(TempDir, $"{recordType}_{CompactPrefix}{bucket}_existing_{uniqueFileNamePiece}{extension}");
-                using var existingStream = GetTemporaryFileStream(existingPath);
+                using var existingStream = TempStreamWriter.NewTempFile(existingPath);
                 using var hasher = IncrementalHash.CreateNone();
                 await existingStream.SetLengthAndWriteAsync(blobResult.Details.ContentLength);
                 await blobResult.Content.CopyToSlowAsync(
@@ -867,16 +867,6 @@ namespace NuGet.Insights.Worker
             }
 
             return records;
-        }
-
-        private static FileStream GetTemporaryFileStream(string existingPath)
-        {
-            return new FileStream(existingPath, new FileStreamOptions
-            {
-                Access = FileAccess.ReadWrite,
-                Mode = FileMode.CreateNew,
-                Options = FileOptions.DeleteOnClose,
-            });
         }
 
         private static long DivideAndWriteRecords<T>(

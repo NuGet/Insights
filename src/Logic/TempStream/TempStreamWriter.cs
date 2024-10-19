@@ -188,23 +188,17 @@ namespace NuGet.Insights
                         }
                     }
 
-                    var tempPath = Path.Combine(tempDir, getTempFileName());
                     var tempDirLease = await _leaseService.WaitForLeaseAsync(tempDir);
                     if (tempDirLease is null)
                     {
                         return TempStreamResult.SemaphoreNotAvailable();
                     }
 
+                    var tempPath = Path.Combine(tempDir, getTempFileName());
                     try
                     {
                         _logger.LogInformation("Creating a file stream at location {TempPath}.", tempPath);
-                        dest = new FileStream(
-                            tempPath,
-                            FileMode.Create,
-                            FileAccess.ReadWrite,
-                            FileShare.None,
-                            bufferSize: 4096, // default
-                            FileOptions.Asynchronous | FileOptions.DeleteOnClose);
+                        dest = NewTempFile(tempPath);
 
                         if (tempDir.PreallocateFile)
                         {
@@ -242,6 +236,19 @@ namespace NuGet.Insights
                 SafeDispose(dest);
                 throw;
             }
+        }
+
+        public static FileStream NewTempFile(string tempPath)
+        {
+            var fileStreamOptions = new FileStreamOptions
+            {
+                Mode = FileMode.Create,
+                Access = FileAccess.ReadWrite,
+                Share = FileShare.None,
+                Options = FileOptions.Asynchronous | FileOptions.DeleteOnClose,
+            };
+
+            return new FileStream(tempPath, fileStreamOptions);
         }
 
         private static string DisplayTempDir(TempStreamDirectory tempDir)
