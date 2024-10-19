@@ -202,7 +202,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             var actual = SerializeTestJson(versions);
 
             var testDataFile = Path.Combine(TestData, testName, stepName, fileName);
-            if (OverwriteTestData)
+            if (TestLevers.OverwriteTestData)
             {
                 OverwriteTestDataAndCopyToSource(testDataFile, actual);
             }

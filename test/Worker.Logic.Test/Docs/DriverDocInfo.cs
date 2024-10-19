@@ -39,7 +39,7 @@ namespace NuGet.Insights.Worker
 
         public override void ReadMarkdown()
         {
-            if (!File.Exists(DocPath) || DriverDocsTest.OverwriteDriverDocs)
+            if (!File.Exists(DocPath) || TestLevers.OverwriteDriverDocs)
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(DocPath));
 

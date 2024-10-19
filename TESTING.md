@@ -14,6 +14,9 @@ an additional option for testing Kusto integration.
 4. [Use real Azure storage and real Kusto](#use-real-azure-storage-and-real-kusto)
    - Same as the previous option but tests ingestion into Azure Data Explorer (Kusto).
 
+You can also override some settings in [`TestLevers.cs`](test/Logic.Test/TestLevers.cs) if you are running in an IDE and
+setting environment variables is more painful.
+
 ## Use in-memory storage stubs
 
 No set up is required. Just run `dotnet test` with no `NUGETINSIGHT_*` environment variables set. Note that there are
