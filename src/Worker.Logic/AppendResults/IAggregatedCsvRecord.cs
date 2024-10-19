@@ -5,7 +5,6 @@ namespace NuGet.Insights.Worker
 {
     public interface IAggregatedCsvRecord : ICsvRecord
     {
-        string GetBucketKey();
     }
 
     public interface IAggregatedCsvRecord<T> : IAggregatedCsvRecord, ICsvRecord<T> where T : IAggregatedCsvRecord<T>

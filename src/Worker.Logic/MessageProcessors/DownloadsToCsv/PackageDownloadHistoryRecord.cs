@@ -18,6 +18,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
         public long Downloads { get; set; }
         public long TotalDownloads { get; set; }
 
+        public string GetBucketKey() => Identity;
         public static IEqualityComparer<PackageDownloadHistoryRecord> KeyComparer => PackageDownloadHistoryRecordKeyComparer.Instance;
         public static IReadOnlyList<string> KeyFields { get; } = [nameof(Identity)];
 
