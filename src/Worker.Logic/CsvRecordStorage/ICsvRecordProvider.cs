@@ -3,10 +3,14 @@
 
 #nullable enable
 
+using Azure.Storage.Blobs.Models;
+
 namespace NuGet.Insights.Worker
 {
     public interface ICsvRecordProvider<T> where T : ICsvRecord<T>
     {
+        bool ShouldCompact(BlobProperties? properties);
+        bool ShouldUseExistingRecords { get; }
         IAsyncEnumerable<ICsvRecordChunk<T>> GetChunksAsync(int bucket);
         Task<int> CountRemainingChunksAsync(int bucket, string? lastPosition);
         List<T> Prune(List<T> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger);

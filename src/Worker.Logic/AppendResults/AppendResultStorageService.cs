@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Azure;
+using Azure.Storage.Blobs.Models;
 using MessagePack;
 using NuGet.Insights.WideEntities;
 
@@ -198,6 +199,10 @@ namespace NuGet.Insights.Worker
                 _srcTable = srcTable;
                 _wideEntityService = wideEntityService;
             }
+
+            public bool ShouldCompact(BlobProperties? properties) => true;
+
+            public bool ShouldUseExistingRecords => true;
 
             public async IAsyncEnumerable<ICsvRecordChunk<T>> GetChunksAsync(int bucket)
             {
