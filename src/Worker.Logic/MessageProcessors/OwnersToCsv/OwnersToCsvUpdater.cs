@@ -32,7 +32,6 @@ namespace NuGet.Insights.Worker.OwnersToCsv
 
         public async IAsyncEnumerable<PackageOwnerRecord> ProduceRecordsAsync(IVersionSet versionSet, AsOfData<PackageOwner> data)
         {
-            var record = new PackageOwnerRecord { AsOfTimestamp = data.AsOfTimestamp };
             var idToOwners = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
             await foreach (var entry in data.Entries)
             {
@@ -47,7 +46,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
                     // Only write when we move to the next ID. This ensures all of the owners of a given ID are in the same record.
                     if (idToOwners.Any())
                     {
-                        foreach (var inner in WriteAndClear(record, idToOwners))
+                        foreach (var inner in WriteAndClear(data.AsOfTimestamp, idToOwners))
                         {
                             yield return inner;
                         }
@@ -62,7 +61,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
 
             if (idToOwners.Any())
             {
-                foreach (var inner in WriteAndClear(record, idToOwners))
+                foreach (var inner in WriteAndClear(data.AsOfTimestamp, idToOwners))
                 {
                     yield return inner;
                 }
@@ -72,21 +71,27 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             // produced data set easier.
             foreach (var id in versionSet.GetUncheckedIds())
             {
-                record.LowerId = id.ToLowerInvariant();
-                record.Id = id;
-                record.Owners = "[]";
-                yield return record;
+                yield return new PackageOwnerRecord
+                {
+                    AsOfTimestamp = data.AsOfTimestamp,
+                    Id = id,
+                    LowerId = id.ToLowerInvariant(),
+                    Owners = "[]",
+                };
             }
         }
 
-        private static IEnumerable<PackageOwnerRecord> WriteAndClear(PackageOwnerRecord record, Dictionary<string, HashSet<string>> idToOwners)
+        private static IEnumerable<PackageOwnerRecord> WriteAndClear(DateTimeOffset asOfTimestamp, Dictionary<string, HashSet<string>> idToOwners)
         {
             foreach (var pair in idToOwners)
             {
-                record.LowerId = pair.Key.ToLowerInvariant();
-                record.Id = pair.Key;
-                record.Owners = KustoDynamicSerializer.Serialize(pair.Value.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList());
-                yield return record;
+                yield return new PackageOwnerRecord
+                {
+                    AsOfTimestamp = asOfTimestamp,
+                    Id = pair.Key,
+                    LowerId = pair.Key.ToLowerInvariant(),
+                    Owners = KustoDynamicSerializer.Serialize(pair.Value.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList()),
+                };
             }
 
             idToOwners.Clear();

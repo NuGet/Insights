@@ -44,23 +44,28 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
                 verifiedPackageIds.Add(id);
             }
 
-            var record = new VerifiedPackageRecord { AsOfTimestamp = data.AsOfTimestamp };
             foreach (var packageId in verifiedPackageIds)
             {
-                record.LowerId = packageId.ToLowerInvariant();
-                record.Id = packageId;
-                record.IsVerified = true;
-                yield return record;
+                yield return new VerifiedPackageRecord
+                {
+                    AsOfTimestamp = data.AsOfTimestamp,
+                    Id = packageId,
+                    LowerId = packageId.ToLowerInvariant(),
+                    IsVerified = true,
+                };
             }
 
             // Add IDs that are not mentioned in the data and therefore are not verified. This makes joins on the
             // produced data set easier.
             foreach (var id in versionSet.GetUncheckedIds())
             {
-                record.LowerId = id.ToLowerInvariant();
-                record.Id = id;
-                record.IsVerified = false;
-                yield return record;
+                yield return new VerifiedPackageRecord
+                {
+                    AsOfTimestamp = data.AsOfTimestamp,
+                    Id = id,
+                    LowerId = id.ToLowerInvariant(),
+                    IsVerified = false,
+                };
             }
         }
     }

@@ -32,7 +32,6 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
 
         public async IAsyncEnumerable<PopularityTransfersRecord> ProduceRecordsAsync(IVersionSet versionSet, AsOfData<PopularityTransfer> data)
         {
-            var record = new PopularityTransfersRecord { AsOfTimestamp = data.AsOfTimestamp };
             var idToTransferIds = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
             await foreach (var entry in data.Entries)
             {
@@ -47,7 +46,7 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
                     // Only write when we move to the next ID. This ensures all of the popularity transfers from a given ID are in the same record.
                     if (idToTransferIds.Any())
                     {
-                        foreach (var inner in WriteAndClear(record, idToTransferIds))
+                        foreach (var inner in WriteAndClear(data.AsOfTimestamp, idToTransferIds))
                         {
                             yield return inner;
                         }
@@ -62,7 +61,7 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
 
             if (idToTransferIds.Any())
             {
-                foreach (var inner in WriteAndClear(record, idToTransferIds))
+                foreach (var inner in WriteAndClear(data.AsOfTimestamp, idToTransferIds))
                 {
                     yield return inner;
                 }
@@ -72,25 +71,31 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             // produced data set easier.
             foreach (var id in versionSet.GetUncheckedIds())
             {
-                record.LowerId = id.ToLowerInvariant();
-                record.Id = id;
-                record.TransferIds = "[]";
-                record.TransferLowerIds = "[]";
-                yield return record;
+                yield return new PopularityTransfersRecord
+                {
+                    AsOfTimestamp = data.AsOfTimestamp,
+                    Id = id,
+                    LowerId = id.ToLowerInvariant(),
+                    TransferIds = "[]",
+                    TransferLowerIds = "[]",
+                };
             }
         }
 
-        private static IEnumerable<PopularityTransfersRecord> WriteAndClear(PopularityTransfersRecord record, Dictionary<string, HashSet<string>> fromIdToToIds)
+        private static IEnumerable<PopularityTransfersRecord> WriteAndClear(DateTimeOffset asOfTimestamp, Dictionary<string, HashSet<string>> fromIdToToIds)
         {
             foreach (var pair in fromIdToToIds)
             {
-                record.LowerId = pair.Key.ToLowerInvariant();
-                record.Id = pair.Key;
                 var transferIds = pair.Value.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
                 var transferLowerIds = transferIds.Select(x => x.ToLowerInvariant()).ToList();
-                record.TransferIds = KustoDynamicSerializer.Serialize(transferIds);
-                record.TransferLowerIds = KustoDynamicSerializer.Serialize(transferLowerIds);
-                yield return record;
+                yield return new PopularityTransfersRecord
+                {
+                    AsOfTimestamp = asOfTimestamp,
+                    Id = pair.Key,
+                    LowerId = pair.Key.ToLowerInvariant(),
+                    TransferIds = KustoDynamicSerializer.Serialize(transferIds),
+                    TransferLowerIds = KustoDynamicSerializer.Serialize(transferLowerIds),
+                };
             }
 
             fromIdToToIds.Clear();

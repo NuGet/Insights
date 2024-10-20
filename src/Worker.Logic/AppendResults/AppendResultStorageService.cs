@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Azure;
+using Azure.Storage.Blobs.Models;
 using MessagePack;
 using NuGet.Insights.WideEntities;
 
@@ -199,6 +200,11 @@ namespace NuGet.Insights.Worker
                 _wideEntityService = wideEntityService;
             }
 
+            public bool ShouldCompact(BlobProperties? properties, ILogger logger) => true;
+
+            public bool UseExistingRecords => true;
+            public bool WriteEmptyCsv => false;
+
             public async IAsyncEnumerable<ICsvRecordChunk<T>> GetChunksAsync(int bucket)
             {
                 var entities = _wideEntityService.RetrieveAsync(
@@ -231,6 +237,10 @@ namespace NuGet.Insights.Worker
             public List<T> Prune(List<T> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
             {
                 return T.Prune(records, isFinalPrune, options, logger);
+            }
+
+            public void AddBlobMetadata(Dictionary<string, string> metadata)
+            {
             }
         }
 

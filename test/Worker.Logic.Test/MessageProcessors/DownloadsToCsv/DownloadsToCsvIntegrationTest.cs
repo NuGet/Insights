@@ -57,6 +57,32 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
         }
 
         [Fact]
+        public async Task DownloadsToCsv_BigMode()
+        {
+            // Arrange
+            Configure(useBigMode: true);
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadRecord>>();
+            await service.InitializeAsync();
+            Assert.True(await service.StartAsync());
+
+            // Act
+            await ProcessQueueAsync(service);
+
+            // Assert
+            await AssertCsvBlobAsync(DownloadsToCsvDir, Step1);
+
+            // Arrange
+            SetData(Step2);
+            Assert.True(await service.StartAsync());
+
+            // Act
+            await ProcessQueueAsync(service);
+
+            // Assert
+            await AssertCsvBlobAsync(DownloadsToCsvDir, Step2);
+        }
+
+        [Fact]
         public async Task DownloadsToCsv_JustV2()
         {
             // Arrange
@@ -282,7 +308,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             await ProcessQueueAsync(async () => !await service.IsRunningAsync());
         }
 
-        private void Configure(string dirName = DownloadsToCsvDir, bool useV1 = true, bool useV2 = false)
+        private void Configure(string dirName = DownloadsToCsvDir, bool useV1 = true, bool useV2 = false, bool useBigMode = false)
         {
             ConfigureSettings = x =>
             {
@@ -296,6 +322,14 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 if (useV2)
                 {
                     x.DownloadsV2Urls = new List<string> { $"http://localhost/{TestInput}/{dirName}/downloads.v2.json" };
+                }
+            };
+
+            ConfigureWorkerSettings = x =>
+            {
+                if (useBigMode)
+                {
+                    x.AppendResultBigModeRecordThreshold = 0;
                 }
             };
 

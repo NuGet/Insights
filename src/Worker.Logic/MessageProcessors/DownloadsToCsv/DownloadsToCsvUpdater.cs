@@ -32,12 +32,14 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
 
         public IAsyncEnumerable<PackageDownloadRecord> ProduceRecordsAsync(IVersionSet versionSet, AsOfData<PackageDownloads> data)
         {
-            var record = new PackageDownloadRecord { AsOfTimestamp = data.AsOfTimestamp };
-            return ProduceRecordsAsync(record, versionSet, data.Entries);
+            return ProduceRecordsAsync<PackageDownloadRecord>(versionSet, data.AsOfTimestamp, data.Entries);
         }
 
-        public static async IAsyncEnumerable<TRecord> ProduceRecordsAsync<TRecord>(TRecord record, IVersionSet versionSet, IAsyncEnumerable<PackageDownloads> data)
-            where TRecord : IPackageDownloadRecord<TRecord>
+        public static async IAsyncEnumerable<TRecord> ProduceRecordsAsync<TRecord>(
+            IVersionSet versionSet,
+            DateTimeOffset asOfTimestamp,
+            IAsyncEnumerable<PackageDownloads> data)
+            where TRecord : IPackageDownloadRecord<TRecord>, new()
         {
             var idToVersions = new CaseInsensitiveDictionary<CaseInsensitiveDictionary<long>>();
 
@@ -64,7 +66,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                     // Only write when we move to the next ID. This ensures all of the versions of a given ID are in the same segment.
                     if (idToVersions.Any())
                     {
-                        foreach (var inner in WriteAndClear(record, idToVersions, versionSet))
+                        foreach (var inner in WriteAndClear<TRecord>(asOfTimestamp, idToVersions, versionSet))
                         {
                             yield return inner;
                         }
@@ -79,7 +81,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
 
             if (idToVersions.Any())
             {
-                foreach (var inner in WriteAndClear(record, idToVersions, versionSet))
+                foreach (var inner in WriteAndClear<TRecord>(asOfTimestamp, idToVersions, versionSet))
                 {
                     yield return inner;
                 }
@@ -88,49 +90,61 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             // Add IDs that are not mentioned in the data and therefore have no downloads.
             foreach (var id in versionSet.GetUncheckedIds())
             {
-                record.Id = id;
-                record.LowerId = id.ToLowerInvariant();
-                record.TotalDownloads = 0;
+                var lowerId = id.ToLowerInvariant();
 
                 foreach (var version in versionSet.GetUncheckedVersions(id))
                 {
-                    record.Version = version;
-                    record.Identity = $"{record.LowerId}/{record.Version.ToLowerInvariant()}";
-                    record.Downloads = 0;
-
-                    yield return record;
+                    yield return new TRecord
+                    {
+                        AsOfTimestamp = asOfTimestamp,
+                        Id = id,
+                        LowerId = lowerId,
+                        Identity = $"{lowerId}/{version.ToLowerInvariant()}",
+                        TotalDownloads = 0,
+                        Version = version,
+                        Downloads = 0,
+                    };
                 }
             }
         }
 
         private static IEnumerable<T> WriteAndClear<T>(
-            T record,
+            DateTimeOffset asOfTimestamp,
             CaseInsensitiveDictionary<CaseInsensitiveDictionary<long>> idToVersions,
-            IVersionSet versionSet) where T : IPackageDownloadRecord<T>
+            IVersionSet versionSet) where T : IPackageDownloadRecord<T>, new()
         {
             foreach (var idPair in idToVersions)
             {
-                record.Id = idPair.Key;
-                record.LowerId = idPair.Key.ToLowerInvariant();
-                record.TotalDownloads = idPair.Value.Sum(x => x.Value);
+                var lowerId = idPair.Key.ToLowerInvariant();
+                var totalDownloads = idPair.Value.Sum(x => x.Value);
 
                 foreach (var versionPair in idPair.Value)
                 {
-                    record.Version = versionPair.Key;
-                    record.Identity = $"{record.LowerId}/{record.Version.ToLowerInvariant()}";
-                    record.Downloads = versionPair.Value;
-
-                    yield return record;
+                    yield return new T
+                    {
+                        AsOfTimestamp = asOfTimestamp,
+                        Id = idPair.Key,
+                        LowerId = lowerId,
+                        Identity = $"{lowerId}/{versionPair.Key.ToLowerInvariant()}",
+                        TotalDownloads = totalDownloads,
+                        Version = versionPair.Key,
+                        Downloads = versionPair.Value,
+                    };
                 }
 
                 // Add versions that are not mentioned in the data and therefore have no downloads.
                 foreach (var version in versionSet.GetUncheckedVersions(idPair.Key))
                 {
-                    record.Version = version;
-                    record.Identity = $"{record.LowerId}/{version.ToLowerInvariant()}";
-                    record.Downloads = 0;
-
-                    yield return record;
+                    yield return new T
+                    {
+                        AsOfTimestamp = asOfTimestamp,
+                        Id = idPair.Key,
+                        LowerId = lowerId,
+                        Identity = $"{lowerId}/{version.ToLowerInvariant()}",
+                        TotalDownloads = totalDownloads,
+                        Version = version,
+                        Downloads = 0,
+                    };
                 }
             }
 

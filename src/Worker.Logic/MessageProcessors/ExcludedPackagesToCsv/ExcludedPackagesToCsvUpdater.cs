@@ -44,23 +44,28 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
                 verifiedPackageIds.Add(id);
             }
 
-            var record = new ExcludedPackageRecord { AsOfTimestamp = data.AsOfTimestamp };
             foreach (var packageId in verifiedPackageIds)
             {
-                record.LowerId = packageId.ToLowerInvariant();
-                record.Id = packageId;
-                record.IsExcluded = true;
-                yield return record;
+                yield return new ExcludedPackageRecord
+                {
+                    AsOfTimestamp = data.AsOfTimestamp,
+                    Id = packageId,
+                    LowerId = packageId.ToLowerInvariant(),
+                    IsExcluded = true,
+                };
             }
 
             // Add IDs that are not mentioned in the data and therefore are not excluded. This makes joins on the
             // produced data set easier.
             foreach (var id in versionSet.GetUncheckedIds())
             {
-                record.LowerId = id.ToLowerInvariant();
-                record.Id = id;
-                record.IsExcluded = false;
-                yield return record;
+                yield return new ExcludedPackageRecord
+                {
+                    AsOfTimestamp = data.AsOfTimestamp,
+                    Id = id,
+                    LowerId = id.ToLowerInvariant(),
+                    IsExcluded = false,
+                };
             }
         }
     }

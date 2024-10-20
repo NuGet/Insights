@@ -3,6 +3,8 @@
 
 using Azure.Storage.Blobs.Models;
 
+#nullable enable
+
 namespace NuGet.Insights.Worker
 {
     public class CsvRecordBlob
@@ -23,7 +25,7 @@ namespace NuGet.Insights.Worker
             BlobItem item) : this(
                 containerName,
                 item.Name,
-                item.Properties.ContentLength.Value,
+                item.Properties.ContentLength!.Value,
                 item.Metadata)
         {
         }

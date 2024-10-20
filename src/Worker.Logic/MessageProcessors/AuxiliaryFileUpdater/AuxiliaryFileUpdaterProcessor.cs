@@ -1,11 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO.Compression;
-using Azure;
 using Azure.Storage.Blobs.Models;
-using Azure.Storage.Blobs.Specialized;
 using NuGet.Insights.Worker.BuildVersionSet;
+
+#nullable enable
 
 namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 {
@@ -42,130 +41,106 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
         public async Task<TaskStateProcessResult> ProcessAsync(AuxiliaryFileUpdaterMessage<TRecord> message, TaskState taskState, long dequeueCount)
         {
             await using var data = await _updater.GetDataAsync();
-
-            var latestBlob = await _csvRecordStorageService.GetCompactBlobClientAsync(_updater.ContainerName, 0);
-
-            BlobRequestConditions latestRequestConditions;
-            BlobProperties properties = null;
-            try
-            {
-                properties = await latestBlob.GetPropertiesAsync();
-                latestRequestConditions = new BlobRequestConditions { IfMatch = properties.ETag };
-            }
-            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
-            {
-                latestRequestConditions = new BlobRequestConditions { IfNoneMatch = ETag.All };
-            }
-
             using var versionSetHandle = await _versionSetProvider.GetAsync();
 
-            if (properties != null
-                && properties.Metadata.TryGetValue(AsOfTimestampMetadata, out var unparsedAsOfTimestamp)
-                && DateTimeOffset.TryParse(unparsedAsOfTimestamp, out var latestAsOfTimestamp)
-                && latestAsOfTimestamp == data.AsOfTimestamp)
-            {
-                if (properties.Metadata.TryGetValue(VersionSetCommitTimestampMetadata, out var unparsedVersionSetCommitTimestamp)
-                    && DateTimeOffset.TryParse(unparsedVersionSetCommitTimestamp, out var versionSetCommitTimestamp)
-                    && versionSetCommitTimestamp == versionSetHandle.Value.CommitTimestamp)
-                {
-                    _logger.LogInformation(
-                        "The {OperationName} data from {AsOfTimestamp:O} with version set commit timestamp {VersionSetCommitTimestamp:O} already exists.",
-                        _updater.OperationName,
-                        data.AsOfTimestamp,
-                        versionSetCommitTimestamp);
-                    return TaskStateProcessResult.Complete;
-                }
-            }
-
-            await WriteDataAsync(versionSetHandle.Value, data, latestBlob);
+            var provider = new AuxiliaryFileCsvRecordProvider(_updater, versionSetHandle.Value, data);
+            await _csvRecordStorageService.CompactAsync(provider, _updater.ContainerName, bucket: 0);
 
             return TaskStateProcessResult.Complete;
         }
 
-        private async Task<(long uncompressedLength, long recordCount, ETag etag)> WriteDataAsync(IVersionSet versionSet, TInput data, BlockBlobClient destBlob)
+        private class AuxiliaryFileCsvRecordProvider : ICsvRecordProvider<TRecord>
         {
-            (var stream, var uncompressedLength, var recordCount) = await SerializeDataAsync(versionSet, data);
+            private readonly IAuxiliaryFileUpdater<TInput, TRecord> _updater;
+            private readonly IVersionSet _versionSet;
+            private TInput? _data;
+            private DateTimeOffset _asOfTimestamp;
 
-            using (stream)
+            public AuxiliaryFileCsvRecordProvider(IAuxiliaryFileUpdater<TInput, TRecord> updater, IVersionSet versionSet, TInput data)
             {
-                BlobContentInfo info = await destBlob.UploadAsync(
-                    stream,
-                    new BlobUploadOptions
-                    {
-                        HttpHeaders = new BlobHttpHeaders
-                        {
-                            ContentType = "text/plain",
-                            ContentEncoding = "gzip",
-                        },
-                        Metadata = GetMetadata(uncompressedLength, recordCount, data.AsOfTimestamp, versionSet.CommitTimestamp)
-                    });
-
-                return (uncompressedLength, recordCount, info.ETag);
+                _updater = updater;
+                _versionSet = versionSet;
+                _data = data;
+                _asOfTimestamp = data.AsOfTimestamp;
             }
-        }
 
-        private async Task<(FileStream stream, long uncompressedLength, long recordCount)> SerializeDataAsync(IVersionSet versionSet, TInput data)
-        {
-            var tempFilePath = Path.Combine(Path.GetTempPath(), $"NuGet.Insights_{_updater.ContainerName}_{Guid.NewGuid().ToByteArray().ToTrimmedBase32()}.csv.gz");
-            var tempStream = TempStreamWriter.NewTempFile(tempFilePath);
-            try
+            public bool UseExistingRecords => false;
+            public bool WriteEmptyCsv => true;
+
+            public bool ShouldCompact(BlobProperties? properties, ILogger logger)
             {
-                long uncompressedLength;
-                long recordCount = 0;
-                using (var gzipStream = new GZipStream(tempStream, CompressionLevel.Optimal, leaveOpen: true))
+                if (properties != null
+                    && properties.Metadata.TryGetValue(AsOfTimestampMetadata, out var unparsedAsOfTimestamp)
+                    && DateTimeOffset.TryParse(unparsedAsOfTimestamp, out var latestAsOfTimestamp)
+                    && latestAsOfTimestamp == _asOfTimestamp)
                 {
-                    using var countingStream = new CountingWriterStream(gzipStream);
-                    using var writer = new StreamWriter(countingStream)
+                    if (properties.Metadata.TryGetValue(VersionSetCommitTimestampMetadata, out var unparsedVersionSetCommitTimestamp)
+                        && DateTimeOffset.TryParse(unparsedVersionSetCommitTimestamp, out var versionSetCommitTimestamp)
+                        && versionSetCommitTimestamp == _versionSet.CommitTimestamp)
                     {
-                        NewLine = "\n",
-                    };
-
-                    TRecord.WriteHeader(writer);
-
-                    await foreach (var record in _updater.ProduceRecordsAsync(versionSet, data))
-                    {
-                        record.Write(writer);
-                        recordCount++;
+                        logger.LogInformation(
+                            "The {OperationName} data from {AsOfTimestamp:O} with version set commit timestamp {VersionSetCommitTimestamp:O} already exists.",
+                            _updater.OperationName,
+                            _asOfTimestamp,
+                            versionSetCommitTimestamp);
+                        return false;
                     }
-
-                    await writer.FlushAsync();
-                    await gzipStream.FlushAsync();
-
-                    uncompressedLength = countingStream.Length;
                 }
 
-                tempStream.Position = 0;
-
-                return (tempStream, uncompressedLength, recordCount);
+                return true;
             }
-            catch
+
+            public void AddBlobMetadata(Dictionary<string, string> metadata)
             {
-                tempStream.Dispose();
-                throw;
+                metadata[VersionSetCommitTimestampMetadata] = _versionSet.CommitTimestamp.ToString("O");
+                metadata[AsOfTimestampMetadata] = _asOfTimestamp.ToString("O");
+            }
+
+            public Task<int> CountRemainingChunksAsync(int bucket, string? lastPosition)
+            {
+                return Task.FromResult(0);
+            }
+
+            public async IAsyncEnumerable<ICsvRecordChunk<TRecord>> GetChunksAsync(int bucket)
+            {
+                TInput? data;
+                if (_data is null)
+                {
+                    data = await _updater.GetDataAsync();
+                    _asOfTimestamp = data.AsOfTimestamp;
+                }
+                else
+                {
+                    data = _data;
+                    _data = default;
+                }
+
+                await foreach (var record in _updater.ProduceRecordsAsync(_versionSet, data))
+                {
+                    yield return new SingleCsvRecordChunk<TRecord>(record);
+                }
+            }
+
+            public List<TRecord> Prune(List<TRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
+            {
+                return records
+                    .Distinct()
+                    .Order()
+                    .ToList();
             }
         }
 
-        private static Dictionary<string, string> GetMetadata(long uncompressedLength, long recordCount, DateTimeOffset asOfTimestamp, DateTimeOffset versionSetCommitTimestamp)
+        private class SingleCsvRecordChunk<T> : ICsvRecordChunk<T> where T : ICsvRecord<T>
         {
-            return new Dictionary<string, string>
+            private readonly T _record;
+
+            public SingleCsvRecordChunk(T record)
             {
-                {
-                    StorageUtility.RawSizeBytesMetadata,
-                    uncompressedLength.ToString(CultureInfo.InvariantCulture)
-                },
-                {
-                    StorageUtility.RecordCountMetadata,
-                    recordCount.ToString(CultureInfo.InvariantCulture)
-                },
-                {
-                    VersionSetCommitTimestampMetadata,
-                    versionSetCommitTimestamp.ToString("O")
-                },
-                {
-                    AsOfTimestampMetadata,
-                    asOfTimestamp.ToString("O")
-                },
-            };
+                _record = record;
+            }
+
+            public IReadOnlyList<T> GetRecords() => [_record];
+            public string Position => string.Empty;
         }
     }
 }

@@ -160,25 +160,51 @@ namespace NuGet.Insights.Worker
             var recordType = typeof(T).Name;
             var stopwatch = Stopwatch.StartNew();
 
-            // Step 1: determine if "big mode" should be used, based on the existing CSV
             var compactBlob = await GetCompactBlobClientAsync(destContainer, bucket);
-            var existingBlob = await GetCsvRecordBlobAsync(compactBlob);
-            if (existingBlob is not null
-                && existingBlob.RecordCount.HasValue
-                && existingBlob.RecordCount.Value > _options.Value.AppendResultBigModeRecordThreshold)
+
+            // Step 1: read the existing blob and determine if a no-op should happen
+            BlobProperties? blobProperties = null;
+            ExistingBlobInfo? existingBlobInfo = null;
+            try
             {
-                var subdivisions = (int)Math.Max(2, Math.Round(1.0 * existingBlob.RecordCount.Value / _options.Value.AppendResultBigModeSubdivisionSize));
-                _logger.LogInformation(
-                    "Switching to big mode with {Subdivisions} subdivisions, based on existing record count of {RecordCount}.",
-                    subdivisions,
-                    existingBlob.RecordCount);
-                _bigModeSwitch.TrackValue(1, destContainer, recordType, "ExistingRecordCount");
-                await CompactBigModeAsync(provider, destContainer, bucket, subdivisions);
+                blobProperties = await compactBlob.GetPropertiesAsync();
+                existingBlobInfo = new ExistingBlobInfo(
+                    blobProperties.ETag,
+                    blobProperties.ContentLength,
+                    blobProperties.Metadata,
+                    blobProperties.ContentHash);
+            }
+            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+            {
+                // the blob does not exist
+            }
+
+            if (!provider.ShouldCompact(blobProperties, _logger))
+            {
                 return;
             }
 
-            // Step 2: load the new records from table storage into memory
-            (var loadResult, var records, var subdivsions) = await LoadAppendedRecordsToMemoryAsync(provider, destContainer, bucket, recordType);
+            // Step 2: determine if "big mode" should be used, based on the existing CSV
+            if (blobProperties is not null)
+            {
+                var existingMetadata = new CsvRecordBlob(compactBlob.BlobContainerName, compactBlob.Name, blobProperties);
+                if (existingMetadata is not null
+                    && existingMetadata.RecordCount.HasValue
+                    && existingMetadata.RecordCount.Value > _options.Value.AppendResultBigModeRecordThreshold)
+                {
+                    var subdivisions = (int)Math.Max(2, Math.Round(1.0 * existingMetadata.RecordCount.Value / _options.Value.AppendResultBigModeSubdivisionSize));
+                    _logger.LogInformation(
+                        "Switching to big mode with {Subdivisions} subdivisions, based on existing record count of {RecordCount}.",
+                        subdivisions,
+                        existingMetadata.RecordCount);
+                    _bigModeSwitch.TrackValue(1, destContainer, recordType, "ExistingRecordCount");
+                    await CompactBigModeAsync(provider, destContainer, bucket, subdivisions, existingBlobInfo);
+                    return;
+                }
+            }
+
+            // Step 3: load the new records from table storage into memory
+            (var loadResult, var records, var subdivsions) = await LoadNewRecordsToMemoryAsync(provider, destContainer, bucket, recordType);
 
             switch (loadResult)
             {
@@ -188,24 +214,28 @@ namespace NuGet.Insights.Worker
                     return;
                 case LoadAppendedRecordsToMemoryResult.BigMode:
                     _bigModeSwitch.TrackValue(1, destContainer, recordType, "EstimatedRecordCount");
-                    await CompactBigModeAsync(provider, destContainer, bucket, subdivsions);
+                    await CompactBigModeAsync(provider, destContainer, bucket, subdivsions, existingBlobInfo);
                     return;
                 default:
                     throw new NotImplementedException();
             }
 
-            // Step 3: load the existing records from blob storage into memory
-            var existingBlobInfo = await LoadExistingRecordsToMemoryAsync(compactBlob, records);
+            // Step 4: load the existing records from blob storage into memory
+            if (blobProperties is not null && provider.UseExistingRecords)
+            {
+                existingBlobInfo = await LoadExistingRecordsToMemoryAsync(compactBlob, records);
+            }
 
-            // Step 4: prune records in memory to remove duplicates and sort
+            // Step 5: prune records in memory to remove duplicates and sort
             records = Prune(provider, records, destContainer, recordType, isFinalPrune: true);
             _recordCount.TrackValue(records.Count, destContainer, recordType);
 
-            // Step 5: serialize the records to a new CSV file
+            // Step 6: serialize the records to a new CSV file
             using var stream = SerializeToMemory(records, writeHeader: true, out var uncompressedSize);
 
-            // Step 6: upload the new CSV file to blob storage
+            // Step 7: upload the new CSV file to blob storage
             await UploadAsync(
+                provider,
                 compactBlob,
                 existingBlobInfo,
                 stream,
@@ -248,22 +278,6 @@ namespace NuGet.Insights.Worker
             return records;
         }
 
-        private async Task<CsvRecordBlob?> GetCsvRecordBlobAsync(BlockBlobClient compactBlob)
-        {
-            try
-            {
-                BlobProperties blobProperties = await compactBlob.GetPropertiesAsync();
-                return new CsvRecordBlob(
-                    compactBlob.BlobContainerName,
-                    compactBlob.Name,
-                    blobProperties);
-            }
-            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
-            {
-                return null;
-            }
-        }
-
         private enum LoadAppendedRecordsToMemoryResult
         {
             Loaded,
@@ -271,7 +285,7 @@ namespace NuGet.Insights.Worker
             BigMode,
         }
 
-        private async Task<(LoadAppendedRecordsToMemoryResult Result, List<T> Records, int Subdivisions)> LoadAppendedRecordsToMemoryAsync<T>(
+        private async Task<(LoadAppendedRecordsToMemoryResult Result, List<T> Records, int Subdivisions)> LoadNewRecordsToMemoryAsync<T>(
             ICsvRecordProvider<T> provider,
             string destContainer,
             int bucket,
@@ -324,28 +338,24 @@ namespace NuGet.Insights.Worker
             else if (records.Count == 0)
             {
                 // If there are no entities, then there's no new data. We can stop here.
-                result = LoadAppendedRecordsToMemoryResult.NoData;
+                result = provider.WriteEmptyCsv ? LoadAppendedRecordsToMemoryResult.Loaded : LoadAppendedRecordsToMemoryResult.NoData;
             }
 
             _pruneChunkCount.TrackValue(chunkCount, destContainer, recordType);
             return (result, records, subdivisions);
         }
 
-        private async Task<ExistingBlobInfo> LoadExistingRecordsToMemoryAsync<T>(BlockBlobClient compactBlob, List<T> records) where T : ICsvRecord<T>
+        private async Task<ExistingBlobInfo?> LoadExistingRecordsToMemoryAsync<T>(BlockBlobClient compactBlob, List<T> records) where T : ICsvRecord<T>
         {
             try
             {
-                var (existingRecords, previousDetails) = await DeserializeBlobAsync<T>(compactBlob);
+                var (existingRecords, existingInfo) = await DeserializeBlobAsync<T>(compactBlob);
                 records.AddRange(existingRecords);
-                return new ExistingBlobInfo(
-                    new BlobRequestConditions { IfMatch = previousDetails.ETag },
-                    previousDetails.ContentHash);
+                return existingInfo;
             }
             catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
             {
-                return new ExistingBlobInfo(
-                    new BlobRequestConditions { IfNoneMatch = ETag.All },
-                    PreviousHash: null);
+                return null;
             }
         }
 
@@ -353,7 +363,8 @@ namespace NuGet.Insights.Worker
             ICsvRecordProvider<T> provider,
             string destContainer,
             int bucket,
-            int subdivisions) where T : ICsvRecord<T>
+            int subdivisions,
+            ExistingBlobInfo? existingBlobInfo) where T : ICsvRecord<T>
         {
             if (subdivisions < 1)
             {
@@ -380,7 +391,7 @@ namespace NuGet.Insights.Worker
                 }
 
                 // Step 2: load the new records from table storage into the temporary files
-                var shouldNoOp = await LoadAppendedRecordsToDiskAsync(provider, tempFiles, destContainer, bucket, recordType, subdivisions);
+                var shouldNoOp = await LoadNewRecordsToDiskAsync(provider, tempFiles, destContainer, bucket, recordType, subdivisions);
                 if (shouldNoOp)
                 {
                     return;
@@ -388,7 +399,17 @@ namespace NuGet.Insights.Worker
 
                 // Step 3: load the existing records from into the temporary files
                 var compactBlob = await GetCompactBlobClientAsync(destContainer, bucket);
-                var existingBlobInfo = await LoadExistingRecordsToDiskAsync<T>(tempFiles, destContainer, bucket, subdivisions, recordType, uniqueFileNamePiece, compactBlob);
+                if (provider.UseExistingRecords)
+                {
+                    existingBlobInfo = await LoadExistingRecordsToDiskAsync<T>(
+                        tempFiles,
+                        destContainer,
+                        bucket,
+                        subdivisions,
+                        recordType,
+                        uniqueFileNamePiece,
+                        compactBlob);
+                }
 
                 // Step 4: prune each temporary file to remove duplicates and sort
                 var (pruneRecordCount, totalUncompressedSize) = PruneSubdivisionsOnDisk(provider, tempFiles, destContainer, subdivisions, recordType);
@@ -409,6 +430,7 @@ namespace NuGet.Insights.Worker
 
                 // Step 6: upload the merged file to blob storage
                 await UploadAsync(
+                    provider,
                     compactBlob,
                     existingBlobInfo,
                     finalStream,
@@ -437,7 +459,7 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        private async Task<bool> LoadAppendedRecordsToDiskAsync<T>(
+        private async Task<bool> LoadNewRecordsToDiskAsync<T>(
             ICsvRecordProvider<T> provider,
             List<StreamWriter> tempFiles,
             string destContainer,
@@ -446,31 +468,31 @@ namespace NuGet.Insights.Worker
             int subdivisions) where T : ICsvRecord<T>
         {
             var chunkCount = 0;
-            var appendRecordCount = 0;
+            var newRecordCount = 0;
 
             await foreach (var chunk in provider.GetChunksAsync(bucket))
             {
                 chunkCount++;
                 var appendedSw = Stopwatch.StartNew();
                 var records = chunk.GetRecords();
-                appendRecordCount += records.Count;
+                newRecordCount += records.Count;
                 DivideAndWriteRecords(subdivisions, tempFiles, records);
                 appendedSw.Stop();
                 _bigModeSplitAppendedDurationMs.TrackValue(appendedSw.Elapsed.TotalMilliseconds, destContainer, recordType);
             }
 
-            if (appendRecordCount == 0)
+            if (newRecordCount == 0)
             {
                 // If there are no entities, then there's no new data. We can stop here.
                 _pruneChunkCount.TrackValue(chunkCount, destContainer, recordType);
-                return true;
+                return !provider.WriteEmptyCsv;
             }
 
             _pruneChunkCount.TrackValue(chunkCount, destContainer, recordType);
             return false;
         }
 
-        private async Task<ExistingBlobInfo> LoadExistingRecordsToDiskAsync<T>(
+        private async Task<ExistingBlobInfo?> LoadExistingRecordsToDiskAsync<T>(
             List<StreamWriter> tempFiles,
             string destContainer,
             int bucket,
@@ -479,7 +501,7 @@ namespace NuGet.Insights.Worker
             string uniqueFileNamePiece,
             BlockBlobClient compactBlob) where T : ICsvRecord<T>
         {
-            ExistingBlobInfo existingBlobInfo;
+            ExistingBlobInfo? existingBlobInfo;
 
             try
             {
@@ -520,7 +542,9 @@ namespace NuGet.Insights.Worker
                 var existingRecordCount = DivideAndWriteRecords(subdivisions, tempFiles, records);
 
                 existingBlobInfo = new ExistingBlobInfo(
-                    new BlobRequestConditions { IfMatch = blobResult.Details.ETag },
+                    blobResult.Details.ETag,
+                    blobResult.Details.ContentLength,
+                    blobResult.Details.Metadata,
                     blobResult.Details.ContentHash);
 
                 sw.Stop();
@@ -529,9 +553,7 @@ namespace NuGet.Insights.Worker
             }
             catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
             {
-                existingBlobInfo = new ExistingBlobInfo(
-                    new BlobRequestConditions { IfNoneMatch = ETag.All },
-                    PreviousHash: null);
+                existingBlobInfo = null;
             }
 
             return existingBlobInfo;
@@ -664,47 +686,59 @@ namespace NuGet.Insights.Worker
             return (finalRecordCountFromWrite, uncompressedSize);
         }
 
-        private async Task UploadAsync(
+        private async Task UploadAsync<T>(
+            ICsvRecordProvider<T> provider,
             BlockBlobClient compactBlob,
-            ExistingBlobInfo existingBlobInfo,
+            ExistingBlobInfo? existingBlobInfo,
             Stream stream,
             long recordCount,
             long uncompressedSize,
             string destContainer,
-            string recordType)
+            string recordType) where T : ICsvRecord<T>
         {
+            BlobRequestConditions requestConditions;
+            if (existingBlobInfo is null)
+            {
+                requestConditions = new BlobRequestConditions { IfNoneMatch = ETag.All };
+            }
+            else
+            {
+                requestConditions = new BlobRequestConditions { IfMatch = existingBlobInfo.ETag };
+            }
+
+            var metadata = new Dictionary<string, string>
+            {
+                {
+                    StorageUtility.RawSizeBytesMetadata,
+                    uncompressedSize.ToString(CultureInfo.InvariantCulture)
+                },
+                {
+                    StorageUtility.RecordCountMetadata,
+                    recordCount.ToString(CultureInfo.InvariantCulture)
+                },
+            };
+            provider.AddBlobMetadata(metadata);
+
             BlobContentInfo uploadInfo = await compactBlob.UploadAsync(
                 stream,
                 new BlobUploadOptions
                 {
-                    Conditions = existingBlobInfo.RequestConditions,
+                    Conditions = requestConditions,
                     HttpHeaders = new BlobHttpHeaders
                     {
                         ContentType = ContentType,
                         ContentEncoding = "gzip",
                     },
-                    Metadata = new Dictionary<string, string>
-                    {
-                        {
-                            StorageUtility.RawSizeBytesMetadata,
-                            uncompressedSize.ToString(CultureInfo.InvariantCulture)
-                        },
-                        {
-                            StorageUtility.RecordCountMetadata,
-                            recordCount.ToString(CultureInfo.InvariantCulture)
-                        },
-                    },
+                    Metadata = metadata,
                 });
 
             _compressedSize.TrackValue(stream.Length, destContainer, recordType);
             _uncompressedSize.TrackValue(uncompressedSize, destContainer, recordType);
-            var changed = existingBlobInfo.PreviousHash is null || !existingBlobInfo.PreviousHash.SequenceEqual(uploadInfo.ContentHash);
+            var changed = existingBlobInfo is null || !existingBlobInfo.PreviousHash.SequenceEqual(uploadInfo.ContentHash);
             _blobChange.TrackValue(changed ? 1 : 0, destContainer, recordType);
         }
 
-        private record ExistingBlobInfo(
-            BlobRequestConditions RequestConditions,
-            byte[]? PreviousHash);
+        private record ExistingBlobInfo(ETag ETag, long ContentLength, IDictionary<string, string> Metadata, byte[] PreviousHash);
 
         private static long DivideAndWriteRecords<T>(
             int subdivisions,
@@ -733,7 +767,7 @@ namespace NuGet.Insights.Worker
             return recordCount;
         }
 
-        private async Task<(List<T> records, BlobDownloadDetails details)> DeserializeBlobAsync<T>(BlockBlobClient blob) where T : ICsvRecord<T>
+        private async Task<(List<T> Records, ExistingBlobInfo ExistingInfo)> DeserializeBlobAsync<T>(BlockBlobClient blob) where T : ICsvRecord<T>
         {
             var bufferSize = 32 * 1024;
             do
@@ -742,7 +776,8 @@ namespace NuGet.Insights.Worker
                 switch (result.Type)
                 {
                     case CsvReaderResultType.Success:
-                        return (result.Records, details);
+                        var info = new ExistingBlobInfo(details.ETag, details.ContentLength, details.Metadata, details.ContentHash);
+                        return (result.Records, info);
 
                     case CsvReaderResultType.BufferTooSmall:
                         bufferSize = CsvReaderAdapter.MaxBufferSize;
