@@ -85,6 +85,11 @@ namespace NuGet.Insights.Worker
             return CompareTo(LowerId, Identity, other.LowerId, other.Identity);
         }
 
+        /// <summary>
+        /// Instead of just comparing the identity, this method compares the lower ID and the identity separately so that
+        /// records are sorted first by ID and then by version (both done case-insensitive). This groups records first by
+        /// ID and then by version instead of having sort complications at the '/' identity separator.
+        /// </summary>
         public static int CompareTo(string lowerIdA, string identityA, string lowerIdB, string identityB)
         {
             var c = string.CompareOrdinal(lowerIdA, lowerIdB);
