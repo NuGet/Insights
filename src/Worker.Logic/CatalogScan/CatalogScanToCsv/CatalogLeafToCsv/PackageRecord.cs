@@ -92,6 +92,38 @@ namespace NuGet.Insights.Worker
         /// </summary>
         public static int CompareTo(string lowerIdA, string identityA, string lowerIdB, string identityB)
         {
+#if DEBUG
+            if (identityA.Length < lowerIdA.Length + "/1.0.0".Length)
+            {
+                throw new ArgumentException("The first identity must be be longer than the first lower ID, a '/', and a version", nameof(identityA));
+            }
+
+            if (!identityA.StartsWith(lowerIdA, StringComparison.Ordinal))
+            {
+                throw new ArgumentException("The first identity must start with the first lower ID.", nameof(lowerIdA));
+            }
+
+            if (identityA[lowerIdA.Length] != '/')
+            {
+                throw new ArgumentException("The first identity must have a '/' after the lower ID.", nameof(identityA));
+            }
+
+            if (identityB.Length < lowerIdB.Length + "/1.0.0".Length)
+            {
+                throw new ArgumentException("The second identity must be be longer than the second lower ID, a '/', and a version", nameof(identityA));
+            }
+
+            if (!identityB.StartsWith(lowerIdB, StringComparison.Ordinal))
+            {
+                throw new ArgumentException("The second identity must start with the second lower ID.", nameof(lowerIdA));
+            }
+
+            if (identityB[lowerIdB.Length] != '/')
+            {
+                throw new ArgumentException("The second identity must have a '/' after the lower ID.", nameof(identityA));
+            }
+#endif
+
             var c = string.CompareOrdinal(lowerIdA, lowerIdB);
             if (c != 0)
             {
