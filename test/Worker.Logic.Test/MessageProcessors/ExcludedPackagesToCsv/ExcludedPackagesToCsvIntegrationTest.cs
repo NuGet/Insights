@@ -25,7 +25,7 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(ExcludedPackagesToCsvDir, Step1, "latest_excluded_packages.csv.gz");
+            await AssertCsvBlobAsync(ExcludedPackagesToCsvDir, Step1);
 
             // Arrange
             SetData(Step2);
@@ -35,7 +35,7 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(ExcludedPackagesToCsvDir, Step2, "latest_excluded_packages.csv.gz");
+            await AssertCsvBlobAsync(ExcludedPackagesToCsvDir, Step2);
         }
 
         [Fact]
@@ -51,8 +51,8 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(ExcludedPackagesToCsvDir, Step1, "latest_excluded_packages.csv.gz");
-            var blobA = await GetBlobAsync(Options.Value.ExcludedPackageContainerName, "latest_excluded_packages.csv.gz");
+            await AssertCsvBlobAsync(ExcludedPackagesToCsvDir, Step1);
+            var blobA = await GetBlobAsync(Options.Value.ExcludedPackageContainerName, 0);
             var propertiesA = await blobA.GetPropertiesAsync();
 
             // Arrange
@@ -62,8 +62,8 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(ExcludedPackagesToCsvDir, Step1, "latest_excluded_packages.csv.gz");
-            var blobB = await GetBlobAsync(Options.Value.ExcludedPackageContainerName, "latest_excluded_packages.csv.gz");
+            await AssertCsvBlobAsync(ExcludedPackagesToCsvDir, Step1);
+            var blobB = await GetBlobAsync(Options.Value.ExcludedPackageContainerName, 0);
             var propertiesB = await blobB.GetPropertiesAsync();
             Assert.Equal(propertiesA.Value.ETag, propertiesB.Value.ETag);
         }
@@ -81,8 +81,8 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(ExcludedPackagesToCsvDir, Step1, "latest_excluded_packages.csv.gz");
-            var blobA = await GetBlobAsync(Options.Value.ExcludedPackageContainerName, "latest_excluded_packages.csv.gz");
+            await AssertCsvBlobAsync(ExcludedPackagesToCsvDir, Step1);
+            var blobA = await GetBlobAsync(Options.Value.ExcludedPackageContainerName, 0);
             var propertiesA = await blobA.GetPropertiesAsync();
 
             // Arrange
@@ -93,8 +93,8 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(ExcludedPackagesToCsvDir, Step1, "latest_excluded_packages.csv.gz");
-            var blobB = await GetBlobAsync(Options.Value.ExcludedPackageContainerName, "latest_excluded_packages.csv.gz");
+            await AssertCsvBlobAsync(ExcludedPackagesToCsvDir, Step1);
+            var blobB = await GetBlobAsync(Options.Value.ExcludedPackageContainerName, 0);
             var propertiesB = await blobB.GetPropertiesAsync();
             Assert.NotEqual(propertiesA.Value.ETag, propertiesB.Value.ETag);
         }
@@ -115,7 +115,7 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(ExcludedPackagesToCsv_NonExistentIdDir, Step1, "latest_excluded_packages.csv.gz");
+            await AssertCsvBlobAsync(ExcludedPackagesToCsv_NonExistentIdDir, Step1);
 
             // Arrange
             SetData(Step2);
@@ -129,7 +129,7 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(ExcludedPackagesToCsv_NonExistentIdDir, Step2, "latest_excluded_packages.csv.gz");
+            await AssertCsvBlobAsync(ExcludedPackagesToCsv_NonExistentIdDir, Step2);
         }
 
         [Fact]
@@ -146,7 +146,7 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(ExcludedPackagesToCsv_UncheckedIdDir, Step1, "latest_excluded_packages.csv.gz");
+            await AssertCsvBlobAsync(ExcludedPackagesToCsv_UncheckedIdDir, Step1);
         }
 
         private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<ExcludedPackageRecord> service)
@@ -175,9 +175,9 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
             };
         }
 
-        private Task AssertCsvBlobAsync(string testName, string stepName, string blobName)
+        private Task AssertCsvBlobAsync(string testName, string stepName)
         {
-            return AssertCsvAsync<ExcludedPackageRecord>(Options.Value.ExcludedPackageContainerName, testName, stepName, "latest_excluded_packages.csv", blobName);
+            return AssertCsvAsync<ExcludedPackageRecord>(Options.Value.ExcludedPackageContainerName, testName, stepName, 0);
         }
 
         public ExcludedPackagesToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

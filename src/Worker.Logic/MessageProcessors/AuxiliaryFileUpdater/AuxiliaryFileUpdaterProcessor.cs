@@ -3,8 +3,8 @@
 
 using System.IO.Compression;
 using Azure;
-using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
 using NuGet.Insights.Worker.BuildVersionSet;
 
 namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
@@ -17,6 +17,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
         private const string VersionSetCommitTimestampMetadata = "versionSetCommitTimestamp";
 
         private readonly ServiceClientFactory _serviceClientFactory;
+        private readonly CsvRecordStorageService _csvRecordStorageService;
         private readonly IVersionSetProvider _versionSetProvider;
         private readonly IAuxiliaryFileUpdater<TInput, TRecord> _updater;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -24,30 +25,25 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 
         public AuxiliaryFileUpdaterProcessor(
             ServiceClientFactory serviceClientFactory,
+            CsvRecordStorageService csvRecordStorageService,
             IVersionSetProvider versionSetProvider,
             IAuxiliaryFileUpdater<TInput, TRecord> updater,
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<AuxiliaryFileUpdaterProcessor<TInput, TRecord>> logger)
         {
             _serviceClientFactory = serviceClientFactory;
+            _csvRecordStorageService = csvRecordStorageService;
             _versionSetProvider = versionSetProvider;
             _updater = updater;
             _options = options;
             _logger = logger;
         }
 
-        public static string GetLatestBlobName(string blobName)
-        {
-            return $"latest_{blobName}.csv.gz";
-        }
-
         public async Task<TaskStateProcessResult> ProcessAsync(AuxiliaryFileUpdaterMessage<TRecord> message, TaskState taskState, long dequeueCount)
         {
             await using var data = await _updater.GetDataAsync();
 
-            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
-            var container = serviceClient.GetBlobContainerClient(_updater.ContainerName);
-            var latestBlob = container.GetBlobClient(GetLatestBlobName(_updater.BlobName));
+            var latestBlob = await _csvRecordStorageService.GetCompactBlobClientAsync(_updater.ContainerName, 0);
 
             BlobRequestConditions latestRequestConditions;
             BlobProperties properties = null;
@@ -86,7 +82,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
             return TaskStateProcessResult.Complete;
         }
 
-        private async Task<(long uncompressedLength, long recordCount, ETag etag)> WriteDataAsync(IVersionSet versionSet, TInput data, BlobClient destBlob)
+        private async Task<(long uncompressedLength, long recordCount, ETag etag)> WriteDataAsync(IVersionSet versionSet, TInput data, BlockBlobClient destBlob)
         {
             (var stream, var uncompressedLength, var recordCount) = await SerializeDataAsync(versionSet, data);
 
@@ -110,7 +106,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 
         private async Task<(FileStream stream, long uncompressedLength, long recordCount)> SerializeDataAsync(IVersionSet versionSet, TInput data)
         {
-            var tempFilePath = Path.Combine(Path.GetTempPath(), $"NuGet.Insights_{_updater.BlobName}_{Guid.NewGuid().ToByteArray().ToTrimmedBase32()}.csv.gz");
+            var tempFilePath = Path.Combine(Path.GetTempPath(), $"NuGet.Insights_{_updater.ContainerName}_{Guid.NewGuid().ToByteArray().ToTrimmedBase32()}.csv.gz");
             var tempStream = TempStreamWriter.NewTempFile(tempFilePath);
             try
             {

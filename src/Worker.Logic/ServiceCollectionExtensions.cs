@@ -4,7 +4,6 @@
 using NuGet.Insights.Kusto;
 using NuGet.Insights.StorageNoOpRetry;
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
-using NuGet.Insights.Worker.DownloadsToCsv;
 using NuGet.Insights.Worker.KustoIngestion;
 using NuGet.Insights.Worker.ReferenceTracking;
 using NuGet.Insights.Worker.TableCopy;
@@ -143,15 +142,13 @@ namespace NuGet.Insights.Worker
 
                 // Add the generic CSV storage
                 var getContainerName = typeof(IAuxiliaryFileUpdater).GetProperty(nameof(IAuxiliaryFileUpdater.ContainerName));
-                var getBlobName = typeof(IAuxiliaryFileUpdater).GetProperty(nameof(IAuxiliaryFileUpdater.BlobName));
-                serviceCollection.AddSingleton<CsvRecordContainerInfo>(x =>
+                serviceCollection.AddSingleton(x =>
                 {
                     var updater = x.GetRequiredService(serviceType);
-                    var blobName = AuxiliaryFileUpdaterProcessor<IAsOfData, PackageDownloadRecord>.GetLatestBlobName((string)getBlobName.GetValue(updater));
                     return new CsvRecordContainerInfo(
                         (string)getContainerName.GetValue(updater),
                         recordType,
-                        blobName);
+                        CsvRecordStorageService.CompactPrefix);
                 });
 
                 // Add the message processor

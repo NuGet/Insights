@@ -8,7 +8,6 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
     public interface IAuxiliaryFileUpdater
     {
         string OperationName { get; }
-        string BlobName { get; }
         string ContainerName { get; }
         bool HasRequiredConfiguration { get; }
         bool AutoStart { get; }

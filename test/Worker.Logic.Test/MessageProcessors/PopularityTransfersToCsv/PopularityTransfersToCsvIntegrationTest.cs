@@ -25,7 +25,7 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(PopularityTransfersToCsvDir, Step1, "latest_popularity_transfers.csv.gz");
+            await AssertCsvBlobAsync(PopularityTransfersToCsvDir, Step1);
 
             // Arrange
             SetData(Step2);
@@ -35,7 +35,7 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(PopularityTransfersToCsvDir, Step2, "latest_popularity_transfers.csv.gz");
+            await AssertCsvBlobAsync(PopularityTransfersToCsvDir, Step2);
         }
 
         [Fact]
@@ -51,8 +51,8 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(PopularityTransfersToCsvDir, Step1, "latest_popularity_transfers.csv.gz");
-            var blobA = await GetBlobAsync(Options.Value.PopularityTransferContainerName, "latest_popularity_transfers.csv.gz");
+            await AssertCsvBlobAsync(PopularityTransfersToCsvDir, Step1);
+            var blobA = await GetBlobAsync(Options.Value.PopularityTransferContainerName, 0);
             var propertiesA = await blobA.GetPropertiesAsync();
 
             // Arrange
@@ -62,8 +62,8 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(PopularityTransfersToCsvDir, Step1, "latest_popularity_transfers.csv.gz");
-            var blobB = await GetBlobAsync(Options.Value.PopularityTransferContainerName, "latest_popularity_transfers.csv.gz");
+            await AssertCsvBlobAsync(PopularityTransfersToCsvDir, Step1);
+            var blobB = await GetBlobAsync(Options.Value.PopularityTransferContainerName, 0);
             var propertiesB = await blobB.GetPropertiesAsync();
             Assert.Equal(propertiesA.Value.ETag, propertiesB.Value.ETag);
         }
@@ -81,8 +81,8 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(PopularityTransfersToCsvDir, Step1, "latest_popularity_transfers.csv.gz");
-            var blobA = await GetBlobAsync(Options.Value.PopularityTransferContainerName, "latest_popularity_transfers.csv.gz");
+            await AssertCsvBlobAsync(PopularityTransfersToCsvDir, Step1);
+            var blobA = await GetBlobAsync(Options.Value.PopularityTransferContainerName, 0);
             var propertiesA = await blobA.GetPropertiesAsync();
 
             // Arrange
@@ -93,8 +93,8 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(PopularityTransfersToCsvDir, Step1, "latest_popularity_transfers.csv.gz");
-            var blobB = await GetBlobAsync(Options.Value.PopularityTransferContainerName, "latest_popularity_transfers.csv.gz");
+            await AssertCsvBlobAsync(PopularityTransfersToCsvDir, Step1);
+            var blobB = await GetBlobAsync(Options.Value.PopularityTransferContainerName, 0);
             var propertiesB = await blobB.GetPropertiesAsync();
             Assert.NotEqual(propertiesA.Value.ETag, propertiesB.Value.ETag);
         }
@@ -114,7 +114,7 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(PopularityTransfersToCsv_NonExistentIdDir, Step1, "latest_popularity_transfers.csv.gz");
+            await AssertCsvBlobAsync(PopularityTransfersToCsv_NonExistentIdDir, Step1);
 
             // Arrange
             SetData(Step2);
@@ -128,7 +128,7 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(PopularityTransfersToCsv_NonExistentIdDir, Step2, "latest_popularity_transfers.csv.gz");
+            await AssertCsvBlobAsync(PopularityTransfersToCsv_NonExistentIdDir, Step2);
         }
 
         [Fact]
@@ -145,7 +145,7 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(PopularityTransfersToCsv_UncheckedIdDir, Step1, "latest_popularity_transfers.csv.gz");
+            await AssertCsvBlobAsync(PopularityTransfersToCsv_UncheckedIdDir, Step1);
         }
 
         private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<PopularityTransfersRecord> service)
@@ -174,9 +174,9 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             };
         }
 
-        private Task AssertCsvBlobAsync(string testName, string stepName, string blobName)
+        private Task AssertCsvBlobAsync(string testName, string stepName)
         {
-            return AssertCsvAsync<PopularityTransfersRecord>(Options.Value.PopularityTransferContainerName, testName, stepName, "latest_popularity_transfers.csv", blobName);
+            return AssertCsvAsync<PopularityTransfersRecord>(Options.Value.PopularityTransferContainerName, testName, stepName, 0);
         }
 
         public PopularityTransfersToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

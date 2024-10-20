@@ -43,7 +43,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsvDir, Step1);
 
             // Arrange
             SetData(Step2);
@@ -53,7 +53,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(DownloadsToCsvDir, Step2, "latest_downloads.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsvDir, Step2);
         }
 
         [Fact]
@@ -69,7 +69,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(DownloadsToCsv_JustV2Dir, Step1, "latest_downloads.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsv_JustV2Dir, Step1);
 
             // Arrange
             SetData(Step2);
@@ -79,7 +79,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(DownloadsToCsv_JustV2Dir, Step2, "latest_downloads.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsv_JustV2Dir, Step2);
         }
 
         [Fact]
@@ -95,7 +95,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(DownloadsToCsv_JustV2Dir, Step1, "latest_downloads.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsv_JustV2Dir, Step1);
             Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Head && r.RequestUri.AbsolutePath.EndsWith("/downloads.v2.json", StringComparison.Ordinal));
             Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Head && r.RequestUri.AbsolutePath.EndsWith("/downloads.v1.json", StringComparison.Ordinal));
             Assert.Single(HttpMessageHandlerFactory.SuccessRequests, r => r.Method == HttpMethod.Get && r.RequestUri.AbsolutePath.EndsWith("/downloads.v2.json", StringComparison.Ordinal));
@@ -109,7 +109,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(DownloadsToCsv_JustV2Dir, Step2, "latest_downloads.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsv_JustV2Dir, Step2);
         }
 
         [Fact]
@@ -125,8 +125,8 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
-            var blobA = await GetBlobAsync(Options.Value.PackageDownloadContainerName, "latest_downloads.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsvDir, Step1);
+            var blobA = await GetBlobAsync(Options.Value.PackageDownloadContainerName, 0);
             var propertiesA = await blobA.GetPropertiesAsync();
 
             // Arrange
@@ -136,8 +136,8 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
-            var blobB = await GetBlobAsync(Options.Value.PackageDownloadContainerName, "latest_downloads.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsvDir, Step1);
+            var blobB = await GetBlobAsync(Options.Value.PackageDownloadContainerName, 0);
             var propertiesB = await blobB.GetPropertiesAsync();
             Assert.Equal(propertiesA.Value.ETag, propertiesB.Value.ETag);
         }
@@ -155,8 +155,8 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
-            var blobA = await GetBlobAsync(Options.Value.PackageDownloadContainerName, "latest_downloads.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsvDir, Step1);
+            var blobA = await GetBlobAsync(Options.Value.PackageDownloadContainerName, 0);
             var propertiesA = await blobA.GetPropertiesAsync();
 
             // Arrange
@@ -167,8 +167,8 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(DownloadsToCsvDir, Step1, "latest_downloads.csv.gz");
-            var blobB = await GetBlobAsync(Options.Value.PackageDownloadContainerName, "latest_downloads.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsvDir, Step1);
+            var blobB = await GetBlobAsync(Options.Value.PackageDownloadContainerName, 0);
             var propertiesB = await blobB.GetPropertiesAsync();
             Assert.NotEqual(propertiesA.Value.ETag, propertiesB.Value.ETag);
         }
@@ -189,7 +189,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(DownloadsToCsv_NonExistentIdDir, Step1, "latest_downloads.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsv_NonExistentIdDir, Step1);
 
             // Arrange
             SetData(Step2);
@@ -203,7 +203,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(DownloadsToCsv_NonExistentIdDir, Step2, "latest_downloads.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsv_NonExistentIdDir, Step2);
         }
 
         [Fact]
@@ -222,7 +222,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(DownloadsToCsv_NonExistentVersionDir, Step1, "latest_downloads.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsv_NonExistentVersionDir, Step1);
 
             // Arrange
             SetData(Step2);
@@ -236,7 +236,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(DownloadsToCsv_NonExistentVersionDir, Step2, "latest_downloads.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsv_NonExistentVersionDir, Step2);
         }
 
         [Fact]
@@ -258,7 +258,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(DownloadsToCsv_UncheckedIdAndVersionDir, Step1, "latest_downloads.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsv_UncheckedIdAndVersionDir, Step1);
         }
 
         [Fact]
@@ -274,7 +274,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             await ProcessQueueAsync(service);
 
             // Assert
-            await AssertCsvBlobAsync(DownloadsToCsv_UnicodeDuplicatesDir, Step1, "latest_downloads.csv.gz");
+            await AssertCsvBlobAsync(DownloadsToCsv_UnicodeDuplicatesDir, Step1);
         }
 
         private async Task ProcessQueueAsync(IAuxiliaryFileUpdaterService<PackageDownloadRecord> service)
@@ -326,9 +326,9 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             };
         }
 
-        private Task AssertCsvBlobAsync(string testName, string stepName, string blobName)
+        private Task AssertCsvBlobAsync(string testName, string stepName)
         {
-            return AssertCsvAsync<PackageDownloadRecord>(Options.Value.PackageDownloadContainerName, testName, stepName, "latest_downloads.csv", blobName);
+            return AssertCsvAsync<PackageDownloadRecord>(Options.Value.PackageDownloadContainerName, testName, stepName, 0);
         }
     }
 }
