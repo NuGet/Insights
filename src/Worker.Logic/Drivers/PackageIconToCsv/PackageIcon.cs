@@ -47,13 +47,13 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.pi";
 
-        public static IEqualityComparer<PackageIcon> KeyComparer { get; } = IdentityComparer<PackageIcon>.Instance;
+        public static IEqualityComparer<PackageIcon> KeyComparer { get; } = PackageRecordIdentityComparer<PackageIcon>.Instance;
 
-        public static IReadOnlyList<string> KeyFields { get; } = IdentityKeyField;
+        public static IReadOnlyList<string> KeyFields { get; } = PackageRecordExtensions.IdentityKeyField;
 
         public static List<PackageIcon> Prune(List<PackageIcon> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
-            return Prune(records, isFinalPrune);
+            return PackageRecordExtensions.Prune(records, isFinalPrune);
         }
 
         public int CompareTo(PackageIcon other)

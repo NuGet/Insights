@@ -341,5 +341,10 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
                 Metadata = string.Empty;
             }
         }
+
+        public string GetBucketKey()
+        {
+            return LowerId;
+        }
     }
 }

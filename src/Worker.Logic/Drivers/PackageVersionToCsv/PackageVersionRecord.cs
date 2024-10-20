@@ -6,20 +6,16 @@ using NuGet.Insights.Worker.LoadPackageVersion;
 
 namespace NuGet.Insights.Worker.PackageVersionToCsv
 {
-    public partial record PackageVersionRecord : PackageRecord, IAggregatedCsvRecord<PackageVersionRecord>
+    public partial record PackageVersionRecord : IPackageRecord, IAggregatedCsvRecord<PackageVersionRecord>
     {
         public PackageVersionRecord()
         {
         }
 
-        public PackageVersionRecord(Guid scanId, DateTimeOffset scanTimestamp, PackageVersionEntity entity) : base(
-            scanId,
-            scanTimestamp,
-            entity.PackageId,
-            entity.PackageVersion,
-            entity.CommitTimestamp,
-            entity.Created)
+        public PackageVersionRecord(Guid scanId, DateTimeOffset scanTimestamp, PackageVersionEntity entity)
         {
+            this.Initialize(scanId, scanTimestamp, entity.PackageId, entity.PackageVersion, entity.CommitTimestamp, entity.Created);
+
             ResultType = entity.LeafType == CatalogLeafType.PackageDelete ? PackageVersionResultType.Deleted : PackageVersionResultType.Available;
             IsListed = entity.IsListed;
             IsSemVer2 = entity.SemVerType?.IsSemVer2();
@@ -49,6 +45,26 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
             Published = entity.Published;
             LastEdited = entity.LastEdited;
         }
+
+        [KustoIgnore]
+        public Guid? ScanId { get; set; }
+
+        [KustoIgnore]
+        public DateTimeOffset? ScanTimestamp { get; set; }
+
+        [BucketKey]
+        public string LowerId { get; set; }
+
+        [KustoPartitionKey]
+        public string Identity { get; set; }
+
+        public string Id { get; set; }
+        public string Version { get; set; }
+
+        [Required]
+        public DateTimeOffset CatalogCommitTimestamp { get; set; }
+
+        public DateTimeOffset? Created { get; set; }
 
         [Required]
         public PackageVersionResultType ResultType { get; set; }
@@ -102,23 +118,18 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.pv";
 
-        public static IEqualityComparer<PackageVersionRecord> KeyComparer { get; } = IdentityComparer<PackageVersionRecord>.Instance;
+        public static IEqualityComparer<PackageVersionRecord> KeyComparer { get; } = PackageRecordIdentityComparer<PackageVersionRecord>.Instance;
 
-        public static IReadOnlyList<string> KeyFields { get; } = IdentityKeyField;
+        public static IReadOnlyList<string> KeyFields { get; } = PackageRecordExtensions.IdentityKeyField;
 
         public static List<PackageVersionRecord> Prune(List<PackageVersionRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
-            return Prune(records, isFinalPrune);
+            return PackageRecordExtensions.Prune(records, isFinalPrune);
         }
 
         public int CompareTo(PackageVersionRecord other)
         {
-            return base.CompareTo(other);
-        }
-
-        public string GetBucketKey()
-        {
-            return LowerId;
+            return PackageRecordExtensions.CompareTo(this, other);
         }
     }
 }

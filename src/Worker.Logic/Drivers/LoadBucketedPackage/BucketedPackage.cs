@@ -76,7 +76,7 @@ namespace NuGet.Insights.Worker.LoadBucketedPackage
         {
             // bucketize by the identity string "{id}/{version}" instead of "{id}${version}", to match other buckets
             var dollarIndex = rowKey.IndexOf('$', StringComparison.Ordinal);
-            var identity = PackageRecord.GetIdentity(rowKey.Substring(0, dollarIndex), rowKey.Substring(dollarIndex + 1));
+            var identity = PackageRecordExtensions.GetIdentity(rowKey.Substring(0, dollarIndex), rowKey.Substring(dollarIndex + 1));
             var bucket = StorageUtility.GetBucket(BucketCount, identity);
             return GetBucketString(bucket);
         }

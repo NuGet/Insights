@@ -4,15 +4,17 @@ This table has parsed information about each package version, as well as it's "l
 
 This table also acts as a helpful snapshot of data that is only available in the last package details catalog leaf, such as listed status and last edited date. This information is not available in the NuGet package file (.nupkg) itself.
 
-|                              |                                                                                                      |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Cardinality                  | Exactly one per package on NuGet.org                                                                 |
-| Child tables                 |                                                                                                      |
-| Parent tables                |                                                                                                      |
-| Column used for partitioning | LowerId                                                                                              |
-| Data file container name     | packageversions                                                                                      |
-| Driver                       | [`PackageVersionToCsv`](../drivers/PackageVersionToCsv.md)                                           |
-| Record type                  | [`PackageVersionRecord`](../../src/Worker.Logic/Drivers/PackageVersionToCsv/PackageVersionRecord.cs) |
+|                                    |                                                                                                      |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Cardinality                        | Exactly one per package on NuGet.org                                                                 |
+| Child tables                       |                                                                                                      |
+| Parent tables                      |                                                                                                      |
+| Column used for CSV partitioning   | LowerId                                                                                              |
+| Column used for Kusto partitioning | Identity                                                                                             |
+| Key fields                         | Identity                                                                                             |
+| Data file container name           | packageversions                                                                                      |
+| Driver                             | [`PackageVersionToCsv`](../drivers/PackageVersionToCsv.md)                                           |
+| Record type                        | [`PackageVersionRecord`](../../src/Worker.Logic/Drivers/PackageVersionToCsv/PackageVersionRecord.cs) |
 
 ## Table schema
 

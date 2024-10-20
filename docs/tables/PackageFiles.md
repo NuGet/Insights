@@ -4,15 +4,17 @@ This table contains hashes for every ZIP archive entries in the .nupkg (package)
 [PackageArchiveEntries](PackageArchiveEntries.md), containing details on the file contents instead of just ZIP entry
 metadata.
 
-|                              |                                                                                                    |
-| ---------------------------- | -------------------------------------------------------------------------------------------------- |
-| Cardinality                  | One or more rows per package, more than one if the package has multiple files in the ZIP (most do) |
-| Child tables                 |                                                                                                    |
-| Parent tables                |                                                                                                    |
-| Column used for partitioning | Identity                                                                                           |
-| Data file container name     | packagefiles                                                                                       |
-| Driver                       | [`PackageFileToCsv`](../drivers/PackageFileToCsv.md)                                               |
-| Record type                  | [`PackageFileRecord`](../../src/Worker.Logic/Drivers/PackageFileToCsv/PackageFileRecord.cs)        |
+|                                    |                                                                                                    |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Cardinality                        | One or more rows per package, more than one if the package has multiple files in the ZIP (most do) |
+| Child tables                       |                                                                                                    |
+| Parent tables                      |                                                                                                    |
+| Column used for CSV partitioning   | Identity                                                                                           |
+| Column used for Kusto partitioning | Identity                                                                                           |
+| Key fields                         | Identity, SequenceNumber                                                                           |
+| Data file container name           | packagefiles                                                                                       |
+| Driver                             | [`PackageFileToCsv`](../drivers/PackageFileToCsv.md)                                               |
+| Record type                        | [`PackageFileRecord`](../../src/Worker.Logic/Drivers/PackageFileToCsv/PackageFileRecord.cs)        |
 
 ## Table schema
 

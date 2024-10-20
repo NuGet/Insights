@@ -2,15 +2,18 @@
 
 This table contains the current total download count for packages. This table contains no historical data.
 
-|                              |                                                                                                             |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| Cardinality                  | Exactly one per package on NuGet.org, even if the package has zero downloads                                |
-| Child tables                 |                                                                                                             |
-| Parent tables                |                                                                                                             |
-| Column used for partitioning | Identity                                                                                                    |
-| Data file container name     | packagedownloads                                                                                            |
-| Driver                       | [`DownloadsToCsvUpdater`](../../src/Worker.Logic/MessageProcessors/DownloadsToCsv/DownloadsToCsvUpdater.cs) |
-| Record type                  | [`PackageDownloadRecord`](../../src/Worker.Logic/MessageProcessors/DownloadsToCsv/PackageDownloadRecord.cs) |
+
+|                                    |                                                                                                             |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Cardinality                        | Exactly one per package on NuGet.org                                                                        |
+| Child tables                       |                                                                                                             |
+| Parent tables                      |                                                                                                             |
+| Column used for CSV partitioning   | Identity                                                                                                    |
+| Column used for Kusto partitioning | Identity                                                                                                    |
+| Key fields                         | Identity                                                                                                    |
+| Data file container name           | packagedownloads                                                                                            |
+| Driver                             | [`DownloadsToCsvUpdater`](../../src/Worker.Logic/MessageProcessors/DownloadsToCsv/DownloadsToCsvUpdater.cs) |
+| Record type                        | [`PackageDownloadRecord`](../../src/Worker.Logic/MessageProcessors/DownloadsToCsv/PackageDownloadRecord.cs) |
 
 ## Table schema
 
@@ -23,3 +26,5 @@ This table contains the current total download count for packages. This table co
 | Version        | string    | Yes      | Arbitrary case, normalized package version                             |
 | Downloads      | long      | Yes      | Total package downloads for this package version                       |
 | TotalDownloads | long      | Yes      | Total package downloads for all versions of this package ID            |
+
+If the package has no downloads yet, the Downloads column will be zero. 

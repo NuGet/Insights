@@ -82,12 +82,12 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         public string SplitTags { get; set; }
 
         public static string CsvCompactMessageSchemaName => "cc.pm";
-        public static IEqualityComparer<PackageManifestRecord> KeyComparer { get; } = IdentityComparer<PackageManifestRecord>.Instance;
-        public static IReadOnlyList<string> KeyFields { get; } = IdentityKeyField;
+        public static IEqualityComparer<PackageManifestRecord> KeyComparer { get; } = PackageRecordIdentityComparer<PackageManifestRecord>.Instance;
+        public static IReadOnlyList<string> KeyFields { get; } = PackageRecordExtensions.IdentityKeyField;
 
         public static List<PackageManifestRecord> Prune(List<PackageManifestRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
-            return Prune(records, isFinalPrune);
+            return PackageRecordExtensions.Prune(records, isFinalPrune);
         }
 
         public int CompareTo(PackageManifestRecord other)

@@ -39,5 +39,16 @@ namespace NuGet.Insights.Worker
         public long? ActualUncompressedLength { get; set; }
         public string SHA256 { get; set; }
         public string First16Bytes { get; set; }
+
+        protected int CompareTo(FileRecord other)
+        {
+            var c = base.CompareTo(other);
+            if (c != 0)
+            {
+                return c;
+            }
+
+            return Comparer<int?>.Default.Compare(SequenceNumber, other.SequenceNumber);
+        }
     }
 }

@@ -4,6 +4,9 @@
 using Castle.Core.Internal;
 using Humanizer;
 using Markdig.Extensions.Tables;
+using NuGet.Insights.Worker.CatalogDataToCsv;
+
+#nullable enable
 
 namespace NuGet.Insights.Worker
 {
@@ -15,7 +18,7 @@ namespace NuGet.Insights.Worker
             RecordType = KustoDDL.TypeToDefaultTableName.Single(x => x.Value == tableName).Key;
 
             var csvHeaderWriter = new StringWriter();
-            RecordType.GetMethod(nameof(ICsvRecord<ICsvRecord>.WriteHeader)).Invoke(null, [csvHeaderWriter]);
+            RecordType.GetMethod(nameof(ICsvRecord<ICsvRecord>.WriteHeader))!.Invoke(null, [csvHeaderWriter]);
 
             NameToIndex = csvHeaderWriter
                 .ToString()
@@ -34,6 +37,20 @@ namespace NuGet.Insights.Worker
             var containerNamePropertyName = $"{tableName.Singularize()}ContainerName";
             Assert.Contains(containerNamePropertyName, settingsProperties.Select(x => x.Name).Where(x => x.EndsWith("ContainerName", StringComparison.Ordinal)));
             DefaultContainerName = Assert.IsType<string>(settingsProperties.Single(x => x.Name == containerNamePropertyName).GetValue(settings));
+
+            CsvPartitioningKeyFieldName = NameToProperty
+                .Values
+                .Where(x => x.GetCustomAttribute<BucketKeyAttribute>() is not null)
+                .FirstOrDefault()?
+                .Name;
+            KustoPartitioningKeyFieldName = NameToProperty
+                .Values
+                .Where(x => x.GetCustomAttribute<KustoPartitionKeyAttribute>() is not null)
+                .FirstOrDefault()?
+                .Name;
+            KeyFields = (IReadOnlyList<string>?)RecordType
+                .GetProperty(nameof(CatalogLeafItemRecord.KeyFields))?
+                .GetValue(obj: null);
         }
 
         public override void ReadMarkdown()
@@ -56,6 +73,9 @@ namespace NuGet.Insights.Worker
         public IReadOnlyDictionary<string, int> NameToIndex { get; }
         public IReadOnlyDictionary<string, PropertyInfo> NameToProperty { get; }
         public string DefaultContainerName { get; }
+        public string? CsvPartitioningKeyFieldName { get; }
+        public string? KustoPartitioningKeyFieldName { get; }
+        public IReadOnlyList<string>? KeyFields { get; }
 
         public static bool IsDynamic(PropertyInfo property)
         {
@@ -92,7 +112,7 @@ namespace NuGet.Insights.Worker
             return false;
         }
 
-        public static string GetExpectedDataType(PropertyInfo property)
+        public static string? GetExpectedDataType(PropertyInfo property)
         {
             var propertyType = property.PropertyType;
             if (propertyType == typeof(string) || propertyType == typeof(Guid?) || propertyType == typeof(Version))

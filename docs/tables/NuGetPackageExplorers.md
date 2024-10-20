@@ -4,15 +4,17 @@ This table the result of the [NuGet Package Explorer](https://github.com/NuGetPa
 [`SymbolValidator`](https://github.com/NuGetPackageExplorer/NuGetPackageExplorer/blob/main/Core/SymbolValidation/SymbolValidator.cs) class
 and contains package-level summary information. The purpose of this table is to assess the reproducibility of packages on NuGet.org.
 
-|                              |                                                                                                                        |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Cardinality                  | Exactly one per package on NuGet.org                                                                                   |
-| Child tables                 | [NuGetPackageExplorerFiles](NuGetPackageExplorerFiles.md) joined on Identity                                           |
-| Parent tables                |                                                                                                                        |
-| Column used for partitioning | Identity                                                                                                               |
-| Data file container name     | nugetpackageexplorer                                                                                                   |
-| Driver                       | [`NuGetPackageExplorerToCsv`](../drivers/NuGetPackageExplorerToCsv.md)                                                 |
-| Record type                  | [`NuGetPackageExplorerRecord`](../../src/Worker.Logic/Drivers/NuGetPackageExplorerToCsv/NuGetPackageExplorerRecord.cs) |
+|                                    |                                                                                                                        |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Cardinality                        | Exactly one per package on NuGet.org                                                                                   |
+| Child tables                       | [NuGetPackageExplorerFiles](NuGetPackageExplorerFiles.md) joined on Identity                                           |
+| Parent tables                      |                                                                                                                        |
+| Column used for CSV partitioning   | Identity                                                                                                               |
+| Column used for Kusto partitioning | Identity                                                                                                               |
+| Key fields                         | Identity                                                                                                               |
+| Data file container name           | nugetpackageexplorer                                                                                                   |
+| Driver                             | [`NuGetPackageExplorerToCsv`](../drivers/NuGetPackageExplorerToCsv.md)                                                 |
+| Record type                        | [`NuGetPackageExplorerRecord`](../../src/Worker.Logic/Drivers/NuGetPackageExplorerToCsv/NuGetPackageExplorerRecord.cs) |
 
 ## Table schema
 

@@ -4,15 +4,17 @@ This table contains the set of current owners for the package ID. This table con
 
 The owners are represented by their username. A package owner can either be an individual user or an organization.
 
-|                              |                                                                                                    |
-| ---------------------------- | -------------------------------------------------------------------------------------------------- |
-| Cardinality                  | Exactly one per unique package ID on NuGet.org, even if the package has zero owners                |
-| Child tables                 |                                                                                                    |
-| Parent tables                |                                                                                                    |
-| Column used for partitioning | LowerId                                                                                            |
-| Data file container name     | packageowners                                                                                      |
-| Driver                       | [`OwnersToCsvUpdater`](../../src/Worker.Logic/MessageProcessors/OwnersToCsv/OwnersToCsvUpdater.cs) |
-| Record type                  | [`PackageOwnerRecord`](../../src/Worker.Logic/MessageProcessors/OwnersToCsv/PackageOwnerRecord.cs) |
+|                                    |                                                                                                    |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Cardinality                        | Exactly one per unique package ID on NuGet.org                                                     |
+| Child tables                       |                                                                                                    |
+| Parent tables                      |                                                                                                    |
+| Column used for CSV partitioning   | LowerId                                                                                            |
+| Column used for Kusto partitioning | LowerId                                                                                            |
+| Key fields                         | LowerId                                                                                            |
+| Data file container name           | packageowners                                                                                      |
+| Driver                             | [`OwnersToCsvUpdater`](../../src/Worker.Logic/MessageProcessors/OwnersToCsv/OwnersToCsvUpdater.cs) |
+| Record type                        | [`PackageOwnerRecord`](../../src/Worker.Logic/MessageProcessors/OwnersToCsv/PackageOwnerRecord.cs) |
 
 ## Table schema
 

@@ -222,7 +222,7 @@ namespace NuGet.Insights.Worker
 
         private static string GetIdentityBucketKey(string lowerId, string normalizedVersion)
         {
-            return PackageRecord.GetIdentity(lowerId, normalizedVersion);
+            return PackageRecordExtensions.GetIdentity(lowerId, normalizedVersion);
         }
 
         private static string GetIdBucketKey(string lowerId, string normalizedVersion)

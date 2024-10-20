@@ -2,15 +2,17 @@
 
 This table contains metadata about NuGet package signature information. It includes columns about both author and repository signatures.
 
-|                              |                                                                                                |
-| ---------------------------- | ---------------------------------------------------------------------------------------------- |
-| Cardinality                  | Exactly one per package on NuGet.org                                                           |
-| Child tables                 |                                                                                                |
-| Parent tables                |                                                                                                |
-| Column used for partitioning | Identity                                                                                       |
-| Data file container name     | packagesignatures                                                                              |
-| Driver                       | [`PackageSignatureToCsv`](../drivers/PackageSignatureToCsv.md)                                 |
-| Record type                  | [`PackageSignature`](../../src/Worker.Logic/Drivers/PackageSignatureToCsv/PackageSignature.cs) |
+|                                    |                                                                                                |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Cardinality                        | Exactly one per package on NuGet.org                                                           |
+| Child tables                       |                                                                                                |
+| Parent tables                      |                                                                                                |
+| Column used for CSV partitioning   | Identity                                                                                       |
+| Column used for Kusto partitioning | Identity                                                                                       |
+| Key fields                         | Identity                                                                                       |
+| Data file container name           | packagesignatures                                                                              |
+| Driver                             | [`PackageSignatureToCsv`](../drivers/PackageSignatureToCsv.md)                                 |
+| Record type                        | [`PackageSignature`](../../src/Worker.Logic/Drivers/PackageSignatureToCsv/PackageSignature.cs) |
 
 ## Table schema
 

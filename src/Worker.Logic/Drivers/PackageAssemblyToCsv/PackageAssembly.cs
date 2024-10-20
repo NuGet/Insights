@@ -59,13 +59,13 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.as";
 
-        public static IEqualityComparer<PackageAssembly> KeyComparer { get; } = IPackageEntryRecord.PackageEntryKeyComparer<PackageAssembly>.Instance;
+        public static IEqualityComparer<PackageAssembly> KeyComparer { get; } = PackageEntryKeyComparer<PackageAssembly>.Instance;
 
-        public static IReadOnlyList<string> KeyFields { get; } = PackageEntryKeyFields;
+        public static IReadOnlyList<string> KeyFields { get; } = PackageRecordExtensions.PackageEntryKeyFields;
 
         public static List<PackageAssembly> Prune(List<PackageAssembly> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
-            return Prune(records, isFinalPrune);
+            return PackageRecordExtensions.Prune(records, isFinalPrune);
         }
 
         public int CompareTo(PackageAssembly other)

@@ -19,24 +19,18 @@ namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.spf";
 
-        public static IEqualityComparer<SymbolPackageFileRecord> KeyComparer { get; } = IPackageEntryRecord.PackageEntryKeyComparer<SymbolPackageFileRecord>.Instance;
+        public static IEqualityComparer<SymbolPackageFileRecord> KeyComparer { get; } = PackageEntryKeyComparer<SymbolPackageFileRecord>.Instance;
 
-        public static IReadOnlyList<string> KeyFields { get; } = PackageEntryKeyFields;
+        public static IReadOnlyList<string> KeyFields { get; } = PackageRecordExtensions.PackageEntryKeyFields;
 
         public static List<SymbolPackageFileRecord> Prune(List<SymbolPackageFileRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
-            return Prune(records, isFinalPrune);
+            return PackageRecordExtensions.Prune(records, isFinalPrune);
         }
 
         public int CompareTo(SymbolPackageFileRecord other)
         {
-            var c = base.CompareTo(other);
-            if (c != 0)
-            {
-                return c;
-            }
-
-            return Comparer<int?>.Default.Compare(SequenceNumber, other.SequenceNumber);
+            return base.CompareTo(other);
         }
     }
 }

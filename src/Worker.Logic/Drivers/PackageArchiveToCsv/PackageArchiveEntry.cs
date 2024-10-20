@@ -21,24 +21,18 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.pae";
 
-        public static IEqualityComparer<PackageArchiveEntry> KeyComparer { get; } = IPackageEntryRecord.PackageEntryKeyComparer<PackageArchiveEntry>.Instance;
+        public static IEqualityComparer<PackageArchiveEntry> KeyComparer { get; } = PackageEntryKeyComparer<PackageArchiveEntry>.Instance;
 
-        public static IReadOnlyList<string> KeyFields { get; } = PackageEntryKeyFields;
+        public static IReadOnlyList<string> KeyFields { get; } = PackageRecordExtensions.PackageEntryKeyFields;
 
         public static List<PackageArchiveEntry> Prune(List<PackageArchiveEntry> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
-            return Prune(records, isFinalPrune);
+            return PackageRecordExtensions.Prune(records, isFinalPrune);
         }
 
         public int CompareTo(PackageArchiveEntry other)
         {
-            var c = base.CompareTo(other);
-            if (c != 0)
-            {
-                return c;
-            }
-
-            return Comparer<int?>.Default.Compare(SequenceNumber, other.SequenceNumber);
+            return base.CompareTo(other);
         }
     }
 }

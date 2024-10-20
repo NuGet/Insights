@@ -21,13 +21,13 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.spa";
 
-        public static IEqualityComparer<SymbolPackageArchiveRecord> KeyComparer { get; } = IdentityComparer<SymbolPackageArchiveRecord>.Instance;
+        public static IEqualityComparer<SymbolPackageArchiveRecord> KeyComparer { get; } = PackageRecordIdentityComparer<SymbolPackageArchiveRecord>.Instance;
 
-        public static IReadOnlyList<string> KeyFields { get; } = IdentityKeyField;
+        public static IReadOnlyList<string> KeyFields { get; } = PackageRecordExtensions.IdentityKeyField;
 
         public static List<SymbolPackageArchiveRecord> Prune(List<SymbolPackageArchiveRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
-            return Prune(records, isFinalPrune);
+            return PackageRecordExtensions.Prune(records, isFinalPrune);
         }
 
         public int CompareTo(SymbolPackageArchiveRecord other)
