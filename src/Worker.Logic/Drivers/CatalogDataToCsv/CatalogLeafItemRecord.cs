@@ -102,7 +102,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.cl";
         public static IEqualityComparer<CatalogLeafItemRecord> KeyComparer { get; } = CatalogLeafItemRecordKeyComparer.Instance;
-        public static IReadOnlyList<string> KeyFields { get; } = [nameof(Url)];
+        public static IReadOnlyList<string> KeyFields { get; } = [nameof(Identity), nameof(CommitTimestamp)];
 
         public static List<CatalogLeafItemRecord> Prune(List<CatalogLeafItemRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
@@ -139,12 +139,16 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
                     return false;
                 }
 
-                return x.Url == y.Url;
+                return x.Identity == y.Identity
+                    && x.CommitTimestamp == y.CommitTimestamp;
             }
 
             public int GetHashCode([DisallowNull] CatalogLeafItemRecord obj)
             {
-                return obj.Url.GetHashCode(StringComparison.Ordinal);
+                var hashCode = new HashCode();
+                hashCode.Add(obj.Identity);
+                hashCode.Add(obj.CommitTimestamp);
+                return hashCode.ToHashCode();
             }
         }
     }
