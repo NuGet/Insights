@@ -67,6 +67,18 @@ namespace NuGet.Insights
 
         public void Finish(PropertyVisitorContext context)
         {
+            if (_bucketKeyName is null)
+            {
+                context.GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(
+                    new DiagnosticDescriptor(
+                        id: DiagnosticIds.NoBucketKeyDefined,
+                        title: $"No {AttributeName} attribute was defined on the type.",
+                        messageFormat: $"No {AttributeName} attribute was defined on the type.",
+                        CsvRecordGenerator.Category,
+                        DiagnosticSeverity.Error,
+                        isEnabledByDefault: true),
+                    context.TypeDeclarationSyntax.GetLocation()));
+            }
         }
 
         public string GetResult()

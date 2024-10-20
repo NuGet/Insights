@@ -261,12 +261,11 @@ namespace NuGet.Insights
                     kustoPartitioningPolicyConstantBuilder,
                     kustoMappingConstantBuilder,
                     validatePropertyNullability,
+                    findBucketKeyProperty,
                 };
 
                 var sortedProperties = new List<IPropertySymbol>();
                 var currentType = symbol;
-
-                var hasFindBucketKey = false;
 
                 while (currentType != null)
                 {
@@ -277,17 +276,7 @@ namespace NuGet.Insights
                         .OfType<IPropertySymbol>()
                         .OrderByDescending(x => x.Locations.First().SourceSpan.Start));
 
-                    if (currentType.GetMembers().Any(findBucketKeyProperty.IsExistingMethod))
-                    {
-                        hasFindBucketKey = true;
-                    }
-
                     currentType = currentType.BaseType;
-                }
-
-                if (!hasFindBucketKey)
-                {
-                    visitors.Add(findBucketKeyProperty);
                 }
 
                 sortedProperties.Reverse();
