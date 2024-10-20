@@ -121,7 +121,7 @@ namespace NuGet.Insights.Worker
 
         [Theory]
         [MemberData(nameof(RecordTypesData))]
-        public void CatalogScanRecordIsUniquelyIdentifiedByKeyFields(Type recordType)
+        public void RecordIsUniquelyIdentifiedByKeyFields(Type recordType)
         {
             var keyComparer = GetKeyComparer(recordType);
             var keyFields = GetKeyFields(recordType);
@@ -132,14 +132,36 @@ namespace NuGet.Insights.Worker
             var equalsMethod = GetEqualsMethod(recordType, keyComparer);
             Assert.NotNull(equalsMethod);
 
-            Assert.Equal(true, equalsMethod.Invoke(keyComparer, [recordA, recordB]));
-            Assert.Equal(false, equalsMethod.Invoke(keyComparer, [recordA, recordC]));
-            Assert.Equal(false, equalsMethod.Invoke(keyComparer, [recordB, recordC]));
+            Assert.True((bool)equalsMethod.Invoke(keyComparer, [recordA, recordB]), "recordA should equal recordB");
+            Assert.False((bool)equalsMethod.Invoke(keyComparer, [recordA, recordC]), "recordA should not equal recordC");
+            Assert.False((bool)equalsMethod.Invoke(keyComparer, [recordB, recordC]), "recordB should not equal recordC");
+        }
+
+        [Theory]
+        [MemberData(nameof(RecordTypeKeyFieldCombinationsSubsetsData))]
+        public void AllKeyFieldsAreNeededForEquality(Type recordType, string[] keyFieldSubset)
+        {
+            var keyComparer = GetKeyComparer(recordType);
+            var extraKeyFields = GetKeyFields(recordType).Except(keyFieldSubset).ToArray();
+            var recordA = PopulateFields(Activator.CreateInstance(recordType), extraKeyFields, seed: 0);
+            var recordB = PopulateFields(Activator.CreateInstance(recordType), extraKeyFields, seed: 0);
+            var recordC = PopulateFields(Activator.CreateInstance(recordType), extraKeyFields, seed: 0);
+
+            PopulateFields(recordA, keyFieldSubset, seed: 1);
+            PopulateFields(recordB, keyFieldSubset, seed: 1);
+            PopulateFields(recordC, keyFieldSubset, seed: 2);
+
+            var equalsMethod = GetEqualsMethod(recordType, keyComparer);
+            Assert.NotNull(equalsMethod);
+
+            Assert.True((bool)equalsMethod.Invoke(keyComparer, [recordA, recordB]), "recordA should equal recordB");
+            Assert.False((bool)equalsMethod.Invoke(keyComparer, [recordA, recordC]), "recordA should not equal recordC");
+            Assert.False((bool)equalsMethod.Invoke(keyComparer, [recordB, recordC]), "recordB should not equal recordC");
         }
 
         [Theory]
         [MemberData(nameof(RecordTypesData))]
-        public void CatalogScanRecordIsKeyComparerDoesNotConsiderOtherFields(Type recordType)
+        public void CatalogScanRecordKeyComparerDoesNotConsiderOtherFields(Type recordType)
         {
             var keyComparer = GetKeyComparer(recordType);
             var keyFields = GetKeyFields(recordType);
@@ -169,7 +191,7 @@ namespace NuGet.Insights.Worker
             var equalsMethod = GetEqualsMethod(recordType, keyComparer);
             Assert.NotNull(equalsMethod);
 
-            Assert.Equal(true, equalsMethod.Invoke(keyComparer, [recordA, recordB]));
+            Assert.True((bool)equalsMethod.Invoke(keyComparer, [recordA, recordB]), "recordA should equal recordB");
         }
 
         private static MethodInfo GetEqualsMethod(Type recordType, object keyComparer)
@@ -260,6 +282,43 @@ namespace NuGet.Insights.Worker
         public static IEnumerable<object[]> RecordTypesData = KustoDDL
             .TypeToDefaultTableName
             .Select(x => new object[] { x.Key });
+
+        public static IEnumerable<object[]> RecordTypeKeyFieldCombinationsSubsetsData
+        {
+            get
+            {
+                foreach (var pair in KustoDDL.TypeToDefaultTableName)
+                {
+                    var keyFields = GetKeyFields(pair.Key);
+                    foreach (var keys in SubSetsOf(keyFields))
+                    {
+                        var keyArray = keys.ToArray();
+                        if (keyArray.Length == 0)
+                        {
+                            continue;
+                        }
+
+                        yield return new object[] { pair.Key, keyArray };
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Source: https://stackoverflow.com/a/999182
+        /// </summary>
+        public static IEnumerable<IEnumerable<T>> SubSetsOf<T>(IEnumerable<T> source)
+        {
+            if (!source.Any())
+            {
+                return Enumerable.Repeat(Enumerable.Empty<T>(), 1);
+            }
+
+            var element = source.Take(1);
+            var haveNots = SubSetsOf(source.Skip(1));
+            var haves = haveNots.Select(set => element.Concat(set));
+            return haves.Concat(haveNots);
+        }
 
         public static IEnumerable<object[]> CatalogScanRecordTypesData = KustoDDL
             .TypeToDefaultTableName
