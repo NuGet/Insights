@@ -6,27 +6,57 @@ using Markdig.Extensions.Tables;
 using Markdig.Renderers;
 using Markdig.Syntax;
 
+#nullable enable
+
 namespace NuGet.Insights.Worker
 {
     public class DocInfo
     {
+        public static MarkdownPipeline Pipeline { get; } = new MarkdownPipelineBuilder()
+            .UsePipeTables()
+            .EnableTrackTrivia()
+            .Build();
+
+        private string? _unparsedMarkdown;
+        private MarkdownDocument? _markdownDocument;
+
         public DocInfo(string docPath)
         {
             DocPath = Path.Combine(LogicTestSettings.GetRepositoryRoot(), "docs", docPath);
         }
 
         public string DocPath { get; }
-        public string UnparsedMarkdown { get; private set; }
-        public static MarkdownPipeline Pipeline { get; } = new MarkdownPipelineBuilder()
-            .UsePipeTables()
-            .EnableTrackTrivia()
-            .Build();
-        public MarkdownDocument MarkdownDocument { get; private set; }
+
+        public string UnparsedMarkdown
+        {
+            get
+            {
+                if (_unparsedMarkdown is null)
+                {
+                    ReadMarkdown();
+                }
+
+                return _unparsedMarkdown!;
+            }
+        }
+
+        public MarkdownDocument MarkdownDocument
+        {
+            get
+            {
+                if (_markdownDocument is null)
+                {
+                    ReadMarkdown();
+                }
+
+                return _markdownDocument!;
+            }
+        }
 
         public virtual void ReadMarkdown()
         {
-            UnparsedMarkdown = BaseLogicIntegrationTest.ReadAllTextWithRetry(DocPath);
-            MarkdownDocument = ReadMarkdown(UnparsedMarkdown);
+            _unparsedMarkdown = BaseLogicIntegrationTest.ReadAllTextWithRetry(DocPath);
+            _markdownDocument = ReadMarkdown(_unparsedMarkdown);
         }
 
         public static MarkdownDocument ReadMarkdown(string unparsedMarkdown)

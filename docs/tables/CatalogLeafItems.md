@@ -8,15 +8,17 @@ Most packages have more than one catalog leaf item due to the NuGet.org
 2018 to early 2019. The catalog was established after many packages were accepted to the NuGet.org V1 and V2 APIs so
 some packages were created before their first commit timestamp.
 
-|                              |                                                                                                                                                                                         |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Cardinality                  | One or more rows per package, more than one if the package has multiple [catalog leaf items](https://docs.microsoft.com/en-us/nuget/api/catalog-resource#catalog-item-object-in-a-page) |
-| Child tables                 |                                                                                                                                                                                         |
-| Parent tables                |                                                                                                                                                                                         |
-| Column used for partitioning | Identity                                                                                                                                                                                |
-| Data file container name     | catalogleafitems                                                                                                                                                                        |
-| Driver                       | [`CatalogDataToCsv`](../drivers/CatalogDataToCsv.md)                                                                                                                                    |
-| Record type                  | [`CatalogLeafItemRecord`](../../src/Worker.Logic/Drivers/CatalogDataToCsv/CatalogLeafItemRecord.cs)                                                                                     |
+|                                    |                                                                                                                                                                                         |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cardinality                        | One or more rows per package, more than one if the package has multiple [catalog leaf items](https://docs.microsoft.com/en-us/nuget/api/catalog-resource#catalog-item-object-in-a-page) |
+| Child tables                       |                                                                                                                                                                                         |
+| Parent tables                      |                                                                                                                                                                                         |
+| Column used for CSV partitioning   | Identity                                                                                                                                                                                |
+| Column used for Kusto partitioning | Identity                                                                                                                                                                                |
+| Key fields                         | Identity, CommitTimestamp                                                                                                                                                               |
+| Data file container name           | catalogleafitems                                                                                                                                                                        |
+| Driver                             | [`CatalogDataToCsv`](../drivers/CatalogDataToCsv.md)                                                                                                                                    |
+| Record type                        | [`CatalogLeafItemRecord`](../../src/Worker.Logic/Drivers/CatalogDataToCsv/CatalogLeafItemRecord.cs)                                                                                     |
 
 ## Table schema
 

@@ -33,13 +33,13 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.pd";
 
-        public static IEqualityComparer<PackageDeprecationRecord> KeyComparer { get; } = IdentityComparer<PackageDeprecationRecord>.Instance;
+        public static IEqualityComparer<PackageDeprecationRecord> KeyComparer { get; } = PackageRecordIdentityComparer<PackageDeprecationRecord>.Instance;
 
-        public static IReadOnlyList<string> KeyFields { get; } = IdentityKeyField;
+        public static IReadOnlyList<string> KeyFields { get; } = PackageRecordExtensions.IdentityKeyField;
 
         public static List<PackageDeprecationRecord> Prune(List<PackageDeprecationRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
-            return Prune(records, isFinalPrune);
+            return PackageRecordExtensions.Prune(records, isFinalPrune);
         }
 
         public int CompareTo(PackageDeprecationRecord other)

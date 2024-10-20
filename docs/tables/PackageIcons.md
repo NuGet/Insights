@@ -3,15 +3,17 @@
 This table contains metadata about package icons available on NuGet.org. This contains information about both embedded
 icons and icon URL icons downloaded to NuGet.org. The processing of images is done using [Magick.NET](https://github.com/dlemstra/Magick.NET).
 
-|                              |                                                                                 |
-| ---------------------------- | ------------------------------------------------------------------------------- |
-| Cardinality                  | Exactly one per package on NuGet.org                                            |
-| Child tables                 |                                                                                 |
-| Parent tables                |                                                                                 |
-| Column used for partitioning | Identity                                                                        |
-| Data file container name     | packageicons                                                                    |
-| Driver                       | [`PackageIconToCsv`](../drivers/PackageIconToCsv.md)                            |
-| Record type                  | [`PackageIcon`](../../src/Worker.Logic/Drivers/PackageIconToCsv/PackageIcon.cs) |
+|                                    |                                                                                 |
+| ---------------------------------- | ------------------------------------------------------------------------------- |
+| Cardinality                        | Exactly one per package on NuGet.org                                            |
+| Child tables                       |                                                                                 |
+| Parent tables                      |                                                                                 |
+| Column used for CSV partitioning   | Identity                                                                        |
+| Column used for Kusto partitioning | Identity                                                                        |
+| Key fields                         | Identity                                                                        |
+| Data file container name           | packageicons                                                                    |
+| Driver                             | [`PackageIconToCsv`](../drivers/PackageIconToCsv.md)                            |
+| Record type                        | [`PackageIcon`](../../src/Worker.Logic/Drivers/PackageIconToCsv/PackageIcon.cs) |
 
 ## Table schema
 

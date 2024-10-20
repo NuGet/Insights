@@ -19,24 +19,18 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.pf";
 
-        public static IEqualityComparer<PackageFileRecord> KeyComparer { get; } = IPackageEntryRecord.PackageEntryKeyComparer<PackageFileRecord>.Instance;
+        public static IEqualityComparer<PackageFileRecord> KeyComparer { get; } = PackageEntryKeyComparer<PackageFileRecord>.Instance;
 
-        public static IReadOnlyList<string> KeyFields { get; } = PackageEntryKeyFields;
+        public static IReadOnlyList<string> KeyFields { get; } = PackageRecordExtensions.PackageEntryKeyFields;
 
         public static List<PackageFileRecord> Prune(List<PackageFileRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
-            return Prune(records, isFinalPrune);
+            return PackageRecordExtensions.Prune(records, isFinalPrune);
         }
 
         public int CompareTo(PackageFileRecord other)
         {
-            var c = base.CompareTo(other);
-            if (c != 0)
-            {
-                return c;
-            }
-
-            return Comparer<int?>.Default.Compare(SequenceNumber, other.SequenceNumber);
+            return base.CompareTo(other);
         }
     }
 }

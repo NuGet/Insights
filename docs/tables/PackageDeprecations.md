@@ -2,15 +2,17 @@
 
 This table has the latest deprecation status for every package. Package deprecation is a way of marking a package as not longer intended for use but is short of deleting or (necessarily) unlisting the package. Packages that are currently deprecated will have a `ResultType` of `Deprecated`.
 
-|                              |                                                                                                           |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Cardinality                  | Exactly one per package on NuGet.                                                                         |
-| Child tables                 |                                                                                                           |
-| Parent tables                |                                                                                                           |
-| Column used for partitioning | Identity                                                                                                  |
-| Data file container name     | packagedeprecations                                                                                       |
-| Driver                       | [`CatalogDataToCsv`](../drivers/CatalogDataToCsv.md)                                                      |
-| Record type                  | [`PackageDeprecationRecord`](../../src/Worker.Logic/Drivers/CatalogDataToCsv/PackageDeprecationRecord.cs) |
+|                                    |                                                                                                           |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Cardinality                        | Exactly one per package on NuGet.org                                                                      |
+| Child tables                       |                                                                                                           |
+| Parent tables                      |                                                                                                           |
+| Column used for CSV partitioning   | Identity                                                                                                  |
+| Column used for Kusto partitioning | Identity                                                                                                  |
+| Key fields                         | Identity                                                                                                  |
+| Data file container name           | packagedeprecations                                                                                       |
+| Driver                             | [`CatalogDataToCsv`](../drivers/CatalogDataToCsv.md)                                                      |
+| Record type                        | [`PackageDeprecationRecord`](../../src/Worker.Logic/Drivers/CatalogDataToCsv/PackageDeprecationRecord.cs) |
 
 ## Table schema
 

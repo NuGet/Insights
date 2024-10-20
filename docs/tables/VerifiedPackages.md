@@ -8,15 +8,17 @@ namespace. For more information about package ID prefix reservation, see the
 
 A verified package is one that has the blue checkmark icon on nuget.org and Visual Studio package management UI.
 
-|                              |                                                                                                                                  |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Cardinality                  | Exactly one per unique package ID on NuGet.org.                                                                                  |
-| Child tables                 |                                                                                                                                  |
-| Parent tables                |                                                                                                                                  |
-| Column used for partitioning | LowerId                                                                                                                          |
-| Data file container name     | verifiedpackages                                                                                                                 |
-| Driver                       | [`VerifiedPackagesToCsvUpdater`](../../src/Worker.Logic/MessageProcessors/VerifiedPackagesToCsv/VerifiedPackagesToCsvUpdater.cs) |
-| Record type                  | [`VerifiedPackageRecord`](../../src/Worker.Logic/MessageProcessors/VerifiedPackagesToCsv/VerifiedPackageRecord.cs)               |
+|                                    |                                                                                                                                  |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Cardinality                        | Exactly one per unique package ID on NuGet.org                                                                                   |
+| Child tables                       |                                                                                                                                  |
+| Parent tables                      |                                                                                                                                  |
+| Column used for CSV partitioning   | LowerId                                                                                                                          |
+| Column used for Kusto partitioning | LowerId                                                                                                                          |
+| Key fields                         | LowerId                                                                                                                          |
+| Data file container name           | verifiedpackages                                                                                                                 |
+| Driver                             | [`VerifiedPackagesToCsvUpdater`](../../src/Worker.Logic/MessageProcessors/VerifiedPackagesToCsv/VerifiedPackagesToCsvUpdater.cs) |
+| Record type                        | [`VerifiedPackageRecord`](../../src/Worker.Logic/MessageProcessors/VerifiedPackagesToCsv/VerifiedPackageRecord.cs)               |
 
 ## Table schema
 

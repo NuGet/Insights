@@ -48,7 +48,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
 
         public static List<NuGetPackageExplorerFile> Prune(List<NuGetPackageExplorerFile> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
-            return Prune(records, isFinalPrune);
+            return PackageRecordExtensions.Prune(records, isFinalPrune);
         }
 
         public int CompareTo(NuGetPackageExplorerFile other)

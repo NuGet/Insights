@@ -377,10 +377,10 @@ namespace NuGet.Insights.Worker
                 var lowerId = RandomInt().ToString(CultureInfo.InvariantCulture).ToLowerInvariant();
                 var normalizedVersion = $"{RandomInt()}.{RandomInt()}.{RandomInt()}";
 
-                recordType.GetProperty(nameof(PackageRecord.LowerId), typeof(string))?.SetValue(record, lowerId);
-                recordType.GetProperty(nameof(PackageRecord.Id), typeof(string))?.SetValue(record, lowerId);
-                recordType.GetProperty(nameof(PackageRecord.Version), typeof(string))?.SetValue(record, lowerId);
-                recordType.GetProperty(nameof(PackageRecord.Identity), typeof(string))?.SetValue(record, PackageRecord.GetIdentity(lowerId, normalizedVersion));
+                recordType.GetProperty(nameof(IPackageRecord.LowerId), typeof(string))?.SetValue(record, lowerId);
+                recordType.GetProperty(nameof(IPackageRecord.Id), typeof(string))?.SetValue(record, lowerId);
+                recordType.GetProperty(nameof(IPackageRecord.Version), typeof(string))?.SetValue(record, lowerId);
+                recordType.GetProperty(nameof(IPackageRecord.Identity), typeof(string))?.SetValue(record, PackageRecordExtensions.GetIdentity(lowerId, normalizedVersion));
             }
 
             return record;

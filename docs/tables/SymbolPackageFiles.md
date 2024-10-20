@@ -4,15 +4,17 @@ This table contains hashes for every ZIP archive entries in the .snupkg (symbol 
 have symbol packages. This is a sibling table to [SymbolPackageArchiveEntries](SymbolPackageArchiveEntries.md),
 containing details on the file contents instead of just ZIP entry metadata.
 
-|                              |                                                                                                               |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Cardinality                  | One or more rows per package, more than one if the symbol package has multiple files in the ZIP (most do)     |
-| Child tables                 |                                                                                                               |
-| Parent tables                |                                                                                                               |
-| Column used for partitioning | Identity                                                                                                      |
-| Data file container name     | symbolpackagefiles                                                                                            |
-| Driver                       | [`SymbolPackageFileToCsv`](../drivers/SymbolPackageFileToCsv.md)                                              |
-| Record type                  | [`SymbolPackageFileRecord`](../../src/Worker.Logic/Drivers/SymbolPackageFileToCsv/SymbolPackageFileRecord.cs) |
+|                                    |                                                                                                               |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Cardinality                        | One or more rows per package, more than one if the symbol package has multiple files in the ZIP (most do)     |
+| Child tables                       |                                                                                                               |
+| Parent tables                      |                                                                                                               |
+| Column used for CSV partitioning   | Identity                                                                                                      |
+| Column used for Kusto partitioning | Identity                                                                                                      |
+| Key fields                         | Identity, SequenceNumber                                                                                      |
+| Data file container name           | symbolpackagefiles                                                                                            |
+| Driver                             | [`SymbolPackageFileToCsv`](../drivers/SymbolPackageFileToCsv.md)                                              |
+| Record type                        | [`SymbolPackageFileRecord`](../../src/Worker.Logic/Drivers/SymbolPackageFileToCsv/SymbolPackageFileRecord.cs) |
 
 ## Table schema
 

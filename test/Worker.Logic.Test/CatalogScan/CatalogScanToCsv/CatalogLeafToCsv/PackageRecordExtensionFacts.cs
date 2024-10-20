@@ -5,7 +5,7 @@ using NuGet.Insights.Worker.PackageVersionToCsv;
 
 namespace NuGet.Insights.Worker
 {
-    public class PackageRecordFacts
+    public class PackageRecordExtensionFacts
     {
         public class Prune
         {
@@ -29,7 +29,7 @@ namespace NuGet.Insights.Worker
                 var b = getRecord();
                 var records = new List<PackageVersionRecord> { a, b };
 
-                var pruned = PackageRecord.Prune(records, isFinalPrune);
+                var pruned = PackageRecordExtensions.Prune(records, isFinalPrune);
 
                 var single = Assert.Single(pruned);
                 Assert.Equal(a, single);
@@ -71,8 +71,8 @@ namespace NuGet.Insights.Worker
                 var a = GetPackagRecord(idA, vA);
                 var b = GetPackagRecord(idB, vB);
 
-                var actual = a.CompareTo(b);
-                var reverse = b.CompareTo(a);
+                var actual = PackageRecordExtensions.CompareTo(a, b);
+                var reverse = PackageRecordExtensions.CompareTo(b, a);
 
                 Assert.Equal(expected, Clamp(actual));
                 Assert.Equal(expected * -1, Clamp(reverse));
@@ -91,7 +91,7 @@ namespace NuGet.Insights.Worker
                 return new PackageRecord
                 {
                     LowerId = lowerId,
-                    Identity = PackageRecord.GetIdentity(lowerId, normalizedVersion),
+                    Identity = PackageRecordExtensions.GetIdentity(lowerId, normalizedVersion),
                     Id = id,
                     Version = normalizedVersion,
                 };

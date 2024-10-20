@@ -4,15 +4,17 @@ This is a mapping table between a package and all of the certificates that are u
 Essentially the relationship between packages and certificates is many-to-many. This table describes all of the "edges"
 between "package nodes" and "certificate nodes" in this graph.
 
-|                              |                                                                                                                  |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Cardinality                  | One or more rows per package, more than one if the package has multiple related certificates                     |
-| Child tables                 | [Certificates](Certificates.md) joined on Fingerprint                                                            |
-| Parent tables                |                                                                                                                  |
-| Column used for partitioning | Identity                                                                                                         |
-| Data file container name     | packagecertificates                                                                                              |
-| Driver                       | [`PackageCertificateToCsv`](../drivers/PackageCertificateToCsv.md)                                               |
-| Record type                  | [`PackageCertificateRecord`](../../src/Worker.Logic/Drivers/PackageCertificateToCsv/PackageCertificateRecord.cs) |
+|                                    |                                                                                                                  |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Cardinality                        | One or more rows per package, more than one if the package has multiple related certificates                     |
+| Child tables                       | [Certificates](Certificates.md) joined on Fingerprint                                                            |
+| Parent tables                      |                                                                                                                  |
+| Column used for CSV partitioning   | Identity                                                                                                         |
+| Column used for Kusto partitioning | Identity                                                                                                         |
+| Key fields                         | Identity, Fingerprint                                                                                            |
+| Data file container name           | packagecertificates                                                                                              |
+| Driver                             | [`PackageCertificateToCsv`](../drivers/PackageCertificateToCsv.md)                                               |
+| Record type                        | [`PackageCertificateRecord`](../../src/Worker.Logic/Drivers/PackageCertificateToCsv/PackageCertificateRecord.cs) |
 
 ## Table schema
 

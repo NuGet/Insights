@@ -34,13 +34,13 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.npe";
 
-        public static IEqualityComparer<NuGetPackageExplorerRecord> KeyComparer { get; } = IdentityComparer<NuGetPackageExplorerRecord>.Instance;
+        public static IEqualityComparer<NuGetPackageExplorerRecord> KeyComparer { get; } = PackageRecordIdentityComparer<NuGetPackageExplorerRecord>.Instance;
 
-        public static IReadOnlyList<string> KeyFields { get; } = IdentityKeyField;
+        public static IReadOnlyList<string> KeyFields { get; } = PackageRecordExtensions.IdentityKeyField;
 
         public static List<NuGetPackageExplorerRecord> Prune(List<NuGetPackageExplorerRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
-            return Prune(records, isFinalPrune);
+            return PackageRecordExtensions.Prune(records, isFinalPrune);
         }
 
         public int CompareTo(NuGetPackageExplorerRecord other)

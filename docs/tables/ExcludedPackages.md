@@ -8,15 +8,17 @@ A package would be excluded from the default search result likely because it is 
 (i.e. a base framework) and is therefore not interesting for someone who would be looking for additional (as in not
 included by default) libraries to use in their project.
 
-|                              |                                                                                                                                  |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Cardinality                  | Exactly one per unique package ID on NuGet.org.                                                                                  |
-| Child tables                 |                                                                                                                                  |
-| Parent tables                |                                                                                                                                  |
-| Column used for partitioning | LowerId                                                                                                                          |
-| Data file container name     | excludedpackages                                                                                                                 |
-| Driver                       | [`ExcludedPackagesToCsvUpdater`](../../src/Worker.Logic/MessageProcessors/ExcludedPackagesToCsv/ExcludedPackagesToCsvUpdater.cs) |
-| Record type                  | [`ExcludedPackageRecord`](../../src/Worker.Logic/MessageProcessors/ExcludedPackagesToCsv/ExcludedPackageRecord.cs)               |
+|                                    |                                                                                                                                  |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Cardinality                        | Exactly one per unique package ID on NuGet.org                                                                                   |
+| Child tables                       |                                                                                                                                  |
+| Parent tables                      |                                                                                                                                  |
+| Column used for CSV partitioning   | LowerId                                                                                                                          |
+| Column used for Kusto partitioning | LowerId                                                                                                                          |
+| Key fields                         | LowerId                                                                                                                          |
+| Data file container name           | excludedpackages                                                                                                                 |
+| Driver                             | [`ExcludedPackagesToCsvUpdater`](../../src/Worker.Logic/MessageProcessors/ExcludedPackagesToCsv/ExcludedPackagesToCsvUpdater.cs) |
+| Record type                        | [`ExcludedPackageRecord`](../../src/Worker.Logic/MessageProcessors/ExcludedPackagesToCsv/ExcludedPackageRecord.cs)               |
 
 ## Table schema
 

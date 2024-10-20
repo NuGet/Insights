@@ -41,5 +41,16 @@ namespace NuGet.Insights.Worker
         public uint? UncompressedSize { get; set; }
         public uint? LocalHeaderOffset { get; set; }
         public string Comment { get; set; }
+
+        protected int CompareTo(ArchiveEntry other)
+        {
+            var c = base.CompareTo(other);
+            if (c != 0)
+            {
+                return c;
+            }
+
+            return Comparer<int?>.Default.Compare(SequenceNumber, other.SequenceNumber);
+        }
     }
 }

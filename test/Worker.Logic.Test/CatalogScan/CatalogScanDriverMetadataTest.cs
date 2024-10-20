@@ -81,10 +81,10 @@ namespace NuGet.Insights.Worker
                     var record = (IAggregatedCsvRecord)Activator.CreateInstance(recordType);
 
                     // Populate test data on the record so the bucket key can be realistic.
-                    recordType.GetProperty(nameof(PackageRecord.Id))?.SetValue(record, id);
-                    recordType.GetProperty(nameof(PackageRecord.LowerId))?.SetValue(record, lowerId);
-                    recordType.GetProperty(nameof(PackageRecord.Version), typeof(string))?.SetValue(record, version);
-                    recordType.GetProperty(nameof(PackageRecord.Identity))?.SetValue(record, PackageRecord.GetIdentity(lowerId, normalizedVersion));
+                    recordType.GetProperty(nameof(IPackageRecord.Id))?.SetValue(record, id);
+                    recordType.GetProperty(nameof(IPackageRecord.LowerId))?.SetValue(record, lowerId);
+                    recordType.GetProperty(nameof(IPackageRecord.Version), typeof(string))?.SetValue(record, version);
+                    recordType.GetProperty(nameof(IPackageRecord.Identity))?.SetValue(record, PackageRecordExtensions.GetIdentity(lowerId, normalizedVersion));
 
                     verifyRecordBucketKey(recordType, bucketKey, record);
                 }

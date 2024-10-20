@@ -5,10 +5,10 @@ namespace NuGet.Insights.Worker
 {
     public static class EntityExtensions
     {
-        public static T InitializeFromIdVersion<T>(this T record) where T : PackageRecord
+        public static T InitializeFromIdVersion<T>(this T record) where T : IPackageRecord
         {
             record.LowerId = record.Id.ToLowerInvariant();
-            record.Identity = PackageRecord.GetIdentity(record.LowerId, record.Version);
+            record.Identity = PackageRecordExtensions.GetIdentity(record.LowerId, record.Version);
             return record;
         }
 

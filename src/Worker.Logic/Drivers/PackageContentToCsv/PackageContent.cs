@@ -38,13 +38,13 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.pcn";
 
-        public static IEqualityComparer<PackageContent> KeyComparer { get; } = IPackageEntryRecord.PackageEntryKeyComparer<PackageContent>.Instance;
+        public static IEqualityComparer<PackageContent> KeyComparer { get; } = PackageEntryKeyComparer<PackageContent>.Instance;
 
-        public static IReadOnlyList<string> KeyFields { get; } = PackageEntryKeyFields;
+        public static IReadOnlyList<string> KeyFields { get; } = PackageRecordExtensions.PackageEntryKeyFields;
 
         public static List<PackageContent> Prune(List<PackageContent> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
-            return Prune(records, isFinalPrune);
+            return PackageRecordExtensions.Prune(records, isFinalPrune);
         }
 
         public int CompareTo(PackageContent other)

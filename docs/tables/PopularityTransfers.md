@@ -8,15 +8,17 @@ to a newer
 package](https://learn.microsoft.com/en-us/nuget/nuget-org/deprecate-packages#transfer-popularity-to-a-newer-package)
 document.
 
-|                              |                                                                                                                                           |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Cardinality                  | Exactly one per unique package ID on NuGet.org, even if the package has no popularity transfers                                           |
-| Child tables                 |                                                                                                                                           |
-| Parent tables                |                                                                                                                                           |
-| Column used for partitioning | LowerId                                                                                                                                   |
-| Data file container name     | popularitytransfers                                                                                                                       |
-| Driver                       | [`PopularityTransfersToCsvUpdater`](../../src/Worker.Logic/MessageProcessors/PopularityTransfersToCsv/PopularityTransfersToCsvUpdater.cs) |
-| Record type                  | [`PopularityTransfersRecord`](../../src/Worker.Logic/MessageProcessors/PopularityTransfersToCsv/PopularityTransfersRecord.cs)             |
+|                                    |                                                                                                                                           |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Cardinality                        | Exactly one per unique package ID on NuGet.org                                                                                            |
+| Child tables                       |                                                                                                                                           |
+| Parent tables                      |                                                                                                                                           |
+| Column used for CSV partitioning   | LowerId                                                                                                                                   |
+| Column used for Kusto partitioning | LowerId                                                                                                                                   |
+| Key fields                         | LowerId                                                                                                                                   |
+| Data file container name           | popularitytransfers                                                                                                                       |
+| Driver                             | [`PopularityTransfersToCsvUpdater`](../../src/Worker.Logic/MessageProcessors/PopularityTransfersToCsv/PopularityTransfersToCsvUpdater.cs) |
+| Record type                        | [`PopularityTransfersRecord`](../../src/Worker.Logic/MessageProcessors/PopularityTransfersToCsv/PopularityTransfersRecord.cs)             |
 
 ## Table schema
 

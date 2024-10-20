@@ -114,7 +114,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
 
         public int CompareTo(CatalogLeafItemRecord other)
         {
-            var c = PackageRecord.CompareTo(LowerId, Identity, other.LowerId, other.Identity);
+            var c = PackageRecordExtensions.CompareTo(LowerId, Identity, other.LowerId, other.Identity);
             if (c != 0)
             {
                 return c;

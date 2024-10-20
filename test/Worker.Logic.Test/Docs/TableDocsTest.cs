@@ -4,6 +4,8 @@
 using Markdig.Extensions.Tables;
 using Markdig.Syntax;
 
+#nullable enable
+
 namespace NuGet.Insights.Worker
 {
     public partial class TableDocsTest
@@ -51,7 +53,18 @@ namespace NuGet.Insights.Worker
 
             i++;
             Assert.Equal("Cardinality", info.ToPlainText(rows[i][0]));
-            Assert.NotEmpty(info.ToPlainText(rows[i][0]));
+            var cardinalityColumn = info.ToPlainText(rows[i][1]);
+            Assert.NotEmpty(cardinalityColumn);
+            var expectedCardinality = TableDocInitializer.GetCardinality(info.KeyFields);
+            if (expectedCardinality is not null)
+            {
+                Assert.Equal(expectedCardinality, cardinalityColumn);
+            }
+            else
+            {
+                Assert.NotEqual(TableDocInitializer.GetCardinality([nameof(PackageRecord.LowerId)]), cardinalityColumn);
+                Assert.NotEqual(TableDocInitializer.GetCardinality([nameof(PackageRecord.Identity)]), cardinalityColumn);
+            }
 
             i++;
             Assert.Equal("Child tables", info.ToPlainText(rows[i][0]));
@@ -60,9 +73,28 @@ namespace NuGet.Insights.Worker
             Assert.Equal("Parent tables", info.ToPlainText(rows[i][0]));
 
             i++;
-            Assert.Equal("Column used for partitioning", info.ToPlainText(rows[i][0]));
-            var partitioningColumn = info.ToPlainText(rows[i][1]);
-            Assert.Contains(partitioningColumn, info.NameToProperty);
+            Assert.Equal("Column used for CSV partitioning", info.ToPlainText(rows[i][0]));
+            var csvPartitioningColumn = info.ToPlainText(rows[i][1]);
+            Assert.Contains(csvPartitioningColumn, info.NameToProperty);
+            Assert.NotNull(info.CsvPartitioningKeyFieldName);
+            Assert.Equal(info.CsvPartitioningKeyFieldName, csvPartitioningColumn);
+
+            i++;
+            Assert.Equal("Column used for Kusto partitioning", info.ToPlainText(rows[i][0]));
+            var kustoPartitioningColumn = info.ToPlainText(rows[i][1]);
+            Assert.Contains(kustoPartitioningColumn, info.NameToProperty);
+            Assert.NotNull(info.KustoPartitioningKeyFieldName);
+            Assert.Equal(info.KustoPartitioningKeyFieldName, kustoPartitioningColumn);
+
+            i++;
+            Assert.Equal("Key fields", info.ToPlainText(rows[i][0]));
+            var keyFieldsString = info.ToPlainText(rows[i][1]);
+            Assert.NotEmpty(keyFieldsString);
+            Assert.NotNull(info.KeyFields);
+            Assert.Equal(string.Join(", ", info.KeyFields), keyFieldsString);
+            var keyFields = keyFieldsString.Split(", ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            Assert.NotEmpty(keyFields);
+            Assert.All(keyFields, x => Assert.Contains(x, info.NameToProperty));
 
             i++;
             Assert.Equal("Data file container name", info.ToPlainText(rows[i][0]));

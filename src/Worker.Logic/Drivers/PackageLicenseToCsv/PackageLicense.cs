@@ -48,13 +48,13 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.pl";
 
-        public static IEqualityComparer<PackageLicense> KeyComparer { get; } = IdentityComparer<PackageLicense>.Instance;
+        public static IEqualityComparer<PackageLicense> KeyComparer { get; } = PackageRecordIdentityComparer<PackageLicense>.Instance;
 
-        public static IReadOnlyList<string> KeyFields { get; } = IdentityKeyField;
+        public static IReadOnlyList<string> KeyFields { get; } = PackageRecordExtensions.IdentityKeyField;
 
         public static List<PackageLicense> Prune(List<PackageLicense> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
-            return Prune(records, isFinalPrune);
+            return PackageRecordExtensions.Prune(records, isFinalPrune);
         }
 
         public int CompareTo(PackageLicense other)
