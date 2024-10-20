@@ -110,7 +110,6 @@ namespace NuGet.Insights
                         DiagnosticSeverity.Error,
                         isEnabledByDefault: true),
                     context.TypeDeclarationSyntax.GetLocation()));
-                return;
             }
         }
 
