@@ -13,6 +13,11 @@ if (!$RootDirectory) {
 
 $configPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../markdown-link-check.config.json"))
 
+if (!(Get-Command npm -ErrorAction Ignore)) {
+    Write-Host "The npm command could not be found. Go install Node.js and npm." -ForegroundColor Red
+    exit 1
+}
+
 npm list -g markdown-link-check | Out-Null
 if ($LASTEXITCODE) {
     Write-Host "The markdown-link-check global npm tool is not installed. Run this: npm install -g markdown-link-check" -ForegroundColor Red
