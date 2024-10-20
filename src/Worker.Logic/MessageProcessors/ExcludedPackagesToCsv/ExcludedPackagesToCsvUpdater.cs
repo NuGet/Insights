@@ -20,7 +20,6 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
         }
 
         public string OperationName => "ExcludedPackagesToCsv";
-        public string BlobName => "excluded_packages";
         public string ContainerName => _options.Value.ExcludedPackageContainerName;
         public TimeSpan Frequency => _options.Value.ExcludedPackagesToCsvFrequency;
         public bool HasRequiredConfiguration => _options.Value.ExcludedPackagesV1Urls is not null && _options.Value.ExcludedPackagesV1Urls.Count > 0;

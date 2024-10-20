@@ -20,7 +20,6 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
         }
 
         public string OperationName => "PopularityTransfersToCsv";
-        public string BlobName => "popularity_transfers";
         public string ContainerName => _options.Value.PopularityTransferContainerName;
         public TimeSpan Frequency => _options.Value.PopularityTransfersToCsvFrequency;
         public bool HasRequiredConfiguration => _options.Value.PopularityTransfersV1Urls is not null && _options.Value.PopularityTransfersV1Urls.Count > 0;

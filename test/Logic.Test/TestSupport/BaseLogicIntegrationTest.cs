@@ -361,6 +361,11 @@ namespace NuGet.Insights
             Assert.Equal(expected, blobs.Count);
         }
 
+        protected async Task<BlobClient> GetBlobAsync(string containerName, int bucket)
+        {
+            return await GetBlobAsync(containerName, $"compact_{bucket}.csv.gz");
+        }
+
         protected async Task<BlobClient> GetBlobAsync(string containerName, string blobName)
         {
             var client = await ServiceClientFactory.GetBlobServiceClientAsync();
@@ -383,7 +388,7 @@ namespace NuGet.Insights
                     expected = File.ReadAllText(testDataFile);
                     break;
                 }
-                catch (IOException) when (attempt < 5)
+                catch (IOException ex) when (ex is not FileNotFoundException && attempt < 5)
                 {
                     Thread.Sleep(500 * attempt);
                 }
