@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections;
 using NuGet.Insights.Worker.CatalogDataToCsv;
 using NuGet.Insights.Worker.DownloadsToCsv;
 using NuGet.Insights.Worker.ExcludedPackagesToCsv;
@@ -160,6 +161,93 @@ namespace NuGet.Insights.Worker
         }
 
         [Theory]
+        [MemberData(nameof(RecordTypeKeyFieldCombinationsSubsetsData))]
+        public void CompareToImplementationMatchesKeyComparer(Type recordType, string[] keyFieldSubset)
+        {
+            var keyComparer = GetKeyComparer(recordType);
+            var extraKeyFields = GetKeyFields(recordType).Except(keyFieldSubset).ToArray();
+            var recordA = PopulateFields(Activator.CreateInstance(recordType), extraKeyFields, seed: 0);
+            var recordB = PopulateFields(Activator.CreateInstance(recordType), extraKeyFields, seed: 0);
+
+            PopulateFields(recordA, keyFieldSubset, seed: 1, setIdentity: true);
+            PopulateFields(recordB, keyFieldSubset, seed: 2, setIdentity: true);
+
+            var equalsMethod = GetEqualsMethod(recordType, keyComparer);
+            Assert.NotNull(equalsMethod);
+            var compareToMethod = GetCompareToMethod(recordType);
+            Assert.NotNull(compareToMethod);
+
+            Assert.False((bool)equalsMethod.Invoke(keyComparer, [recordA, recordB]), "recordA should not equal recordB");
+            Assert.NotEqual(0, (int)compareToMethod.Invoke(recordA, [recordB]));
+            Assert.NotEqual(0, (int)compareToMethod.Invoke(recordB, [recordA]));
+        }
+
+        [Theory]
+        [MemberData(nameof(RecordTypeKeyFieldCombinationsSubsetsData))]
+        public void CompareToImplementationIsCommutative(Type recordType, string[] keyFieldSubset)
+        {
+            var keyComparer = GetKeyComparer(recordType);
+            var extraKeyFields = GetKeyFields(recordType).Except(keyFieldSubset).ToArray();
+            var recordA = PopulateFields(Activator.CreateInstance(recordType), extraKeyFields, seed: 0);
+            var recordB = PopulateFields(Activator.CreateInstance(recordType), extraKeyFields, seed: 0);
+
+            PopulateFields(recordA, keyFieldSubset, seed: 1, setIdentity: true);
+            PopulateFields(recordB, keyFieldSubset, seed: 2, setIdentity: true);
+
+            var compareToMethod = GetCompareToMethod(recordType);
+            Assert.NotNull(compareToMethod);
+
+            Assert.NotEqual((int)compareToMethod.Invoke(recordB, [recordA]), (int)compareToMethod.Invoke(recordA, [recordB]));
+        }
+
+        [Theory]
+        [MemberData(nameof(RecordTypeKeyFieldCombinationsSubsetsData))]
+        public void CompareToImplementationIsStable(Type recordType, string[] keyFieldSubset)
+        {
+            var keyComparer = GetKeyComparer(recordType);
+            var extraKeyFields = GetKeyFields(recordType).Except(keyFieldSubset).ToArray();
+            var recordA = PopulateFields(Activator.CreateInstance(recordType), extraKeyFields, seed: 0);
+            var recordB = PopulateFields(Activator.CreateInstance(recordType), extraKeyFields, seed: 0);
+            var recordC = PopulateFields(Activator.CreateInstance(recordType), extraKeyFields, seed: 0);
+
+            PopulateFields(recordA, keyFieldSubset, seed: 1, setIdentity: true);
+            PopulateFields(recordB, keyFieldSubset, seed: 2, setIdentity: true);
+            PopulateFields(recordC, keyFieldSubset, seed: 3, setIdentity: true);
+
+            var compareToMethod = GetCompareToMethod(recordType);
+            Assert.NotNull(compareToMethod);
+
+            var cAB = Math.Clamp((int)compareToMethod.Invoke(recordA, [recordB]), -1, 1);
+            var cBC = Math.Clamp((int)compareToMethod.Invoke(recordB, [recordC]), -1, 1);
+            var cAC = Math.Clamp((int)compareToMethod.Invoke(recordA, [recordC]), -1, 1);
+            Assert.NotEqual(0, cAB);
+            Assert.NotEqual(0, cBC);
+            Assert.NotEqual(0, cAC);
+
+            object[] Sort(object[] records)
+            {
+                Array.Sort(records, (x, y) => (int)compareToMethod.Invoke(x, [y]));
+                return records;
+            }
+
+            object[][] allSort = [
+                Sort([recordA, recordB, recordC]),
+                Sort([recordA, recordC, recordB]),
+                Sort([recordB, recordA, recordC]),
+                Sort([recordB, recordC, recordA]),
+                Sort([recordC, recordA, recordB]),
+                Sort([recordC, recordB, recordA]),
+            ];
+
+            for (var i = 1; i < allSort.Length; i++)
+            {
+                Assert.Same(allSort[0][0], allSort[i][0]);
+                Assert.Same(allSort[0][1], allSort[i][1]);
+                Assert.Same(allSort[0][2], allSort[i][2]);
+            }
+        }
+
+        [Theory]
         [MemberData(nameof(RecordTypesData))]
         public void CatalogScanRecordKeyComparerDoesNotConsiderOtherFields(Type recordType)
         {
@@ -199,6 +287,11 @@ namespace NuGet.Insights.Worker
             return keyComparer.GetType().GetMethod(nameof(IEqualityComparer<object>.Equals), [recordType, recordType]);
         }
 
+        private static MethodInfo GetCompareToMethod(Type recordType)
+        {
+            return recordType.GetMethod(nameof(IComparable<object>.CompareTo), [recordType]);
+        }
+
         private static object GetKeyComparer(Type recordType)
         {
             return recordType.GetProperty(nameof(ICsvRecord<CatalogLeafItemRecord>.KeyComparer)).GetValue(null);
@@ -209,7 +302,7 @@ namespace NuGet.Insights.Worker
             return (IReadOnlyList<string>)recordType.GetProperty(nameof(ICsvRecord<CatalogLeafItemRecord>.KeyFields)).GetValue(null);
         }
 
-        private static object PopulateFields(object record, IReadOnlyList<string> fields, int seed)
+        private static object PopulateFields(object record, IReadOnlyList<string> fields, int seed, bool setIdentity = false)
         {
             var random = new Random(seed);
             var added = new HashSet<string>();
@@ -251,10 +344,12 @@ namespace NuGet.Insights.Worker
                 }
             }
 
+            var recordType = record.GetType();
+
             // populate all key fields
             foreach (var propertyName in fields)
             {
-                var property = record.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty);
+                var property = recordType.GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty);
                 Assert.NotNull(property);
 
                 switch (property.PropertyType)
@@ -274,6 +369,18 @@ namespace NuGet.Insights.Worker
                     default:
                         throw new NotImplementedException("Could not generate value for type " + property.PropertyType.FullName);
                 }
+            }
+
+            if (setIdentity)
+            {
+                // override identity properties, this allows PackageRecord.CompareTo to work as expected.
+                var lowerId = RandomInt().ToString(CultureInfo.InvariantCulture).ToLowerInvariant();
+                var normalizedVersion = $"{RandomInt()}.{RandomInt()}.{RandomInt()}";
+
+                recordType.GetProperty(nameof(PackageRecord.LowerId), typeof(string))?.SetValue(record, lowerId);
+                recordType.GetProperty(nameof(PackageRecord.Id), typeof(string))?.SetValue(record, lowerId);
+                recordType.GetProperty(nameof(PackageRecord.Version), typeof(string))?.SetValue(record, lowerId);
+                recordType.GetProperty(nameof(PackageRecord.Identity), typeof(string))?.SetValue(record, PackageRecord.GetIdentity(lowerId, normalizedVersion));
             }
 
             return record;
@@ -318,6 +425,43 @@ namespace NuGet.Insights.Worker
             var haveNots = SubSetsOf(source.Skip(1));
             var haves = haveNots.Select(set => element.Concat(set));
             return haves.Concat(haveNots);
+        }
+
+        private class ObjectArrayComparer : IComparer<object[]>
+        {
+            public int Compare(object[] x, object[] y)
+            {
+                if (x.Length != y.Length)
+                {
+                    throw new ArgumentException($"Arrays have different lengths. Right: {x.Length}. Left: {y.Length}.");
+                }
+
+                for (var i = 0; i < Math.Min(x.Length, y.Length); i++)
+                {
+                    if (x[i] is null)
+                    {
+                        throw new ArgumentException($"Element {i} of the first array is null");
+                    }
+
+                    if (y[i] is null)
+                    {
+                        throw new ArgumentException($"Element {i} of the second array is null");
+                    }
+
+                    if (x[i].GetType() != y[i].GetType())
+                    {
+                        throw new ArgumentException($"Element {i} of the arrays have different types. Right: {x[i].GetType()}. Left: {y[i].GetType()}.");
+                    }
+
+                    var c = Comparer.DefaultInvariant.Compare(x[i], y[i]);
+                    if (c != 0)
+                    {
+                        return c;
+                    }
+                }
+
+                return 0;
+            }
         }
 
         public static IEnumerable<object[]> CatalogScanRecordTypesData = KustoDDL
