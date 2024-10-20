@@ -47,10 +47,5 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
         {
             return base.CompareTo(other);
         }
-
-        public string GetBucketKey()
-        {
-            return Identity;
-        }
     }
 }

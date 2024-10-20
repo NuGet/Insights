@@ -126,5 +126,10 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
                 TransferLowerIds = string.Empty;
             }
         }
+
+        public string GetBucketKey()
+        {
+            return LowerId;
+        }
     }
 }

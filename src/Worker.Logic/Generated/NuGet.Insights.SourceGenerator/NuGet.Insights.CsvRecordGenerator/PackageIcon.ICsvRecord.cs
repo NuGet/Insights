@@ -295,5 +295,10 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
                 FrameAttributeNames = string.Empty;
             }
         }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

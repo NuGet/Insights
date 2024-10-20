@@ -90,6 +90,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         /// <summary>
         /// SHA-256, base64 URL encoded fingerprint of the certificate.
         /// </summary>
+        [BucketKey]
         [KustoPartitionKey]
         public string Fingerprint { get; set; }
 
@@ -250,11 +251,6 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         public int CompareTo(CertificateRecord other)
         {
             return string.CompareOrdinal(Fingerprint, other.Fingerprint);
-        }
-
-        public string GetBucketKey()
-        {
-            return Fingerprint;
         }
 
         public class CertificateRecordKeyComparer : IEqualityComparer<CertificateRecord>

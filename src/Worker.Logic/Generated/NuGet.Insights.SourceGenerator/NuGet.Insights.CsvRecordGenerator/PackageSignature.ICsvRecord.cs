@@ -494,5 +494,10 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
                 PackageOwners = string.Empty;
             }
         }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

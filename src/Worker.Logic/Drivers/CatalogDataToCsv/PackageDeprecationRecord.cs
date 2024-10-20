@@ -46,10 +46,5 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         {
             return base.CompareTo(other);
         }
-
-        public string GetBucketKey()
-        {
-            return Identity;
-        }
     }
 }

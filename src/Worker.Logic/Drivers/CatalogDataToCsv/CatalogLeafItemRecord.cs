@@ -62,6 +62,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
 
         public string LowerId { get; set; }
 
+        [BucketKey]
         [KustoPartitionKey]
         public string Identity { get; set; }
 
@@ -120,11 +121,6 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             }
 
             return CommitTimestamp.CompareTo(other.CommitTimestamp);
-        }
-
-        public string GetBucketKey()
-        {
-            return Identity;
         }
 
         public class CatalogLeafItemRecordKeyComparer : IEqualityComparer<CatalogLeafItemRecord>

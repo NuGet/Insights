@@ -94,10 +94,5 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         {
             return base.CompareTo(other);
         }
-
-        public string GetBucketKey()
-        {
-            return Identity;
-        }
     }
 }

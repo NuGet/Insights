@@ -240,5 +240,10 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                 SourceUrlRepoInfo = string.Empty;
             }
         }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

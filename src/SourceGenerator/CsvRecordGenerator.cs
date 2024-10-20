@@ -86,7 +86,7 @@ namespace {0}
         public void SetEmptyStrings()
         {{
 {14}
-        }}
+        }}{15}
     }}
 }}
 ";
@@ -244,8 +244,9 @@ namespace NuGet.Insights
                 var kustoPartitioningPolicyConstantBuilder = new KustoPartitioningPolicyBuilder(indent: 0, escapeQuotes: true);
                 var kustoMappingConstantBuilder = new KustoMappingBuilder(indent: 4, escapeQuotes: true);
                 var validatePropertyNullability = new ValidatePropertyNullability();
+                var findBucketKeyProperty = new GetBucketKeyProperty(indent: 8);
 
-                var visitors = new IPropertyVisitor[]
+                var visitors = new List<IPropertyVisitor>
                 {
                     kustoTableCommentBuilder,
                     kustoPartitioningPolicyCommentBuilder,
@@ -264,6 +265,9 @@ namespace NuGet.Insights
 
                 var sortedProperties = new List<IPropertySymbol>();
                 var currentType = symbol;
+
+                var hasFindBucketKey = false;
+
                 while (currentType != null)
                 {
                     sortedProperties.AddRange(currentType
@@ -272,7 +276,18 @@ namespace NuGet.Insights
                         .Where(x => !x.IsStatic)
                         .OfType<IPropertySymbol>()
                         .OrderByDescending(x => x.Locations.First().SourceSpan.Start));
+
+                    if (currentType.GetMembers().Any(findBucketKeyProperty.IsExistingMethod))
+                    {
+                        hasFindBucketKey = true;
+                    }
+
                     currentType = currentType.BaseType;
+                }
+
+                if (!hasFindBucketKey)
+                {
+                    visitors.Add(findBucketKeyProperty);
                 }
 
                 sortedProperties.Reverse();
@@ -340,7 +355,8 @@ namespace NuGet.Insights
                             writeAsyncTextWriterBuilder.GetResult(),
                             readerBuilder.GetResult(),
                             KustoDDL.CsvMappingName,
-                            setEmptyStringsBuilder.GetResult()),
+                            setEmptyStringsBuilder.GetResult(),
+                            findBucketKeyProperty.GetResult()),
                         Encoding.UTF8));
 
                 if (!isTestAssembly && !hasNoDDLAttribute)

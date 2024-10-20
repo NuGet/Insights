@@ -8,6 +8,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
         [KustoIgnore]
         public DateTimeOffset AsOfTimestamp { get; set; }
 
+        [BucketKey]
         [KustoPartitionKey]
         public string LowerId { get; set; }
 
@@ -16,7 +17,6 @@ namespace NuGet.Insights.Worker.OwnersToCsv
         [KustoType("dynamic")]
         public string Owners { get; set; }
 
-        public string GetBucketKey() => LowerId;
         public static IEqualityComparer<PackageOwnerRecord> KeyComparer => PackageOwnerRecordKeyComparer.Instance;
         public static IReadOnlyList<string> KeyFields { get; } = [nameof(LowerId)];
 

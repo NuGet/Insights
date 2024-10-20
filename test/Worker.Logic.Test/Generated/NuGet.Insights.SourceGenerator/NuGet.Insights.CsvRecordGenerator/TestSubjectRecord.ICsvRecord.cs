@@ -102,5 +102,10 @@ namespace NuGet.Insights.Worker.ReferenceTracking
                 Id = string.Empty;
             }
         }
+
+        public string GetBucketKey()
+        {
+            return BucketKey;
+        }
     }
 }

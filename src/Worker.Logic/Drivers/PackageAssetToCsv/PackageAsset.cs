@@ -74,11 +74,6 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             return string.CompareOrdinal(Path, other.Path);
         }
 
-        public string GetBucketKey()
-        {
-            return Identity;
-        }
-
         public class PackageAssetKeyComparer : IEqualityComparer<PackageAsset>
         {
             public static PackageAssetKeyComparer Instance { get; } = new();

@@ -287,5 +287,10 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
                 NuGetGalleryBadges = string.Empty;
             }
         }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

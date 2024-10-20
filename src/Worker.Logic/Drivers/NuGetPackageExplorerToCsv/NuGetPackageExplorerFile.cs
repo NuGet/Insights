@@ -62,11 +62,6 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             return string.CompareOrdinal(Path, other.Path);
         }
 
-        public string GetBucketKey()
-        {
-            return Identity;
-        }
-
         public class NuGetPackageExplorerFileKeyComparer : IEqualityComparer<NuGetPackageExplorerFile>
         {
             public static NuGetPackageExplorerFileKeyComparer Instance { get; } = new();

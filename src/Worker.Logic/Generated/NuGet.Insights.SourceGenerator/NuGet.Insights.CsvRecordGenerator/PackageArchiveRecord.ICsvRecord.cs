@@ -287,5 +287,10 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
                 SHA512 = string.Empty;
             }
         }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

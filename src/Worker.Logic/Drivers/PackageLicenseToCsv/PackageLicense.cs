@@ -61,10 +61,5 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
         {
             return base.CompareTo(other);
         }
-
-        public string GetBucketKey()
-        {
-            return Identity;
-        }
     }
 }

@@ -208,5 +208,10 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
                 AlternateVersionRange = string.Empty;
             }
         }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

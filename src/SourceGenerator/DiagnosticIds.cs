@@ -13,5 +13,8 @@ namespace NuGet.Insights
         public const string MissingKustoTypeAttribute = "NI0006";
         public const string MissingNoKustoDDLAttribute = "NI0007";
         public const string NonNullablePropertyNotMarkedAsRequired = "NI0008";
+        public const string MultipleBucketKeys = "NI0009";
+        public const string BucketKeyNotString = "NI0010";
+        public const string NoBucketKeyDefined = "NI0011";
     }
 }

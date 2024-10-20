@@ -10,6 +10,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
         [KustoIgnore]
         public DateTimeOffset AsOfTimestamp { get; set; }
 
+        [BucketKey]
         [KustoPartitionKey]
         public string LowerId { get; set; }
 
@@ -18,7 +19,6 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
         [Required]
         public bool IsVerified { get; set; }
 
-        public string GetBucketKey() => LowerId;
         public static IEqualityComparer<VerifiedPackageRecord> KeyComparer => VerifiedPackageRecordKeyComparer.Instance;
         public static IReadOnlyList<string> KeyFields { get; } = [nameof(LowerId)];
 

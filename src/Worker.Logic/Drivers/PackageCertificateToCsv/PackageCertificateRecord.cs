@@ -53,11 +53,6 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             return string.CompareOrdinal(Fingerprint, other.Fingerprint);
         }
 
-        public string GetBucketKey()
-        {
-            return Identity;
-        }
-
         public class PackageCertificateRecordKeyComparer : IEqualityComparer<PackageCertificateRecord>
         {
             public static PackageCertificateRecordKeyComparer Instance { get; } = new();

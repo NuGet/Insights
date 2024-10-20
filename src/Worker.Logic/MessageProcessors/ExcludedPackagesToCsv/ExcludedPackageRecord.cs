@@ -10,6 +10,7 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
         [KustoIgnore]
         public DateTimeOffset AsOfTimestamp { get; set; }
 
+        [BucketKey]
         [KustoPartitionKey]
         public string LowerId { get; set; }
 
@@ -18,7 +19,6 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
         [Required]
         public bool IsExcluded { get; set; }
 
-        public string GetBucketKey() => LowerId;
         public static IEqualityComparer<ExcludedPackageRecord> KeyComparer => ExcludedPackageRecordKeyComparer.Instance;
         public static IReadOnlyList<string> KeyFields { get; } = [nameof(LowerId)];
 

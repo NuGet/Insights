@@ -358,5 +358,10 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
                 CustomAttributesFailedDecode = string.Empty;
             }
         }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }
