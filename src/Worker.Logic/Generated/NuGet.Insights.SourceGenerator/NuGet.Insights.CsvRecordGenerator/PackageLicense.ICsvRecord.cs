@@ -302,5 +302,10 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
                 FileContent = string.Empty;
             }
         }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

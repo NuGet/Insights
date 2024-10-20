@@ -34,10 +34,5 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
         {
             return base.CompareTo(other);
         }
-
-        public string GetBucketKey()
-        {
-            return Identity;
-        }
     }
 }

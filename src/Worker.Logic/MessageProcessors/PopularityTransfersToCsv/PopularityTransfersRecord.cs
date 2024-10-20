@@ -8,6 +8,7 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
         [KustoIgnore]
         public DateTimeOffset AsOfTimestamp { get; set; }
 
+        [BucketKey]
         [KustoPartitionKey]
         public string LowerId { get; set; }
 
@@ -19,7 +20,6 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
         [KustoType("dynamic")]
         public string TransferLowerIds { get; set; }
 
-        public string GetBucketKey() => LowerId;
         public static IEqualityComparer<PopularityTransfersRecord> KeyComparer => PopularityTransfersRecordKeyComparer.Instance;
         public static IReadOnlyList<string> KeyFields { get; } = [nameof(LowerId)];
 

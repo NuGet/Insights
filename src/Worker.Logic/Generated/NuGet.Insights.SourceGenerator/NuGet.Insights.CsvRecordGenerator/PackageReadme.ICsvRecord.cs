@@ -198,5 +198,10 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
                 Content = string.Empty;
             }
         }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

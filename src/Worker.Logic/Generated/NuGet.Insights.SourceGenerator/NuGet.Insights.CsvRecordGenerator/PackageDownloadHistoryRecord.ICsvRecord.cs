@@ -144,5 +144,10 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 Version = string.Empty;
             }
         }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

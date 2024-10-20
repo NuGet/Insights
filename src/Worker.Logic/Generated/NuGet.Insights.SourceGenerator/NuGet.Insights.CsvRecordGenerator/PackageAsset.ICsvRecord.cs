@@ -398,5 +398,10 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
                 PlatformVersion = string.Empty;
             }
         }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

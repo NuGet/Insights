@@ -188,5 +188,10 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                 Version = string.Empty;
             }
         }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

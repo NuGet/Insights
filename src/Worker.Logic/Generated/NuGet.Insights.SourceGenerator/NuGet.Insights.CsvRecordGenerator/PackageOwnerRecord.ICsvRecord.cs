@@ -113,5 +113,10 @@ namespace NuGet.Insights.Worker.OwnersToCsv
                 Owners = string.Empty;
             }
         }
+
+        public string GetBucketKey()
+        {
+            return LowerId;
+        }
     }
 }

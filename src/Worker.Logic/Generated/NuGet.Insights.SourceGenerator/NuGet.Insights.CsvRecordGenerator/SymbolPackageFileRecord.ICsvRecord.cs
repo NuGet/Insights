@@ -266,5 +266,10 @@ namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
                 First16Bytes = string.Empty;
             }
         }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

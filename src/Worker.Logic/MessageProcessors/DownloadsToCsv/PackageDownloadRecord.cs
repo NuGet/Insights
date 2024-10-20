@@ -12,6 +12,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
 
         public string LowerId { get; set; }
 
+        [BucketKey]
         [KustoPartitionKey]
         public string Identity { get; set; }
 
@@ -24,7 +25,6 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
         [Required]
         public long TotalDownloads { get; set; }
 
-        public string GetBucketKey() => LowerId;
         public static IEqualityComparer<PackageDownloadRecord> KeyComparer => PackageDownloadRecordKeyComparer.Instance;
         public static IReadOnlyList<string> KeyFields { get; } = [nameof(Identity)];
 

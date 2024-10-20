@@ -285,5 +285,10 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
                 Comment = string.Empty;
             }
         }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

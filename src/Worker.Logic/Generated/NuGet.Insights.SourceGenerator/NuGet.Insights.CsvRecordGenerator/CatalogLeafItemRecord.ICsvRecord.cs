@@ -309,5 +309,10 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
                 SignaturePackageEntry = string.Empty;
             }
         }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

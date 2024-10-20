@@ -7,6 +7,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 {
     public partial record TestSubjectRecord : IAggregatedCsvRecord<TestSubjectRecord>, ICleanupOrphanCsvRecord
     {
+        [BucketKey]
         [KustoPartitionKey]
         public string BucketKey { get; set; }
 
@@ -40,11 +41,6 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             }
 
             return string.CompareOrdinal(Id, other.Id);
-        }
-
-        public string GetBucketKey()
-        {
-            return BucketKey;
         }
 
         public class TestSubjectRecordKeyComparer : IEqualityComparer<TestSubjectRecord>

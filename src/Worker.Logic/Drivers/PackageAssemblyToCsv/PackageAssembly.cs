@@ -78,10 +78,5 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
             return Comparer<int?>.Default.Compare(SequenceNumber, other.SequenceNumber);
         }
-
-        public string GetBucketKey()
-        {
-            return Identity;
-        }
     }
 }

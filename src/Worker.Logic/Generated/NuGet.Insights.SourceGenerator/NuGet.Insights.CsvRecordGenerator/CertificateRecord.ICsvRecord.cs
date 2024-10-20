@@ -377,5 +377,10 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
                 Policies = string.Empty;
             }
         }
+
+        public string GetBucketKey()
+        {
+            return Fingerprint;
+        }
     }
 }

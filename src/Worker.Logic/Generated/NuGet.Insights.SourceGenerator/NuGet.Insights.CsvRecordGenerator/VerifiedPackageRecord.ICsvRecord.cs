@@ -108,5 +108,10 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
                 Id = string.Empty;
             }
         }
+
+        public string GetBucketKey()
+        {
+            return LowerId;
+        }
     }
 }

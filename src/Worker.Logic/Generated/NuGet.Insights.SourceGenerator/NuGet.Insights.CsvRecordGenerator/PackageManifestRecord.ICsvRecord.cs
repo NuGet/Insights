@@ -542,5 +542,10 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
                 SplitTags = string.Empty;
             }
         }
+
+        public string GetBucketKey()
+        {
+            return Identity;
+        }
     }
 }

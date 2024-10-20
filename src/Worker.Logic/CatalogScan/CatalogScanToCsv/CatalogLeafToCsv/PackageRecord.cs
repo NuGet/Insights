@@ -42,6 +42,7 @@ namespace NuGet.Insights.Worker
 
         public string LowerId { get; set; }
 
+        [BucketKey]
         [KustoPartitionKey]
         public string Identity { get; set; }
 
