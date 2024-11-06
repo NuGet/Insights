@@ -75,7 +75,9 @@
       "sku": "2022-datacenter-core-smalldisk-g2",
       "version": "latest"
     },
-    "SpotWorkerEnableAutomaticOSUpgrade": false
+    "SpotWorkerEnableAutomaticOSUpgrade": false,
+    "SpotWorkerAdditionalVmssExtensions": [],
+    "SpotWorkerProvisionAfterExtensions": []
   },
   "AppSettings": {
     "Shared": {

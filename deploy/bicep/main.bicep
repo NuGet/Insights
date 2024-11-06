@@ -49,6 +49,8 @@ param spotWorkerSpecs array = []
 param spotWorkerCustomScriptExtensionFiles array = [] // an array of blob URLs, must be accessible with the managed identity
 param spotWorkerImageReference object = {}
 param spotWorkerEnableAutomaticOSUpgrade bool = false
+param spotWorkerAdditionalVmssExtensions array = []
+param spotWorkerProvisionAfterExtensions array = []
 
 // Shared resources
 resource userManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
@@ -334,6 +336,8 @@ module spotWorkers './spot-workers.bicep' = if (useSpotWorkers) {
     subnetIds: vnets.outputs.spotWorkerSubnetIds
     imageReference: spotWorkerImageReference
     enableAutomaticOSUpgrade: spotWorkerEnableAutomaticOSUpgrade
+    additionalVmssExtensions: spotWorkerAdditionalVmssExtensions
+    provisionAfterExtensions: spotWorkerProvisionAfterExtensions
   }
   dependsOn: [
     permissions

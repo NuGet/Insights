@@ -23,6 +23,8 @@ param addLoadBalancer bool
 param subnetId string
 param imageReference object
 param enableAutomaticOSUpgrade bool
+param additionalVmssExtensions array
+param provisionAfterExtensions array
 
 resource ipConfig 'Microsoft.Network/publicIPAddresses@2022-05-01' = if (addLoadBalancer) {
   name: ipConfigName
@@ -191,10 +193,11 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2023-03-01' = {
       }
       extensionProfile: {
         extensionsTimeBudget: 'PT15M'
-        extensions: [
+        extensions: concat(additionalVmssExtensions, [
           {
             name: 'InstallWorkerStandalone'
             properties: {
+              provisionAfterExtensions: provisionAfterExtensions
               publisher: 'Microsoft.Compute'
               type: 'CustomScriptExtension'
               typeHandlerVersion: '1.10'
@@ -228,7 +231,7 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2023-03-01' = {
               }
             }
           }
-        ]
+        ])
       }
     }
     automaticRepairsPolicy: {

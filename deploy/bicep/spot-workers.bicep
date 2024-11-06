@@ -13,6 +13,8 @@ param specs array // An array of objects with these properties: "namePrefix", "l
 param subnetIds array
 param imageReference object
 param enableAutomaticOSUpgrade bool
+param additionalVmssExtensions array
+param provisionAfterExtensions array
 
 param deploymentTimestamp string = utcNow()
 
@@ -73,6 +75,8 @@ module workers './spot-worker.bicep' = [
       subnetId: subnetIds[index]
       imageReference: imageReference
       enableAutomaticOSUpgrade: enableAutomaticOSUpgrade
+      additionalVmssExtensions: additionalVmssExtensions
+      provisionAfterExtensions: provisionAfterExtensions
     }
   }
 ]

@@ -120,6 +120,8 @@ class ResourceSettings {
     [object[]]$SpotWorkerSpecs
     [object]$SpotWorkerImageReference
     [bool]$SpotWorkerEnableAutomaticOSUpgrade
+    [object[]]$SpotWorkerAdditionalVmssExtensions
+    [object[]]$SpotWorkerProvisionAfterExtensions
     
     [string]$SubscriptionId
     [string]$ServiceTreeId
@@ -248,6 +250,8 @@ class ResourceSettings {
                 version   = 'latest';
             }
             Set-OrDefault SpotWorkerEnableAutomaticOSUpgrade $false
+            Set-OrDefault SpotWorkerAdditionalVmssExtensions @()
+            Set-OrDefault SpotWorkerProvisionAfterExtensions @()
         }
 
         $isNuGetPackageExplorerToCsvEnabled = "NuGetPackageExplorerToCsv" -notin $this.WorkerConfig["NuGetInsights"].DisabledDrivers
@@ -668,6 +672,8 @@ function New-MainParameters(
         $parameters.spotWorkerSpecs = $ResourceSettings.SpotWorkerSpecs;
         $parameters.spotWorkerImageReference = $ResourceSettings.SpotWorkerImageReference;
         $parameters.spotWorkerEnableAutomaticOSUpgrade = $ResourceSettings.SpotWorkerEnableAutomaticOSUpgrade;
+        $parameters.spotWorkerAdditionalVmssExtensions = $ResourceSettings.SpotWorkerAdditionalVmssExtensions;
+        $parameters.spotWorkerProvisionAfterExtensions = $ResourceSettings.SpotWorkerProvisionAfterExtensions;
     }
 
     $parameters
