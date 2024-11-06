@@ -13,6 +13,9 @@
   ],
   "ignorePatterns": [
     {
+      "pattern": "^mailto:"
+    },
+    {
       "pattern": "^https://aka\\.ms/opensource/"
     },
     {

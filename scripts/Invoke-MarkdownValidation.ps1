@@ -7,15 +7,17 @@ param (
     [string[]]$Files
 )
 
+$repoRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot ".."))
+
 if (!$RootDirectory) {
-    $RootDirectory = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot ".."))
+    $RootDirectory = $repoRoot
 }
 
 $configPath = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../markdown-link-check.config.json"))
 
-npm list -g markdown-link-check | Out-Null
+npm list markdown-link-check --prefix $repoRoot | Out-Null
 if ($LASTEXITCODE) {
-    Write-Host "The markdown-link-check global npm tool is not installed. Run this: npm install -g markdown-link-check" -ForegroundColor Red
+    Write-Host "The markdown-link-check npm tool is not installed. Run this: npm ci --prefix $repoRoot" -ForegroundColor Red
     exit 1
 }
 
@@ -33,6 +35,7 @@ else {
 }
 
 $documents = $documents | `
+    Where-Object { !$_.StartsWith((Join-Path $RootDirectory "node_modules")) } | `
     Where-Object { !$_.StartsWith((Join-Path $RootDirectory "submodules")) } | `
     Where-Object { !$_.StartsWith((Join-Path $RootDirectory "artifacts")) }
 
@@ -41,14 +44,15 @@ foreach ($md in $documents) {
     for ($i = 0; $i -lt 5 -and $failed; $i++) {
         $prefix = if ($i -eq 0) { "" } else { "[Attempt $($i + 1)] " }
         Write-Host "$($prefix)Checking $md" -ForegroundColor DarkGray
-        $output = markdown-link-check $md --config $configPath --verbose 2>&1 | Out-String
-        $statusMatches = [Regex]::Matches($output, "^\s*\[([^\]]+)\]", [System.Text.RegularExpressions.RegexOptions]::Multiline)
+        $output = npm exec markdown-link-check --prefix $repoRoot -- $md --config $configPath --verbose 2>&1 | Out-String
+        $statusMatches = [Regex]::Matches($output, "^\s*\[(?:\x1b\[[0-9;]*m)?([^\]]+?)(?:\x1b\[[0-9;]*m)?\]", [System.Text.RegularExpressions.RegexOptions]::Multiline)
         $nonSuccessStatuses = $statusMatches | `
-            ForEach-Object { $_.Groups[1].Value } | `
+            ForEach-Object { $_.Groups[1].Value.Trim() } | `
             Where-Object { $_ -ne "✓" } | `
             Where-Object { $_ -ne "/" } | `
             Sort-Object | `
-            Get-Unique
+            Get-Unique | `
+            ForEach-Object { $_ + " (" + (([System.Text.Encoding]::UTF8.GetBytes($_) | ForEach-Object ToString X2) -join ' ') + ")" }
         $failed = ($LASTEXITCODE -ne 0) -or ($nonSuccessStatuses.Count -gt 0)
     }
 

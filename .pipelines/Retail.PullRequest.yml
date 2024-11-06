@@ -67,8 +67,13 @@ stages:
           targetType: "filePath"
           filePath: $(Build.SourcesDirectory)/src/Forks/download.ps1
 
-      - script: npm install --loglevel verbose --global markdown-link-check@3.10.0
-        displayName: "Install markdown-link-check"
+      - task: UseNode@1
+        displayName: "Install node.js"
+        inputs:
+          version: 20.x
+
+      - script: npm ci --prefix $(Build.SourcesDirectory) --loglevel verbose
+        displayName: "Install npm modules"
 
       - task: PowerShell@2
         displayName: Validate markdown
@@ -81,11 +86,6 @@ stages:
       displayName: "Build and publish"
 
       steps:
-      - checkout: self
-        displayName: Checkout
-        submodules: true
-        fetchDepth: 0
-
       - task: UseDotNet@2
         displayName: "Install .NET SDK from global.json"
         inputs:
@@ -172,11 +172,6 @@ stages:
         displayName: "Test with ${{ storageType }} storage"
 
         steps:
-        - checkout: self
-          displayName: Checkout
-          submodules: true
-          fetchDepth: 0
-
         - task: UseDotNet@2
           displayName: "Install .NET SDK from global.json"
           inputs:
@@ -211,11 +206,17 @@ stages:
           displayName: "Save Kusto client certificate"
           condition: eq('${{ storageType }}', 'AzureWithKusto')
 
-        - script: npm install --loglevel verbose --global azurite
-          displayName: "Install Azurite"
+         - task: UseNode@1
+           displayName: "Install node.js"
+           inputs:
+             version: 20.x
+           condition: eq('${{ storageType }}', 'Azurite')
+
+        - script: npm ci --prefix $(Build.SourcesDirectory) --loglevel verbose
+          displayName: "Install npm modules"
           condition: eq('${{ storageType }}', 'Azurite')
 
-        - bash: azurite --silent --inMemoryPersistence &
+        - bash: npm exec azurite --prefix $(Build.SourcesDirectory) -- --silent --inMemoryPersistence &
           displayName: "Start Azurite"
           condition: eq('${{ storageType }}', 'Azurite')
 
