@@ -17,6 +17,8 @@ namespace NuGet.Insights.Worker
         public const string MetricIdPrefix = $"{nameof(CsvRecordStorageService)}.";
         private const string ContentType = "text/plain";
         public const string CompactPrefix = "compact_";
+        private const int MinSubdivisions = 2;
+        private const int MaxSubdivisions = 50;
 
         private static string TempDir => Path.Combine(Path.GetTempPath(), "NuGet.Insights");
         private static readonly byte[] SubdivideSuffix = [2];
@@ -192,7 +194,10 @@ namespace NuGet.Insights.Worker
                     && existingMetadata.RecordCount.HasValue
                     && existingMetadata.RecordCount.Value > _options.Value.AppendResultBigModeRecordThreshold)
                 {
-                    var subdivisions = (int)Math.Max(2, Math.Round(1.0 * existingMetadata.RecordCount.Value / _options.Value.AppendResultBigModeSubdivisionSize));
+                    var subdivisions = (int)Math.Clamp(
+                        Math.Round(1.0 * existingMetadata.RecordCount.Value / _options.Value.AppendResultBigModeSubdivisionSize),
+                        min: MinSubdivisions,
+                        max: MaxSubdivisions);
                     _logger.LogInformation(
                         "Switching to big mode with {Subdivisions} subdivisions, based on existing record count of {RecordCount}.",
                         subdivisions,
@@ -366,7 +371,10 @@ namespace NuGet.Insights.Worker
                 chunkCount += await provider.CountRemainingChunksAsync(bucket, lastPosition);
 
                 double recordCountEstimate = averageRecordCount * chunkCount;
-                subdivisions = (int)Math.Max(2, Math.Ceiling(recordCountEstimate / _options.Value.AppendResultBigModeSubdivisionSize));
+                subdivisions = (int)Math.Clamp(
+                    Math.Ceiling(recordCountEstimate / _options.Value.AppendResultBigModeSubdivisionSize),
+                    min: MinSubdivisions,
+                    max: MaxSubdivisions);
                 _logger.LogInformation(
                     "Switching to big mode with {Subdivisions} subdivisions, based on append record count estimate of {RecordCountEstimate}.",
                     subdivisions,
