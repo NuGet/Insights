@@ -29,6 +29,8 @@ namespace NuGet.Insights
             SetLastModified("DownloadsToCsv", Step1, "downloads.v2.json", "2021-01-14T18:30:00Z");
             SetLastModified("DownloadsToCsv", Step2, "downloads.v2.json", "2021-01-15T19:30:00Z");
 
+            SetLastModified("DownloadsToCsv_Duplicates", Step1, "downloads.v1.json", "2021-01-14T18:00:00Z");
+
             SetLastModified("DownloadsToCsv_UnicodeDuplicates", Step1, "downloads.v1.json", "2021-01-14T18:00:00Z");
 
             SetLastModified("OwnersToCsv", Step1, "owners.v2.json", "2021-01-14T18:00:00Z");

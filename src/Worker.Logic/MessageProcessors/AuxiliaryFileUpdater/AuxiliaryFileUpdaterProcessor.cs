@@ -123,10 +123,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 
             public List<TRecord> Prune(List<TRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
             {
-                return records
-                    .Distinct()
-                    .Order()
-                    .ToList();
+                return TRecord.Prune(records, isFinalPrune, options, logger);
             }
         }
 

@@ -12,6 +12,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
         private const string DownloadsToCsv_JustV2Dir = nameof(DownloadsToCsv_JustV2);
         private const string DownloadsToCsv_NonExistentVersionDir = nameof(DownloadsToCsv_NonExistentVersion);
         private const string DownloadsToCsv_NonExistentIdDir = nameof(DownloadsToCsv_NonExistentId);
+        private const string DownloadsToCsv_DuplicatesDir = nameof(DownloadsToCsv_Duplicates);
         private const string DownloadsToCsv_UnicodeDuplicatesDir = nameof(DownloadsToCsv_UnicodeDuplicates);
         private const string DownloadsToCsv_UncheckedIdAndVersionDir = nameof(DownloadsToCsv_UncheckedIdAndVersion);
 
@@ -54,6 +55,22 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
 
             // Assert
             await AssertCsvBlobAsync(DownloadsToCsvDir, Step2);
+        }
+
+        [Fact]
+        public async Task DownloadsToCsv_Duplicates()
+        {
+            // Arrange
+            Configure(DownloadsToCsv_DuplicatesDir);
+            var service = Host.Services.GetRequiredService<IAuxiliaryFileUpdaterService<PackageDownloadRecord>>();
+            await service.InitializeAsync();
+            Assert.True(await service.StartAsync());
+
+            // Act
+            await ProcessQueueAsync(service);
+
+            // Assert
+            await AssertCsvBlobAsync(DownloadsToCsv_DuplicatesDir, Step1);
         }
 
         [Fact]

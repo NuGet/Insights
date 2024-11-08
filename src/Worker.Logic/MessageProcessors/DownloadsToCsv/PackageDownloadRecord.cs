@@ -33,6 +33,20 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             return string.CompareOrdinal(Identity, other.Identity);
         }
 
+        public static List<PackageDownloadRecord> Prune(
+            List<PackageDownloadRecord> records,
+            bool isFinalPrune,
+            IOptions<NuGetInsightsWorkerSettings> options,
+            ILogger logger)
+        {
+            // some duplicate records exist in the source data, prefer the one with the highest download count
+            return records
+                .GroupBy(x => x.Identity)
+                .Select(g => g.MaxBy(x => x.Downloads))
+                .Order()
+                .ToList();
+        }
+
         public class PackageDownloadRecordKeyComparer : IEqualityComparer<PackageDownloadRecord>
         {
             public static PackageDownloadRecordKeyComparer Instance { get; } = new PackageDownloadRecordKeyComparer();

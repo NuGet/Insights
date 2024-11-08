@@ -25,6 +25,16 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             return string.CompareOrdinal(LowerId, other.LowerId);
         }
 
+        public static List<PackageOwnerRecord> Prune(
+            List<PackageOwnerRecord> records,
+            bool isFinalPrune,
+            IOptions<NuGetInsightsWorkerSettings> options,
+            ILogger logger)
+        {
+            // no duplicates are expected
+            return records.Order().ToList();
+        }
+
         public class PackageOwnerRecordKeyComparer : IEqualityComparer<PackageOwnerRecord>
         {
             public static PackageOwnerRecordKeyComparer Instance { get; } = new PackageOwnerRecordKeyComparer();

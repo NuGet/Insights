@@ -28,6 +28,16 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             return string.CompareOrdinal(LowerId, other.LowerId);
         }
 
+        public static List<PopularityTransfersRecord> Prune(
+            List<PopularityTransfersRecord> records,
+            bool isFinalPrune,
+            IOptions<NuGetInsightsWorkerSettings> options,
+            ILogger logger)
+        {
+            // no duplicates are expected
+            return records.Order().ToList();
+        }
+
         public class PopularityTransfersRecordKeyComparer : IEqualityComparer<PopularityTransfersRecord>
         {
             public static PopularityTransfersRecordKeyComparer Instance { get; } = new PopularityTransfersRecordKeyComparer();

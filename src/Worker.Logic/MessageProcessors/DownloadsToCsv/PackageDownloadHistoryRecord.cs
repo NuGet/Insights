@@ -20,11 +20,30 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
         public long TotalDownloads { get; set; }
 
         public static IEqualityComparer<PackageDownloadHistoryRecord> KeyComparer => PackageDownloadHistoryRecordKeyComparer.Instance;
-        public static IReadOnlyList<string> KeyFields { get; } = [nameof(Identity)];
+        public static IReadOnlyList<string> KeyFields { get; } = [nameof(Identity), nameof(AsOfTimestamp)];
 
         public int CompareTo(PackageDownloadHistoryRecord other)
         {
-            return string.CompareOrdinal(Identity, other.Identity);
+            var c = PackageRecordExtensions.CompareTo(LowerId, Identity, other.LowerId, other.Identity);
+            if (c != 0)
+            {
+                return c;
+            }
+
+            return AsOfTimestamp.CompareTo(other.AsOfTimestamp);
+        }
+
+        public static List<PackageDownloadHistoryRecord> Prune(
+            List<PackageDownloadHistoryRecord> records,
+            bool isFinalPrune,
+            IOptions<NuGetInsightsWorkerSettings> options,
+            ILogger logger)
+        {
+            return records
+                .GroupBy(x => (x.Identity, x.AsOfTimestamp))
+                .Select(g => g.MaxBy(x => x.Downloads))
+                .Order()
+                .ToList();
         }
 
         public class PackageDownloadHistoryRecordKeyComparer : IEqualityComparer<PackageDownloadHistoryRecord>
@@ -43,12 +62,13 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                     return false;
                 }
 
-                return x.Identity == y.Identity;
+                return x.Identity == y.Identity
+                    && x.AsOfTimestamp == y.AsOfTimestamp;
             }
 
             public int GetHashCode([DisallowNull] PackageDownloadHistoryRecord obj)
             {
-                return obj.Identity.GetHashCode(StringComparison.Ordinal);
+                return HashCode.Combine(obj.Identity, obj.AsOfTimestamp);
             }
         }
     }

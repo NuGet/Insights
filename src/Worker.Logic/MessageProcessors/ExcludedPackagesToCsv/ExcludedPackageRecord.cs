@@ -27,6 +27,16 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
             return string.CompareOrdinal(LowerId, other.LowerId);
         }
 
+        public static List<ExcludedPackageRecord> Prune(
+            List<ExcludedPackageRecord> records,
+            bool isFinalPrune,
+            IOptions<NuGetInsightsWorkerSettings> options,
+            ILogger logger)
+        {
+            // no duplicates are expected
+            return records.Order().ToList();
+        }
+
         public class ExcludedPackageRecordKeyComparer : IEqualityComparer<ExcludedPackageRecord>
         {
             public static ExcludedPackageRecordKeyComparer Instance { get; } = new ExcludedPackageRecordKeyComparer();

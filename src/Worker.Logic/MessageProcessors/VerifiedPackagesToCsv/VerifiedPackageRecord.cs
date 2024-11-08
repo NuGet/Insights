@@ -27,6 +27,16 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
             return string.CompareOrdinal(LowerId, other.LowerId);
         }
 
+        public static List<VerifiedPackageRecord> Prune(
+            List<VerifiedPackageRecord> records,
+            bool isFinalPrune,
+            IOptions<NuGetInsightsWorkerSettings> options,
+            ILogger logger)
+        {
+            // no duplicates are expected
+            return records.Order().ToList();
+        }
+
         public class VerifiedPackageRecordKeyComparer : IEqualityComparer<VerifiedPackageRecord>
         {
             public static VerifiedPackageRecordKeyComparer Instance { get; } = new VerifiedPackageRecordKeyComparer();
