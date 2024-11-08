@@ -259,19 +259,56 @@ namespace NuGet.Insights.Worker
 
             if (isFinalPrune)
             {
-                var unique = new HashSet<T>(records.Count, T.KeyComparer);
+                var recordToDuplicates = new Dictionary<T, List<T>>(records.Count, T.KeyComparer);
+                var allDuplicates = new List<List<T>>();
                 foreach (var record in records)
                 {
-                    if (!unique.Add(record))
+                    if (recordToDuplicates.TryGetValue(record, out var duplicates))
                     {
-                        using var errorCsv = new StringWriter();
-                        T.WriteHeader(errorCsv);
-                        record.Write(errorCsv);
-                        throw new InvalidOperationException(
-                            $"At least two records had the same key.{Environment.NewLine}" +
-                            $"Type: {typeof(T).FullName}{Environment.NewLine}" +
-                            $"Duplicate record (as CSV):{Environment.NewLine}{errorCsv}");
+                        duplicates.Add(record);
+                        allDuplicates.Add(duplicates);
                     }
+                    else
+                    {
+                        recordToDuplicates.Add(record, [record]);
+                    }
+                }
+
+                if (allDuplicates.Count > 0)
+                {
+                    using var errorCsv = new StringWriter();
+                    var totalWritten = 0;
+                    const int maxWrite = 10;
+                    var totalErrorCount = 0;
+                    T.WriteHeader(errorCsv);
+                    foreach (var duplicates in allDuplicates)
+                    {
+                        if (totalWritten < maxWrite - 1)
+                        {
+                            var written = 0;
+                            foreach (var record in duplicates)
+                            {
+                                written++;
+                                if (written > 2 && totalWritten >= maxWrite)
+                                {
+                                    break;
+                                }
+
+                                record.Write(errorCsv);
+                            }
+
+                            totalWritten += written;
+                        }
+
+                        totalErrorCount += duplicates.Count;
+                    }
+
+                    throw new InvalidOperationException(
+                        $"At least two records had the same key.{Environment.NewLine}" +
+                        $"Type: {typeof(T).FullName}{Environment.NewLine}" +
+                        $"Key fields: {string.Join(", ", T.KeyFields)}{Environment.NewLine}" +
+                        $"Total duplicates: {totalErrorCount}{Environment.NewLine}" +
+                        $"Sample of duplicate records (as CSV):{Environment.NewLine}{errorCsv}");
                 }
             }
 
