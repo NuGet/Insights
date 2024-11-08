@@ -15,7 +15,7 @@ namespace NuGet.Insights.MemoryStorage
         private const string AcceptRanges = "bytes";
 
         private readonly object _lock = new();
-
+        private readonly MemoryBlobContainerStore _parent;
         private string _name;
 
         private string? _leaseId;
@@ -34,8 +34,9 @@ namespace NuGet.Insights.MemoryStorage
         private BlobHttpHeaders? _httpHeaders;
         private Dictionary<string, string>? _metadata;
 
-        public MemoryBlobStore(string name)
+        public MemoryBlobStore(MemoryBlobContainerStore parent, string name)
         {
+            _parent = parent;
             _name = name;
         }
 
@@ -64,6 +65,11 @@ namespace NuGet.Insights.MemoryStorage
                 if (traits != BlobTraits.None && traits != BlobTraits.Metadata)
                 {
                     throw new NotImplementedException();
+                }
+
+                if (!_parent.Exists())
+                {
+                    return new(StorageResultType.ContainerDoesNotExist);
                 }
 
                 if (!_exists)
@@ -153,6 +159,11 @@ namespace NuGet.Insights.MemoryStorage
                 if (duration < TimeSpan.FromSeconds(15) || duration > TimeSpan.FromSeconds(60))
                 {
                     throw new NotImplementedException();
+                }
+
+                if (!_parent.Exists())
+                {
+                    return new(StorageResultType.ContainerDoesNotExist);
                 }
 
                 if (!_exists)
@@ -340,6 +351,11 @@ namespace NuGet.Insights.MemoryStorage
                     throw new NotImplementedException();
                 }
 
+                if (!_parent.Exists())
+                {
+                    return new(StorageResultType.ContainerDoesNotExist);
+                }
+
                 if (!_exists)
                 {
                     return new(StorageResultType.DoesNotExist);
@@ -438,7 +454,6 @@ namespace NuGet.Insights.MemoryStorage
 
         private StorageResultType UploadInternal(Stream content, BlobUploadOptions? options)
         {
-
             var conditionResult = EvaluateBlobRequestConditions(options?.Conditions, mustExist: false);
             if (conditionResult != StorageResultType.Success)
             {
@@ -580,6 +595,11 @@ namespace NuGet.Insights.MemoryStorage
 
         private StorageResultType EvaluateBlobRequestConditions(BlobRequestConditions? conditions, bool mustExist)
         {
+            if (!_parent.Exists())
+            {
+                return StorageResultType.ContainerDoesNotExist;
+            }
+
             if (mustExist && !_exists)
             {
                 return StorageResultType.DoesNotExist;

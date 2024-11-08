@@ -43,7 +43,7 @@ namespace NuGet.Insights.MemoryStorage
 
         public virtual MemoryBlobStore GetBlob(string name)
         {
-            return _blobs.GetOrAdd(name, x => new MemoryBlobStore(x));
+            return _blobs.GetOrAdd(name, x => new MemoryBlobStore(this, x));
         }
 
         public virtual bool Exists()

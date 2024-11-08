@@ -19,6 +19,7 @@ namespace NuGet.Insights.MemoryStorage
             var result = store.AcquireLease(duration, conditions);
             return result.Type switch
             {
+                StorageResultType.ContainerDoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
                 StorageResultType.DoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
                 StorageResultType.BlockedByLease => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.Conflict)),
                 StorageResultType.Success => Response.FromValue(
@@ -36,6 +37,7 @@ namespace NuGet.Insights.MemoryStorage
             var result = store.BreakLease(breakPeriod, conditions);
             return result.Type switch
             {
+                StorageResultType.ContainerDoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
                 StorageResultType.HasNoLease => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.Conflict)),
                 StorageResultType.Success => Response.FromValue(
                     result.Value,
@@ -52,6 +54,7 @@ namespace NuGet.Insights.MemoryStorage
             var result = store.ReleaseLease(leaseId, conditions);
             return result.Type switch
             {
+                StorageResultType.ContainerDoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
                 StorageResultType.BlockedByDifferentLease => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.Conflict)),
                 StorageResultType.Success => Response.FromValue(
                     result.Value,
@@ -68,6 +71,7 @@ namespace NuGet.Insights.MemoryStorage
             var result = store.RenewLease(leaseId, conditions);
             return result.Type switch
             {
+                StorageResultType.ContainerDoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
                 StorageResultType.BlockedByDifferentLease => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.Conflict)),
                 StorageResultType.Success => Response.FromValue(
                     result.Value,
@@ -84,6 +88,7 @@ namespace NuGet.Insights.MemoryStorage
             var result = store.Delete(deleteSnapshotsOption, conditions);
             return result switch
             {
+                StorageResultType.ContainerDoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
                 StorageResultType.DoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
                 StorageResultType.Success => new MemoryResponse(HttpStatusCode.NoContent),
                 _ => throw new NotImplementedException("Unexpected result type: " + result),
@@ -102,6 +107,7 @@ namespace NuGet.Insights.MemoryStorage
             var result = store.GetProperties();
             return result.Type switch
             {
+                StorageResultType.ContainerDoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
                 StorageResultType.DoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
                 StorageResultType.Success => Response.FromValue(result.Value, new MemoryResponse(HttpStatusCode.OK)),
                 _ => throw new NotImplementedException("Unexpected result type: " + result.Type),
@@ -115,6 +121,7 @@ namespace NuGet.Insights.MemoryStorage
             var result = store.DownloadStreaming(options, transferOptions: default);
             return result.Type switch
             {
+                StorageResultType.ContainerDoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
                 StorageResultType.DoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
                 StorageResultType.Success => Response.FromValue(result.Value, new MemoryResponse(HttpStatusCode.OK)),
                 _ => throw new NotImplementedException("Unexpected result type: " + result.Type),
@@ -131,6 +138,7 @@ namespace NuGet.Insights.MemoryStorage
             var result = store.DownloadTo(destination, new BlobDownloadOptions { Conditions = conditions }, transferOptions);
             return result.Type switch
             {
+                StorageResultType.ContainerDoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
                 StorageResultType.DoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
                 StorageResultType.Success => new MemoryResponse(HttpStatusCode.OK),
                 _ => throw new NotImplementedException("Unexpected result type: " + result.Type),
@@ -154,6 +162,7 @@ namespace NuGet.Insights.MemoryStorage
             var result = store.DownloadContent(options, transferOptions: default);
             return result.Type switch
             {
+                StorageResultType.ContainerDoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
                 StorageResultType.DoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
                 StorageResultType.Success => Response.FromValue(result.Value, new MemoryResponse(HttpStatusCode.OK)),
                 _ => throw new NotImplementedException("Unexpected result type: " + result.Type),
@@ -169,6 +178,7 @@ namespace NuGet.Insights.MemoryStorage
 
             return result.Type switch
             {
+                StorageResultType.ContainerDoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
                 StorageResultType.Success => Response.FromValue(result.Value, new MemoryResponse(HttpStatusCode.OK)),
                 StorageResultType.ETagMismatch => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.PreconditionFailed)),
                 _ => throw new NotImplementedException("Unexpected result type: " + result.Type),
@@ -204,6 +214,7 @@ namespace NuGet.Insights.MemoryStorage
             var result = store.SetMetadata(metadata, conditions);
             return result.Type switch
             {
+                StorageResultType.ContainerDoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
                 StorageResultType.DoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
                 StorageResultType.BlockedByDifferentLease => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.PreconditionFailed)),
                 StorageResultType.Success => Response.FromValue(
