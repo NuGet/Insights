@@ -7,6 +7,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
     {
         private const string CatalogDataToCsvDir = nameof(CatalogDataToCsv);
         private const string CatalogDataToCsv_DeprecationDir = nameof(CatalogDataToCsv_Deprecation);
+        private const string CatalogDataToCsv_DuplicateLeafUrlDir = nameof(CatalogDataToCsv_DuplicateLeafUrl);
         private const string CatalogDataToCsv_VulnerabilitiesDir = nameof(CatalogDataToCsv_Vulnerabilities);
         private const string CatalogDataToCsv_NoSignatureFileDir = nameof(CatalogDataToCsv_NoSignatureFile);
         private const string CatalogDataToCsv_WithDuplicatesDir = nameof(CatalogDataToCsv_WithDuplicates);
@@ -46,6 +47,23 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
 
             // Assert
             await AssertOutputAsync(CatalogDataToCsv_DeprecationDir, Step1, 0);
+        }
+
+        [Fact]
+        public async Task CatalogDataToCsv_DuplicateLeafUrl()
+        {
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2016-01-15T04:02:36.6883253Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2016-01-15T04:03:06.7654918Z", CultureInfo.InvariantCulture);
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
+
+            // Act
+            await UpdateAsync(max1);
+
+            // Assert
+            await AssertOutputAsync(CatalogDataToCsv_DuplicateLeafUrlDir, Step1, 0);
         }
 
         [Fact]

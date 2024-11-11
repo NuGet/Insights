@@ -1,0 +1,5 @@
+ScanId,ScanTimestamp,LowerId,Identity,Id,Version,CatalogCommitTimestamp,Created,ResultType,Message,Reasons,AlternatePackageId,AlternateVersionRange
+,,aws-sdk.typescript.definitelytyped,aws-sdk.typescript.definitelytyped/1.0.2,aws-sdk.TypeScript.DefinitelyTyped,1.0.2,2016-01-15T04:02:56.0470835Z,2016-01-15T04:02:41.58Z,NotDeprecated,,,,
+,,babylonjs.typescript.definitelytyped,babylonjs.typescript.definitelytyped/1.2.1,babylonjs.TypeScript.DefinitelyTyped,1.2.1,2016-01-15T04:02:56.0470835Z,2016-01-15T04:02:46.98Z,NotDeprecated,,,,
+,,backbone-relational.typescript.definitelytyped,backbone-relational.typescript.definitelytyped/1.0.7,backbone-relational.TypeScript.DefinitelyTyped,1.0.7,2016-01-15T04:02:56.0470835Z,2016-01-15T04:02:52.423Z,NotDeprecated,,,,
+,,blissfuljs.typescript.definitelytyped,blissfuljs.typescript.definitelytyped/0.6.7,blissfuljs.TypeScript.DefinitelyTyped,0.6.7,2016-01-15T04:03:06.7654918Z,2016-01-15T04:02:58.147Z,NotDeprecated,,,,

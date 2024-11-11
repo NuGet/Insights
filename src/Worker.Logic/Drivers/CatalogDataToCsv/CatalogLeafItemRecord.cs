@@ -102,7 +102,11 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
 
         public static string CsvCompactMessageSchemaName => "cc.cl";
         public static IEqualityComparer<CatalogLeafItemRecord> KeyComparer { get; } = CatalogLeafItemRecordKeyComparer.Instance;
-        public static IReadOnlyList<string> KeyFields { get; } = [nameof(Identity), nameof(CommitTimestamp)];
+
+        /// <summary>
+        /// Page URL is needed due to https://github.com/NuGet/NuGetGallery/issues/10261.
+        /// </summary>
+        public static IReadOnlyList<string> KeyFields { get; } = [nameof(Identity), nameof(PageUrl), nameof(CommitTimestamp)];
 
         public static List<CatalogLeafItemRecord> Prune(List<CatalogLeafItemRecord> records, bool isFinalPrune, IOptions<NuGetInsightsWorkerSettings> options, ILogger logger)
         {
@@ -115,6 +119,12 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         public int CompareTo(CatalogLeafItemRecord other)
         {
             var c = PackageRecordExtensions.CompareTo(LowerId, Identity, other.LowerId, other.Identity);
+            if (c != 0)
+            {
+                return c;
+            }
+
+            c = string.CompareOrdinal(PageUrl, other.PageUrl);
             if (c != 0)
             {
                 return c;
@@ -140,6 +150,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
                 }
 
                 return x.Identity == y.Identity
+                    && x.PageUrl == y.PageUrl
                     && x.CommitTimestamp == y.CommitTimestamp;
             }
 
@@ -147,6 +158,7 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
             {
                 var hashCode = new HashCode();
                 hashCode.Add(obj.Identity);
+                hashCode.Add(obj.PageUrl);
                 hashCode.Add(obj.CommitTimestamp);
                 return hashCode.ToHashCode();
             }
