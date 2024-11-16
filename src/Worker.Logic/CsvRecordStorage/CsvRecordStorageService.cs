@@ -1,12 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Buffers;
 using System.IO.Compression;
 using System.Text.RegularExpressions;
 using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
+using MessagePack;
 
 #nullable enable
 
@@ -415,8 +417,8 @@ namespace NuGet.Insights.Worker
             {
                 throw new ArgumentException("The number of subdivisions must be at least 2.", nameof(subdivisions));
             }
-        
-            var tempFiles = new List<StreamWriter>();
+
+            var tempFiles = new List<FileStream>();
             try
             {
                 var stopwatch = Stopwatch.StartNew();
@@ -429,13 +431,12 @@ namespace NuGet.Insights.Worker
                 Directory.CreateDirectory(TempDir);
                 for (var i = 0; i < subdivisions; i++)
                 {
-                    var tempPath = Path.Combine(TempDir, $"{recordType}_{CompactPrefix}{bucket}_{i}_{uniqueFileNamePiece}.csv");
-                    var fileStream = TempStreamWriter.NewTempFile(tempPath);
-                    tempFiles.Add(GetStreamWriter<T>(fileStream, writeHeader: true));
+                    var tempPath = Path.Combine(TempDir, $"{recordType}_{CompactPrefix}{bucket}_{i}_{uniqueFileNamePiece}.msgpack");
+                    tempFiles.Add(TempStreamWriter.NewTempFile(tempPath));
                 }
 
                 // Step 2: load the new records from table storage into the temporary files
-                _logger.LogInformation("Loading new records into {Subdivisions} CSV parts.", subdivisions);    
+                _logger.LogInformation("Loading new records into {Subdivisions} CSV parts.", subdivisions);
                 var shouldNoOp = await LoadNewRecordsToDiskAsync(provider, tempFiles, destContainer, bucket, recordType, subdivisions);
                 if (shouldNoOp)
                 {
@@ -458,14 +459,14 @@ namespace NuGet.Insights.Worker
                 }
 
                 // Step 4: prune each temporary file to remove duplicates and sort
-                var (pruneRecordCount, totalUncompressedSize) = PruneSubdivisionsOnDisk(provider, tempFiles, destContainer, subdivisions, recordType);
+                var (pruneRecordCount, totalUncompressedSize) = await PruneSubdivisionsOnDiskAsync(provider, tempFiles, destContainer, subdivisions, recordType);
 
                 // Step 5: combine the temporary files into one merged, gzipped file
                 var finalPath = Path.Combine(TempDir, $"{recordType}_{CompactPrefix}{bucket}_final_{uniqueFileNamePiece}.csv.gz");
                 using var finalStream = TempStreamWriter.NewTempFile(finalPath);
                 finalStream.SetLengthAndWrite(totalUncompressedSize);
                 _bigModePreallocateOutputFileSize.TrackValue(totalUncompressedSize, destContainer, recordType);
-                var (combineRecordCount, uncompressedSize) = CombineSubdivisionsOnDisk<T>(tempFiles, destContainer, subdivisions, recordType, finalStream);
+                var (combineRecordCount, uncompressedSize) = await CombineSubdivisionsOnDiskAsync<T>(tempFiles, destContainer, subdivisions, recordType, finalStream);
 
                 if (combineRecordCount != pruneRecordCount)
                 {
@@ -492,10 +493,10 @@ namespace NuGet.Insights.Worker
             {
                 foreach (var tempFile in tempFiles)
                 {
-                    string filePath = ((FileStream)tempFile.BaseStream).Name;
+                    string filePath = tempFile.Name;
                     try
                     {
-                        tempFile.BaseStream.Dispose();
+                        tempFile.Dispose();
                     }
                     catch (Exception ex)
                     {
@@ -508,7 +509,7 @@ namespace NuGet.Insights.Worker
 
         private async Task<bool> LoadNewRecordsToDiskAsync<T>(
             ICsvRecordProvider<T> provider,
-            List<StreamWriter> tempFiles,
+            List<FileStream> tempFiles,
             string destContainer,
             int bucket,
             string recordType,
@@ -540,7 +541,7 @@ namespace NuGet.Insights.Worker
         }
 
         private async Task<ExistingBlobInfo?> LoadExistingRecordsToDiskAsync<T>(
-            List<StreamWriter> tempFiles,
+            List<FileStream> tempFiles,
             string destContainer,
             int bucket,
             int subdivisions,
@@ -606,9 +607,9 @@ namespace NuGet.Insights.Worker
             return existingBlobInfo;
         }
 
-        private (long RecordCount, long TotalUncompressedSize) PruneSubdivisionsOnDisk<T>(
+        private async Task<(long RecordCount, long TotalUncompressedSize)> PruneSubdivisionsOnDiskAsync<T>(
             ICsvRecordProvider<T> provider,
-            List<StreamWriter> tempFiles,
+            List<FileStream> tempFiles,
             string destContainer,
             int subdivisions,
             string recordType) where T : ICsvRecord<T>
@@ -622,43 +623,49 @@ namespace NuGet.Insights.Worker
 
                 // close the previous writer
                 tempFile.Flush();
-                tempFile.Dispose();
-                tempFile.BaseStream.Flush();
-                tempFile.BaseStream.Position = 0;
+                tempFile.Position = 0;
 
-                _bigModeSplitFileSize.TrackValue(tempFile.BaseStream.Length, destContainer, recordType);
+                _bigModeSplitFileSize.TrackValue(tempFile.Length, destContainer, recordType);
 
                 _logger.LogInformation(
                     "Pruning part {SubdivisionNumber}/{Subdivisions} ({UncompressedBytes} uncompressed bytes) of CSV type {RecordType}.",
                     i + 1,
                     subdivisions,
-                    tempFile.BaseStream.Length,
+                    tempFile.Length,
                     recordType);
 
                 // read all of the records and prune
                 var sw = Stopwatch.StartNew();
-                List<T> records;
-                using (var reader = new StreamReader(tempFile.BaseStream, leaveOpen: true))
+                var records = new List<T>();
+                using (var reader = new MessagePackStreamReader(tempFile, leaveOpen: true))
                 {
-                    records = _csvReader.GetRecords<T>(reader, CsvReaderAdapter.MaxBufferSize).Records;
-                    var initialCount = records.Count;
-                    records = Prune(provider, records, destContainer, recordType, isFinalPrune: true);
-                    recordCount += records.Count;
+                    while (await reader.ReadAsync(CancellationToken.None) is ReadOnlySequence<byte> bytes)
+                    {
+                        records.Add(MessagePackSerializer.Deserialize<T>(bytes, NuGetInsightsMessagePack.NoCompressionOptions));
+                    }
                 }
 
+                var initialCount = records.Count;
+                records = Prune(provider, records, destContainer, recordType, isFinalPrune: true);
+                recordCount += records.Count;
+
                 // write the pruned records back to disk
-                tempFile.BaseStream.Position = 0;
-                using (var countingStream = new CountingWriterStream(tempFile.BaseStream))
+                tempFile.Position = 0;
+                using (var countingStream = new CountingWriterStream(tempFile))
                 {
-                    SerializeRecords(records, countingStream, writeHeader: true);
-                    tempFile.BaseStream.Flush();
-                    tempFile.BaseStream.Position = 0;
+                    foreach (var record in records)
+                    {
+                        MessagePackSerializer.Serialize(countingStream, record, NuGetInsightsMessagePack.NoCompressionOptions);
+                    }
+
+                    tempFile.Flush();
+                    tempFile.Position = 0;
                     totalUncompressedSize += countingStream.Length;
-                    var fileSizeDelta = countingStream.Length - tempFile.BaseStream.Length;
+                    var fileSizeDelta = countingStream.Length - tempFile.Length;
                     _bigModeSplitFileSizeDelta.TrackValue(fileSizeDelta, destContainer, recordType);
                     if (fileSizeDelta < 0)
                     {
-                        tempFile.BaseStream.SetLength(countingStream.Length);
+                        tempFile.SetLength(countingStream.Length);
                     }
                 }
 
@@ -669,8 +676,8 @@ namespace NuGet.Insights.Worker
             return (recordCount, totalUncompressedSize);
         }
 
-        private (long CombinedRecordCount, long UncompressedSize) CombineSubdivisionsOnDisk<T>(
-            List<StreamWriter> tempFiles,
+        private async Task<(long CombinedRecordCount, long UncompressedSize)> CombineSubdivisionsOnDiskAsync<T>(
+            List<FileStream> tempFiles,
             string destContainer,
             int subdivisions,
             string recordType,
@@ -693,7 +700,7 @@ namespace NuGet.Insights.Worker
 
                 // open all of the readers
                 var readers = tempFiles
-                    .Select(x => _csvReader.GetRecordsEnumerable<T>(new StreamReader(x.BaseStream), CsvReaderAdapter.MaxBufferSize))
+                    .Select(GetRecordsAsync<T>)
                     .ToList();
 
                 // open the file writer
@@ -701,7 +708,7 @@ namespace NuGet.Insights.Worker
                 {
                     // merge the records
                     var merged = readers.MergedSorted(x => x);
-                    foreach (var record in merged)
+                    await foreach (var record in merged)
                     {
                         record.Write(writer);
                         finalRecordCountFromWrite++;
@@ -731,6 +738,17 @@ namespace NuGet.Insights.Worker
             }
 
             return (finalRecordCountFromWrite, uncompressedSize);
+        }
+
+        private async IAsyncEnumerable<T> GetRecordsAsync<T>(FileStream stream) where T : ICsvRecord<T>
+        {
+            using (var reader = new MessagePackStreamReader(stream, leaveOpen: true))
+            {
+                while (await reader.ReadAsync(CancellationToken.None) is ReadOnlySequence<byte> bytes)
+                {
+                    yield return MessagePackSerializer.Deserialize<T>(bytes, NuGetInsightsMessagePack.NoCompressionOptions);
+                }
+            }
         }
 
         private async Task UploadAsync<T>(
@@ -789,7 +807,7 @@ namespace NuGet.Insights.Worker
 
         private static long DivideAndWriteRecords<T>(
             int subdivisions,
-            List<StreamWriter> tempFiles,
+            List<FileStream> tempFiles,
             IEnumerable<T> records) where T : ICsvRecord<T>
         {
             string? lastBucketKey = null;
@@ -808,7 +826,7 @@ namespace NuGet.Insights.Worker
                 }
 
                 recordCount++;
-                record.Write(tempFiles[lastBucket]);
+                MessagePackSerializer.Serialize(tempFiles[lastBucket], record, NuGetInsightsMessagePack.NoCompressionOptions);
             }
 
             return recordCount;
