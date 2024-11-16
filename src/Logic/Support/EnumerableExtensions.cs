@@ -81,5 +81,61 @@ namespace NuGet.Insights
                 }
             }
         }
+
+        public static async IAsyncEnumerable<TSource> MergedSorted<TSource, TKey>(this IEnumerable<IAsyncEnumerable<TSource>> sources, Func<TSource, TKey> keySelector)
+            where TKey : IComparable<TKey>
+        {
+            List<IAsyncEnumerator<TSource>> items = new();
+            foreach (IAsyncEnumerable<TSource> source in sources)
+            {
+                IAsyncEnumerator<TSource> enumerator = source.GetAsyncEnumerator();
+                if (await enumerator.MoveNextAsync())
+                {
+                    items.Add(enumerator);
+                }
+            }
+
+            items = items.OrderBy(enumerator => keySelector(enumerator.Current)).ToList();
+
+            await foreach (var item in MergedSorted(items, keySelector))
+            {
+                yield return item;
+            }
+        }
+
+        private static async IAsyncEnumerable<TSource> MergedSorted<TSource, TKey>(List<IAsyncEnumerator<TSource>> items, Func<TSource, TKey> keySelector)
+            where TKey : IComparable<TKey>
+        {
+            while (items.Count > 0)
+            {
+                yield return items[0].Current;
+
+                IAsyncEnumerator<TSource> next = items[0];
+                items.RemoveAt(0);
+                if (await next.MoveNextAsync())
+                {
+                    // simple sorted linear insert
+                    TKey value = keySelector(next.Current);
+                    int i;
+                    for (i = 0; i < items.Count; i++)
+                    {
+                        if (value.CompareTo(keySelector(items[i].Current)) <= 0)
+                        {
+                            items.Insert(i, next);
+                            break;
+                        }
+                    }
+
+                    if (i == items.Count)
+                    {
+                        items.Add(next);
+                    }
+                }
+                else
+                {
+                    await next.DisposeAsync();
+                }
+            }
+        }
     }
 }
