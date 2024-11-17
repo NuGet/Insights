@@ -8,11 +8,11 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
 {
     public class DownloadsToCsvUpdater : IAuxiliaryFileUpdater<AsOfData<PackageDownloads>, PackageDownloadRecord>
     {
-        private readonly PackageDownloadsClient _packageDownloadsClient;
+        private readonly IPackageDownloadsClient _packageDownloadsClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
         public DownloadsToCsvUpdater(
-            PackageDownloadsClient packageDownloadsClient,
+            IPackageDownloadsClient packageDownloadsClient,
             IOptions<NuGetInsightsWorkerSettings> options)
         {
             _packageDownloadsClient = packageDownloadsClient;

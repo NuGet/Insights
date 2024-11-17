@@ -163,7 +163,7 @@ namespace NuGet.Insights
             serviceCollection.AddSingleton<ServiceIndexCache>();
             serviceCollection.AddSingleton<FlatContainerClient>();
             serviceCollection.AddSingleton<ExternalBlobStorageClient>();
-            serviceCollection.AddSingleton<PackageDownloadsClient>();
+            serviceCollection.AddSingleton<IPackageDownloadsClient, PackageDownloadsClient>();
             serviceCollection.AddSingleton<PackageOwnersClient>();
             serviceCollection.AddSingleton<VerifiedPackagesClient>();
             serviceCollection.AddSingleton<ExcludedPackagesClient>();
