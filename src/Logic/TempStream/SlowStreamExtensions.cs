@@ -150,8 +150,13 @@ namespace NuGet.Insights
         public static void SetLengthAndWrite(this Stream stream, long length)
         {
             stream.SetLength(length);
-            stream.Position = length - 1;
-            stream.Write(OneByte.Span);
+
+            if (length > 0)
+            {
+                stream.Position = length - 1;
+                stream.Write(OneByte.Span);
+            }
+
             stream.Position = 0;
         }
 
