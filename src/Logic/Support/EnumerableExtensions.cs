@@ -59,6 +59,7 @@ namespace NuGet.Insights
                 if (next.MoveNext())
                 {
                     // simple sorted linear insert
+                    // I tried switching this to a SortedList but there was no performance improvement.
                     TKey value = keySelector(next.Current);
                     int i;
                     for (i = 0; i < items.Count; i++)
@@ -115,6 +116,7 @@ namespace NuGet.Insights
                 if (await next.MoveNextAsync())
                 {
                     // simple sorted linear insert
+                    // I tried switching this to a SortedList but there was no performance improvement.
                     TKey value = keySelector(next.Current);
                     int i;
                     for (i = 0; i < items.Count; i++)
