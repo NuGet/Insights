@@ -37,7 +37,7 @@ namespace NuGet.Insights
             Assert.Equal(expected, actual);
         }
 
-        public PackageDownloadsClient Target => Host.Services.GetRequiredService<PackageDownloadsClient>();
+        public IPackageDownloadsClient Target => Host.Services.GetRequiredService<IPackageDownloadsClient>();
         private string TestDataPath => Path.Combine("DownloadsToCsv", Step1, "downloads.v1.json");
 
         public PackageDownloadsClientIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
