@@ -266,18 +266,26 @@ namespace NuGet.Insights.Worker
 
             if (isFinalPrune)
             {
-                var recordToDuplicates = new Dictionary<T, List<T>>(records.Count, T.KeyComparer);
-                var allDuplicates = new List<List<T>>();
+                var recordToDuplicates = new Dictionary<T, DuplicateRecord<T>>(records.Count, T.KeyComparer);
+                var allDuplicates = new List<DuplicateRecord<T>>();
                 foreach (var record in records)
                 {
                     if (recordToDuplicates.TryGetValue(record, out var duplicates))
                     {
-                        duplicates.Add(record);
+                        if (duplicates.Other is null)
+                        {
+                            duplicates.Other = new List<T> { duplicates.Record };
+                        }
+                        else
+                        {
+                            duplicates.Other.Add(record);
+                        }
+
                         allDuplicates.Add(duplicates);
                     }
                     else
                     {
-                        recordToDuplicates.Add(record, [record]);
+                        recordToDuplicates.Add(record, new DuplicateRecord<T> { Record = record });
                     }
                 }
 
@@ -293,7 +301,7 @@ namespace NuGet.Insights.Worker
                         if (totalWritten < maxWrite - 1)
                         {
                             var written = 0;
-                            foreach (var record in duplicates)
+                            foreach (var record in duplicates.Enumerate())
                             {
                                 written++;
                                 if (written > 2 && totalWritten >= maxWrite)
@@ -320,6 +328,38 @@ namespace NuGet.Insights.Worker
             }
 
             return records;
+        }
+
+        private struct DuplicateRecord<T> where T : ICsvRecord<T>
+        {
+            public T Record;
+            public List<T>? Other;
+
+            public IEnumerable<T> Enumerate()
+            {
+                yield return Record;
+                if (Other is not null)
+                {
+                    foreach (var record in Other)
+                    {
+                        yield return record;
+                    }
+                }
+            }
+
+            public int Count
+            {
+                get
+                {
+                    var count = 1;
+                    if (Other is not null)
+                    {
+                        count += Other.Count;
+                    }
+
+                    return count;
+                }
+            }
         }
 
         private enum LoadAppendedRecordsToMemoryResult
