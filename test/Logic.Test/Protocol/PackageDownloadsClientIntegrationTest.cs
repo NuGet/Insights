@@ -32,7 +32,7 @@ namespace NuGet.Insights
             await using var data = await Target.GetAsync();
 
             // Assert
-            var actual = await data.Entries.ToListAsync();
+            var actual = await data.Pages.ToListAsync();
             Assert.NotEmpty(actual);
             Assert.Equal(expected, actual);
         }

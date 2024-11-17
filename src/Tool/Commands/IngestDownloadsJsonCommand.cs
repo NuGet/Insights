@@ -242,9 +242,12 @@ namespace NuGet.Insights.Tool
                 using var inputStream = await blobClient.OpenReadAsync();
                 var data = PackageDownloadsClient.DeserializeV1Async(inputStream);
                 PackageDownloadHistoryRecord.WriteHeader(outputWriter);
-                await foreach (var updatedRecord in DownloadsToCsvUpdater.ProduceRecordsAsync<PackageDownloadHistoryRecord>(versionSet, asOf, data))
+                await foreach (var page in DownloadsToCsvUpdater.ProduceRecordsAsync<PackageDownloadHistoryRecord>(versionSet, asOf, data))
                 {
-                    updatedRecord.Write(outputWriter);
+                    foreach (var updatedRecord in page)
+                    {
+                        updatedRecord.Write(outputWriter);
+                    }
                 }
             }
 

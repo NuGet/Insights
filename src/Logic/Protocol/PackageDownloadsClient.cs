@@ -54,9 +54,11 @@ namespace NuGet.Insights
             return await _storageClient.DownloadNewestAsync(endpoints, "downloads.v1.json or downloads.v2.json");
         }
 
-        public static async IAsyncEnumerable<PackageDownloads> DeserializeV1Async(Stream stream)
+        public static async IAsyncEnumerable<IReadOnlyList<PackageDownloads>> DeserializeV1Async(Stream stream)
         {
             var items = JsonSerializer.DeserializeAsyncEnumerable<PackageIdDownloads>(stream, JsonSerializerOptions);
+            const int pageSize = AsOfData<PackageDownloads>.DefaultPageSize;
+            var page = new List<PackageDownloads>(capacity: pageSize);
             await foreach (var item in items)
             {
                 if (item is null)
@@ -66,12 +68,22 @@ namespace NuGet.Insights
 
                 foreach (var version in item.Versions)
                 {
-                    yield return new PackageDownloads(item.Id, version.Version, version.Downloads);
+                    page.Add(new PackageDownloads(item.Id, version.Version, version.Downloads));
+                    if (page.Count >= pageSize)
+                    {
+                        yield return page;
+                        page.Clear();
+                    }
                 }
+            }
+
+            if (page.Count > 0)
+            {
+                yield return page;
             }
         }
 
-        public static async IAsyncEnumerable<PackageDownloads> DeserializeV2Async(Stream stream)
+        public static async IAsyncEnumerable<IReadOnlyList<PackageDownloads>> DeserializeV2Async(Stream stream)
         {
             using var textReader = new StreamReader(stream);
             using var jsonReader = new JsonTextReader(textReader);
@@ -82,6 +94,9 @@ namespace NuGet.Insights
             }
 
             await jsonReader.ReadAsync();
+
+            const int pageSize = AsOfData<PackageDownloads>.DefaultPageSize;
+            var page = new List<PackageDownloads>(capacity: pageSize);
 
             while (jsonReader.TokenType == JsonToken.PropertyName)
             {
@@ -111,7 +126,12 @@ namespace NuGet.Insights
 
                     await jsonReader.ReadAsync();
 
-                    yield return new PackageDownloads(id, version, downloads);
+                    page.Add(new PackageDownloads(id, version, downloads));
+                    if (page.Count >= pageSize)
+                    {
+                        yield return page;
+                        page.Clear();
+                    }
                 }
 
                 if (jsonReader.TokenType != JsonToken.EndObject)
@@ -131,8 +151,12 @@ namespace NuGet.Insights
             {
                 throw new InvalidDataException("Expected the JSON document to end with the end of an object.");
             }
-        }
 
+            if (page.Count > 0)
+            {
+                yield return page;
+            }
+        }
 
         private class PackageIdDownloadsConverter : System.Text.Json.Serialization.JsonConverter<PackageIdDownloads>
         {

@@ -229,9 +229,12 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
 
         protected async Task WriteAsync(IVersionSet versionSet, AsOfData<PackageDownloads> data)
         {
-            await foreach (var record in Target.ProduceRecordsAsync(versionSet, data))
+            await foreach (var page in Target.ProduceRecordsAsync(versionSet, data))
             {
-                record.Write(Writer);
+                foreach (var record in page)
+                {
+                    record.Write(Writer);
+                }
             }
         }
 
@@ -268,7 +271,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                 DateTimeOffset.MinValue,
                 new Uri("https://example.com/v3/index.json"),
                 "foo",
-                entries.ToAsyncEnumerable());
+                entries.Chunk(2).ToAsyncEnumerable());
         }
 
         public VersionSet GetVersionSet(params (string Id, string Version, bool IsDeleted)[] packages)

@@ -415,8 +415,7 @@ namespace NuGet.Insights.Worker
             {
                 throw new ArgumentException("The number of subdivisions must be at least 2.", nameof(subdivisions));
             }
-
-
+        
             var tempFiles = new List<StreamWriter>();
             try
             {
@@ -436,6 +435,7 @@ namespace NuGet.Insights.Worker
                 }
 
                 // Step 2: load the new records from table storage into the temporary files
+                _logger.LogInformation("Loading new records into {Subdivisions} CSV parts.", subdivisions);    
                 var shouldNoOp = await LoadNewRecordsToDiskAsync(provider, tempFiles, destContainer, bucket, recordType, subdivisions);
                 if (shouldNoOp)
                 {
@@ -446,6 +446,7 @@ namespace NuGet.Insights.Worker
                 var compactBlob = await GetCompactBlobClientAsync(destContainer, bucket);
                 if (provider.UseExistingRecords)
                 {
+                    _logger.LogInformation("Loading existing records into {Subdivisions} CSV parts.", subdivisions);
                     existingBlobInfo = await LoadExistingRecordsToDiskAsync<T>(
                         tempFiles,
                         destContainer,
@@ -474,6 +475,7 @@ namespace NuGet.Insights.Worker
                 }
 
                 // Step 6: upload the merged file to blob storage
+                _logger.LogInformation("Uploading final blob containing {Count} records.", combineRecordCount);
                 await UploadAsync(
                     provider,
                     compactBlob,

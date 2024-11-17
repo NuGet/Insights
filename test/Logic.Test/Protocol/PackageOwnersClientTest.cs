@@ -41,9 +41,9 @@ namespace NuGet.Insights
             Assert.Equal(url, set.Url.AbsoluteUri);
             Assert.Equal("\"1d6ea9f13639114\"", set.ETag);
             var owners = new List<PackageOwner>();
-            await foreach (var owner in set.Entries)
+            await foreach (var page in set.Pages)
             {
-                owners.Add(owner);
+                owners.AddRange(page);
             }
 
             Assert.Equal(
