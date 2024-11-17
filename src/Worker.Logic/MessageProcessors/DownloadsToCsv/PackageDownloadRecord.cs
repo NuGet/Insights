@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.ComponentModel.DataAnnotations;
+using MessagePack;
+using MessagePack.Formatters;
 
 namespace NuGet.Insights.Worker.DownloadsToCsv
 {
@@ -69,6 +71,50 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             public int GetHashCode([DisallowNull] PackageDownloadRecord obj)
             {
                 return obj.Identity.GetHashCode(StringComparison.Ordinal);
+            }
+        }
+
+        public class PackageDownloadRecordMessagePackFormatter : IMessagePackFormatter<PackageDownloadRecord>
+        {
+            public static PackageDownloadRecordMessagePackFormatter Instance { get; } = new PackageDownloadRecordMessagePackFormatter();
+
+            public void Serialize(ref MessagePackWriter writer, PackageDownloadRecord value, MessagePackSerializerOptions options)
+            {
+                if (value is null)
+                {
+                    writer.WriteNil();
+                    return;
+                }
+
+                writer.WriteArrayHeader(7);
+                MessagePackSerializer.Serialize(ref writer, value.AsOfTimestamp, options);
+                writer.Write(value.LowerId);
+                writer.Write(value.Identity);
+                writer.Write(value.Id);
+                writer.Write(value.Version);
+                writer.Write(value.Downloads);
+                writer.Write(value.TotalDownloads);
+            }
+
+            public PackageDownloadRecord Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+            {
+                var record = new PackageDownloadRecord();
+                var count = reader.ReadArrayHeader();
+
+                if (count != 7)
+                {
+                    throw new MessagePackSerializationException($"Invalid array length: {count}");
+                }
+
+                record.AsOfTimestamp = MessagePackSerializer.Deserialize<DateTimeOffset>(ref reader, options);
+                record.LowerId = reader.ReadString();
+                record.Identity = reader.ReadString();
+                record.Id = reader.ReadString();
+                record.Version = reader.ReadString();
+                record.Downloads = reader.ReadInt64();
+                record.TotalDownloads = reader.ReadInt64();
+
+                return record;
             }
         }
     }

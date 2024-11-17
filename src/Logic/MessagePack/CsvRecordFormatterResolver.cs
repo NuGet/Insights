@@ -54,6 +54,18 @@ namespace NuGet.Insights
                     return null;
                 }
 
+                var formatterInterface = typeof(IMessagePackFormatter<>).MakeGenericType(outputType);
+
+                // By convention, prefer a formatter type nested in the record type if it exists.
+                var nestedFormatter = outputType
+                    .GetNestedTypes(BindingFlags.Public)
+                    .Where(x => x.IsAssignableTo(formatterInterface))
+                    .FirstOrDefault();
+                if (nestedFormatter is not null)
+                {
+                    return Activator.CreateInstance(nestedFormatter);
+                }
+
                 var formatterType = typeof(CsvRecordFormatter<>).MakeGenericType(outputType);
                 return Activator.CreateInstance(formatterType);
             }
