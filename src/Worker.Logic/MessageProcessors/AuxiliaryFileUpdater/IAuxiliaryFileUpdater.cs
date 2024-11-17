@@ -19,6 +19,6 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
         where TRecord : IAuxiliaryFileCsvRecord<TRecord>
     {
         Task<TInput> GetDataAsync();
-        IAsyncEnumerable<TRecord> ProduceRecordsAsync(IVersionSet versionSet, TInput data);
+        IAsyncEnumerable<IReadOnlyList<TRecord>> ProduceRecordsAsync(IVersionSet versionSet, TInput data);
     }
 }

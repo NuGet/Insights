@@ -41,9 +41,9 @@ namespace NuGet.Insights
             Assert.Equal(url, set.Url.AbsoluteUri);
             Assert.Equal("\"1d6ea9f13639062\"", set.ETag);
             var verifiedPackages = new List<VerifiedPackage>();
-            await foreach (var entry in set.Entries)
+            await foreach (var page in set.Pages)
             {
-                verifiedPackages.Add(entry);
+                verifiedPackages.AddRange(page);
             }
 
             Assert.Equal(

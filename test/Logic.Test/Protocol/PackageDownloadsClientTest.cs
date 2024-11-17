@@ -114,14 +114,14 @@ namespace NuGet.Insights
 
             await using var data = await Target.GetAsync();
 
-            var entries = await data.Entries.ToArrayAsync();
+            var pages = await data.Pages.Select(x => x.ToList()).ToArrayAsync();
             Assert.Equal("https://api.example.com/b/downloads.v1.json", data.Url.AbsoluteUri);
             Assert.Equal(
                 new[]
                 {
                     new PackageDownloads("Newtonsoft.Json", "10.0.1", 101),
                 },
-                entries);
+                pages.SelectMany(x => x).ToArray());
         }
 
         [Fact]
@@ -157,14 +157,14 @@ namespace NuGet.Insights
 
             await using var data = await Target.GetAsync();
 
-            var entries = await data.Entries.ToArrayAsync();
+            var pages = await data.Pages.Select(x => x.ToList()).ToArrayAsync();
             Assert.Equal(
                 new[]
                 {
                     new PackageDownloads("Newtonsoft.Json", "10.0.1", 100),
                     new PackageDownloads("NuGet.Frameworks", "1.0", 200),
                 },
-                entries);
+                pages.SelectMany(x => x).ToArray());
         }
 
         [Fact]
@@ -195,7 +195,7 @@ namespace NuGet.Insights
 
             await using var data = await Target.GetAsync();
 
-            Assert.Empty(await data.Entries.ToArrayAsync());
+            Assert.Empty(await data.Pages.ToArrayAsync());
         }
 
         [Fact]
@@ -254,7 +254,7 @@ namespace NuGet.Insights
             Assert.Equal("W/\"my-etag\"", data.ETag);
             Assert.Equal(lastModified, data.AsOfTimestamp);
             Assert.Equal(Settings.DownloadsV1Urls.Single(), data.Url.AbsoluteUri);
-            var entries = await data.Entries.ToArrayAsync();
+            var pages = await data.Pages.Select(x => x.ToList()).ToArrayAsync();
             Assert.Equal(
                 new[]
                 {
@@ -266,7 +266,7 @@ namespace NuGet.Insights
                     new PackageDownloads("Newtonsoft.Json", "10.0.1", 600),
                     new PackageDownloads("Newtonsoft.Json", "8.0.1", 700),
                 },
-                entries);
+                pages.SelectMany(x => x).ToArray());
             Assert.Equal(1, Throttle.CurrentCount);
         }
 
