@@ -10,7 +10,7 @@ A verified package is one that has the blue checkmark icon on nuget.org and Visu
 
 |                                    |                                                                                                                                  |
 | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Cardinality                        | Exactly one per unique package ID on NuGet.org                                                                                   |
+| Cardinality                        | Exactly one row per unique package ID on NuGet.org                                                                               |
 | Child tables                       |                                                                                                                                  |
 | Parent tables                      |                                                                                                                                  |
 | Column used for CSV partitioning   | LowerId                                                                                                                          |

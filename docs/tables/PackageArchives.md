@@ -5,7 +5,7 @@ any special knowledge of NuGet-specific interpretation of the ZIP file.
 
 |                                    |                                                                                                      |
 | ---------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Cardinality                        | Exactly one per package on NuGet.org                                                                 |
+| Cardinality                        | Exactly one row per package on NuGet.org                                                             |
 | Child tables                       | [PackageArchiveEntries](PackageArchiveEntries.md) joined on Identity                                 |
 | Parent tables                      |                                                                                                      |
 | Column used for CSV partitioning   | Identity                                                                                             |

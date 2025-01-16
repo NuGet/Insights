@@ -6,7 +6,7 @@ have symbol packages.
 
 |                                    |                                                                                                                        |
 | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Cardinality                        | Exactly one per package on NuGet.org                                                                                   |
+| Cardinality                        | Exactly one row per package on NuGet.org                                                                               |
 | Child tables                       | [SymbolPackageArchiveEntries](SymbolPackageArchiveEntries.md) joined on Identity                                       |
 | Parent tables                      |                                                                                                                        |
 | Column used for CSV partitioning   | Identity                                                                                                               |

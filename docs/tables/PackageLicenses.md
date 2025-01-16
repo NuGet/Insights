@@ -10,7 +10,7 @@ Licenses are optional so some packages have none of these types.
 
 |                                    |                                                                                          |
 | ---------------------------------- | ---------------------------------------------------------------------------------------- |
-| Cardinality                        | Exactly one per package on NuGet.org                                                     |
+| Cardinality                        | Exactly one row per package on NuGet.org                                                 |
 | Child tables                       |                                                                                          |
 | Parent tables                      |                                                                                          |
 | Column used for CSV partitioning   | Identity                                                                                 |

@@ -24,8 +24,8 @@ namespace NuGet.Insights.Worker
 
             return keyFields[0] switch
             {
-                nameof(PackageRecord.LowerId) => "Exactly one per unique package ID on NuGet.org",
-                nameof(PackageRecord.Identity) => "Exactly one per package on NuGet.org",
+                nameof(PackageRecord.LowerId) => "Exactly one row per unique package ID on NuGet.org",
+                nameof(PackageRecord.Identity) => "Exactly one row per package on NuGet.org",
                 _ => null
             };
         }
