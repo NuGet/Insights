@@ -181,6 +181,7 @@ namespace NuGet.Insights.MemoryStorage
                 StorageResultType.ContainerDoesNotExist => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.NotFound)),
                 StorageResultType.Success => Response.FromValue(result.Value, new MemoryResponse(HttpStatusCode.OK)),
                 StorageResultType.ETagMismatch => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.PreconditionFailed)),
+                StorageResultType.AlreadyExists => throw new RequestFailedException(new MemoryResponse(HttpStatusCode.Conflict)),
                 _ => throw new NotImplementedException("Unexpected result type: " + result.Type),
             };
         }
