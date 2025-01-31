@@ -44,23 +44,27 @@ namespace NuGet.Insights
                 suffix += "_" + contextHint;
             }
 
+            const string defaultExtension = "tmp";
+
             if (!string.IsNullOrEmpty(extension))
             {
-                if (extension[0] == '.')
+                var dotIndex = extension.LastIndexOf('.');
+                if (dotIndex >= 0)
                 {
-                    suffix += extension;
+                    extension = extension.Substring(dotIndex + 1);
                 }
-                else
+
+                if (!extension.All(char.IsAsciiLetterOrDigit))
                 {
-                    suffix += "." + extension;
+                    extension = defaultExtension;
                 }
             }
             else
             {
-                suffix += ".tmp";
+                extension = defaultExtension;
             }
 
-            return () => $"{Guid.NewGuid().ToByteArray().ToTrimmedBase32()}_{suffix}";
+            return () => $"{Guid.NewGuid().ToByteArray().ToTrimmedBase32()}_{suffix}.{extension}";
         }
 
         public TempStreamWriter(TempStreamDirectoryLeaseService leaseService, IOptions<NuGetInsightsSettings> options, ILogger<TempStreamWriter> logger)

@@ -24,11 +24,13 @@ namespace NuGet.Insights
 
         private static CryptoTransformAdapter GetMD5()
         {
+            // CodeQL [SM02196] Not used for cryptographic comparisons or security purposes. Only informational in output CSV file.
             return new CryptoTransformAdapter { HashAlgorithm = MD5.Create(), SetOutput = (x, h) => x.MD5 = h };
         }
 
         private static CryptoTransformAdapter GetSHA1()
         {
+            // CodeQL [SM02196] Not used for cryptographic comparisons or security purposes. Only informational in output CSV file.
             return new CryptoTransformAdapter { HashAlgorithm = SHA1.Create(), SetOutput = (x, h) => x.SHA1 = h };
         }
 

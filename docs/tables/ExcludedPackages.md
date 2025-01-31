@@ -10,7 +10,7 @@ included by default) libraries to use in their project.
 
 |                                    |                                                                                                                                  |
 | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Cardinality                        | Exactly one per unique package ID on NuGet.org                                                                                   |
+| Cardinality                        | Exactly one row per unique package ID on NuGet.org                                                                               |
 | Child tables                       |                                                                                                                                  |
 | Parent tables                      |                                                                                                                                  |
 | Column used for CSV partitioning   | LowerId                                                                                                                          |

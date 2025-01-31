@@ -6,7 +6,7 @@ The owners are represented by their username. A package owner can either be an i
 
 |                                    |                                                                                                    |
 | ---------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Cardinality                        | Exactly one per unique package ID on NuGet.org                                                     |
+| Cardinality                        | Exactly one row per unique package ID on NuGet.org                                                 |
 | Child tables                       |                                                                                                    |
 | Parent tables                      |                                                                                                    |
 | Column used for CSV partitioning   | LowerId                                                                                            |

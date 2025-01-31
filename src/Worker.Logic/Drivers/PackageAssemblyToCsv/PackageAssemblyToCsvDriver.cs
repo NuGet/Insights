@@ -152,14 +152,19 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
         private async Task<DriverResult<PackageAssembly>> AnalyzeAsync(Guid scanId, DateTimeOffset scanTimestamp, PackageDetailsCatalogLeaf leaf, int sequenceNumber, ZipArchiveEntry entry)
         {
+            var path = entry.FullName;
+            var fileName = Path.GetFileName(path);
+            // CodeQL [SM02729] The file extension is in an allow list of values and therefore can be trusted.
+            var fileExtension = Path.GetExtension(path);
+            var topLevelFolder = PathUtility.GetTopLevelFolder(path);
+
             var assembly = new PackageAssembly(scanId, scanTimestamp, leaf, PackageAssemblyResultType.ValidAssembly)
             {
                 SequenceNumber = sequenceNumber,
-
-                Path = entry.FullName,
-                FileName = Path.GetFileName(entry.FullName),
-                FileExtension = Path.GetExtension(entry.FullName),
-                TopLevelFolder = PathUtility.GetTopLevelFolder(entry.FullName),
+                Path = path,
+                FileName = fileName,
+                FileExtension = fileExtension,
+                TopLevelFolder = topLevelFolder,
             };
 
             var result = await AnalyzeAsync(assembly, entry);
@@ -290,7 +295,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             var publicKey = metadataReader.GetBlobBytes(assemblyDefinition.PublicKey);
             assembly.PublicKeyLength = publicKey.Length;
 
-            using var algorithm = SHA1.Create(); // SHA1 because that is what is used for the public key token
+            // CodeQL [SM02196] Not used for cryptographic comparisons or security purposes. SHA-1 is used by .NET for public key tokens.
+            using var algorithm = SHA1.Create(); // SHA-1 because that is what is used for the public key token
+            // Source: https://learn.microsoft.com/en-us/dotnet/api/system.applicationid.publickeytoken
             assembly.PublicKeySHA1 = algorithm.ComputeHash(publicKey).ToBase64();
         }
 
