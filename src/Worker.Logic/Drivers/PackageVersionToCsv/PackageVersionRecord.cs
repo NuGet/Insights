@@ -3,9 +3,11 @@
 
 using System.ComponentModel.DataAnnotations;
 using NuGet.Insights.Worker.LoadPackageVersion;
+using PolyType;
 
 namespace NuGet.Insights.Worker.PackageVersionToCsv
 {
+    [GenerateShape]
     public partial record PackageVersionRecord : IPackageRecord, IAggregatedCsvRecord<PackageVersionRecord>
     {
         public PackageVersionRecord()

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using PolyType;
+
 namespace NuGet.Insights
 {
     public interface ICsvRecord
@@ -26,7 +28,7 @@ namespace NuGet.Insights
         string GetBucketKey();
     }
 
-    public interface ICsvRecord<T> : ICsvRecord, IEquatable<T>, IComparable<T> where T : ICsvRecord
+    public interface ICsvRecord<T> : ICsvRecord, IEquatable<T>, IComparable<T>, IShapeable<T> where T : ICsvRecord
     {
         static abstract int FieldCount { get; }
         static abstract void WriteHeader(TextWriter writer);

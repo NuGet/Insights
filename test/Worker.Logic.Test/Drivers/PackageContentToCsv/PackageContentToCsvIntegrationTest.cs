@@ -59,6 +59,26 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             await AssertOutputAsync(PackageContentToCsv_WithDeleteDir, Step2, 0);
         }
 
+        [Fact]
+        public async Task PackageContentToCsv_WithBigModeAppendService()
+        {
+            // Arrange
+            ConfigureWorkerSettings = x =>
+            {
+                x.AppendResultBigModeRecordThreshold = 0;
+            };
+
+            var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z", CultureInfo.InvariantCulture);
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
+            await SetCursorAsync(min0);
+
+            // Act
+            await UpdateAsync(max1);
+        }
+
         public PackageContentToCsvIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory)
             : base(output, factory)
         {

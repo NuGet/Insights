@@ -3,9 +3,11 @@
 
 using System.ComponentModel.DataAnnotations;
 using NuGetPe;
+using PolyType;
 
 namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
 {
+    [GenerateShape]
     public partial record NuGetPackageExplorerRecord : PackageRecord, IAggregatedCsvRecord<NuGetPackageExplorerRecord>
     {
         public NuGetPackageExplorerRecord()

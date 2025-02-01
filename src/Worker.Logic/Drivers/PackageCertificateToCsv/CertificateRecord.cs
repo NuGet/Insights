@@ -5,9 +5,11 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Insights.Worker.ReferenceTracking;
 using NuGet.Services.Validation;
+using PolyType;
 
 namespace NuGet.Insights.Worker.PackageCertificateToCsv
 {
+    [GenerateShape]
     public partial record CertificateRecord : IAggregatedCsvRecord<CertificateRecord>, ICleanupOrphanCsvRecord
     {
         public CertificateRecord()

@@ -1,14 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Buffers;
 using System.IO.Compression;
 using System.Text.RegularExpressions;
 using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
-using MessagePack;
+using Nerdbank.MessagePack;
 
 #nullable enable
 
@@ -24,6 +23,8 @@ namespace NuGet.Insights.Worker
 
         private static string TempDir => Path.Combine(Path.GetTempPath(), "NuGet.Insights");
         private static readonly byte[] SubdivideSuffix = [2];
+
+        private static readonly MessagePackSerializer MessagePackSerializer = new MessagePackSerializer();
 
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ICsvReader _csvReader;
@@ -475,12 +476,14 @@ namespace NuGet.Insights.Worker
                     var tempFile = TempStreamWriter.NewTempFile(tempPath);
                     tempFiles.Add(new TempFile(tempPath, tempFile));
 
+                    /*
                     // write an array header with a faked length, it will be filled in later
                     tempFile.WriteByte(MessagePackCode.Array32);
                     tempFile.WriteByte(0);
                     tempFile.WriteByte(0);
                     tempFile.WriteByte(0);
                     tempFile.WriteByte(0);
+                    */
                 }
 
                 // Step 2: load the new records from table storage into the temporary files
@@ -507,7 +510,7 @@ namespace NuGet.Insights.Worker
                 }
 
                 // Step 4: prune each temporary file to remove duplicates and sort
-                var (pruneRecordCount, totalUncompressedSize) = PruneSubdivisionsOnDisk(provider, tempFiles, destContainer, subdivisions, recordType);
+                var (pruneRecordCount, totalUncompressedSize) = await PruneSubdivisionsOnDiskAsync(provider, tempFiles, destContainer, subdivisions, recordType);
 
                 // Step 5: combine the temporary files into one merged, gzipped file
                 var finalPath = Path.Combine(TempDir, $"{recordType}_{CompactPrefix}{bucket}_final_{uniqueFileNamePiece}.csv.gz");
@@ -655,7 +658,7 @@ namespace NuGet.Insights.Worker
             return existingBlobInfo;
         }
 
-        private (long RecordCount, long TotalUncompressedSize) PruneSubdivisionsOnDisk<T>(
+        private async Task<(long RecordCount, long TotalUncompressedSize)> PruneSubdivisionsOnDiskAsync<T>(
             ICsvRecordProvider<T> provider,
             List<TempFile> tempFiles,
             string destContainer,
@@ -682,9 +685,9 @@ namespace NuGet.Insights.Worker
 
                 // read all of the records and prune
                 var sw = Stopwatch.StartNew();
-                var records = MessagePackSerializer.Deserialize<List<T>>(tempFile.Stream, NuGetInsightsMessagePack.NoCompressionOptions);
+                var records = await GetMessagePackListAsync<T>(tempFile.Stream, tempFile.RecordCount);
 
-                var initialCount = records.Count;
+                var initialCount = tempFile.RecordCount;
                 records = Prune(provider, records, destContainer, recordType, isFinalPrune: true);
                 recordCount += records.Count;
                 tempFile.RecordCount = records.Count;
@@ -693,7 +696,10 @@ namespace NuGet.Insights.Worker
                 tempFile.Stream.Position = 0;
                 using (var countingStream = new CountingWriterStream(tempFile.Stream))
                 {
-                    MessagePackSerializer.Serialize(countingStream, records, NuGetInsightsMessagePack.NoCompressionOptions);
+                    foreach (var record in records)
+                    {
+                        MessagePackSerializer.Serialize(countingStream, record);
+                    }
 
                     tempFile.Stream.Flush();
                     tempFile.Stream.Position = 0;
@@ -718,6 +724,7 @@ namespace NuGet.Insights.Worker
             // complete writing
             tempFile.Stream.Flush();
 
+            /*
             // write the record count
             tempFile.Stream.Position = 1;
             Span<byte> bytes = stackalloc byte[4];
@@ -734,6 +741,7 @@ namespace NuGet.Insights.Worker
 
             tempFile.Stream.Write(bytes);
             tempFile.Stream.Flush();
+            */
 
             // move back to the start to prepare for reading
             tempFile.Stream.Position = 0;
@@ -763,7 +771,8 @@ namespace NuGet.Insights.Worker
 
                 // open all of the readers
                 var readers = tempFiles
-                    .Select(x => GetRecordsAsync<T>(x.Stream))
+                    .Where(x => x.RecordCount > 0)
+                    .Select(x => GetMessagePackEnumerableAsync<T>(x.Stream))
                     .ToList();
 
                 // open the file writer
@@ -803,17 +812,29 @@ namespace NuGet.Insights.Worker
             return (finalRecordCountFromWrite, uncompressedSize);
         }
 
-        private async IAsyncEnumerable<T> GetRecordsAsync<T>(FileStream stream) where T : ICsvRecord<T>
+        private IAsyncEnumerable<T> GetMessagePackEnumerableAsync<T>(FileStream stream) where T : ICsvRecord<T>
         {
-            using (var reader = new MessagePackStreamReader(stream, leaveOpen: true))
-            {
-                await reader.ReadArrayHeaderAsync(CancellationToken.None);
+            return MessagePackSerializer.DeserializeEnumerableAsync<T>(stream)!;
+        }
 
-                while (await reader.ReadAsync(CancellationToken.None) is ReadOnlySequence<byte> bytes)
+        private async Task<List<T>> GetMessagePackListAsync<T>(FileStream stream, int recordCount) where T : ICsvRecord<T>
+        {
+            var enumerable = GetMessagePackEnumerableAsync<T>(stream);
+            var records = new List<T>(recordCount);
+            if (recordCount > 0)
+            {
+                await foreach (var record in enumerable)
                 {
-                    yield return MessagePackSerializer.Deserialize<T>(bytes, NuGetInsightsMessagePack.NoCompressionOptions);
+                    records.Add(record);
                 }
             }
+
+            if (records.Count != recordCount)
+            {
+                throw new InvalidOperationException($"Expected {recordCount} records but found {records.Count}.");
+            }
+
+            return records;
         }
 
         private async Task UploadAsync<T>(
@@ -892,7 +913,7 @@ namespace NuGet.Insights.Worker
 
                 recordCount++;
                 var tempFile = tempFiles[lastBucket];
-                MessagePackSerializer.Serialize(tempFile.Stream, record, NuGetInsightsMessagePack.NoCompressionOptions);
+                MessagePackSerializer.Serialize(tempFile.Stream, record);
                 tempFile.RecordCount++;
             }
 

@@ -3,9 +3,11 @@
 
 using System.ComponentModel.DataAnnotations;
 using NuGet.Packaging;
+using PolyType;
 
 namespace NuGet.Insights.Worker.CatalogDataToCsv
 {
+    [GenerateShape]
     public partial record CatalogLeafItemRecord : IAggregatedCsvRecord<CatalogLeafItemRecord>
     {
         public CatalogLeafItemRecord()
