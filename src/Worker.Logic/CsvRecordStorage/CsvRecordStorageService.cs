@@ -1,14 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Buffers;
 using System.IO.Compression;
+using System.IO.Pipelines;
 using System.Text.RegularExpressions;
 using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
-using MessagePack;
+using MemoryPack;
+using MemoryPack.Streaming;
 
 #nullable enable
 
@@ -475,8 +476,7 @@ namespace NuGet.Insights.Worker
                     var tempFile = TempStreamWriter.NewTempFile(tempPath);
                     tempFiles.Add(new TempFile(tempPath, tempFile));
 
-                    // write an array header with a faked length, it will be filled in later
-                    tempFile.WriteByte(MessagePackCode.Array32);
+                    // write faked collection length, it will be filled in later
                     tempFile.WriteByte(0);
                     tempFile.WriteByte(0);
                     tempFile.WriteByte(0);
@@ -507,7 +507,7 @@ namespace NuGet.Insights.Worker
                 }
 
                 // Step 4: prune each temporary file to remove duplicates and sort
-                var (pruneRecordCount, totalUncompressedSize) = PruneSubdivisionsOnDisk(provider, tempFiles, destContainer, subdivisions, recordType);
+                var (pruneRecordCount, totalUncompressedSize) = await PruneSubdivisionsOnDiskAsync(provider, tempFiles, destContainer, subdivisions, recordType);
 
                 // Step 5: combine the temporary files into one merged, gzipped file
                 var finalPath = Path.Combine(TempDir, $"{recordType}_{CompactPrefix}{bucket}_final_{uniqueFileNamePiece}.csv.gz");
@@ -655,7 +655,7 @@ namespace NuGet.Insights.Worker
             return existingBlobInfo;
         }
 
-        private (long RecordCount, long TotalUncompressedSize) PruneSubdivisionsOnDisk<T>(
+        private async Task<(long RecordCount, long TotalUncompressedSize)> PruneSubdivisionsOnDiskAsync<T>(
             ICsvRecordProvider<T> provider,
             List<TempFile> tempFiles,
             string destContainer,
@@ -669,6 +669,7 @@ namespace NuGet.Insights.Worker
             {
                 var tempFile = tempFiles[i];
 
+                await tempFile.Writer.FlushAsync();
                 WriteRecordCount(tempFile);
 
                 _bigModeSplitFileSize.TrackValue(tempFile.Stream.Length, destContainer, recordType);
@@ -682,9 +683,9 @@ namespace NuGet.Insights.Worker
 
                 // read all of the records and prune
                 var sw = Stopwatch.StartNew();
-                var records = MessagePackSerializer.Deserialize<List<T>>(tempFile.Stream, NuGetInsightsMessagePack.NoCompressionOptions);
+                var records = await MemoryPackSerializer.DeserializeAsync<List<T>>(tempFile.Stream);
 
-                var initialCount = records.Count;
+                var initialCount = records!.Count;
                 records = Prune(provider, records, destContainer, recordType, isFinalPrune: true);
                 recordCount += records.Count;
                 tempFile.RecordCount = records.Count;
@@ -693,7 +694,7 @@ namespace NuGet.Insights.Worker
                 tempFile.Stream.Position = 0;
                 using (var countingStream = new CountingWriterStream(tempFile.Stream))
                 {
-                    MessagePackSerializer.Serialize(countingStream, records, NuGetInsightsMessagePack.NoCompressionOptions);
+                    await MemoryPackStreamingSerializer.SerializeAsync(countingStream, records.Count, records);
 
                     tempFile.Stream.Flush();
                     tempFile.Stream.Position = 0;
@@ -719,17 +720,18 @@ namespace NuGet.Insights.Worker
             tempFile.Stream.Flush();
 
             // write the record count
-            tempFile.Stream.Position = 1;
+            tempFile.Stream.Position = 0;
             Span<byte> bytes = stackalloc byte[4];
-            if (!BitConverter.TryWriteBytes(bytes, (uint)tempFile.RecordCount))
+            if (!BitConverter.TryWriteBytes(bytes, tempFile.RecordCount))
             {
                 throw new InvalidOperationException("Could not write record count.");
             }
 
-            // msg pack encoding is big endian
-            if (BitConverter.IsLittleEndian)
+            // MemoryPack encoding is little endian
+            // https://github.com/Cysharp/MemoryPack?tab=readme-ov-file#binary-wire-format-specification
+            if (!BitConverter.IsLittleEndian)
             {
-                bytes.Reverse();
+                throw new NotSupportedException();
             }
 
             tempFile.Stream.Write(bytes);
@@ -763,7 +765,7 @@ namespace NuGet.Insights.Worker
 
                 // open all of the readers
                 var readers = tempFiles
-                    .Select(x => GetRecordsAsync<T>(x.Stream))
+                    .Select(x => GetMemoryPackEnumerableAsync<T>(x.Stream))
                     .ToList();
 
                 // open the file writer
@@ -803,17 +805,13 @@ namespace NuGet.Insights.Worker
             return (finalRecordCountFromWrite, uncompressedSize);
         }
 
-        private async IAsyncEnumerable<T> GetRecordsAsync<T>(FileStream stream) where T : ICsvRecord<T>
+        private IAsyncEnumerable<T> GetMemoryPackEnumerableAsync<T>(FileStream stream) where T : ICsvRecord<T>
         {
-            using (var reader = new MessagePackStreamReader(stream, leaveOpen: true))
-            {
-                await reader.ReadArrayHeaderAsync(CancellationToken.None);
+            var reader = PipeReader.Create(stream, new StreamPipeReaderOptions(leaveOpen: true));
 
-                while (await reader.ReadAsync(CancellationToken.None) is ReadOnlySequence<byte> bytes)
-                {
-                    yield return MessagePackSerializer.Deserialize<T>(bytes, NuGetInsightsMessagePack.NoCompressionOptions);
-                }
-            }
+            // Must use a large buffer size due to long strings.
+            // See https://github.com/Cysharp/MemoryPack/issues/213, https://github.com/Cysharp/MemoryPack/issues/349
+            return MemoryPackStreamingSerializer.DeserializeAsync<T>(reader, readMinimumSize: CsvReaderAdapter.MaxBufferSize)!;
         }
 
         private async Task UploadAsync<T>(
@@ -878,6 +876,7 @@ namespace NuGet.Insights.Worker
             string? lastBucketKey = null;
             int lastBucket = -1;
             long recordCount = 0;
+
             foreach (var record in records)
             {
                 var bucketKey = record.GetBucketKey();
@@ -892,7 +891,8 @@ namespace NuGet.Insights.Worker
 
                 recordCount++;
                 var tempFile = tempFiles[lastBucket];
-                MessagePackSerializer.Serialize(tempFile.Stream, record, NuGetInsightsMessagePack.NoCompressionOptions);
+
+                MemoryPackSerializer.Serialize(in tempFile.Writer, record);
                 tempFile.RecordCount++;
             }
 
@@ -1033,10 +1033,12 @@ namespace NuGet.Insights.Worker
             {
                 Path = path;
                 Stream = stream;
+                Writer = PipeWriter.Create(stream);
             }
 
             public string Path { get; }
             public FileStream Stream { get; }
+            public PipeWriter Writer;
             public int RecordCount { get; set; }
 
             public void Dispose()

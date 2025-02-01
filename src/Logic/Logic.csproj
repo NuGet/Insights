@@ -13,6 +13,8 @@
     <PackageReference Include="Ben.StringIntern" />
     <PackageReference Include="CommunityToolkit.HighPerformance" />
     <PackageReference Include="Knapcode.MiniZip" />
+    <PackageReference Include="MemoryPack" />
+    <PackageReference Include="MemoryPack.Streaming" />
     <PackageReference Include="MessagePack" />
     <PackageReference Include="MessagePackAnalyzer">
       <PrivateAssets>all</PrivateAssets>

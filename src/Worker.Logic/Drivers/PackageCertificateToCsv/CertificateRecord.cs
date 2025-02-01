@@ -3,13 +3,16 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography.X509Certificates;
+using MemoryPack;
 using NuGet.Insights.Worker.ReferenceTracking;
 using NuGet.Services.Validation;
 
 namespace NuGet.Insights.Worker.PackageCertificateToCsv
 {
+    [MemoryPackable]
     public partial record CertificateRecord : IAggregatedCsvRecord<CertificateRecord>, ICleanupOrphanCsvRecord
     {
+        [MemoryPackConstructor]
         public CertificateRecord()
         {
         }

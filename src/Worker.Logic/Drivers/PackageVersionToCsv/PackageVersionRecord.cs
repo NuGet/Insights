@@ -2,12 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.ComponentModel.DataAnnotations;
+using MemoryPack;
 using NuGet.Insights.Worker.LoadPackageVersion;
 
 namespace NuGet.Insights.Worker.PackageVersionToCsv
 {
+    [MemoryPackable]
     public partial record PackageVersionRecord : IPackageRecord, IAggregatedCsvRecord<PackageVersionRecord>
     {
+        [MemoryPackConstructor]
         public PackageVersionRecord()
         {
         }

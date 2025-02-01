@@ -2,13 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.ComponentModel.DataAnnotations;
+using MemoryPack;
 using NuGet.Common;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace NuGet.Insights.Worker.PackageSignatureToCsv
 {
+    [MemoryPackable]
     public partial record PackageSignature : PackageRecord, IAggregatedCsvRecord<PackageSignature>
     {
+        [MemoryPackConstructor]
         public PackageSignature()
         {
         }
