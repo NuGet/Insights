@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO.Compression;
+using System.IO.Pipelines;
 using System.Text.RegularExpressions;
 using Azure;
 using Azure.Storage.Blobs;
@@ -672,7 +673,12 @@ namespace NuGet.Insights.Worker
             {
                 var tempFile = tempFiles[i];
 
-                WriteRecordCount(tempFile);
+                // complete writing
+                await tempFile.Writer.FlushAsync();
+                tempFile.Stream.Flush();
+
+                // move back to the start to prepare for reading
+                tempFile.Stream.Position = 0;
 
                 _bigModeSplitFileSize.TrackValue(tempFile.Stream.Length, destContainer, recordType);
 
@@ -696,11 +702,14 @@ namespace NuGet.Insights.Worker
                 tempFile.Stream.Position = 0;
                 using (var countingStream = new CountingWriterStream(tempFile.Stream))
                 {
+                    var writer = PipeWriter.Create(countingStream);
+
                     foreach (var record in records)
                     {
-                        MessagePackSerializer.Serialize(countingStream, record);
+                        MessagePackSerializer.Serialize(writer, record);
                     }
 
+                    await writer.FlushAsync();
                     tempFile.Stream.Flush();
                     tempFile.Stream.Position = 0;
                     totalUncompressedSize += countingStream.Length;
@@ -717,34 +726,6 @@ namespace NuGet.Insights.Worker
             }
 
             return (recordCount, totalUncompressedSize);
-        }
-
-        private void WriteRecordCount(TempFile tempFile)
-        {
-            // complete writing
-            tempFile.Stream.Flush();
-
-            /*
-            // write the record count
-            tempFile.Stream.Position = 1;
-            Span<byte> bytes = stackalloc byte[4];
-            if (!BitConverter.TryWriteBytes(bytes, (uint)tempFile.RecordCount))
-            {
-                throw new InvalidOperationException("Could not write record count.");
-            }
-
-            // msg pack encoding is big endian
-            if (BitConverter.IsLittleEndian)
-            {
-                bytes.Reverse();
-            }
-
-            tempFile.Stream.Write(bytes);
-            tempFile.Stream.Flush();
-            */
-
-            // move back to the start to prepare for reading
-            tempFile.Stream.Position = 0;
         }
 
         private async Task<(long CombinedRecordCount, long UncompressedSize)> CombineSubdivisionsOnDiskAsync<T>(
@@ -913,7 +894,7 @@ namespace NuGet.Insights.Worker
 
                 recordCount++;
                 var tempFile = tempFiles[lastBucket];
-                MessagePackSerializer.Serialize(tempFile.Stream, record);
+                MessagePackSerializer.Serialize(tempFile.Writer, record);
                 tempFile.RecordCount++;
             }
 
@@ -1054,10 +1035,12 @@ namespace NuGet.Insights.Worker
             {
                 Path = path;
                 Stream = stream;
+                Writer = PipeWriter.Create(stream);
             }
 
             public string Path { get; }
             public FileStream Stream { get; }
+            public PipeWriter Writer;
             public int RecordCount { get; set; }
 
             public void Dispose()
