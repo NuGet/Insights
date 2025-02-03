@@ -63,7 +63,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     Format = DataSourceFormat.csv,
                     IngestionMapping = new IngestionMapping
                     {
-                        IngestionMappingReference = KustoDDL.CsvMappingName
+                        IngestionMappingReference = NuGetInsightsWorkerLogicKustoDDL.CsvMappingName
                     },
                     ReportLevel = IngestionReportLevel.FailuresAndSuccesses,
                     ReportMethod = IngestionReportMethod.Table,

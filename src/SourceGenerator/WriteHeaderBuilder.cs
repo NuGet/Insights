@@ -16,7 +16,7 @@ namespace NuGet.Insights
             _builder = new StringBuilder();
         }
 
-        public void OnProperty(PropertyVisitorContext context, IPropertySymbol symbol, string prettyPropType)
+        public void OnProperty(SourceProductionContext context, CsvRecordModel model, CsvPropertyModel property)
         {
             if (_builder.Length == 0)
             {
@@ -28,10 +28,10 @@ namespace NuGet.Insights
                 _builder.Append(',');
             }
 
-            _builder.Append(symbol.Name);
+            _builder.Append(property.Name);
         }
 
-        public void Finish(PropertyVisitorContext context)
+        public void Finish(SourceProductionContext context, CsvRecordModel model)
         {
             _builder.Append("\");");
         }

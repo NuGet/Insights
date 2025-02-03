@@ -15,7 +15,7 @@ namespace NuGet.Insights.Worker
         public TableDocInfo(string tableName) : base(Path.Combine("tables", $"{tableName}.md"))
         {
             TableName = tableName;
-            RecordType = KustoDDL.TypeToDefaultTableName.Single(x => x.Value == tableName).Key;
+            RecordType = NuGetInsightsWorkerLogicKustoDDL.TypeToDefaultTableName.Single(x => x.Value == tableName).Key;
 
             var csvHeaderWriter = new StringWriter();
             RecordType.GetMethod(nameof(ICsvRecord<ICsvRecord>.WriteHeader))!.Invoke(null, [csvHeaderWriter]);

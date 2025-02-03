@@ -16,7 +16,7 @@ namespace NuGet.Insights
             _builder = new StringBuilder();
         }
 
-        public void OnProperty(PropertyVisitorContext context, IPropertySymbol symbol, string prettyPropType)
+        public void OnProperty(SourceProductionContext context, CsvRecordModel model, CsvPropertyModel property)
         {
             if (_builder.Length > 0)
             {
@@ -25,7 +25,7 @@ namespace NuGet.Insights
 
             _builder.Append(' ', _indent);
 
-            switch (symbol.Type.ToString())
+            switch (property.Type)
             {
                 case "ushort":
                 case "ushort?":
@@ -43,33 +43,33 @@ namespace NuGet.Insights
                 case "System.Guid?":
                 case "System.TimeSpan":
                 case "System.TimeSpan?":
-                    _builder.AppendFormat("fields.Add({0}.ToString());", symbol.Name);
+                    _builder.AppendFormat("fields.Add({0}.ToString());", property.Name);
                     break;
                 case "bool":
                 case "bool?":
-                    _builder.AppendFormat("fields.Add(CsvUtility.FormatBool({0}));", symbol.Name);
+                    _builder.AppendFormat("fields.Add(CsvUtility.FormatBool({0}));", property.Name);
                     break;
                 case "System.DateTimeOffset":
                 case "System.DateTimeOffset?":
-                    _builder.AppendFormat("fields.Add(CsvUtility.FormatDateTimeOffset({0}));", symbol.Name);
+                    _builder.AppendFormat("fields.Add(CsvUtility.FormatDateTimeOffset({0}));", property.Name);
                     break;
                 case "string":
-                    _builder.AppendFormat("fields.Add({0});", symbol.Name);
+                    _builder.AppendFormat("fields.Add({0});", property.Name);
                     break;
                 default:
-                    if (symbol.Type.TypeKind == TypeKind.Enum || PropertyHelper.IsNullableEnum(context, symbol))
+                    if (property.IsEnum || property.IsNullableEnum)
                     {
-                        _builder.AppendFormat("fields.Add({0}.ToString());", symbol.Name);
+                        _builder.AppendFormat("fields.Add({0}.ToString());", property.Name);
                     }
                     else
                     {
-                        _builder.AppendFormat("fields.Add({0}?.ToString());", symbol.Name);
+                        _builder.AppendFormat("fields.Add({0}?.ToString());", property.Name);
                     }
                     break;
             }
         }
 
-        public void Finish(PropertyVisitorContext context)
+        public void Finish(SourceProductionContext context, CsvRecordModel model)
         {
         }
 

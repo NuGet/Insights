@@ -286,7 +286,7 @@ namespace NuGet.Insights.Worker
                     csvTables = driver
                         .GetType()
                         .GetGenericArguments()
-                        .Select(x => KustoDDL.TypeToDefaultTableName[x])
+                        .Select(x => NuGetInsightsWorkerLogicKustoDDL.TypeToDefaultTableName[x])
                         .OrderBy(x => x, StringComparer.Ordinal)
                         .ToList();
                 }

@@ -3,6 +3,7 @@
 
 namespace NuGet.Insights.Worker.OwnersToCsv
 {
+    [CsvRecord]
     public partial record PackageOwnerRecord : IAuxiliaryFileCsvRecord<PackageOwnerRecord>
     {
         [KustoIgnore]

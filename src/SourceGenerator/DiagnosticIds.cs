@@ -16,5 +16,9 @@ namespace NuGet.Insights
         public const string MultipleBucketKeys = "NI0009";
         public const string BucketKeyNotString = "NI0010";
         public const string NoBucketKeyDefined = "NI0011";
+        public const string InvalidTargetType = "NI0012";
+        public const string TargetTypeMustBePublic = "NI0013";
+        public const string TargetTypeMustNotBeAbstract = "NI0014";
+        public const string TargetTypeMustBePartial = "NI0015";
     }
 }

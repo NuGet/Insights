@@ -33,52 +33,14 @@ namespace NuGet.Insights
             return prettyPropType;
         }
 
-        public static bool IsNullableEnum(PropertyVisitorContext context, IPropertySymbol symbol)
+        public static string GetKustoDataType(CsvPropertyModel property)
         {
-            return IsNullable(context, symbol, out var innerType) && innerType.TypeKind == TypeKind.Enum;
-        }
-
-        public static bool IsNullable(PropertyVisitorContext context, IPropertySymbol symbol, out ITypeSymbol innerType)
-        {
-            if (symbol.Type is INamedTypeSymbol typeSymbol
-                && SymbolEqualityComparer.Default.Equals(typeSymbol.OriginalDefinition, context.Nullable)
-                && typeSymbol.TypeArguments.Length == 1)
+            if (property.KustoType != null)
             {
-                innerType = typeSymbol.TypeArguments[0];
-                return true;
+                return property.KustoType;
             }
 
-            innerType = null;
-            return false;
-        }
-
-        public static bool IsRequired(PropertyVisitorContext context, IPropertySymbol symbol)
-        {
-            var attributeData = symbol
-                .GetAttributes()
-                .SingleOrDefault(x => x.AttributeClass.Equals(context.RequiredAttribute, SymbolEqualityComparer.Default));
-            return attributeData is not null;
-        }
-
-        private const string KustoIgnoreAttributeName = "KustoIgnoreAttribute";
-
-        public static bool IsIgnoredInKusto(IPropertySymbol symbol)
-        {
-            return symbol.GetAttributes().Any(x => x.AttributeClass.Name == KustoIgnoreAttributeName);
-        }
-
-        public static string GetKustoDataType(PropertyVisitorContext context, IPropertySymbol symbol)
-        {
-            var attributeData = symbol
-                .GetAttributes()
-                .SingleOrDefault(x => x.AttributeClass.Equals(context.KustoTypeAttribute, SymbolEqualityComparer.Default));
-            if (attributeData != null)
-            {
-                var kustoType = attributeData.ConstructorArguments.Single().Value;
-                return kustoType.ToString();
-            }
-
-            switch (symbol.Type.ToString())
+            switch (property.Type)
             {
                 case "bool":
                 case "bool?":
@@ -113,7 +75,7 @@ namespace NuGet.Insights
                 case "string":
                     return "string";
                 default:
-                    if (symbol.Type.TypeKind == TypeKind.Enum || IsNullableEnum(context, symbol))
+                    if (property.IsEnum || property.IsNullableEnum)
                     {
                         return "string";
                     }

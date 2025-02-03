@@ -18,10 +18,10 @@ namespace NuGet.Insights.Tool
     public class IngestDownloadsJsonCommand : ICommand
     {
         private static readonly string PackageTimestampQueryFormat = @$"
-{{0}}{KustoDDL.PackageVersionRecordDefaultTableName}
+{{0}}{NuGetInsightsWorkerLogicKustoDDL.PackageVersionRecordDefaultTableName}
 | project Created, Id, Version, Identity
 | join kind=inner (
-    {{0}}{KustoDDL.CatalogLeafItemRecordDefaultTableName}
+    {{0}}{NuGetInsightsWorkerLogicKustoDDL.CatalogLeafItemRecordDefaultTableName}
     | summarize FirstTimestamp = min(CommitTimestamp) by Identity
 ) on Identity
 | extend Created = iff(isempty(Created), FirstTimestamp, Created)

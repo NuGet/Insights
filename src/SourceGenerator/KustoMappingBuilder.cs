@@ -20,12 +20,12 @@ namespace NuGet.Insights
             _nextOrdinal = 0;
         }
 
-        public void OnProperty(PropertyVisitorContext context, IPropertySymbol symbol, string prettyPropType)
+        public void OnProperty(SourceProductionContext context, CsvRecordModel model, CsvPropertyModel property)
         {
             var field = new DataMapping
             {
-                Column = symbol.Name,
-                DataType = PropertyHelper.GetKustoDataType(context, symbol),
+                Column = property.Name,
+                DataType = PropertyHelper.GetKustoDataType(property),
                 Properties = new CsvProperties
                 {
                     Ordinal = _nextOrdinal,
@@ -33,7 +33,7 @@ namespace NuGet.Insights
             };
             _nextOrdinal++;
 
-            if (PropertyHelper.IsIgnoredInKusto(symbol))
+            if (property.IsKustoIgnore)
             {
                 return;
             }
@@ -57,7 +57,7 @@ namespace NuGet.Insights
             _builder.Append(json);
         }
 
-        public void Finish(PropertyVisitorContext context)
+        public void Finish(SourceProductionContext context, CsvRecordModel model)
         {
             _builder.Append("'");
         }

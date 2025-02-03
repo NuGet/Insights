@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace NuGet.Insights
 {
-    static partial class KustoDDL
+    static partial class NuGetInsightsWorkerLogicKustoDDL
     {
         public const string PackageFileRecordDefaultTableName = "PackageFiles";
 
@@ -15,62 +15,69 @@ namespace NuGet.Insights
         {
             ".drop table __TABLENAME__ ifexists",
 
-            @".create table __TABLENAME__ (
-    LowerId: string,
-    Identity: string,
-    Id: string,
-    Version: string,
-    CatalogCommitTimestamp: datetime,
-    Created: datetime,
-    ResultType: string,
-    SequenceNumber: int,
-    Path: string,
-    FileName: string,
-    FileExtension: string,
-    TopLevelFolder: string,
-    CompressedLength: long,
-    EntryUncompressedLength: long,
-    ActualUncompressedLength: long,
-    SHA256: string,
-    First16Bytes: string
-) with (docstring = __DOCSTRING__, folder = __FOLDER__)",
+            """
+            .create table __TABLENAME__ (
+                LowerId: string,
+                Identity: string,
+                Id: string,
+                Version: string,
+                CatalogCommitTimestamp: datetime,
+                Created: datetime,
+                ResultType: string,
+                SequenceNumber: int,
+                Path: string,
+                FileName: string,
+                FileExtension: string,
+                TopLevelFolder: string,
+                CompressedLength: long,
+                EntryUncompressedLength: long,
+                ActualUncompressedLength: long,
+                SHA256: string,
+                First16Bytes: string
+            ) with (docstring = __DOCSTRING__, folder = __FOLDER__)
+            """,
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
 
-            @".create table __TABLENAME__ ingestion csv mapping 'BlobStorageMapping'
-'['
-    '{""Column"":""LowerId"",""DataType"":""string"",""Properties"":{""Ordinal"":2}},'
-    '{""Column"":""Identity"",""DataType"":""string"",""Properties"":{""Ordinal"":3}},'
-    '{""Column"":""Id"",""DataType"":""string"",""Properties"":{""Ordinal"":4}},'
-    '{""Column"":""Version"",""DataType"":""string"",""Properties"":{""Ordinal"":5}},'
-    '{""Column"":""CatalogCommitTimestamp"",""DataType"":""datetime"",""Properties"":{""Ordinal"":6}},'
-    '{""Column"":""Created"",""DataType"":""datetime"",""Properties"":{""Ordinal"":7}},'
-    '{""Column"":""ResultType"",""DataType"":""string"",""Properties"":{""Ordinal"":8}},'
-    '{""Column"":""SequenceNumber"",""DataType"":""int"",""Properties"":{""Ordinal"":9}},'
-    '{""Column"":""Path"",""DataType"":""string"",""Properties"":{""Ordinal"":10}},'
-    '{""Column"":""FileName"",""DataType"":""string"",""Properties"":{""Ordinal"":11}},'
-    '{""Column"":""FileExtension"",""DataType"":""string"",""Properties"":{""Ordinal"":12}},'
-    '{""Column"":""TopLevelFolder"",""DataType"":""string"",""Properties"":{""Ordinal"":13}},'
-    '{""Column"":""CompressedLength"",""DataType"":""long"",""Properties"":{""Ordinal"":14}},'
-    '{""Column"":""EntryUncompressedLength"",""DataType"":""long"",""Properties"":{""Ordinal"":15}},'
-    '{""Column"":""ActualUncompressedLength"",""DataType"":""long"",""Properties"":{""Ordinal"":16}},'
-    '{""Column"":""SHA256"",""DataType"":""string"",""Properties"":{""Ordinal"":17}},'
-    '{""Column"":""First16Bytes"",""DataType"":""string"",""Properties"":{""Ordinal"":18}}'
-']'",
+            """
+            .create table __TABLENAME__ ingestion csv mapping 'BlobStorageMapping'
+            '['
+                '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":2}},'
+                '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":3}},'
+                '{"Column":"Id","DataType":"string","Properties":{"Ordinal":4}},'
+                '{"Column":"Version","DataType":"string","Properties":{"Ordinal":5}},'
+                '{"Column":"CatalogCommitTimestamp","DataType":"datetime","Properties":{"Ordinal":6}},'
+                '{"Column":"Created","DataType":"datetime","Properties":{"Ordinal":7}},'
+                '{"Column":"ResultType","DataType":"string","Properties":{"Ordinal":8}},'
+                '{"Column":"SequenceNumber","DataType":"int","Properties":{"Ordinal":9}},'
+                '{"Column":"Path","DataType":"string","Properties":{"Ordinal":10}},'
+                '{"Column":"FileName","DataType":"string","Properties":{"Ordinal":11}},'
+                '{"Column":"FileExtension","DataType":"string","Properties":{"Ordinal":12}},'
+                '{"Column":"TopLevelFolder","DataType":"string","Properties":{"Ordinal":13}},'
+                '{"Column":"CompressedLength","DataType":"long","Properties":{"Ordinal":14}},'
+                '{"Column":"EntryUncompressedLength","DataType":"long","Properties":{"Ordinal":15}},'
+                '{"Column":"ActualUncompressedLength","DataType":"long","Properties":{"Ordinal":16}},'
+                '{"Column":"SHA256","DataType":"string","Properties":{"Ordinal":17}},'
+                '{"Column":"First16Bytes","DataType":"string","Properties":{"Ordinal":18}}'
+            ']'
+            """,
         };
 
-        public const string PackageFileRecordPartitioningPolicy = @".alter table __TABLENAME__ policy partitioning '{'
-  '""PartitionKeys"": ['
-    '{'
-      '""ColumnName"": ""Identity"",'
-      '""Kind"": ""Hash"",'
-      '""Properties"": {'
-        '""Function"": ""XxHash64"",'
-        '""MaxPartitionCount"": 256'
-      '}'
-    '}'
-  ']'
-'}'";
+        public const string PackageFileRecordPartitioningPolicy =
+            """
+            .alter table __TABLENAME__ policy partitioning '{'
+              '"PartitionKeys": ['
+                '{'
+                  '"ColumnName": "Identity",'
+                  '"Kind": "Hash",'
+                  '"Properties": {'
+                    '"Function": "XxHash64",'
+                    '"MaxPartitionCount": 256'
+                  '}'
+                '}'
+              ']'
+            '}'
+            """;
 
         private static readonly bool PackageFileRecordAddTypeToDefaultTableName = AddTypeToDefaultTableName(typeof(NuGet.Insights.Worker.PackageFileToCsv.PackageFileRecord), PackageFileRecordDefaultTableName);
 

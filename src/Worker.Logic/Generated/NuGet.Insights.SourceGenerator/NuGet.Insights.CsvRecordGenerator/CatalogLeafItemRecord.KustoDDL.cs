@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace NuGet.Insights
 {
-    static partial class KustoDDL
+    static partial class NuGetInsightsWorkerLogicKustoDDL
     {
         public const string CatalogLeafItemRecordDefaultTableName = "CatalogLeafItems";
 
@@ -15,72 +15,79 @@ namespace NuGet.Insights
         {
             ".drop table __TABLENAME__ ifexists",
 
-            @".create table __TABLENAME__ (
-    CommitId: string,
-    CommitTimestamp: datetime,
-    LowerId: string,
-    Identity: string,
-    Id: string,
-    Version: string,
-    Type: string,
-    Url: string,
-    PageUrl: string,
-    Published: datetime,
-    IsListed: bool,
-    Created: datetime,
-    LastEdited: datetime,
-    PackageSize: long,
-    PackageHash: string,
-    PackageHashAlgorithm: string,
-    Deprecation: dynamic,
-    Vulnerabilities: dynamic,
-    HasRepositoryProperty: bool,
-    PackageEntryCount: int,
-    NuspecPackageEntry: dynamic,
-    SignaturePackageEntry: dynamic
-) with (docstring = __DOCSTRING__, folder = __FOLDER__)",
+            """
+            .create table __TABLENAME__ (
+                CommitId: string,
+                CommitTimestamp: datetime,
+                LowerId: string,
+                Identity: string,
+                Id: string,
+                Version: string,
+                Type: string,
+                Url: string,
+                PageUrl: string,
+                Published: datetime,
+                IsListed: bool,
+                Created: datetime,
+                LastEdited: datetime,
+                PackageSize: long,
+                PackageHash: string,
+                PackageHashAlgorithm: string,
+                Deprecation: dynamic,
+                Vulnerabilities: dynamic,
+                HasRepositoryProperty: bool,
+                PackageEntryCount: int,
+                NuspecPackageEntry: dynamic,
+                SignaturePackageEntry: dynamic
+            ) with (docstring = __DOCSTRING__, folder = __FOLDER__)
+            """,
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
 
-            @".create table __TABLENAME__ ingestion csv mapping 'BlobStorageMapping'
-'['
-    '{""Column"":""CommitId"",""DataType"":""string"",""Properties"":{""Ordinal"":0}},'
-    '{""Column"":""CommitTimestamp"",""DataType"":""datetime"",""Properties"":{""Ordinal"":1}},'
-    '{""Column"":""LowerId"",""DataType"":""string"",""Properties"":{""Ordinal"":2}},'
-    '{""Column"":""Identity"",""DataType"":""string"",""Properties"":{""Ordinal"":3}},'
-    '{""Column"":""Id"",""DataType"":""string"",""Properties"":{""Ordinal"":4}},'
-    '{""Column"":""Version"",""DataType"":""string"",""Properties"":{""Ordinal"":5}},'
-    '{""Column"":""Type"",""DataType"":""string"",""Properties"":{""Ordinal"":6}},'
-    '{""Column"":""Url"",""DataType"":""string"",""Properties"":{""Ordinal"":7}},'
-    '{""Column"":""PageUrl"",""DataType"":""string"",""Properties"":{""Ordinal"":8}},'
-    '{""Column"":""Published"",""DataType"":""datetime"",""Properties"":{""Ordinal"":9}},'
-    '{""Column"":""IsListed"",""DataType"":""bool"",""Properties"":{""Ordinal"":10}},'
-    '{""Column"":""Created"",""DataType"":""datetime"",""Properties"":{""Ordinal"":11}},'
-    '{""Column"":""LastEdited"",""DataType"":""datetime"",""Properties"":{""Ordinal"":12}},'
-    '{""Column"":""PackageSize"",""DataType"":""long"",""Properties"":{""Ordinal"":13}},'
-    '{""Column"":""PackageHash"",""DataType"":""string"",""Properties"":{""Ordinal"":14}},'
-    '{""Column"":""PackageHashAlgorithm"",""DataType"":""string"",""Properties"":{""Ordinal"":15}},'
-    '{""Column"":""Deprecation"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":16}},'
-    '{""Column"":""Vulnerabilities"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":17}},'
-    '{""Column"":""HasRepositoryProperty"",""DataType"":""bool"",""Properties"":{""Ordinal"":18}},'
-    '{""Column"":""PackageEntryCount"",""DataType"":""int"",""Properties"":{""Ordinal"":19}},'
-    '{""Column"":""NuspecPackageEntry"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":20}},'
-    '{""Column"":""SignaturePackageEntry"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":21}}'
-']'",
+            """
+            .create table __TABLENAME__ ingestion csv mapping 'BlobStorageMapping'
+            '['
+                '{"Column":"CommitId","DataType":"string","Properties":{"Ordinal":0}},'
+                '{"Column":"CommitTimestamp","DataType":"datetime","Properties":{"Ordinal":1}},'
+                '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":2}},'
+                '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":3}},'
+                '{"Column":"Id","DataType":"string","Properties":{"Ordinal":4}},'
+                '{"Column":"Version","DataType":"string","Properties":{"Ordinal":5}},'
+                '{"Column":"Type","DataType":"string","Properties":{"Ordinal":6}},'
+                '{"Column":"Url","DataType":"string","Properties":{"Ordinal":7}},'
+                '{"Column":"PageUrl","DataType":"string","Properties":{"Ordinal":8}},'
+                '{"Column":"Published","DataType":"datetime","Properties":{"Ordinal":9}},'
+                '{"Column":"IsListed","DataType":"bool","Properties":{"Ordinal":10}},'
+                '{"Column":"Created","DataType":"datetime","Properties":{"Ordinal":11}},'
+                '{"Column":"LastEdited","DataType":"datetime","Properties":{"Ordinal":12}},'
+                '{"Column":"PackageSize","DataType":"long","Properties":{"Ordinal":13}},'
+                '{"Column":"PackageHash","DataType":"string","Properties":{"Ordinal":14}},'
+                '{"Column":"PackageHashAlgorithm","DataType":"string","Properties":{"Ordinal":15}},'
+                '{"Column":"Deprecation","DataType":"dynamic","Properties":{"Ordinal":16}},'
+                '{"Column":"Vulnerabilities","DataType":"dynamic","Properties":{"Ordinal":17}},'
+                '{"Column":"HasRepositoryProperty","DataType":"bool","Properties":{"Ordinal":18}},'
+                '{"Column":"PackageEntryCount","DataType":"int","Properties":{"Ordinal":19}},'
+                '{"Column":"NuspecPackageEntry","DataType":"dynamic","Properties":{"Ordinal":20}},'
+                '{"Column":"SignaturePackageEntry","DataType":"dynamic","Properties":{"Ordinal":21}}'
+            ']'
+            """,
         };
 
-        public const string CatalogLeafItemRecordPartitioningPolicy = @".alter table __TABLENAME__ policy partitioning '{'
-  '""PartitionKeys"": ['
-    '{'
-      '""ColumnName"": ""Identity"",'
-      '""Kind"": ""Hash"",'
-      '""Properties"": {'
-        '""Function"": ""XxHash64"",'
-        '""MaxPartitionCount"": 256'
-      '}'
-    '}'
-  ']'
-'}'";
+        public const string CatalogLeafItemRecordPartitioningPolicy =
+            """
+            .alter table __TABLENAME__ policy partitioning '{'
+              '"PartitionKeys": ['
+                '{'
+                  '"ColumnName": "Identity",'
+                  '"Kind": "Hash",'
+                  '"Properties": {'
+                    '"Function": "XxHash64",'
+                    '"MaxPartitionCount": 256'
+                  '}'
+                '}'
+              ']'
+            '}'
+            """;
 
         private static readonly bool CatalogLeafItemRecordAddTypeToDefaultTableName = AddTypeToDefaultTableName(typeof(NuGet.Insights.Worker.CatalogDataToCsv.CatalogLeafItemRecord), CatalogLeafItemRecordDefaultTableName);
 

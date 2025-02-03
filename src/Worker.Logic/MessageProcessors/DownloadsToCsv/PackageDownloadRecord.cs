@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NuGet.Insights.Worker.DownloadsToCsv
 {
+    [CsvRecord]
     public partial record PackageDownloadRecord : IPackageDownloadRecord<PackageDownloadRecord>
     {
         [KustoIgnore]

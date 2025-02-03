@@ -3,6 +3,7 @@
 
 namespace NuGet.Insights.Worker.DownloadsToCsv
 {
+    [CsvRecord]
     [NoKustoDDL]
     public partial record PackageDownloadHistoryRecord : IPackageDownloadRecord<PackageDownloadHistoryRecord>
     {

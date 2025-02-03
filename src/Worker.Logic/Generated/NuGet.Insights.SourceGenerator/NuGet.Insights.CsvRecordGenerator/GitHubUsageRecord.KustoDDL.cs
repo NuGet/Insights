@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace NuGet.Insights
 {
-    static partial class KustoDDL
+    static partial class NuGetInsightsWorkerLogicKustoDDL
     {
         public const string GitHubUsageRecordDefaultTableName = "GitHubUsages";
 
@@ -15,38 +15,45 @@ namespace NuGet.Insights
         {
             ".drop table __TABLENAME__ ifexists",
 
-            @".create table __TABLENAME__ (
-    LowerId: string,
-    Id: string,
-    ResultType: string,
-    Repository: string,
-    Stars: int
-) with (docstring = __DOCSTRING__, folder = __FOLDER__)",
+            """
+            .create table __TABLENAME__ (
+                LowerId: string,
+                Id: string,
+                ResultType: string,
+                Repository: string,
+                Stars: int
+            ) with (docstring = __DOCSTRING__, folder = __FOLDER__)
+            """,
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
 
-            @".create table __TABLENAME__ ingestion csv mapping 'BlobStorageMapping'
-'['
-    '{""Column"":""LowerId"",""DataType"":""string"",""Properties"":{""Ordinal"":1}},'
-    '{""Column"":""Id"",""DataType"":""string"",""Properties"":{""Ordinal"":2}},'
-    '{""Column"":""ResultType"",""DataType"":""string"",""Properties"":{""Ordinal"":3}},'
-    '{""Column"":""Repository"",""DataType"":""string"",""Properties"":{""Ordinal"":4}},'
-    '{""Column"":""Stars"",""DataType"":""int"",""Properties"":{""Ordinal"":5}}'
-']'",
+            """
+            .create table __TABLENAME__ ingestion csv mapping 'BlobStorageMapping'
+            '['
+                '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":1}},'
+                '{"Column":"Id","DataType":"string","Properties":{"Ordinal":2}},'
+                '{"Column":"ResultType","DataType":"string","Properties":{"Ordinal":3}},'
+                '{"Column":"Repository","DataType":"string","Properties":{"Ordinal":4}},'
+                '{"Column":"Stars","DataType":"int","Properties":{"Ordinal":5}}'
+            ']'
+            """,
         };
 
-        public const string GitHubUsageRecordPartitioningPolicy = @".alter table __TABLENAME__ policy partitioning '{'
-  '""PartitionKeys"": ['
-    '{'
-      '""ColumnName"": ""LowerId"",'
-      '""Kind"": ""Hash"",'
-      '""Properties"": {'
-        '""Function"": ""XxHash64"",'
-        '""MaxPartitionCount"": 256'
-      '}'
-    '}'
-  ']'
-'}'";
+        public const string GitHubUsageRecordPartitioningPolicy =
+            """
+            .alter table __TABLENAME__ policy partitioning '{'
+              '"PartitionKeys": ['
+                '{'
+                  '"ColumnName": "LowerId",'
+                  '"Kind": "Hash",'
+                  '"Properties": {'
+                    '"Function": "XxHash64",'
+                    '"MaxPartitionCount": 256'
+                  '}'
+                '}'
+              ']'
+            '}'
+            """;
 
         private static readonly bool GitHubUsageRecordAddTypeToDefaultTableName = AddTypeToDefaultTableName(typeof(NuGet.Insights.Worker.GitHubUsageToCsv.GitHubUsageRecord), GitHubUsageRecordDefaultTableName);
 

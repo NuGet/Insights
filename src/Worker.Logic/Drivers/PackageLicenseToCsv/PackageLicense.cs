@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NuGet.Insights.Worker.PackageLicenseToCsv
 {
+    [CsvRecord]
     public partial record PackageLicense : PackageRecord, IAggregatedCsvRecord<PackageLicense>
     {
         public PackageLicense()

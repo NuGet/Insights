@@ -7,8 +7,8 @@ namespace NuGet.Insights
 {
     public interface IPropertyVisitor
     {
-        void OnProperty(PropertyVisitorContext context, IPropertySymbol symbol, string prettyPropType);
-        void Finish(PropertyVisitorContext context);
+        void OnProperty(SourceProductionContext context, CsvRecordModel model, CsvPropertyModel property);
+        void Finish(SourceProductionContext context, CsvRecordModel model);
         string GetResult();
     }
 }
