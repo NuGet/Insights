@@ -17,6 +17,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
         }
 
         public string Name => _adapter.OperationName;
+        public string Title => CatalogScanDriverMetadata.HumanizeCodeName(Name);
         public TimeSpan Frequency => TimeSpan.FromHours(4);
         public bool AutoStart => false;
         public bool IsEnabled => true;

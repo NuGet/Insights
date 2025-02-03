@@ -22,6 +22,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
         }
 
         public string Name => TimerName;
+        public string Title => CatalogScanDriverMetadata.HumanizeCodeName(Name);
         public TimeSpan Frequency => _options.Value.TimedReprocessFrequency;
         public bool AutoStart => _options.Value.AutoStartTimedReprocess;
         public bool IsEnabled => _options.Value.TimedReprocessIsEnabled;

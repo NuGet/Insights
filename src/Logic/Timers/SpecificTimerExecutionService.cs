@@ -78,6 +78,7 @@ namespace NuGet.Insights
                     return new TimerState
                     {
                         Name = pair.Name,
+                        Title = pair.Title,
                         IsRunning = isRunning,
                         IsEnabledInConfig = pair.IsEnabled,
                         IsEnabledInStorage = entity?.IsEnabled ?? pair.AutoStart,

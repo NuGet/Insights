@@ -19,6 +19,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
         }
 
         public string Name => _updater.OperationName;
+        public string Title => _updater.Title;
         public TimeSpan Frequency => _updater.Frequency;
         public bool IsEnabled => _updater.HasRequiredConfiguration;
         public bool AutoStart => _updater.AutoStart;

@@ -23,6 +23,7 @@ namespace NuGet.Insights.Worker
         }
 
         public string Name => "CatalogScanUpdate";
+        public string Title => CatalogScanDriverMetadata.HumanizeCodeName(Name);
         public TimeSpan Frequency => _options.Value.CatalogScanUpdateFrequency;
         public bool AutoStart => _options.Value.AutoStartCatalogScanUpdate;
         public bool IsEnabled => true;
