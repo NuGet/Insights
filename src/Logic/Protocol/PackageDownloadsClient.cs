@@ -8,7 +8,12 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace NuGet.Insights
 {
-    public class PackageDownloadsClient
+    public interface IPackageDownloadsClient
+    {
+        Task<AsOfData<PackageDownloads>> GetAsync();
+    }
+
+    public class PackageDownloadsClient : IPackageDownloadsClient
     {
         private static readonly JsonSerializerOptions JsonSerializerOptions = new()
         {
