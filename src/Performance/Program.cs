@@ -8,16 +8,15 @@ internal class Program
     private static async Task Main(string[] args)
     {
         await Task.Yield();
-        RunBenchmark();
-        // await DebugAsync();
+        // RunBenchmark();
+        await DebugAsync();
     }
 
     private static async Task DebugAsync()
     {
         for (var i = 0; i < 1; i++)
         {
-            var test = new CsvRecordStorageService_Compact();
-            test.N = 500_000;
+            var test = new CsvRecordStorageService_PackageFiles();
             test.LoggerFactory = LoggerFactory.Create(x => x.AddMinimalConsole());
             await test.SetupAsync();
             await test.Baseline();
@@ -26,6 +25,7 @@ internal class Program
 
     private static void RunBenchmark()
     {
-        var summary = BenchmarkRunner.Run<CsvRecordStorageService_Compact>();
+        // var summary = BenchmarkRunner.Run<AuxiliaryFileUpdaterProcessor_PackageDownloads>();
+        var summary = BenchmarkRunner.Run<CsvRecordStorageService_PackageFiles>();
     }
 }

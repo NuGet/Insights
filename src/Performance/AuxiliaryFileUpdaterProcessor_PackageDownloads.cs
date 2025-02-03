@@ -10,7 +10,7 @@ using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.BuildVersionSet;
 using NuGet.Insights.Worker.DownloadsToCsv;
 
-public class CsvRecordStorageService_Compact
+public class AuxiliaryFileUpdaterProcessor_PackageDownloads
 {
     [Params(50_000, 100_000, 200_000)]
     public int N;
