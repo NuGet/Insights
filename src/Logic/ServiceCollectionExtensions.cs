@@ -168,6 +168,7 @@ namespace NuGet.Insights
             serviceCollection.AddSingleton<VerifiedPackagesClient>();
             serviceCollection.AddSingleton<ExcludedPackagesClient>();
             serviceCollection.AddSingleton<PopularityTransfersClient>();
+            serviceCollection.AddSingleton<GitHubUsageClient>();
             serviceCollection.AddSingleton<CatalogClient>();
             serviceCollection.AddSingleton<CatalogCommitTimestampProvider>();
             serviceCollection.AddSingleton<IRemoteCursorClient, RemoteCursorClient>();

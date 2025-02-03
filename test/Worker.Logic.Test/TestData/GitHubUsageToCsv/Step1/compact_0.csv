@@ -1,0 +1,9 @@
+AsOfTimestamp,LowerId,Id,ResultType,Repository,Stars
+2021-01-16T20:00:00Z,csvhelper,CsvHelper,GitHubDependent,NuGet/NuGetGallery,1561
+2021-01-16T20:00:00Z,knapcode.minizip,Knapcode.MiniZip,GitHubDependent,NuGet/NuGetGallery,1561
+2021-01-16T20:00:00Z,microsoft.net.test.sdk,Microsoft.NET.Test.Sdk,GitHubDependent,xunit/xunit,4273
+2021-01-16T20:00:00Z,moq,Moq,GitHubDependent,NuGet/NuGetGallery,1561
+2021-01-16T20:00:00Z,moq,Moq,GitHubDependent,xunit/xunit,4273
+2021-01-16T20:00:00Z,nerdbank.gitversioning,Nerdbank.GitVersioning,GitHubDependent,xunit/xunit,4273
+2021-01-16T20:00:00Z,nuget.versioning,NuGet.Versioning,GitHubDependent,NuGet/NuGetGallery,1561
+2021-01-16T20:00:00Z,windowsazure.storage,WindowsAzure.Storage,GitHubDependent,NuGet/NuGetGallery,1561

@@ -1,0 +1,37 @@
+[
+  {
+    "Url": "https://github.com/xunit/xunit",
+    "Stars": 4321,
+    "Id": "xunit/xunit",
+    "Description": "xUnit.net is a free, open source, community-focused unit testing tool for .NET.",
+    "Dependencies": [
+      "Nerdbank.GitVersioning",
+      "Microsoft.NET.Test.Sdk",
+      "Moq",
+      "NuGet.Versioning"
+    ]
+  },
+  {
+    "Url": "https://github.com/NuGet/NuGetGallery",
+    "Stars": 1562,
+    "Id": "NuGet/NuGetGallery",
+    "Description": "NuGet Gallery is a package repository that powers https://www.nuget.org. Use this repo for reporting NuGet.org issues.",
+    "Dependencies": [
+      "Knapcode.MiniZip",
+      "Moq",
+      "WindowsAzure.Storage",
+      "NuGet.Versioning"
+    ]
+  },
+  {
+    "Url": "https://github.com/NuGet/NuGet.Client",
+    "Stars": 763,
+    "Id": "NuGet/NuGet.Client",
+    "Description": "Client Tools for NuGet - including Visual Studio extensions, command line tools, and msbuild support. (Open issues on https://github.com/nuget/home/issues)",
+    "Dependencies": [
+      "xunit.runner.visualstudio",
+      "xunit",
+      "FluentAssertions"
+    ]
+  }
+]

@@ -5,6 +5,7 @@ using System.Collections;
 using NuGet.Insights.Worker.CatalogDataToCsv;
 using NuGet.Insights.Worker.DownloadsToCsv;
 using NuGet.Insights.Worker.ExcludedPackagesToCsv;
+using NuGet.Insights.Worker.GitHubUsageToCsv;
 using NuGet.Insights.Worker.OwnersToCsv;
 using NuGet.Insights.Worker.PopularityTransfersToCsv;
 using NuGet.Insights.Worker.VerifiedPackagesToCsv;
@@ -20,6 +21,7 @@ namespace NuGet.Insights.Worker
             typeof(VerifiedPackageRecord),
             typeof(ExcludedPackageRecord),
             typeof(PopularityTransfersRecord),
+            typeof(GitHubUsageRecord),
         };
 
         [Theory]

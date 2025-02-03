@@ -4,6 +4,7 @@
 using NuGet.Insights.Worker.AuxiliaryFileUpdater;
 using NuGet.Insights.Worker.DownloadsToCsv;
 using NuGet.Insights.Worker.ExcludedPackagesToCsv;
+using NuGet.Insights.Worker.GitHubUsageToCsv;
 using NuGet.Insights.Worker.KustoIngestion;
 using NuGet.Insights.Worker.OwnersToCsv;
 using NuGet.Insights.Worker.PopularityTransfersToCsv;
@@ -49,6 +50,7 @@ namespace NuGet.Insights.Worker
                 new List<Type>
                 {
                     typeof(AuxiliaryFileUpdaterTimer<AsOfData<ExcludedPackage>, ExcludedPackageRecord>),
+                    typeof(AuxiliaryFileUpdaterTimer<AsOfData<GitHubRepositoryInfo>, GitHubUsageRecord>),
                     typeof(AuxiliaryFileUpdaterTimer<AsOfData<PackageDownloads>, PackageDownloadRecord>),
                     typeof(AuxiliaryFileUpdaterTimer<AsOfData<PackageOwner>, PackageOwnerRecord>),
                     typeof(AuxiliaryFileUpdaterTimer<AsOfData<PopularityTransfer>, PopularityTransfersRecord>),
