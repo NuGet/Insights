@@ -5,6 +5,7 @@ using System.Collections;
 using NuGet.Insights.Worker.CatalogDataToCsv;
 using NuGet.Insights.Worker.DownloadsToCsv;
 using NuGet.Insights.Worker.ExcludedPackagesToCsv;
+using NuGet.Insights.Worker.GitHubUsageToCsv;
 using NuGet.Insights.Worker.OwnersToCsv;
 using NuGet.Insights.Worker.PopularityTransfersToCsv;
 using NuGet.Insights.Worker.VerifiedPackagesToCsv;
@@ -20,6 +21,7 @@ namespace NuGet.Insights.Worker
             typeof(VerifiedPackageRecord),
             typeof(ExcludedPackageRecord),
             typeof(PopularityTransfersRecord),
+            typeof(GitHubUsageRecord),
         };
 
         [Theory]
@@ -93,8 +95,8 @@ namespace NuGet.Insights.Worker
         [Fact]
         public void CountsMatch()
         {
-            Assert.Equal(KustoDDL.TypeToDDL.Count, CsvRecordContainers.ContainerNames.Count);
-            Assert.Equal(KustoDDL.TypeToDefaultTableName.Count, CsvRecordContainers.ContainerNames.Count);
+            Assert.Equal(NuGetInsightsWorkerLogicKustoDDL.TypeToDDL.Count, CsvRecordContainers.ContainerNames.Count);
+            Assert.Equal(NuGetInsightsWorkerLogicKustoDDL.TypeToDefaultTableName.Count, CsvRecordContainers.ContainerNames.Count);
             Assert.Equal(CsvRecordContainers.RecordTypes.Count, CsvRecordContainers.ContainerNames.Count);
         }
 
@@ -386,7 +388,7 @@ namespace NuGet.Insights.Worker
             return record;
         }
 
-        public static IEnumerable<object[]> RecordTypesData = KustoDDL
+        public static IEnumerable<object[]> RecordTypesData = NuGetInsightsWorkerLogicKustoDDL
             .TypeToDefaultTableName
             .Select(x => new object[] { x.Key });
 
@@ -394,7 +396,7 @@ namespace NuGet.Insights.Worker
         {
             get
             {
-                foreach (var pair in KustoDDL.TypeToDefaultTableName)
+                foreach (var pair in NuGetInsightsWorkerLogicKustoDDL.TypeToDefaultTableName)
                 {
                     var keyFields = GetKeyFields(pair.Key);
                     foreach (var keys in SubSetsOf(keyFields))
@@ -464,7 +466,7 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        public static IEnumerable<object[]> CatalogScanRecordTypesData = KustoDDL
+        public static IEnumerable<object[]> CatalogScanRecordTypesData = NuGetInsightsWorkerLogicKustoDDL
             .TypeToDefaultTableName
             .Where(x => !KnownAuxiliaryFileRecordTypes.Contains(x.Key))
             .Select(x => new object[] { x.Key });

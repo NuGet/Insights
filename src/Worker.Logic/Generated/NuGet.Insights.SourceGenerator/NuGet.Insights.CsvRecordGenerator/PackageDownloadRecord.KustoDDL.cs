@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace NuGet.Insights
 {
-    static partial class KustoDDL
+    static partial class NuGetInsightsWorkerLogicKustoDDL
     {
         public const string PackageDownloadRecordDefaultTableName = "PackageDownloads";
 
@@ -15,40 +15,47 @@ namespace NuGet.Insights
         {
             ".drop table __TABLENAME__ ifexists",
 
-            @".create table __TABLENAME__ (
-    LowerId: string,
-    Identity: string,
-    Id: string,
-    Version: string,
-    Downloads: long,
-    TotalDownloads: long
-) with (docstring = __DOCSTRING__, folder = __FOLDER__)",
+            """
+            .create table __TABLENAME__ (
+                LowerId: string,
+                Identity: string,
+                Id: string,
+                Version: string,
+                Downloads: long,
+                TotalDownloads: long
+            ) with (docstring = __DOCSTRING__, folder = __FOLDER__)
+            """,
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
 
-            @".create table __TABLENAME__ ingestion csv mapping 'BlobStorageMapping'
-'['
-    '{""Column"":""LowerId"",""DataType"":""string"",""Properties"":{""Ordinal"":1}},'
-    '{""Column"":""Identity"",""DataType"":""string"",""Properties"":{""Ordinal"":2}},'
-    '{""Column"":""Id"",""DataType"":""string"",""Properties"":{""Ordinal"":3}},'
-    '{""Column"":""Version"",""DataType"":""string"",""Properties"":{""Ordinal"":4}},'
-    '{""Column"":""Downloads"",""DataType"":""long"",""Properties"":{""Ordinal"":5}},'
-    '{""Column"":""TotalDownloads"",""DataType"":""long"",""Properties"":{""Ordinal"":6}}'
-']'",
+            """
+            .create table __TABLENAME__ ingestion csv mapping 'BlobStorageMapping'
+            '['
+                '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":1}},'
+                '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":2}},'
+                '{"Column":"Id","DataType":"string","Properties":{"Ordinal":3}},'
+                '{"Column":"Version","DataType":"string","Properties":{"Ordinal":4}},'
+                '{"Column":"Downloads","DataType":"long","Properties":{"Ordinal":5}},'
+                '{"Column":"TotalDownloads","DataType":"long","Properties":{"Ordinal":6}}'
+            ']'
+            """,
         };
 
-        public const string PackageDownloadRecordPartitioningPolicy = @".alter table __TABLENAME__ policy partitioning '{'
-  '""PartitionKeys"": ['
-    '{'
-      '""ColumnName"": ""Identity"",'
-      '""Kind"": ""Hash"",'
-      '""Properties"": {'
-        '""Function"": ""XxHash64"",'
-        '""MaxPartitionCount"": 256'
-      '}'
-    '}'
-  ']'
-'}'";
+        public const string PackageDownloadRecordPartitioningPolicy =
+            """
+            .alter table __TABLENAME__ policy partitioning '{'
+              '"PartitionKeys": ['
+                '{'
+                  '"ColumnName": "Identity",'
+                  '"Kind": "Hash",'
+                  '"Properties": {'
+                    '"Function": "XxHash64",'
+                    '"MaxPartitionCount": 256'
+                  '}'
+                '}'
+              ']'
+            '}'
+            """;
 
         private static readonly bool PackageDownloadRecordAddTypeToDefaultTableName = AddTypeToDefaultTableName(typeof(NuGet.Insights.Worker.DownloadsToCsv.PackageDownloadRecord), PackageDownloadRecordDefaultTableName);
 

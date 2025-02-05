@@ -45,6 +45,9 @@ namespace NuGet.Insights
             SetLastModified("PopularityTransfersToCsv", Step1, "popularity-transfers.v1.json", "2021-01-16T18:00:00Z");
             SetLastModified("PopularityTransfersToCsv", Step2, "popularity-transfers.v1.json", "2021-01-17T19:00:00Z");
 
+            SetLastModified("GitHubUsageToCsv", Step1, "GitHubUsage.v1.json", "2021-01-16T20:00:00Z");
+            SetLastModified("GitHubUsageToCsv", Step2, "GitHubUsage.v1.json", "2021-01-17T21:00:00Z");
+
             SetLastModified("behaviorsample.1.0.0.nupkg.testdata", "2021-01-14T18:00:00Z");
             SetLastModified("behaviorsample.1.0.0.nuspec", "2021-01-14T19:00:00Z");
             SetLastModified("behaviorsample.1.0.0.md", "2021-01-14T20:00:00Z");
@@ -304,6 +307,7 @@ namespace NuGet.Insights
             x.VerifiedPackagesV1AgeLimit = TimeSpan.MaxValue;
             x.ExcludedPackagesV1AgeLimit = TimeSpan.MaxValue;
             x.PopularityTransfersV1AgeLimit = TimeSpan.MaxValue;
+            x.GitHubUsageV1AgeLimit = TimeSpan.MaxValue;
 
             InitializeStoragePrefix(x);
 

@@ -20,24 +20,24 @@ namespace NuGet.Insights
             _builder = new StringBuilder();
         }
 
-        public void OnProperty(PropertyVisitorContext context, IPropertySymbol symbol, string prettyPropType)
+        public void OnProperty(SourceProductionContext context, CsvRecordModel model, CsvPropertyModel property)
         {
-            if (!symbol.GetAttributes().Any(x => x.AttributeClass.Name == AttributeName))
+            if (!property.IsKustoPartitionKey)
             {
                 return;
             }
 
-            if (PropertyHelper.IsIgnoredInKusto(symbol))
+            if (property.IsKustoIgnore)
             {
-                context.GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(
+                context.ReportDiagnostic(Diagnostic.Create(
                     new DiagnosticDescriptor(
                         id: DiagnosticIds.IgnoredKustoPartitioningKey,
                         title: "An attribute was marked as both a Kusto partition key and it was ignored.",
                         messageFormat: "An attribute was marked as both a Kusto partition key and it was ignored.",
-                        CsvRecordGenerator.Category,
+                        Constants.Category,
                         DiagnosticSeverity.Error,
                         isEnabledByDefault: true),
-                    symbol.Locations.FirstOrDefault() ?? Location.None));
+                    property.Locations.FirstOrDefault() ?? Location.None));
                 return;
             }
 
@@ -47,7 +47,7 @@ namespace NuGet.Insights
                 {
                     new PartitionKey
                     {
-                        ColumnName = symbol.Name,
+                        ColumnName = property.Name,
                         Kind = "Hash",
                         Properties = new PartitionKeyProperties
                         {
@@ -69,15 +69,15 @@ namespace NuGet.Insights
 
             if (_builder.Length > 0)
             {
-                context.GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(
+                context.ReportDiagnostic(Diagnostic.Create(
                     new DiagnosticDescriptor(
                         id: DiagnosticIds.MultipleKustoPartioningKeys,
                         title: $"Multiple {AttributeName} attributes were defined on a single type.",
                         messageFormat: $"Multiple {AttributeName} attributes were defined on a single type.",
-                        CsvRecordGenerator.Category,
+                        Constants.Category,
                         DiagnosticSeverity.Error,
                         isEnabledByDefault: true),
-                    symbol.Locations.FirstOrDefault() ?? Location.None));
+                    property.Locations.FirstOrDefault() ?? Location.None));
                 return;
             }
 
@@ -97,19 +97,19 @@ namespace NuGet.Insights
             }
         }
 
-        public void Finish(PropertyVisitorContext context)
+        public void Finish(SourceProductionContext context, CsvRecordModel model)
         {
             if (_builder.Length == 0)
             {
-                context.GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(
+                context.ReportDiagnostic(Diagnostic.Create(
                     new DiagnosticDescriptor(
                         id: DiagnosticIds.NoKustoPartitioningKeyDefined,
                         title: $"No {AttributeName} attributes were defined on a type.",
                         messageFormat: $"No {AttributeName} attributes were defined on a type.",
-                        CsvRecordGenerator.Category,
+                        Constants.Category,
                         DiagnosticSeverity.Error,
                         isEnabledByDefault: true),
-                    context.TypeDeclarationSyntax.GetLocation()));
+                    model.Locations.FirstOrDefault() ?? Location.None));
             }
         }
 

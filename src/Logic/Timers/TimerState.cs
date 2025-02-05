@@ -5,7 +5,16 @@ namespace NuGet.Insights
 {
     public record TimerState
     {
+        /// <summary>
+        /// "PascalCase" identifier for the timer, useful for HTML attributes or logs, e.g. "DownloadsToCsv".
+        /// </summary>
         public required string Name { get; init; }
+
+        /// <summary>
+        /// Used for display purposes on the admin panel, e.g. "Downloads to CSV".
+        /// </summary>
+        public required string Title { get; init; }
+
         public required bool IsEnabledInStorage { get; init; }
         public required bool IsEnabledInConfig { get; init; }
         public required bool IsRunning { get; init; }

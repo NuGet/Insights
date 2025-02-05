@@ -16,10 +16,9 @@ namespace NuGet.Insights
             _builder = new StringBuilder();
         }
 
-        public void OnProperty(PropertyVisitorContext context, IPropertySymbol symbol, string prettyPropType)
+        public void OnProperty(SourceProductionContext context, CsvRecordModel model, CsvPropertyModel property)
         {
-            var propertyType = symbol.Type.ToString();
-            switch (propertyType)
+            switch (property.Type)
             {
                 case "string":
                     if (_builder.Length > 0)
@@ -29,12 +28,12 @@ namespace NuGet.Insights
                     }
 
                     _builder.Append(' ', _indent);
-                    _builder.AppendFormat("if ({0} is null)", symbol.Name);
+                    _builder.AppendFormat("if ({0} is null)", property.Name);
                     _builder.AppendLine();
                     _builder.Append(' ', _indent);
                     _builder.AppendLine("{");
                     _builder.Append(' ', _indent + 4);
-                    _builder.AppendFormat("{0} = string.Empty;", symbol.Name);
+                    _builder.AppendFormat("{0} = string.Empty;", property.Name);
                     _builder.AppendLine();
                     _builder.Append(' ', _indent);
                     _builder.Append("}");
@@ -42,7 +41,7 @@ namespace NuGet.Insights
             }
         }
 
-        public void Finish(PropertyVisitorContext context)
+        public void Finish(SourceProductionContext context, CsvRecordModel model)
         {
         }
 

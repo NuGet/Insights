@@ -231,13 +231,13 @@ namespace NuGet.Insights.Worker.KustoIngestion
         private IReadOnlyList<string> GetDDL(string containerName)
         {
             var recordType = _csvRecordContainers.GetRecordType(containerName);
-            return KustoDDL.TypeToDDL[recordType];
+            return NuGetInsightsWorkerLogicKustoDDL.TypeToDDL[recordType];
         }
 
         private string GetPartitioningStrategy(string containerName)
         {
             var recordType = _csvRecordContainers.GetRecordType(containerName);
-            return KustoDDL.TypeToPartitioningPolicy[recordType];
+            return NuGetInsightsWorkerLogicKustoDDL.TypeToPartitioningPolicy[recordType];
         }
 
         private string FormatCommand(string containerName, string tableName, string commandTemplate)

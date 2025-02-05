@@ -163,11 +163,12 @@ namespace NuGet.Insights
             serviceCollection.AddSingleton<ServiceIndexCache>();
             serviceCollection.AddSingleton<FlatContainerClient>();
             serviceCollection.AddSingleton<ExternalBlobStorageClient>();
-            serviceCollection.AddSingleton<PackageDownloadsClient>();
+            serviceCollection.AddSingleton<IPackageDownloadsClient, PackageDownloadsClient>();
             serviceCollection.AddSingleton<PackageOwnersClient>();
             serviceCollection.AddSingleton<VerifiedPackagesClient>();
             serviceCollection.AddSingleton<ExcludedPackagesClient>();
             serviceCollection.AddSingleton<PopularityTransfersClient>();
+            serviceCollection.AddSingleton<GitHubUsageClient>();
             serviceCollection.AddSingleton<CatalogClient>();
             serviceCollection.AddSingleton<CatalogCommitTimestampProvider>();
             serviceCollection.AddSingleton<IRemoteCursorClient, RemoteCursorClient>();

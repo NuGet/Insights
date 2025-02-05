@@ -6,6 +6,12 @@ namespace NuGet.Insights
     public interface ITimer
     {
         string Name { get; }
+
+        /// <summary>
+        /// Display name for the timer. <see cref="Name"/> is "PascalCase" whereas this is "First word capitalized".
+        /// </summary>
+        string Title { get; }
+
         TimeSpan Frequency { get; }
         bool AutoStart { get; }
         bool IsEnabled { get; }

@@ -183,7 +183,7 @@ namespace NuGet.Insights.Worker
         public string GetDefaultKustoTableName(string containerName)
         {
             var recordType = GetRecordType(containerName);
-            var defaultTableName = KustoDDL.TypeToDefaultTableName[recordType];
+            var defaultTableName = NuGetInsightsWorkerLogicKustoDDL.TypeToDefaultTableName[recordType];
             return defaultTableName;
         }
     }

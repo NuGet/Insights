@@ -16,9 +16,9 @@ namespace NuGet.Insights
             _builder = new StringBuilder();
         }
 
-        public void OnProperty(PropertyVisitorContext context, IPropertySymbol symbol, string prettyPropType)
+        public void OnProperty(SourceProductionContext context, CsvRecordModel model, CsvPropertyModel property)
         {
-            if (PropertyHelper.IsIgnoredInKusto(symbol))
+            if (property.IsKustoIgnore)
             {
                 return;
             }
@@ -30,10 +30,10 @@ namespace NuGet.Insights
             }
 
             _builder.Append(' ', _indent);
-            _builder.AppendFormat("{0}: {1}", symbol.Name, PropertyHelper.GetKustoDataType(context, symbol));
+            _builder.AppendFormat("{0}: {1}", property.Name, PropertyHelper.GetKustoDataType(property));
         }
 
-        public void Finish(PropertyVisitorContext context)
+        public void Finish(SourceProductionContext context, CsvRecordModel model)
         {
         }
 

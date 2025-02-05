@@ -263,7 +263,7 @@ namespace NuGet.Insights.Worker
             }
         }
 
-        public static IReadOnlyList<string> TableNames => KustoDDL
+        public static IReadOnlyList<string> TableNames => NuGetInsightsWorkerLogicKustoDDL
             .TypeToDefaultTableName
             .Values
             .OrderBy(x => x, StringComparer.Ordinal)

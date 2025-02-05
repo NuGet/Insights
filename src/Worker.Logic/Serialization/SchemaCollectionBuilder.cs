@@ -6,6 +6,7 @@ using NuGet.Insights.Worker.CopyBucketRange;
 using NuGet.Insights.Worker.DownloadsToCsv;
 using NuGet.Insights.Worker.EnqueueCatalogLeafScan;
 using NuGet.Insights.Worker.ExcludedPackagesToCsv;
+using NuGet.Insights.Worker.GitHubUsageToCsv;
 using NuGet.Insights.Worker.KustoIngestion;
 using NuGet.Insights.Worker.LoadBucketedPackage;
 using NuGet.Insights.Worker.LoadLatestPackageLeaf;
@@ -50,6 +51,7 @@ namespace NuGet.Insights.Worker
             new SchemaV1<AuxiliaryFileUpdaterMessage<VerifiedPackageRecord>>("vp2c"),
             new SchemaV1<AuxiliaryFileUpdaterMessage<ExcludedPackageRecord>>("ep2c"),
             new SchemaV1<AuxiliaryFileUpdaterMessage<PopularityTransfersRecord>>("pt2c"),
+            new SchemaV1<AuxiliaryFileUpdaterMessage<GitHubUsageRecord>>("gh2c"),
 
             .. GetCsvCompactMessageSchemaForDrivers(),
             .. GetCleanupOrphanRecordsMessageSchemaForDrivers(),

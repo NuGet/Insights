@@ -4,7 +4,7 @@
     <AssemblyName>NuGet.Insights.SourceGenerator</AssemblyName>
     <RootNamespace>NuGet.Insights</RootNamespace>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-    <NoWarn>RS1035;CS1591</NoWarn>
+    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Using Remove="Microsoft.Extensions.DependencyInjection" />
@@ -14,12 +14,9 @@
     <Using Remove="NuGet.Versioning" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="KustoDDL.cs" />
-    <EmbeddedResource Include="CsvUtility.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Humanizer.Core" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" GeneratePathProperty="true" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Bcl.HashCode" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
     <PackageReference Include="System.Text.Encodings.Web" GeneratePathProperty="true" PrivateAssets="all" />
@@ -34,6 +31,7 @@
     <ItemGroup>
       <TargetPathWithTargetPlatformMoniker Include="$(PKGHumanizer_Core)\lib\netstandard2.0\Humanizer.dll" IncludeRuntimeDependency="false" />
       <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_Bcl_AsyncInterfaces)\lib\netstandard2.0\Microsoft.Bcl.AsyncInterfaces.dll" IncludeRuntimeDependency="false" />
+      <TargetPathWithTargetPlatformMoniker Include="$(PKGMicrosoft_Bcl_HashCode)\lib\netstandard2.0\Microsoft.Bcl.HashCode.dll" IncludeRuntimeDependency="false" />
       <TargetPathWithTargetPlatformMoniker Include="$(PKGSystem_Text_Encodings_Web)\lib\netstandard2.0\System.Text.Encodings.Web.dll" IncludeRuntimeDependency="false" />
       <TargetPathWithTargetPlatformMoniker Include="$(PKGSystem_Text_Json)\lib\netstandard2.0\System.Text.Json.dll" IncludeRuntimeDependency="false" />
     </ItemGroup>

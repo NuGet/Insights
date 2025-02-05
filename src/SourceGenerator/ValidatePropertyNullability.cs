@@ -7,29 +7,29 @@ namespace NuGet.Insights
 {
     public class ValidatePropertyNullability : IPropertyVisitor
     {
-        public void OnProperty(PropertyVisitorContext context, IPropertySymbol symbol, string prettyPropType)
+        public void OnProperty(SourceProductionContext context, CsvRecordModel model, CsvPropertyModel property)
         {
-            if (context.HasNoDDLAttribute
-                || symbol.Type.IsReferenceType
-                || PropertyHelper.IsIgnoredInKusto(symbol)
-                || PropertyHelper.IsNullable(context, symbol, out _)
-                || PropertyHelper.IsRequired(context, symbol))
+            if (string.IsNullOrEmpty(model.KustoDDLName)
+                || property.IsReferenceType
+                || property.IsKustoIgnore
+                || property.IsNullable
+                || property.IsRequired)
             {
                 return;
             }
 
-            context.GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(
+            context.ReportDiagnostic(Diagnostic.Create(
                 new DiagnosticDescriptor(
                     id: DiagnosticIds.NonNullablePropertyNotMarkedAsRequired,
                     title: $"Non-nullable property is not marked as [Required].",
-                    messageFormat: $"Non-nullable value type {symbol.ToDisplayString()} is not marked as [Required]. Either make it nullable or mark it as [Required].",
-                    CsvRecordGenerator.Category,
+                    messageFormat: $"Non-nullable value type {property.FullName} is not marked as [Required]. Either make it nullable or mark it as [Required].",
+                    Constants.Category,
                     DiagnosticSeverity.Error,
                     isEnabledByDefault: true),
-                symbol.Locations.FirstOrDefault() ?? Location.None));
+                property.Locations.FirstOrDefault() ?? Location.None));
         }
 
-        public void Finish(PropertyVisitorContext context)
+        public void Finish(SourceProductionContext context, CsvRecordModel model)
         {
         }
 

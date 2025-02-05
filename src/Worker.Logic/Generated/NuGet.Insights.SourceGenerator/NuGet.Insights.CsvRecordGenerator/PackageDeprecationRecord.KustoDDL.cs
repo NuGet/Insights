@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace NuGet.Insights
 {
-    static partial class KustoDDL
+    static partial class NuGetInsightsWorkerLogicKustoDDL
     {
         public const string PackageDeprecationRecordDefaultTableName = "PackageDeprecations";
 
@@ -15,50 +15,57 @@ namespace NuGet.Insights
         {
             ".drop table __TABLENAME__ ifexists",
 
-            @".create table __TABLENAME__ (
-    LowerId: string,
-    Identity: string,
-    Id: string,
-    Version: string,
-    CatalogCommitTimestamp: datetime,
-    Created: datetime,
-    ResultType: string,
-    Message: string,
-    Reasons: dynamic,
-    AlternatePackageId: string,
-    AlternateVersionRange: string
-) with (docstring = __DOCSTRING__, folder = __FOLDER__)",
+            """
+            .create table __TABLENAME__ (
+                LowerId: string,
+                Identity: string,
+                Id: string,
+                Version: string,
+                CatalogCommitTimestamp: datetime,
+                Created: datetime,
+                ResultType: string,
+                Message: string,
+                Reasons: dynamic,
+                AlternatePackageId: string,
+                AlternateVersionRange: string
+            ) with (docstring = __DOCSTRING__, folder = __FOLDER__)
+            """,
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
 
-            @".create table __TABLENAME__ ingestion csv mapping 'BlobStorageMapping'
-'['
-    '{""Column"":""LowerId"",""DataType"":""string"",""Properties"":{""Ordinal"":2}},'
-    '{""Column"":""Identity"",""DataType"":""string"",""Properties"":{""Ordinal"":3}},'
-    '{""Column"":""Id"",""DataType"":""string"",""Properties"":{""Ordinal"":4}},'
-    '{""Column"":""Version"",""DataType"":""string"",""Properties"":{""Ordinal"":5}},'
-    '{""Column"":""CatalogCommitTimestamp"",""DataType"":""datetime"",""Properties"":{""Ordinal"":6}},'
-    '{""Column"":""Created"",""DataType"":""datetime"",""Properties"":{""Ordinal"":7}},'
-    '{""Column"":""ResultType"",""DataType"":""string"",""Properties"":{""Ordinal"":8}},'
-    '{""Column"":""Message"",""DataType"":""string"",""Properties"":{""Ordinal"":9}},'
-    '{""Column"":""Reasons"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":10}},'
-    '{""Column"":""AlternatePackageId"",""DataType"":""string"",""Properties"":{""Ordinal"":11}},'
-    '{""Column"":""AlternateVersionRange"",""DataType"":""string"",""Properties"":{""Ordinal"":12}}'
-']'",
+            """
+            .create table __TABLENAME__ ingestion csv mapping 'BlobStorageMapping'
+            '['
+                '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":2}},'
+                '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":3}},'
+                '{"Column":"Id","DataType":"string","Properties":{"Ordinal":4}},'
+                '{"Column":"Version","DataType":"string","Properties":{"Ordinal":5}},'
+                '{"Column":"CatalogCommitTimestamp","DataType":"datetime","Properties":{"Ordinal":6}},'
+                '{"Column":"Created","DataType":"datetime","Properties":{"Ordinal":7}},'
+                '{"Column":"ResultType","DataType":"string","Properties":{"Ordinal":8}},'
+                '{"Column":"Message","DataType":"string","Properties":{"Ordinal":9}},'
+                '{"Column":"Reasons","DataType":"dynamic","Properties":{"Ordinal":10}},'
+                '{"Column":"AlternatePackageId","DataType":"string","Properties":{"Ordinal":11}},'
+                '{"Column":"AlternateVersionRange","DataType":"string","Properties":{"Ordinal":12}}'
+            ']'
+            """,
         };
 
-        public const string PackageDeprecationRecordPartitioningPolicy = @".alter table __TABLENAME__ policy partitioning '{'
-  '""PartitionKeys"": ['
-    '{'
-      '""ColumnName"": ""Identity"",'
-      '""Kind"": ""Hash"",'
-      '""Properties"": {'
-        '""Function"": ""XxHash64"",'
-        '""MaxPartitionCount"": 256'
-      '}'
-    '}'
-  ']'
-'}'";
+        public const string PackageDeprecationRecordPartitioningPolicy =
+            """
+            .alter table __TABLENAME__ policy partitioning '{'
+              '"PartitionKeys": ['
+                '{'
+                  '"ColumnName": "Identity",'
+                  '"Kind": "Hash",'
+                  '"Properties": {'
+                    '"Function": "XxHash64",'
+                    '"MaxPartitionCount": 256'
+                  '}'
+                '}'
+              ']'
+            '}'
+            """;
 
         private static readonly bool PackageDeprecationRecordAddTypeToDefaultTableName = AddTypeToDefaultTableName(typeof(NuGet.Insights.Worker.CatalogDataToCsv.PackageDeprecationRecord), PackageDeprecationRecordDefaultTableName);
 

@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NuGet.Insights.Worker.PackageCertificateToCsv
 {
+    [CsvRecord]
     public partial record PackageCertificateRecord : PackageRecord, IAggregatedCsvRecord<PackageCertificateRecord>
     {
         public PackageCertificateRecord()

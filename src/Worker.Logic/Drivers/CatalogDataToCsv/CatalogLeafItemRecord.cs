@@ -6,6 +6,7 @@ using NuGet.Packaging;
 
 namespace NuGet.Insights.Worker.CatalogDataToCsv
 {
+    [CsvRecord]
     public partial record CatalogLeafItemRecord : IAggregatedCsvRecord<CatalogLeafItemRecord>
     {
         public CatalogLeafItemRecord()

@@ -10,17 +10,20 @@ namespace NuGet.Insights.Worker
         public bool AutoStartVerifiedPackagesToCsv { get; set; } = false;
         public bool AutoStartExcludedPackagesToCsv { get; set; } = false;
         public bool AutoStartPopularityTransfersToCsv { get; set; } = false;
+        public bool AutoStartGitHubUsageToCsv { get; set; } = false;
 
         public TimeSpan DownloadToCsvFrequency { get; set; } = TimeSpan.FromHours(3);
         public TimeSpan OwnersToCsvFrequency { get; set; } = TimeSpan.FromHours(3);
         public TimeSpan VerifiedPackagesToCsvFrequency { get; set; } = TimeSpan.FromHours(3);
         public TimeSpan ExcludedPackagesToCsvFrequency { get; set; } = TimeSpan.FromHours(3);
         public TimeSpan PopularityTransfersToCsvFrequency { get; set; } = TimeSpan.FromHours(3);
+        public TimeSpan GitHubUsageToCsvFrequency { get; set; } = TimeSpan.FromHours(3);
 
         public string PackageDownloadContainerName { get; set; } = "packagedownloads";
         public string PackageOwnerContainerName { get; set; } = "packageowners";
         public string VerifiedPackageContainerName { get; set; } = "verifiedpackages";
         public string ExcludedPackageContainerName { get; set; } = "excludedpackages";
         public string PopularityTransferContainerName { get; set; } = "popularitytransfers";
+        public string GitHubUsageContainerName { get; set; } = "githubusage";
     }
 }

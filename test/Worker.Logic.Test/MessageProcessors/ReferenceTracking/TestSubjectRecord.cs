@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NuGet.Insights.Worker.ReferenceTracking
 {
+    [CsvRecord]
     public partial record TestSubjectRecord : IAggregatedCsvRecord<TestSubjectRecord>, ICleanupOrphanCsvRecord
     {
         [BucketKey]

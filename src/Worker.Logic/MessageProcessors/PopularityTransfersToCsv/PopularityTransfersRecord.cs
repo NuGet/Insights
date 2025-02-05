@@ -3,6 +3,7 @@
 
 namespace NuGet.Insights.Worker.PopularityTransfersToCsv
 {
+    [CsvRecord]
     public partial record PopularityTransfersRecord : IAuxiliaryFileCsvRecord<PopularityTransfersRecord>
     {
         [KustoIgnore]

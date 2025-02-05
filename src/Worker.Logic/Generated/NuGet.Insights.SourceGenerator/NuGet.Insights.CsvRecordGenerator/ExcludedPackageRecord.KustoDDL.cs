@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace NuGet.Insights
 {
-    static partial class KustoDDL
+    static partial class NuGetInsightsWorkerLogicKustoDDL
     {
         public const string ExcludedPackageRecordDefaultTableName = "ExcludedPackages";
 
@@ -15,34 +15,41 @@ namespace NuGet.Insights
         {
             ".drop table __TABLENAME__ ifexists",
 
-            @".create table __TABLENAME__ (
-    LowerId: string,
-    Id: string,
-    IsExcluded: bool
-) with (docstring = __DOCSTRING__, folder = __FOLDER__)",
+            """
+            .create table __TABLENAME__ (
+                LowerId: string,
+                Id: string,
+                IsExcluded: bool
+            ) with (docstring = __DOCSTRING__, folder = __FOLDER__)
+            """,
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
 
-            @".create table __TABLENAME__ ingestion csv mapping 'BlobStorageMapping'
-'['
-    '{""Column"":""LowerId"",""DataType"":""string"",""Properties"":{""Ordinal"":1}},'
-    '{""Column"":""Id"",""DataType"":""string"",""Properties"":{""Ordinal"":2}},'
-    '{""Column"":""IsExcluded"",""DataType"":""bool"",""Properties"":{""Ordinal"":3}}'
-']'",
+            """
+            .create table __TABLENAME__ ingestion csv mapping 'BlobStorageMapping'
+            '['
+                '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":1}},'
+                '{"Column":"Id","DataType":"string","Properties":{"Ordinal":2}},'
+                '{"Column":"IsExcluded","DataType":"bool","Properties":{"Ordinal":3}}'
+            ']'
+            """,
         };
 
-        public const string ExcludedPackageRecordPartitioningPolicy = @".alter table __TABLENAME__ policy partitioning '{'
-  '""PartitionKeys"": ['
-    '{'
-      '""ColumnName"": ""LowerId"",'
-      '""Kind"": ""Hash"",'
-      '""Properties"": {'
-        '""Function"": ""XxHash64"",'
-        '""MaxPartitionCount"": 256'
-      '}'
-    '}'
-  ']'
-'}'";
+        public const string ExcludedPackageRecordPartitioningPolicy =
+            """
+            .alter table __TABLENAME__ policy partitioning '{'
+              '"PartitionKeys": ['
+                '{'
+                  '"ColumnName": "LowerId",'
+                  '"Kind": "Hash",'
+                  '"Properties": {'
+                    '"Function": "XxHash64",'
+                    '"MaxPartitionCount": 256'
+                  '}'
+                '}'
+              ']'
+            '}'
+            """;
 
         private static readonly bool ExcludedPackageRecordAddTypeToDefaultTableName = AddTypeToDefaultTableName(typeof(NuGet.Insights.Worker.ExcludedPackagesToCsv.ExcludedPackageRecord), ExcludedPackageRecordDefaultTableName);
 

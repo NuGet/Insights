@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
 {
+    [CsvRecord]
     public partial record VerifiedPackageRecord : IAuxiliaryFileCsvRecord<VerifiedPackageRecord>
     {
         [KustoIgnore]

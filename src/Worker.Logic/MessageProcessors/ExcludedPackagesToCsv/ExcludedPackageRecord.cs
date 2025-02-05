@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
 {
+    [CsvRecord]
     public partial record ExcludedPackageRecord : IAuxiliaryFileCsvRecord<ExcludedPackageRecord>
     {
         [KustoIgnore]

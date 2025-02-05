@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace NuGet.Insights
 {
-    static partial class KustoDDL
+    static partial class NuGetInsightsWorkerLogicKustoDDL
     {
         public const string PackageLicenseDefaultTableName = "PackageLicenses";
 
@@ -15,66 +15,73 @@ namespace NuGet.Insights
         {
             ".drop table __TABLENAME__ ifexists",
 
-            @".create table __TABLENAME__ (
-    LowerId: string,
-    Identity: string,
-    Id: string,
-    Version: string,
-    CatalogCommitTimestamp: datetime,
-    Created: datetime,
-    ResultType: string,
-    Url: string,
-    Expression: string,
-    File: string,
-    GeneratedUrl: string,
-    ExpressionParsed: dynamic,
-    ExpressionLicenses: dynamic,
-    ExpressionExceptions: dynamic,
-    ExpressionNonStandardLicenses: dynamic,
-    ExpressionHasDeprecatedIdentifier: bool,
-    FileLength: long,
-    FileSHA256: string,
-    FileContent: string
-) with (docstring = __DOCSTRING__, folder = __FOLDER__)",
+            """
+            .create table __TABLENAME__ (
+                LowerId: string,
+                Identity: string,
+                Id: string,
+                Version: string,
+                CatalogCommitTimestamp: datetime,
+                Created: datetime,
+                ResultType: string,
+                Url: string,
+                Expression: string,
+                File: string,
+                GeneratedUrl: string,
+                ExpressionParsed: dynamic,
+                ExpressionLicenses: dynamic,
+                ExpressionExceptions: dynamic,
+                ExpressionNonStandardLicenses: dynamic,
+                ExpressionHasDeprecatedIdentifier: bool,
+                FileLength: long,
+                FileSHA256: string,
+                FileContent: string
+            ) with (docstring = __DOCSTRING__, folder = __FOLDER__)
+            """,
 
             ".alter-merge table __TABLENAME__ policy retention softdelete = 30d",
 
-            @".create table __TABLENAME__ ingestion csv mapping 'BlobStorageMapping'
-'['
-    '{""Column"":""LowerId"",""DataType"":""string"",""Properties"":{""Ordinal"":2}},'
-    '{""Column"":""Identity"",""DataType"":""string"",""Properties"":{""Ordinal"":3}},'
-    '{""Column"":""Id"",""DataType"":""string"",""Properties"":{""Ordinal"":4}},'
-    '{""Column"":""Version"",""DataType"":""string"",""Properties"":{""Ordinal"":5}},'
-    '{""Column"":""CatalogCommitTimestamp"",""DataType"":""datetime"",""Properties"":{""Ordinal"":6}},'
-    '{""Column"":""Created"",""DataType"":""datetime"",""Properties"":{""Ordinal"":7}},'
-    '{""Column"":""ResultType"",""DataType"":""string"",""Properties"":{""Ordinal"":8}},'
-    '{""Column"":""Url"",""DataType"":""string"",""Properties"":{""Ordinal"":9}},'
-    '{""Column"":""Expression"",""DataType"":""string"",""Properties"":{""Ordinal"":10}},'
-    '{""Column"":""File"",""DataType"":""string"",""Properties"":{""Ordinal"":11}},'
-    '{""Column"":""GeneratedUrl"",""DataType"":""string"",""Properties"":{""Ordinal"":12}},'
-    '{""Column"":""ExpressionParsed"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":13}},'
-    '{""Column"":""ExpressionLicenses"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":14}},'
-    '{""Column"":""ExpressionExceptions"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":15}},'
-    '{""Column"":""ExpressionNonStandardLicenses"",""DataType"":""dynamic"",""Properties"":{""Ordinal"":16}},'
-    '{""Column"":""ExpressionHasDeprecatedIdentifier"",""DataType"":""bool"",""Properties"":{""Ordinal"":17}},'
-    '{""Column"":""FileLength"",""DataType"":""long"",""Properties"":{""Ordinal"":18}},'
-    '{""Column"":""FileSHA256"",""DataType"":""string"",""Properties"":{""Ordinal"":19}},'
-    '{""Column"":""FileContent"",""DataType"":""string"",""Properties"":{""Ordinal"":20}}'
-']'",
+            """
+            .create table __TABLENAME__ ingestion csv mapping 'BlobStorageMapping'
+            '['
+                '{"Column":"LowerId","DataType":"string","Properties":{"Ordinal":2}},'
+                '{"Column":"Identity","DataType":"string","Properties":{"Ordinal":3}},'
+                '{"Column":"Id","DataType":"string","Properties":{"Ordinal":4}},'
+                '{"Column":"Version","DataType":"string","Properties":{"Ordinal":5}},'
+                '{"Column":"CatalogCommitTimestamp","DataType":"datetime","Properties":{"Ordinal":6}},'
+                '{"Column":"Created","DataType":"datetime","Properties":{"Ordinal":7}},'
+                '{"Column":"ResultType","DataType":"string","Properties":{"Ordinal":8}},'
+                '{"Column":"Url","DataType":"string","Properties":{"Ordinal":9}},'
+                '{"Column":"Expression","DataType":"string","Properties":{"Ordinal":10}},'
+                '{"Column":"File","DataType":"string","Properties":{"Ordinal":11}},'
+                '{"Column":"GeneratedUrl","DataType":"string","Properties":{"Ordinal":12}},'
+                '{"Column":"ExpressionParsed","DataType":"dynamic","Properties":{"Ordinal":13}},'
+                '{"Column":"ExpressionLicenses","DataType":"dynamic","Properties":{"Ordinal":14}},'
+                '{"Column":"ExpressionExceptions","DataType":"dynamic","Properties":{"Ordinal":15}},'
+                '{"Column":"ExpressionNonStandardLicenses","DataType":"dynamic","Properties":{"Ordinal":16}},'
+                '{"Column":"ExpressionHasDeprecatedIdentifier","DataType":"bool","Properties":{"Ordinal":17}},'
+                '{"Column":"FileLength","DataType":"long","Properties":{"Ordinal":18}},'
+                '{"Column":"FileSHA256","DataType":"string","Properties":{"Ordinal":19}},'
+                '{"Column":"FileContent","DataType":"string","Properties":{"Ordinal":20}}'
+            ']'
+            """,
         };
 
-        public const string PackageLicensePartitioningPolicy = @".alter table __TABLENAME__ policy partitioning '{'
-  '""PartitionKeys"": ['
-    '{'
-      '""ColumnName"": ""Identity"",'
-      '""Kind"": ""Hash"",'
-      '""Properties"": {'
-        '""Function"": ""XxHash64"",'
-        '""MaxPartitionCount"": 256'
-      '}'
-    '}'
-  ']'
-'}'";
+        public const string PackageLicensePartitioningPolicy =
+            """
+            .alter table __TABLENAME__ policy partitioning '{'
+              '"PartitionKeys": ['
+                '{'
+                  '"ColumnName": "Identity",'
+                  '"Kind": "Hash",'
+                  '"Properties": {'
+                    '"Function": "XxHash64",'
+                    '"MaxPartitionCount": 256'
+                  '}'
+                '}'
+              ']'
+            '}'
+            """;
 
         private static readonly bool PackageLicenseAddTypeToDefaultTableName = AddTypeToDefaultTableName(typeof(NuGet.Insights.Worker.PackageLicenseToCsv.PackageLicense), PackageLicenseDefaultTableName);
 

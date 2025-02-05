@@ -20,64 +20,57 @@ namespace NuGet.Insights
             _indent = indent;
         }
 
-        public bool IsExistingMethod(ISymbol symbol)
+        public void OnProperty(SourceProductionContext context, CsvRecordModel model, CsvPropertyModel property)
         {
-            return symbol is IMethodSymbol methodSymbol
-                && methodSymbol.Name == MethodName;
-        }
-
-        public void OnProperty(PropertyVisitorContext context, IPropertySymbol symbol, string prettyPropType)
-        {
-            if (!symbol.GetAttributes().Any(x => x.AttributeClass?.Name == AttributeName))
+            if (!property.IsBucketKey)
             {
                 return;
             }
 
-            var typeString = symbol.Type.ToString();
-            if (typeString != "string")
+            if (property.PrettyType != "string")
             {
-                context.GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(
+                context.ReportDiagnostic(Diagnostic.Create(
                     new DiagnosticDescriptor(
                         id: DiagnosticIds.BucketKeyNotString,
                         title: $"The property marked as {AttributeName} must be a string.",
                         messageFormat: $"The property marked as {AttributeName} must be a string.",
-                        CsvRecordGenerator.Category,
+                        Constants.Category,
                         DiagnosticSeverity.Error,
                         isEnabledByDefault: true),
-                    symbol.Locations.FirstOrDefault() ?? Location.None));
+                    property.Locations.FirstOrDefault() ?? Location.None));
                 return;
             }
 
             if (_bucketKeyName is not null)
             {
-                context.GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(
+                context.ReportDiagnostic(Diagnostic.Create(
                     new DiagnosticDescriptor(
                         id: DiagnosticIds.MultipleBucketKeys,
                         title: $"Multiple {AttributeName} attributes were defined on a single type.",
                         messageFormat: $"Multiple {AttributeName} attributes were defined on a single type.",
-                        CsvRecordGenerator.Category,
+                        Constants.Category,
                         DiagnosticSeverity.Error,
                         isEnabledByDefault: true),
-                    symbol.Locations.FirstOrDefault() ?? Location.None));
+                    property.Locations.FirstOrDefault() ?? Location.None));
                 return;
             }
 
-            _bucketKeyName = symbol.Name;
+            _bucketKeyName = property.Name;
         }
 
-        public void Finish(PropertyVisitorContext context)
+        public void Finish(SourceProductionContext context, CsvRecordModel model)
         {
             if (_bucketKeyName is null)
             {
-                context.GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(
+                context.ReportDiagnostic(Diagnostic.Create(
                     new DiagnosticDescriptor(
                         id: DiagnosticIds.NoBucketKeyDefined,
                         title: $"No {AttributeName} attribute was defined on the type.",
                         messageFormat: $"No {AttributeName} attribute was defined on the type.",
-                        CsvRecordGenerator.Category,
+                        Constants.Category,
                         DiagnosticSeverity.Error,
                         isEnabledByDefault: true),
-                    context.TypeDeclarationSyntax.GetLocation()));
+                    model.Locations.FirstOrDefault() ?? Location.None));
             }
         }
 

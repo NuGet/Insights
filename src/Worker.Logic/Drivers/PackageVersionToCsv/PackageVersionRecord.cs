@@ -6,6 +6,7 @@ using NuGet.Insights.Worker.LoadPackageVersion;
 
 namespace NuGet.Insights.Worker.PackageVersionToCsv
 {
+    [CsvRecord]
     public partial record PackageVersionRecord : IPackageRecord, IAggregatedCsvRecord<PackageVersionRecord>
     {
         public PackageVersionRecord()

@@ -17,6 +17,7 @@ namespace NuGet.Insights.Worker.Workflow
         }
 
         public string Name => TimerName;
+        public string Title => CatalogScanDriverMetadata.HumanizeCodeName(Name);
         public TimeSpan Frequency => _options.Value.WorkflowFrequency;
         public bool AutoStart => false;
         public bool IsEnabled => true;

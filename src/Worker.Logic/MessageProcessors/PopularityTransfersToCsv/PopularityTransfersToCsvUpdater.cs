@@ -20,6 +20,7 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
         }
 
         public string OperationName => "PopularityTransfersToCsv";
+        public string Title => CatalogScanDriverMetadata.HumanizeCodeName(OperationName);
         public string ContainerName => _options.Value.PopularityTransferContainerName;
         public TimeSpan Frequency => _options.Value.PopularityTransfersToCsvFrequency;
         public bool HasRequiredConfiguration => _options.Value.PopularityTransfersV1Urls is not null && _options.Value.PopularityTransfersV1Urls.Count > 0;

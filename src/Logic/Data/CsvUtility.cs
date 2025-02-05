@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights
 {
-    internal static class CsvUtility
+    public static class CsvUtility
     {
         private const string DateTimeOffsetUtcFormat = "yyyy-MM-ddTHH:mm:ss.FFFFFFFZ";
         private const string DateTimeOffsetFormat = "yyyy-MM-ddTHH:mm:ss.FFFFFFFzzz";
@@ -24,7 +24,7 @@ namespace NuGet.Insights
                 || value.IndexOfAny(QuotableChars) > -1)
             {
                 writer.Write('"');
-                writer.Write(value.Replace("\"", "\"\""));
+                writer.Write(value.Replace("\"", "\"\"", StringComparison.Ordinal));
                 writer.Write('"');
             }
             else
@@ -45,7 +45,7 @@ namespace NuGet.Insights
                 || value.IndexOfAny(QuotableChars) > -1)
             {
                 await writer.WriteAsync('"');
-                await writer.WriteAsync(value.Replace("\"", "\"\""));
+                await writer.WriteAsync(value.Replace("\"", "\"\"", StringComparison.Ordinal));
                 await writer.WriteAsync('"');
             }
             else

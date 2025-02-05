@@ -1,5 +1,4 @@
 @{
-    var title = CatalogScanDriverMetadata.HumanizeCodeName(Model.Name);
     var isEnabled = Model.IsEnabledInConfig && Model.IsEnabledInStorage != false;
 
     var error = TempData[Model.Name + ".Error"]?.ToString();
@@ -89,7 +88,7 @@
         lastStarted = "never";
     }
 }
-<CollapseCard IdPrefix="@Model.Name" Title="@title" StatusText="@statusText" StatusTitle="@statusTitle" BorderClass="@borderClass">
+<CollapseCard IdPrefix="@Model.Name" Title="@Model.Title" StatusText="@statusText" StatusTitle="@statusTitle" BorderClass="@borderClass">
     <ul class="list-group list-group-flush">
         <li class="list-group-item">
             <b>Status:</b> @inlineStatus

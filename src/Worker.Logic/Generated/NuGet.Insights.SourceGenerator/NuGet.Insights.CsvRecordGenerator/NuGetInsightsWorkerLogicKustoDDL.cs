@@ -5,7 +5,7 @@
 
 namespace NuGet.Insights
 {
-    public static partial class KustoDDL
+    public static partial class NuGetInsightsWorkerLogicKustoDDL
     {
         private static Dictionary<Type, string> InternalTypeToDefaultTableName;
         private static Dictionary<Type, IReadOnlyList<string>> InternalTypeToDDL;
