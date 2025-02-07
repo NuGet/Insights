@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using ImageMagick;
+
 namespace NuGet.Insights.Worker.PackageIconToCsv
 {
     public class PackageIconToCsvDriverTest : BaseWorkerLogicIntegrationTest
@@ -12,6 +14,42 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         }
 
         public ICatalogLeafToCsvDriver<PackageIcon> Target => Host.Services.GetRequiredService<ICatalogLeafToCsvDriver<PackageIcon>>();
+
+        [Fact]
+        public async Task AllowsMissingContentLength()
+        {
+            HttpMessageHandlerFactory.OnSendAsync = (r, b, t) =>
+            {
+                if (r.RequestUri.AbsoluteUri.EndsWith("/icon", StringComparison.Ordinal))
+                {
+                    using var image = new MagickImage(new MagickColor("#ff00ff"), 512, 128);
+                    var bytes = image.ToByteArray(MagickFormat.Png);
+                    var response = new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new ByteArrayContent(bytes),
+                    };
+                    response.Content.Headers.ContentLength = null;
+                    return Task.FromResult(response);
+                }
+
+                return Task.FromResult<HttpResponseMessage>(null);
+            };
+
+            await Target.InitializeAsync();
+            var leaf = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2023.05.04.04.00.50/microsoft.extensions.primitives.2.2.0.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "Microsoft.Extensions.Primitives",
+                PackageVersion = "2.2.0",
+            };
+
+            var output = await Target.ProcessLeafAsync(leaf);
+
+            Assert.Equal(DriverResultType.Success, output.Type);
+            var record = Assert.Single(output.Value);
+            Assert.Equal("[{\"Height\":128,\"Width\":512}]", record.FrameDimensions);
+        }
 
         [Fact]
         public async Task SerializesFrameDimensionsInLexOrder()
