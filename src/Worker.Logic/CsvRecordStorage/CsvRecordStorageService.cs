@@ -31,7 +31,9 @@ namespace NuGet.Insights.Worker
         private readonly IMetric _compactDurationMs;
         private readonly IMetric _pruneRecordCount;
         private readonly IMetric _pruneRecordDelta;
-        private readonly IMetric _recordCount;
+        private readonly IMetric _finalRecordCount;
+        private readonly IMetric _newRecordCount;
+        private readonly IMetric _existingRecordCount;
         private readonly IMetric _pruneChunkCount;
         private readonly IMetric _compressedSize;
         private readonly IMetric _uncompressedSize;
@@ -63,78 +65,106 @@ namespace NuGet.Insights.Worker
             _compactDurationMs = _telemetryClient.GetMetric(
                 $"{MetricIdPrefix}{nameof(CompactAsync)}.DurationMs",
                 "DestContainer",
-                "RecordType");
+                "RecordType",
+                "Bucket");
             _pruneRecordCount = _telemetryClient.GetMetric(
                 $"{MetricIdPrefix}{nameof(CompactAsync)}.PruneRecordCount",
                 "DestContainer",
                 "RecordType",
+                "Bucket",
                 "IsFinalPrune");
             _pruneRecordDelta = _telemetryClient.GetMetric(
                 $"{MetricIdPrefix}{nameof(CompactAsync)}.PruneRecordDelta",
                 "DestContainer",
                 "RecordType",
+                "Bucket",
                 "IsFinalPrune");
-            _recordCount = _telemetryClient.GetMetric(
-                $"{MetricIdPrefix}{nameof(CompactAsync)}.RecordCount",
+            _finalRecordCount = _telemetryClient.GetMetric(
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.FinalRecordCount",
                 "DestContainer",
-                "RecordType");
+                "RecordType",
+                "Bucket");
+            _newRecordCount = _telemetryClient.GetMetric(
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.NewRecordCount",
+                "DestContainer",
+                "RecordType",
+                "Bucket");
+            _existingRecordCount = _telemetryClient.GetMetric(
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.ExistingRecordCount",
+                "DestContainer",
+                "RecordType",
+                "Bucket");
             _pruneChunkCount = _telemetryClient.GetMetric(
                 $"{MetricIdPrefix}{nameof(CompactAsync)}.EntityCount",
                 "DestContainer",
-                "RecordType");
+                "RecordType",
+                "Bucket");
             _compressedSize = _telemetryClient.GetMetric(
                 $"{MetricIdPrefix}{nameof(CompactAsync)}.CompressedSizeInBytes",
                 "DestContainer",
-                "RecordType");
+                "RecordType",
+                "Bucket");
             _uncompressedSize = _telemetryClient.GetMetric(
                 $"{MetricIdPrefix}{nameof(CompactAsync)}.UncompressedSizeInBytes",
                 "DestContainer",
-                "RecordType");
+                "RecordType",
+                "Bucket");
             _blobChange = _telemetryClient.GetMetric(
                 $"{MetricIdPrefix}{nameof(CompactAsync)}.BlobChange",
                 "DestContainer",
-                "RecordType");
+                "RecordType",
+                "Bucket");
             _bigModeSplitAppendedDurationMs = _telemetryClient.GetMetric(
                 $"{MetricIdPrefix}{nameof(CompactAsync)}.BigMode.SplitAppendedDurationMs",
                 "DestContainer",
-                "RecordType");
+                "RecordType",
+                "Bucket");
             _bigModeSplitExistingDurationMs = _telemetryClient.GetMetric(
                 $"{MetricIdPrefix}{nameof(CompactAsync)}.BigMode.SplitExistingDurationMs",
                 "DestContainer",
-                "RecordType");
+                "RecordType",
+                "Bucket");
             _bigModeSplitSerializeDurationMs = _telemetryClient.GetMetric(
                 $"{MetricIdPrefix}{nameof(CompactAsync)}.BigMode.SplitSerializeDurationMs",
                 "DestContainer",
-                "RecordType");
+                "RecordType",
+                "Bucket");
             _bigModeSplitFileSize = _telemetryClient.GetMetric(
                 $"{MetricIdPrefix}{nameof(CompactAsync)}.BigMode.SplitFileSize",
                 "DestContainer",
-                "RecordType");
+                "RecordType",
+                "Bucket");
             _bigModeSplitFileSizeDelta = _telemetryClient.GetMetric(
                 $"{MetricIdPrefix}{nameof(CompactAsync)}.BigMode.SplitFileSizeDelta",
                 "DestContainer",
-                "RecordType");
+                "RecordType",
+                "Bucket");
             _bigModeMergeSplitDurationMs = _telemetryClient.GetMetric(
                 $"{MetricIdPrefix}{nameof(CompactAsync)}.BigMode.MergeSplitDurationMs",
                 "DestContainer",
-                "RecordType");
+                "RecordType",
+                "Bucket");
             _bigModeSwitch = _telemetryClient.GetMetric(
                 $"{MetricIdPrefix}{nameof(CompactAsync)}.BigMode.Switch",
                 "DestContainer",
                 "RecordType",
+                "Bucket",
                 "Reason");
             _bigModeSubdivisions = _telemetryClient.GetMetric(
                 $"{MetricIdPrefix}{nameof(CompactAsync)}.BigMode.Subdivisions",
                 "DestContainer",
-                "RecordType");
+                "RecordType",
+                "Bucket");
             _bigModePreallocateOutputFileSize = _telemetryClient.GetMetric(
                 $"{MetricIdPrefix}{nameof(CompactAsync)}.BigMode.PreallocateOutputFileSize",
                 "DestContainer",
-                "RecordType");
+                "RecordType",
+                "Bucket");
             _bigModeOutputFileSizeDelta = _telemetryClient.GetMetric(
                 $"{MetricIdPrefix}{nameof(CompactAsync)}.BigMode.OutputFileSizeDelta",
                 "DestContainer",
-                "RecordType");
+                "RecordType",
+                "Bucket");
         }
 
         public async Task InitializeAsync(string destContainer)
@@ -160,6 +190,7 @@ namespace NuGet.Insights.Worker
         public async Task CompactAsync<T>(ICsvRecordProvider<T> provider, string destContainer, int bucket) where T : ICsvRecord<T>
         {
             var recordType = typeof(T).Name;
+            var bucketString = bucket.ToString(CultureInfo.InvariantCulture);
             var stopwatch = Stopwatch.StartNew();
 
             var compactBlob = await GetCompactBlobClientAsync(destContainer, bucket);
@@ -202,7 +233,7 @@ namespace NuGet.Insights.Worker
                         "Switching to big mode with {Subdivisions} subdivisions, based on existing record count of {RecordCount}.",
                         subdivisions,
                         existingMetadata.RecordCount);
-                    _bigModeSwitch.TrackValue(1, destContainer, recordType, "ExistingRecordCount");
+                    _bigModeSwitch.TrackValue(1, destContainer, recordType, bucketString, "ExistingRecordCount");
                     await CompactBigModeAsync(provider, destContainer, bucket, subdivisions, existingBlobInfo);
                     return;
                 }
@@ -218,7 +249,7 @@ namespace NuGet.Insights.Worker
                 case LoadAppendedRecordsToMemoryResult.NoData:
                     return;
                 case LoadAppendedRecordsToMemoryResult.BigMode:
-                    _bigModeSwitch.TrackValue(1, destContainer, recordType, "EstimatedRecordCount");
+                    _bigModeSwitch.TrackValue(1, destContainer, recordType, bucketString, "EstimatedRecordCount");
                     await CompactBigModeAsync(provider, destContainer, bucket, subdivsions, existingBlobInfo);
                     return;
                 default:
@@ -228,12 +259,12 @@ namespace NuGet.Insights.Worker
             // Step 4: load the existing records from blob storage into memory
             if (blobProperties is not null && provider.UseExistingRecords)
             {
-                existingBlobInfo = await LoadExistingRecordsToMemoryAsync(compactBlob, records);
+                existingBlobInfo = await LoadExistingRecordsToMemoryAsync(compactBlob, records, destContainer, recordType, bucketString);
             }
 
             // Step 5: prune records in memory to remove duplicates and sort
-            records = Prune(provider, records, destContainer, recordType, isFinalPrune: true);
-            _recordCount.TrackValue(records.Count, destContainer, recordType);
+            records = Prune(provider, records, destContainer, recordType, bucketString, isFinalPrune: true);
+            _finalRecordCount.TrackValue(records.Count, destContainer, recordType, bucketString);
 
             // Step 6: serialize the records to a new CSV file
             using var stream = SerializeToMemory(records, writeHeader: true, out var uncompressedSize);
@@ -247,19 +278,20 @@ namespace NuGet.Insights.Worker
                 records.Count,
                 uncompressedSize,
                 destContainer,
-                recordType);
+                recordType,
+                bucketString);
 
-            _compactDurationMs.TrackValue(stopwatch.Elapsed.TotalMilliseconds, destContainer, recordType);
+            _compactDurationMs.TrackValue(stopwatch.Elapsed.TotalMilliseconds, destContainer, recordType, bucketString);
         }
 
-        private List<T> Prune<T>(ICsvRecordProvider<T> provider, List<T> records, string destContainer, string recordType, bool isFinalPrune) where T : ICsvRecord<T>
+        private List<T> Prune<T>(ICsvRecordProvider<T> provider, List<T> records, string destContainer, string recordType, string bucketString, bool isFinalPrune) where T : ICsvRecord<T>
         {
             if (records.Count != 0)
             {
                 var initialCount = records.Count;
-                _pruneRecordCount.TrackValue(records.Count, destContainer, recordType, isFinalPrune ? "true" : "false");
+                _pruneRecordCount.TrackValue(records.Count, destContainer, recordType, bucketString, isFinalPrune ? "true" : "false");
                 records = provider.Prune(records, isFinalPrune, _options, _logger);
-                _pruneRecordDelta.TrackValue(records.Count - initialCount, destContainer, recordType, isFinalPrune ? "true" : "false");
+                _pruneRecordDelta.TrackValue(records.Count - initialCount, destContainer, recordType, bucketString, isFinalPrune ? "true" : "false");
             }
 
             if (isFinalPrune)
@@ -339,6 +371,7 @@ namespace NuGet.Insights.Worker
             var recordCount = 0;
             var result = LoadAppendedRecordsToMemoryResult.Loaded;
             var subdivisions = 0;
+            var bucketString = bucket.ToString(CultureInfo.InvariantCulture);
 
             string? lastPosition = null;
             await foreach (var chunk in provider.GetChunksAsync(bucket))
@@ -360,7 +393,7 @@ namespace NuGet.Insights.Worker
                 // Proactively prune to avoid out of memory exceptions.
                 if (chunkCount % PruneEveryNEntity == PruneEveryNEntity - 1 && records.Count != 0)
                 {
-                    records = Prune(provider, records, destContainer, recordType, isFinalPrune: false);
+                    records = Prune(provider, records, destContainer, recordType, bucketString, isFinalPrune: false);
                 }
             }
 
@@ -386,15 +419,23 @@ namespace NuGet.Insights.Worker
                 result = provider.WriteEmptyCsv ? LoadAppendedRecordsToMemoryResult.Loaded : LoadAppendedRecordsToMemoryResult.NoData;
             }
 
-            _pruneChunkCount.TrackValue(chunkCount, destContainer, recordType);
+            _newRecordCount.TrackValue(recordCount, destContainer, recordType, bucketString);
+            _pruneChunkCount.TrackValue(chunkCount, destContainer, recordType, bucketString);
+
             return (result, records, subdivisions);
         }
 
-        private async Task<ExistingBlobInfo?> LoadExistingRecordsToMemoryAsync<T>(BlockBlobClient compactBlob, List<T> records) where T : ICsvRecord<T>
+        private async Task<ExistingBlobInfo?> LoadExistingRecordsToMemoryAsync<T>(
+            BlockBlobClient compactBlob,
+            List<T> records,
+            string destContainer,
+            string recordType,
+            string bucketString) where T : ICsvRecord<T>
         {
             try
             {
                 var (existingRecords, existingInfo) = await DeserializeBlobAsync<T>(compactBlob);
+                _existingRecordCount.TrackValue(existingRecords.Count, destContainer, recordType, bucketString);
                 records.AddRange(existingRecords);
                 return existingInfo;
             }
@@ -422,8 +463,9 @@ namespace NuGet.Insights.Worker
             {
                 var stopwatch = Stopwatch.StartNew();
                 var recordType = typeof(T).Name;
+                var bucketString = bucket.ToString(CultureInfo.InvariantCulture);
 
-                _bigModeSubdivisions.TrackValue(subdivisions, destContainer, recordType);
+                _bigModeSubdivisions.TrackValue(subdivisions, destContainer, recordType, bucketString);
 
                 // Step 1: initialize the N temporary files split the bucket's records into
                 var uniqueFileNamePiece = Guid.NewGuid().ToByteArray().ToTrimmedBase32();
@@ -457,14 +499,14 @@ namespace NuGet.Insights.Worker
                 }
 
                 // Step 4: prune each temporary file to remove duplicates and sort
-                var (pruneRecordCount, totalUncompressedSize) = PruneSubdivisionsOnDisk(provider, tempFiles, destContainer, subdivisions, recordType);
+                var (pruneRecordCount, totalUncompressedSize) = PruneSubdivisionsOnDisk(provider, tempFiles, destContainer, subdivisions, recordType, bucketString);
 
                 // Step 5: combine the temporary files into one merged, gzipped file
                 var finalPath = Path.Combine(TempDir, $"{recordType}_{CompactPrefix}{bucket}_final_{uniqueFileNamePiece}.csv.gz");
                 using var finalStream = TempStreamWriter.NewTempFile(finalPath);
                 finalStream.SetLengthAndWrite(totalUncompressedSize);
-                _bigModePreallocateOutputFileSize.TrackValue(totalUncompressedSize, destContainer, recordType);
-                var (combineRecordCount, uncompressedSize) = CombineSubdivisionsOnDisk<T>(tempFiles, destContainer, subdivisions, recordType, finalStream);
+                _bigModePreallocateOutputFileSize.TrackValue(totalUncompressedSize, destContainer, recordType, bucketString);
+                var (combineRecordCount, uncompressedSize) = CombineSubdivisionsOnDisk<T>(tempFiles, destContainer, subdivisions, recordType, bucketString, finalStream);
 
                 if (combineRecordCount != pruneRecordCount)
                 {
@@ -482,9 +524,10 @@ namespace NuGet.Insights.Worker
                     combineRecordCount,
                     uncompressedSize,
                     destContainer,
-                    recordType);
+                    recordType,
+                    bucketString);
 
-                _compactDurationMs.TrackValue(stopwatch.Elapsed.TotalMilliseconds, destContainer, recordType);
+                _compactDurationMs.TrackValue(stopwatch.Elapsed.TotalMilliseconds, destContainer, recordType, bucketString);
             }
             finally
             {
@@ -514,6 +557,7 @@ namespace NuGet.Insights.Worker
         {
             var chunkCount = 0;
             var newRecordCount = 0;
+            var bucketString = bucket.ToString(CultureInfo.InvariantCulture);
 
             await foreach (var chunk in provider.GetChunksAsync(bucket))
             {
@@ -523,17 +567,18 @@ namespace NuGet.Insights.Worker
                 newRecordCount += records.Count;
                 DivideAndWriteRecords(subdivisions, tempFiles, records);
                 appendedSw.Stop();
-                _bigModeSplitAppendedDurationMs.TrackValue(appendedSw.Elapsed.TotalMilliseconds, destContainer, recordType);
+                _bigModeSplitAppendedDurationMs.TrackValue(appendedSw.Elapsed.TotalMilliseconds, destContainer, recordType, bucketString);
             }
+
+            _newRecordCount.TrackValue(newRecordCount, destContainer, recordType, bucketString);
+            _pruneChunkCount.TrackValue(chunkCount, destContainer, recordType, bucketString);
 
             if (newRecordCount == 0)
             {
                 // If there are no entities, then there's no new data. We can stop here.
-                _pruneChunkCount.TrackValue(chunkCount, destContainer, recordType);
                 return !provider.WriteEmptyCsv;
             }
 
-            _pruneChunkCount.TrackValue(chunkCount, destContainer, recordType);
             return false;
         }
 
@@ -555,6 +600,7 @@ namespace NuGet.Insights.Worker
                 using BlobDownloadStreamingResult blobResult = await compactBlob.DownloadStreamingAsync();
                 var isGzip = blobResult.Details.ContentEncoding == "gzip";
                 var extension = isGzip ? ".csv.gz" : ".csv";
+                var bucketString = bucket.ToString(CultureInfo.InvariantCulture);
 
                 var existingPath = Path.Combine(TempDir, $"{recordType}_{CompactPrefix}{bucket}_existing_{uniqueFileNamePiece}{extension}");
                 using var existingStream = TempStreamWriter.NewTempFile(existingPath);
@@ -594,7 +640,8 @@ namespace NuGet.Insights.Worker
 
                 sw.Stop();
 
-                _bigModeSplitExistingDurationMs.TrackValue(sw.Elapsed.TotalMilliseconds, destContainer, recordType);
+                _existingRecordCount.TrackValue(existingRecordCount, destContainer, recordType, bucketString);
+                _bigModeSplitExistingDurationMs.TrackValue(sw.Elapsed.TotalMilliseconds, destContainer, recordType, bucketString);
             }
             catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
             {
@@ -609,7 +656,8 @@ namespace NuGet.Insights.Worker
             List<StreamWriter> tempFiles,
             string destContainer,
             int subdivisions,
-            string recordType) where T : ICsvRecord<T>
+            string recordType,
+            string bucketString) where T : ICsvRecord<T>
         {
             long recordCount = 0;
             long totalUncompressedSize = 0;
@@ -624,7 +672,7 @@ namespace NuGet.Insights.Worker
                 tempFile.BaseStream.Flush();
                 tempFile.BaseStream.Position = 0;
 
-                _bigModeSplitFileSize.TrackValue(tempFile.BaseStream.Length, destContainer, recordType);
+                _bigModeSplitFileSize.TrackValue(tempFile.BaseStream.Length, destContainer, recordType, bucketString);
 
                 _logger.LogInformation(
                     "Pruning part {SubdivisionNumber}/{Subdivisions} ({UncompressedBytes} uncompressed bytes) of CSV type {RecordType}.",
@@ -640,7 +688,7 @@ namespace NuGet.Insights.Worker
                 {
                     records = _csvReader.GetRecords<T>(reader, CsvReaderAdapter.MaxBufferSize).Records;
                     var initialCount = records.Count;
-                    records = Prune(provider, records, destContainer, recordType, isFinalPrune: true);
+                    records = Prune(provider, records, destContainer, recordType, bucketString, isFinalPrune: true);
                     recordCount += records.Count;
                 }
 
@@ -653,7 +701,7 @@ namespace NuGet.Insights.Worker
                     tempFile.BaseStream.Position = 0;
                     totalUncompressedSize += countingStream.Length;
                     var fileSizeDelta = countingStream.Length - tempFile.BaseStream.Length;
-                    _bigModeSplitFileSizeDelta.TrackValue(fileSizeDelta, destContainer, recordType);
+                    _bigModeSplitFileSizeDelta.TrackValue(fileSizeDelta, destContainer, recordType, bucketString);
                     if (fileSizeDelta < 0)
                     {
                         tempFile.BaseStream.SetLength(countingStream.Length);
@@ -661,7 +709,7 @@ namespace NuGet.Insights.Worker
                 }
 
                 sw.Stop();
-                _bigModeSplitSerializeDurationMs.TrackValue(sw.Elapsed.TotalMilliseconds, destContainer, recordType);
+                _bigModeSplitSerializeDurationMs.TrackValue(sw.Elapsed.TotalMilliseconds, destContainer, recordType, bucketString);
             }
 
             return (recordCount, totalUncompressedSize);
@@ -672,6 +720,7 @@ namespace NuGet.Insights.Worker
             string destContainer,
             int subdivisions,
             string recordType,
+            string bucketString,
             FileStream finalStream) where T : ICsvRecord<T>
         {
             _logger.LogInformation(
@@ -711,18 +760,18 @@ namespace NuGet.Insights.Worker
 
                 sw.Stop();
 
-                _bigModeMergeSplitDurationMs.TrackValue(sw.Elapsed.TotalMilliseconds, destContainer, recordType);
+                _bigModeMergeSplitDurationMs.TrackValue(sw.Elapsed.TotalMilliseconds, destContainer, recordType, bucketString);
 
                 uncompressedSize = uncompressedCountingStream.Length;
                 compressedSize = compressedCountingStream.Length;
             }
 
-            _recordCount.TrackValue(finalRecordCountFromWrite, destContainer, recordType);
+            _finalRecordCount.TrackValue(finalRecordCountFromWrite, destContainer, recordType, bucketString);
 
             finalStream.Flush();
             finalStream.Position = 0;
             var delta = compressedSize - finalStream.Length;
-            _bigModeOutputFileSizeDelta.TrackValue(delta, destContainer, recordType);
+            _bigModeOutputFileSizeDelta.TrackValue(delta, destContainer, recordType, bucketString);
             if (delta < 0)
             {
                 finalStream.SetLength(compressedSize);
@@ -739,7 +788,8 @@ namespace NuGet.Insights.Worker
             long recordCount,
             long uncompressedSize,
             string destContainer,
-            string recordType) where T : ICsvRecord<T>
+            string recordType,
+            string bucketString) where T : ICsvRecord<T>
         {
             BlobRequestConditions requestConditions;
             if (existingBlobInfo is null)
@@ -777,10 +827,10 @@ namespace NuGet.Insights.Worker
                     Metadata = metadata,
                 });
 
-            _compressedSize.TrackValue(stream.Length, destContainer, recordType);
-            _uncompressedSize.TrackValue(uncompressedSize, destContainer, recordType);
+            _compressedSize.TrackValue(stream.Length, destContainer, recordType, bucketString);
+            _uncompressedSize.TrackValue(uncompressedSize, destContainer, recordType, bucketString);
             var changed = existingBlobInfo is null || !existingBlobInfo.PreviousHash.SequenceEqual(uploadInfo.ContentHash);
-            _blobChange.TrackValue(changed ? 1 : 0, destContainer, recordType);
+            _blobChange.TrackValue(changed ? 1 : 0, destContainer, recordType, bucketString);
         }
 
         private record ExistingBlobInfo(ETag ETag, long ContentLength, IDictionary<string, string> Metadata, byte[] PreviousHash);
