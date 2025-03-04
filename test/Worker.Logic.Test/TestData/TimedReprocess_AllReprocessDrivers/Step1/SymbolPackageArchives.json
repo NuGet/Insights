@@ -13,9 +13,6 @@
     "Entity": {
       "Available": true,
       "HttpHeaders": {
-        "Content-Length": [
-          "24361"
-        ],
         "Content-Type": [
           "binary/octet-stream"
         ],
@@ -44,9 +41,6 @@
     "Entity": {
       "Available": true,
       "HttpHeaders": {
-        "Content-Length": [
-          "25390"
-        ],
         "Content-Type": [
           "binary/octet-stream"
         ],
@@ -75,9 +69,6 @@
     "Entity": {
       "Available": true,
       "HttpHeaders": {
-        "Content-Length": [
-          "23034"
-        ],
         "Content-Type": [
           "binary/octet-stream"
         ],

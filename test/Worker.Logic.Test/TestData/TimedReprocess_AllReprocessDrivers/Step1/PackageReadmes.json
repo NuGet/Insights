@@ -2,9 +2,6 @@
   {
     "Entity": {
       "HttpHeaders": {
-        "Content-Length": [
-          "45"
-        ],
         "Content-Type": [
           "binary/octet-stream"
         ],

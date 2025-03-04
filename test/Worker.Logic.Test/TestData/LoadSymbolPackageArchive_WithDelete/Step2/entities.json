@@ -32,9 +32,6 @@
       "Available": true,
       "CommitTimestamp": "2020-12-20T02:37:52.9649363+00:00",
       "HttpHeaders": {
-        "Content-Length": [
-          "10075"
-        ],
         "Content-Type": [
           "binary/octet-stream"
         ],
@@ -64,9 +61,6 @@
       "Available": true,
       "CommitTimestamp": "2020-12-20T02:37:52.9649363+00:00",
       "HttpHeaders": {
-        "Content-Length": [
-          "8029"
-        ],
         "Content-Type": [
           "binary/octet-stream"
         ],
@@ -96,9 +90,6 @@
       "Available": true,
       "CommitTimestamp": "2020-12-20T02:37:52.9649363+00:00",
       "HttpHeaders": {
-        "Content-Length": [
-          "8147"
-        ],
         "Content-Type": [
           "binary/octet-stream"
         ],

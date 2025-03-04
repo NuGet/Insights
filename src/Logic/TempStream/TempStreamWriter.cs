@@ -92,12 +92,24 @@ namespace NuGet.Insights
         {
             if (length < 0)
             {
-                length = src.Length;
+                try
+                {
+                    length = src.Length;
+                }
+                catch (NotSupportedException)
+                {
+                    length = -1;
+                    _skipMemory = true;
+                    _logger.LogInformation("A {TypeName} stream has an unknown length. It will not be buffered to memory.", src.GetType().FullName);
+                }
             }
 
-            _logger.LogInformation("Starting to buffer a {TypeName} stream with length {LengthBytes} bytes.", src.GetType().FullName, length);
+            if (length >= 0)
+            {
+                _logger.LogInformation("Starting to buffer a {TypeName} stream with length {LengthBytes} bytes.", src.GetType().FullName, length);
+            }
 
-            if (length > _maxInMemorySize)
+            if (length >= 0 && length > _maxInMemorySize)
             {
                 _skipMemory = true;
                 _logger.LogInformation("A {TypeName} stream is greater than {MaxInMemorySize} bytes. It will not be buffered to memory.", src.GetType().FullName, _maxInMemorySize);
@@ -178,7 +190,7 @@ namespace NuGet.Insights
                                 totalNumberOfBytes,
                                 totalNumberOfFreeBytes);
 
-                            if ((ulong)length > freeBytesAvailable)
+                            if (length >= 0 && (ulong)length > freeBytesAvailable)
                             {
                                 _tempDirIndex++;
                                 _logger.LogWarning(
@@ -204,7 +216,7 @@ namespace NuGet.Insights
                         _logger.LogInformation("Creating a file stream at location {TempPath}.", tempPath);
                         dest = NewTempFile(tempPath);
 
-                        if (tempDir.PreallocateFile)
+                        if (length >= 0 && tempDir.PreallocateFile)
                         {
                             // Pre-allocate the full file size, to encounter full disk exceptions prior to reading the source stream.
                             _logger.LogInformation("Pre-allocating file at location {TempPath} to {Length} bytes.", tempPath, length);
@@ -218,7 +230,14 @@ namespace NuGet.Insights
                     {
                         SafeDispose(dest);
                         _tempDirIndex++;
-                        _logger.LogWarning(ex, "Could not buffer a {TypeName} stream with length {LengthBytes} bytes to temp file {TempFile}.", src.GetType().FullName, length, tempPath);
+                        if (length >= 0)
+                        {
+                            _logger.LogWarning(ex, "Could not buffer a {TypeName} stream with length {LengthBytes} bytes to temp file {TempFile}.", src.GetType().FullName, length, tempPath);
+                        }
+                        else
+                        {
+                            _logger.LogWarning(ex, "Could not buffer a {TypeName} stream with unknown length to temp file {TempFile}.", src.GetType().FullName, tempPath);
+                        }
                         await SafeDisposeAsync(tempDirLease);
                     }
                     catch
@@ -322,11 +341,21 @@ namespace NuGet.Insights
 
         private async Task<TempStreamResult> CopyAndSeekAsync(Stream src, long length, IIncrementalHash hashAlgorithm, Stream dest, string location, int bufferSize, IAsyncDisposable lease)
         {
-            _logger.LogInformation(
-                "Starting copy of a {TypeName} stream with length {LengthBytes} bytes to {Location}.",
-                src.GetType().FullName,
-                dest.Length,
-                location);
+            if (length >= 0)
+            {
+                _logger.LogInformation(
+                    "Starting copy of a {TypeName} stream with length {LengthBytes} bytes to {Location}.",
+                    src.GetType().FullName,
+                    dest.Length,
+                    location);
+            }
+            else
+            {
+                _logger.LogInformation(
+                    "Starting copy of a {TypeName} stream with unknown length to {Location}.",
+                    src.GetType().FullName,
+                    location);
+            }
 
             var sw = Stopwatch.StartNew();
             await src.CopyToSlowAsync(dest, length, bufferSize, hashAlgorithm, _logger);
