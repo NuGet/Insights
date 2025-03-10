@@ -292,6 +292,25 @@ namespace NuGet.Insights.Worker
                 _pruneRecordCount.TrackValue(records.Count, destContainer, recordType, bucketString, isFinalPrune ? "true" : "false");
                 records = provider.Prune(records, isFinalPrune, _options, _logger);
                 _pruneRecordDelta.TrackValue(records.Count - initialCount, destContainer, recordType, bucketString, isFinalPrune ? "true" : "false");
+
+                if (isFinalPrune)
+                {
+                    // debugging metric for https://github.com/NuGet/Insights/issues/125
+                    // BEGIN
+                    _telemetryClient.TrackMetric(
+                        $"{MetricIdPrefix}{nameof(CompactAsync)}.Debug.Prune",
+                        records.Count,
+                        new Dictionary<string, string>
+                        {
+                            ["DestContainer"] = destContainer,
+                            ["RecordType"] = recordType,
+                            ["Bucket"] = bucketString,
+                            ["InitialCount"] = initialCount.ToString(CultureInfo.InvariantCulture),
+                            ["NewCount"] = records.Count.ToString(CultureInfo.InvariantCulture),
+                            ["Delta"] = (records.Count - initialCount).ToString(CultureInfo.InvariantCulture),
+                        });
+                    // END
+                }
             }
 
             if (isFinalPrune)
@@ -457,7 +476,6 @@ namespace NuGet.Insights.Worker
                 throw new ArgumentException("The number of subdivisions must be at least 2.", nameof(subdivisions));
             }
 
-
             var tempFiles = new List<StreamWriter>();
             try
             {
@@ -568,7 +586,37 @@ namespace NuGet.Insights.Worker
                 DivideAndWriteRecords(subdivisions, tempFiles, records);
                 appendedSw.Stop();
                 _bigModeSplitAppendedDurationMs.TrackValue(appendedSw.Elapsed.TotalMilliseconds, destContainer, recordType, bucketString);
+
+                // debugging metric for https://github.com/NuGet/Insights/issues/125
+                // BEGIN
+                _telemetryClient.TrackMetric(
+                    $"{MetricIdPrefix}{nameof(CompactAsync)}.Debug.Chunk",
+                    newRecordCount,
+                    new Dictionary<string, string>
+                    {
+                        ["DestContainer"] = destContainer,
+                        ["RecordType"] = recordType,
+                        ["Bucket"] = bucketString,
+                        ["ChunkCountSoFar"] = chunkCount.ToString(CultureInfo.InvariantCulture),
+                        ["NewRecordCountSoFar"] = newRecordCount.ToString(CultureInfo.InvariantCulture),
+                    });
+                // END
             }
+
+            // debugging metric for https://github.com/NuGet/Insights/issues/125
+            // BEGIN
+            _telemetryClient.TrackMetric(
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.Debug.ChunkCount",
+                newRecordCount,
+                new Dictionary<string, string>
+                {
+                    ["DestContainer"] = destContainer,
+                    ["RecordType"] = recordType,
+                    ["Bucket"] = bucketString,
+                    ["ChunkCount"] = chunkCount.ToString(CultureInfo.InvariantCulture),
+                    ["NewRecordCount"] = newRecordCount.ToString(CultureInfo.InvariantCulture),
+                });
+            // END
 
             _newRecordCount.TrackValue(newRecordCount, destContainer, recordType, bucketString);
             _pruneChunkCount.TrackValue(chunkCount, destContainer, recordType, bucketString);
@@ -621,6 +669,7 @@ namespace NuGet.Insights.Worker
                 {
                     readStream = new GZipStream(existingStream, CompressionMode.Decompress);
                 }
+                long downloadedFileSize = existingStream.Length;
 
                 _logger.LogInformation(
                     "Splitting existing records ({Bytes} bytes) into {Subdivisions} CSV parts for record type {RecordType}.",
@@ -637,6 +686,29 @@ namespace NuGet.Insights.Worker
                     blobResult.Details.ContentLength,
                     blobResult.Details.Metadata,
                     blobResult.Details.ContentHash);
+
+                // debugging metric for https://github.com/NuGet/Insights/issues/125
+                // BEGIN
+                var properties = new Dictionary<string, string>
+                {
+                    ["DestContainer"] = destContainer,
+                    ["RecordType"] = recordType,
+                    ["Bucket"] = bucketString,
+                    ["ExistingBlobContentLength"] = existingBlobInfo.ContentLength.ToString(CultureInfo.InvariantCulture),
+                    ["WrittenRecordCount"] = existingRecordCount.ToString(CultureInfo.InvariantCulture),
+                    ["DownloadedFileSize"] = downloadedFileSize.ToString(CultureInfo.InvariantCulture),
+                };
+
+                foreach (var kvp in existingBlobInfo.Metadata)
+                {
+                    properties["BlobMetadata" + kvp.Key] = kvp.Value;
+                }
+
+                _telemetryClient.TrackMetric(
+                    $"{MetricIdPrefix}{nameof(CompactAsync)}.Debug.ExistingBlob",
+                    existingRecordCount,
+                    properties);
+                // END
 
                 sw.Stop();
 
@@ -740,7 +812,7 @@ namespace NuGet.Insights.Worker
 
                 // open all of the readers
                 var readers = tempFiles
-                    .Select(x => _csvReader.GetRecordsEnumerable<T>(new StreamReader(x.BaseStream), CsvReaderAdapter.MaxBufferSize))
+                    .Select(x => _csvReader.GetRecordsEnumerable<T>(new StreamReader(x.BaseStream, leaveOpen: true), CsvReaderAdapter.MaxBufferSize))
                     .ToList();
 
                 // open the file writer
@@ -766,6 +838,27 @@ namespace NuGet.Insights.Worker
                 compressedSize = compressedCountingStream.Length;
             }
 
+            // debugging metric for https://github.com/NuGet/Insights/issues/125
+            // BEGIN
+            for (var i = 0; i < tempFiles.Count; i++)
+            {
+                StreamWriter? tempFile = tempFiles[i];
+                tempFile.BaseStream.Position = 0;
+                var recordCount = _csvReader.GetRecordsEnumerable<T>(new StreamReader(tempFile.BaseStream), CsvReaderAdapter.MaxBufferSize).Count();
+                _telemetryClient.TrackMetric(
+                    $"{MetricIdPrefix}{nameof(CompactAsync)}.Debug.PartitionRecordCount",
+                    recordCount,
+                    new Dictionary<string, string>
+                    {
+                        ["DestContainer"] = destContainer,
+                        ["RecordType"] = recordType,
+                        ["Bucket"] = bucketString,
+                        ["RecordCount"] = recordCount.ToString(CultureInfo.InvariantCulture),
+                        ["PartitionIndex"] = i.ToString(CultureInfo.InvariantCulture),
+                    });
+            }
+            // END
+
             _finalRecordCount.TrackValue(finalRecordCountFromWrite, destContainer, recordType, bucketString);
 
             finalStream.Flush();
@@ -776,6 +869,22 @@ namespace NuGet.Insights.Worker
             {
                 finalStream.SetLength(compressedSize);
             }
+
+            // debugging metric for https://github.com/NuGet/Insights/issues/125
+            // BEGIN
+            _telemetryClient.TrackMetric(
+                $"{MetricIdPrefix}{nameof(CompactAsync)}.Debug.Combine",
+                finalRecordCountFromWrite,
+                new Dictionary<string, string>
+                {
+                    ["DestContainer"] = destContainer,
+                    ["RecordType"] = recordType,
+                    ["Bucket"] = bucketString,
+                    ["UncompressedSize"] = uncompressedSize.ToString(CultureInfo.InvariantCulture),
+                    ["CompressedSize"] = compressedSize.ToString(CultureInfo.InvariantCulture),
+                    ["SizeDelta"] = delta.ToString(CultureInfo.InvariantCulture),
+                });
+            // END
 
             return (finalRecordCountFromWrite, uncompressedSize);
         }
