@@ -27,11 +27,31 @@ namespace NuGet.Insights
                 DeserializeAsync);
         }
 
-        private IAsyncEnumerable<GitHubRepositoryInfo> DeserializeAsync(Stream stream)
+        private async IAsyncEnumerable<IReadOnlyList<GitHubRepositoryInfo>> DeserializeAsync(Stream stream)
         {
-            return JsonSerializer
-                .DeserializeAsyncEnumerable<GitHubRepositoryInfo>(stream)
-                .Select(x => x ?? throw new InvalidDataException("Expected a non-null array element."));
+            var repositories = JsonSerializer.DeserializeAsyncEnumerable<GitHubRepositoryInfo>(stream);
+            const int pageSize = AsOfData<GitHubRepositoryInfo>.DefaultPageSize;
+            var page = new List<GitHubRepositoryInfo>(capacity: pageSize);
+            await foreach (var repo in repositories)
+            {
+                if (repo is null)
+                {
+                    throw new InvalidDataException("Expected a non-null array element.");
+                }
+
+                page.Add(repo);
+
+                if (page.Count >= pageSize)
+                {
+                    yield return page;
+                    page.Clear();
+                }
+            }
+
+            if (page.Count > 0)
+            {
+                yield return page;
+            }
         }
     }
 }

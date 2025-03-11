@@ -31,46 +31,58 @@ namespace NuGet.Insights.Worker.GitHubUsageToCsv
             return await _client.GetAsync();
         }
 
-        public async IAsyncEnumerable<GitHubUsageRecord> ProduceRecordsAsync(IVersionSet versionSet, AsOfData<GitHubRepositoryInfo> data)
+        public async IAsyncEnumerable<IReadOnlyList<GitHubUsageRecord>> ProduceRecordsAsync(IVersionSet versionSet, AsOfData<GitHubRepositoryInfo> data)
         {
             var uniqueDependencies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            await foreach (var repoInfo in data.Entries)
+            const int pageSize = AsOfData<GitHubUsageRecord>.DefaultPageSize;
+            var outputPage = new List<GitHubUsageRecord>(pageSize);
+
+            await foreach (IReadOnlyList<GitHubRepositoryInfo> page in data.Pages)
             {
-                var repoId = repoInfo.Id;
-                var stars = repoInfo.Stars;
-
-                foreach (var dependency in repoInfo.Dependencies)
+                foreach (GitHubRepositoryInfo repoInfo in page)
                 {
-                    if (!uniqueDependencies.Add(dependency))
+                    var repoId = repoInfo.Id;
+                    var stars = repoInfo.Stars;
+
+                    foreach (string dependency in repoInfo.Dependencies)
                     {
-                        continue;
+                        if (!uniqueDependencies.Add(dependency))
+                        {
+                            continue;
+                        }
+
+                        if (!versionSet.TryGetId(dependency, out var packageId))
+                        {
+                            continue;
+                        }
+
+                        outputPage.Add(new GitHubUsageRecord
+                        {
+                            AsOfTimestamp = data.AsOfTimestamp,
+                            ResultType = GitHubUsageResultType.GitHubDependent,
+                            LowerId = packageId.ToLowerInvariant(),
+                            Id = packageId,
+                            Repository = repoId,
+                            Stars = stars,
+                        });
+
+                        if (outputPage.Count >= pageSize)
+                        {
+                            yield return outputPage;
+                            outputPage.Clear();
+                        }
                     }
 
-                    if (!versionSet.TryGetId(dependency, out var packageId))
-                    {
-                        continue;
-                    }
-
-                    yield return new GitHubUsageRecord
-                    {
-                        AsOfTimestamp = data.AsOfTimestamp,
-                        ResultType = GitHubUsageResultType.GitHubDependent,
-                        LowerId = packageId.ToLowerInvariant(),
-                        Id = packageId,
-                        Repository = repoId,
-                        Stars = stars,
-                    };
+                    uniqueDependencies.Clear();
                 }
-
-                uniqueDependencies.Clear();
             }
 
             // Add IDs that are not mentioned in the data and therefore are not excluded. This makes joins on the
             // produced data set easier.
             foreach (var packageId in versionSet.GetUncheckedIds())
             {
-                yield return new GitHubUsageRecord
+                outputPage.Add(new GitHubUsageRecord
                 {
                     AsOfTimestamp = data.AsOfTimestamp,
                     ResultType = GitHubUsageResultType.NoGitHubDependent,
@@ -78,7 +90,18 @@ namespace NuGet.Insights.Worker.GitHubUsageToCsv
                     Id = packageId,
                     Repository = string.Empty,
                     Stars = null,
-                };
+                });
+
+                if (outputPage.Count >= pageSize)
+                {
+                    yield return outputPage;
+                    outputPage.Clear();
+                }
+            }
+
+            if (outputPage.Count > 0)
+            {
+                yield return outputPage;
             }
         }
     }

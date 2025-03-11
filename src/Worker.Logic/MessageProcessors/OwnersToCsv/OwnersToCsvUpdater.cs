@@ -31,40 +31,57 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             return await _packageOwnersClient.GetAsync();
         }
 
-        public async IAsyncEnumerable<PackageOwnerRecord> ProduceRecordsAsync(IVersionSet versionSet, AsOfData<PackageOwner> data)
+        public async IAsyncEnumerable<IReadOnlyList<PackageOwnerRecord>> ProduceRecordsAsync(IVersionSet versionSet, AsOfData<PackageOwner> data)
         {
             var idToOwners = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-            await foreach (var entry in data.Entries)
-            {
-                string id = entry.Id;
-                if (!versionSet.TryGetId(entry.Id, out id))
-                {
-                    continue;
-                }
 
-                if (!idToOwners.TryGetValue(id, out var owners))
+            const int pageSize = AsOfData<PackageOwnerRecord>.DefaultPageSize;
+            var outputPage = new List<PackageOwnerRecord>(pageSize);
+
+            await foreach (IReadOnlyList<PackageOwner> page in data.Pages)
+            {
+                foreach (PackageOwner entry in page)
                 {
-                    // Only write when we move to the next ID. This ensures all of the owners of a given ID are in the same record.
-                    if (idToOwners.Any())
+                    string id = entry.Id;
+                    if (!versionSet.TryGetId(entry.Id, out id))
                     {
-                        foreach (var inner in WriteAndClear(data.AsOfTimestamp, idToOwners))
-                        {
-                            yield return inner;
-                        }
+                        continue;
                     }
 
-                    owners = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    idToOwners.Add(id, owners);
-                }
+                    if (!idToOwners.TryGetValue(id, out var owners))
+                    {
+                        // Only write when we move to the next ID. This ensures all of the owners of a given ID are in the same record.
+                        if (idToOwners.Any())
+                        {
+                            foreach (var inner in WriteAndClear(data.AsOfTimestamp, idToOwners))
+                            {
+                                outputPage.Add(inner);
+                                if (outputPage.Count >= pageSize)
+                                {
+                                    yield return outputPage;
+                                    outputPage.Clear();
+                                }
+                            }
+                        }
 
-                owners.Add(entry.Username);
+                        owners = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        idToOwners.Add(id, owners);
+                    }
+
+                    owners.Add(entry.Username);
+                }
             }
 
             if (idToOwners.Any())
             {
-                foreach (var inner in WriteAndClear(data.AsOfTimestamp, idToOwners))
+                foreach (PackageOwnerRecord inner in WriteAndClear(data.AsOfTimestamp, idToOwners))
                 {
-                    yield return inner;
+                    outputPage.Add(inner);
+                    if (outputPage.Count >= pageSize)
+                    {
+                        yield return outputPage;
+                        outputPage.Clear();
+                    }
                 }
             }
 
@@ -72,13 +89,23 @@ namespace NuGet.Insights.Worker.OwnersToCsv
             // produced data set easier.
             foreach (var id in versionSet.GetUncheckedIds())
             {
-                yield return new PackageOwnerRecord
+                outputPage.Add(new PackageOwnerRecord
                 {
                     AsOfTimestamp = data.AsOfTimestamp,
                     Id = id,
                     LowerId = id.ToLowerInvariant(),
                     Owners = "[]",
-                };
+                });
+                if (outputPage.Count >= pageSize)
+                {
+                    yield return outputPage;
+                    outputPage.Clear();
+                }
+            }
+
+            if (outputPage.Count > 0)
+            {
+                yield return outputPage;
             }
         }
 

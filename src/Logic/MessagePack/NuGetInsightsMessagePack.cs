@@ -10,6 +10,7 @@ namespace NuGet.Insights
     public static class NuGetInsightsMessagePack
     {
         public static MessagePackSerializerOptions Options { get; private set; } = GetOptions();
+        public static MessagePackSerializerOptions NoCompressionOptions { get; private set; } = GetOptions().WithCompression(MessagePackCompression.None);
 
         private static MessagePackSerializerOptions GetOptions()
         {

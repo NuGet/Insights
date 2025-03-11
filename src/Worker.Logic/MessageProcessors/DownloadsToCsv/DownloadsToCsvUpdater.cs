@@ -31,60 +31,75 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             return await _packageDownloadsClient.GetAsync();
         }
 
-        public IAsyncEnumerable<PackageDownloadRecord> ProduceRecordsAsync(IVersionSet versionSet, AsOfData<PackageDownloads> data)
+        public IAsyncEnumerable<IReadOnlyList<PackageDownloadRecord>> ProduceRecordsAsync(IVersionSet versionSet, AsOfData<PackageDownloads> data)
         {
-            return ProduceRecordsAsync<PackageDownloadRecord>(versionSet, data.AsOfTimestamp, data.Entries);
+            return ProduceRecordsAsync<PackageDownloadRecord>(versionSet, data.AsOfTimestamp, data.Pages);
         }
 
-        public static async IAsyncEnumerable<TRecord> ProduceRecordsAsync<TRecord>(
+        public static async IAsyncEnumerable<IReadOnlyList<TRecord>> ProduceRecordsAsync<TRecord>(
             IVersionSet versionSet,
             DateTimeOffset asOfTimestamp,
-            IAsyncEnumerable<PackageDownloads> data)
+            IAsyncEnumerable<IReadOnlyList<PackageDownloads>> data)
             where TRecord : IPackageDownloadRecord<TRecord>, new()
         {
             var idToVersions = new CaseInsensitiveDictionary<CaseInsensitiveDictionary<long>>();
+            const int pageSize = AsOfData<PackageDownloadRecord>.DefaultPageSize;
+            var outputPage = new List<TRecord>(capacity: pageSize);
 
-            await foreach (var entry in data)
+            await foreach (IReadOnlyList<PackageDownloads> page in data)
             {
-                if (!NuGetVersion.TryParse(entry.Version, out var parsedVersion))
+                foreach (PackageDownloads entry in page)
                 {
-                    continue;
-                }
-
-                var normalizedVersion = parsedVersion.ToNormalizedString();
-                if (!versionSet.TryGetVersion(entry.Id, normalizedVersion, out normalizedVersion))
-                {
-                    continue;
-                }
-
-                if (!versionSet.TryGetId(entry.Id, out var id))
-                {
-                    continue;
-                }
-
-                if (!idToVersions.TryGetValue(id, out var versionToDownloads))
-                {
-                    // Only write when we move to the next ID. This ensures all of the versions of a given ID are in the same segment.
-                    if (idToVersions.Any())
+                    if (!NuGetVersion.TryParse(entry.Version, out var parsedVersion))
                     {
-                        foreach (var inner in WriteAndClear<TRecord>(asOfTimestamp, idToVersions, versionSet))
-                        {
-                            yield return inner;
-                        }
+                        continue;
                     }
 
-                    versionToDownloads = new CaseInsensitiveDictionary<long>();
-                    idToVersions.Add(id, versionToDownloads);
-                }
+                    var normalizedVersion = parsedVersion.ToNormalizedString();
+                    if (!versionSet.TryGetVersion(entry.Id, normalizedVersion, out normalizedVersion))
+                    {
+                        continue;
+                    }
 
-                versionToDownloads[normalizedVersion] = entry.Downloads;
+                    if (!versionSet.TryGetId(entry.Id, out var id))
+                    {
+                        continue;
+                    }
+
+                    if (!idToVersions.TryGetValue(id, out var versionToDownloads))
+                    {
+                        // Only write when we move to the next ID. This ensures all of the versions of a given ID are in the same segment.
+                        if (idToVersions.Any())
+                        {
+                            foreach (var inner in WriteAndClear<TRecord>(asOfTimestamp, idToVersions, versionSet))
+                            {
+                                outputPage.Add(inner);
+                                if (outputPage.Count >= pageSize)
+                                {
+                                    yield return outputPage;
+                                    outputPage.Clear();
+                                }
+                            }
+                        }
+
+                        versionToDownloads = new CaseInsensitiveDictionary<long>();
+                        idToVersions.Add(id, versionToDownloads);
+                    }
+
+                    versionToDownloads[normalizedVersion] = entry.Downloads;
+                }
             }
 
             if (idToVersions.Any())
             {
-                foreach (var inner in WriteAndClear<TRecord>(asOfTimestamp, idToVersions, versionSet))
+                foreach (TRecord inner in WriteAndClear<TRecord>(asOfTimestamp, idToVersions, versionSet))
                 {
-                    yield return inner;
+                    outputPage.Add(inner);
+                    if (outputPage.Count >= pageSize)
+                    {
+                        yield return outputPage;
+                        outputPage.Clear();
+                    }
                 }
             }
 
@@ -95,7 +110,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
 
                 foreach (var version in versionSet.GetUncheckedVersions(id))
                 {
-                    yield return new TRecord
+                    outputPage.Add(new TRecord
                     {
                         AsOfTimestamp = asOfTimestamp,
                         Id = id,
@@ -104,8 +119,18 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
                         TotalDownloads = 0,
                         Version = version,
                         Downloads = 0,
-                    };
+                    });
+                    if (outputPage.Count >= pageSize)
+                    {
+                        yield return outputPage;
+                        outputPage.Clear();
+                    }
                 }
+            }
+
+            if (outputPage.Count > 0)
+            {
+                yield return outputPage;
             }
         }
 

@@ -27,11 +27,17 @@ namespace NuGet.Insights
                 DeserializeAsync);
         }
 
-        private IAsyncEnumerable<ExcludedPackage> DeserializeAsync(Stream stream)
+        private async IAsyncEnumerable<IReadOnlyList<ExcludedPackage>> DeserializeAsync(Stream stream)
         {
-            return JsonSerializer
-                .DeserializeAsyncEnumerable<string>(stream)
-                .Select(x => new ExcludedPackage(x));
+            var verifiedPackages = await JsonSerializer.DeserializeAsync<List<string>>(stream);
+            const int pageSize = AsOfData<ExcludedPackage>.DefaultPageSize;
+            var outputPage = new List<ExcludedPackage>(capacity: pageSize);
+            foreach (var page in verifiedPackages!.Chunk(pageSize))
+            {
+                outputPage.AddRange(page.Select(x => new ExcludedPackage(x)));
+                yield return outputPage;
+                outputPage.Clear();
+            }
         }
     }
 }

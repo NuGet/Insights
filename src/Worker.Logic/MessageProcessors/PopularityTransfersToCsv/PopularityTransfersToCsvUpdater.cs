@@ -31,40 +31,57 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             return await _popularityTransfersClient.GetAsync();
         }
 
-        public async IAsyncEnumerable<PopularityTransfersRecord> ProduceRecordsAsync(IVersionSet versionSet, AsOfData<PopularityTransfer> data)
+        public async IAsyncEnumerable<IReadOnlyList<PopularityTransfersRecord>> ProduceRecordsAsync(IVersionSet versionSet, AsOfData<PopularityTransfer> data)
         {
             var idToTransferIds = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-            await foreach (var entry in data.Entries)
-            {
-                string id = entry.Id;
-                if (!versionSet.TryGetId(entry.Id, out id))
-                {
-                    continue;
-                }
 
-                if (!idToTransferIds.TryGetValue(id, out var transferIds))
+            const int pageSize = AsOfData<PopularityTransfersRecord>.DefaultPageSize;
+            var outputPage = new List<PopularityTransfersRecord>(pageSize);
+
+            await foreach (IReadOnlyList<PopularityTransfer> page in data.Pages)
+            {
+                foreach (PopularityTransfer entry in page)
                 {
-                    // Only write when we move to the next ID. This ensures all of the popularity transfers from a given ID are in the same record.
-                    if (idToTransferIds.Any())
+                    string id = entry.Id;
+                    if (!versionSet.TryGetId(entry.Id, out id))
                     {
-                        foreach (var inner in WriteAndClear(data.AsOfTimestamp, idToTransferIds))
-                        {
-                            yield return inner;
-                        }
+                        continue;
                     }
 
-                    transferIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    idToTransferIds.Add(id, transferIds);
-                }
+                    if (!idToTransferIds.TryGetValue(id, out var transferIds))
+                    {
+                        // Only write when we move to the next ID. This ensures all of the popularity transfers from a given ID are in the same record.
+                        if (idToTransferIds.Any())
+                        {
+                            foreach (PopularityTransfersRecord inner in WriteAndClear(data.AsOfTimestamp, idToTransferIds))
+                            {
+                                outputPage.Add(inner);
+                                if (outputPage.Count >= pageSize)
+                                {
+                                    yield return outputPage;
+                                    outputPage.Clear();
+                                }
+                            }
+                        }
 
-                transferIds.Add(entry.TransferId);
+                        transferIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        idToTransferIds.Add(id, transferIds);
+                    }
+
+                    transferIds.Add(entry.TransferId);
+                }
             }
 
             if (idToTransferIds.Any())
             {
-                foreach (var inner in WriteAndClear(data.AsOfTimestamp, idToTransferIds))
+                foreach (PopularityTransfersRecord inner in WriteAndClear(data.AsOfTimestamp, idToTransferIds))
                 {
-                    yield return inner;
+                    outputPage.Add(inner);
+                    if (outputPage.Count >= pageSize)
+                    {
+                        yield return outputPage;
+                        outputPage.Clear();
+                    }
                 }
             }
 
@@ -72,14 +89,24 @@ namespace NuGet.Insights.Worker.PopularityTransfersToCsv
             // produced data set easier.
             foreach (var id in versionSet.GetUncheckedIds())
             {
-                yield return new PopularityTransfersRecord
+                outputPage.Add(new PopularityTransfersRecord
                 {
                     AsOfTimestamp = data.AsOfTimestamp,
                     Id = id,
                     LowerId = id.ToLowerInvariant(),
                     TransferIds = "[]",
                     TransferLowerIds = "[]",
-                };
+                });
+                if (outputPage.Count >= pageSize)
+                {
+                    yield return outputPage;
+                    outputPage.Clear();
+                }
+            }
+
+            if (outputPage.Count > 0)
+            {
+                yield return outputPage;
             }
         }
 

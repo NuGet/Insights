@@ -3,28 +3,11 @@
 
 using MessagePack;
 using MessagePack.Formatters;
-using Microsoft.Extensions.ObjectPool;
 
 namespace NuGet.Insights
 {
     public class CsvRecordFormatterResolver : IFormatterResolver
     {
-        internal static readonly DefaultObjectPool<List<string>> ListPool = new DefaultObjectPool<List<string>>(new StringListPolicy());
-
-        private class StringListPolicy : PooledObjectPolicy<List<string>>
-        {
-            public override List<string> Create()
-            {
-                return new List<string>();
-            }
-
-            public override bool Return(List<string> obj)
-            {
-                obj.Clear();
-                return true;
-            }
-        }
-
         public static CsvRecordFormatterResolver Instance { get; } = new CsvRecordFormatterResolver();
 
         public IMessagePackFormatter<T> GetFormatter<T>()
@@ -54,8 +37,14 @@ namespace NuGet.Insights
                     return null;
                 }
 
-                var formatterType = typeof(CsvRecordFormatter<>).MakeGenericType(outputType);
-                return Activator.CreateInstance(formatterType);
+                var formatterInterface = typeof(IMessagePackFormatter<>).MakeGenericType(outputType);
+
+                // This nested formatter type is created by a source generator.
+                var nestedFormatter = outputType
+                    .GetNestedTypes(BindingFlags.Public)
+                    .Where(x => x.IsAssignableTo(formatterInterface))
+                    .Single();
+                return Activator.CreateInstance(nestedFormatter);
             }
         }
     }

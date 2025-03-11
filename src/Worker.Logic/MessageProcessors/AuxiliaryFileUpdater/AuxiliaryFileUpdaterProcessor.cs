@@ -115,9 +115,9 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
                     _data = default;
                 }
 
-                await foreach (var record in _updater.ProduceRecordsAsync(_versionSet, data))
+                await foreach (var page in _updater.ProduceRecordsAsync(_versionSet, data))
                 {
-                    yield return new SingleCsvRecordChunk<TRecord>(record);
+                    yield return new CsvRecordChunk<TRecord>(page);
                 }
             }
 
@@ -127,16 +127,16 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
             }
         }
 
-        private class SingleCsvRecordChunk<T> : ICsvRecordChunk<T> where T : ICsvRecord<T>
+        private class CsvRecordChunk<T> : ICsvRecordChunk<T> where T : ICsvRecord<T>
         {
-            private readonly T _record;
+            private readonly IReadOnlyList<T> _records;
 
-            public SingleCsvRecordChunk(T record)
+            public CsvRecordChunk(IReadOnlyList<T> records)
             {
-                _record = record;
+                _records = records;
             }
 
-            public IReadOnlyList<T> GetRecords() => [_record];
+            public IReadOnlyList<T> GetRecords() => _records;
             public string Position => string.Empty;
         }
     }

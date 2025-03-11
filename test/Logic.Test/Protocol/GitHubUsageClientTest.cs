@@ -40,7 +40,11 @@ namespace NuGet.Insights
             Assert.Equal(asOfTimestamp, set.AsOfTimestamp);
             Assert.Equal(url, set.Url.AbsoluteUri);
             Assert.Equal("\"1d6ec422bbfe2d7\"", set.ETag);
-            var repoInfo = await set.Entries.ToListAsync();
+            var repoInfo = new List<GitHubRepositoryInfo>();
+            await foreach (var page in set.Pages)
+            {
+                repoInfo.AddRange(page);
+            }
 
             Assert.Equal(2, repoInfo.Count);
             Assert.Equal("xunit/xunit", repoInfo[0].Id);

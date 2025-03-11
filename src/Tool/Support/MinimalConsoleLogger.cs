@@ -5,8 +5,11 @@ namespace NuGet.Insights.Tool
 {
     public class MinimalConsoleLogger : ILogger
     {
+        private readonly Stopwatch _stopwatch;
+
         public MinimalConsoleLogger(string name)
         {
+            _stopwatch = Stopwatch.StartNew();
         }
 
         public IDisposable BeginScope<TState>(TState state)
@@ -22,6 +25,7 @@ namespace NuGet.Insights.Tool
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             var messageBuilder = new StringBuilder();
+            messageBuilder.AppendFormat(CultureInfo.InvariantCulture, "[{0:F3}] ", _stopwatch.Elapsed.TotalSeconds);
             messageBuilder.Append(formatter(state, exception));
             if (exception != null)
             {

@@ -95,10 +95,12 @@ public class PackageDownloads_Compact_Fake
                 GetRecordsAsync()));
         }
 
-        private async IAsyncEnumerable<PackageDownloads> GetRecordsAsync()
+        private async IAsyncEnumerable<IReadOnlyList<PackageDownloads>> GetRecordsAsync()
         {
             await Task.Yield();
 
+            const int pageSize = AsOfData<PackageDownloads>.DefaultPageSize;
+            var records = new List<PackageDownloads>(capacity: pageSize);
             var versionsRemaining = 0;
             string id = string.Empty;
 
@@ -110,8 +112,19 @@ public class PackageDownloads_Compact_Fake
                     id = $"Package{_random.Next()}";
                 }
 
-                yield return new PackageDownloads(id, $"{versionsRemaining}.0.0", _random.Next(1, 10_000));
+                records.Add(new PackageDownloads(id, $"{versionsRemaining}.0.0", _random.Next(1, 10_000)));
                 versionsRemaining--;
+
+                if (records.Count >= pageSize)
+                {
+                    yield return records;
+                    records.Clear();
+                }
+            }
+
+            if (records.Count > 0)
+            {
+                yield return records;
             }
         }
     }
