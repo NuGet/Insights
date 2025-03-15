@@ -42,7 +42,17 @@ namespace NuGet.Insights
             Func<IIncrementalHash> getHasher,
             CancellationToken token)
         {
-            return await DownloadUrlToFileAsync(url, getTempFileName, getHasher, allowNotFound: true, token);
+            return await DownloadUrlToFileAsync(url, getTempFileName, getHasher, allowNotFound: true, requireContentLength: true, token);
+        }
+
+        public async Task<(ILookup<string, string> Headers, TempStreamResult Body)?> DownloadUrlToFileAsync(
+            string url,
+            Func<string> getTempFileName,
+            Func<IIncrementalHash> getHasher,
+            bool requireContentLength,
+            CancellationToken token)
+        {
+            return await DownloadUrlToFileAsync(url, getTempFileName, getHasher, allowNotFound: true, requireContentLength, token);
         }
 
         private async Task<(ILookup<string, string> Headers, TempStreamResult Body)?> DownloadUrlToFileAsync(
@@ -50,6 +60,7 @@ namespace NuGet.Insights
             Func<string> getTempFileName,
             Func<IIncrementalHash> getHasher,
             bool allowNotFound,
+            bool requireContentLength,
             CancellationToken token)
         {
             var writer = _tempStreamService.GetWriter();
@@ -74,16 +85,17 @@ namespace NuGet.Insights
 
                             headers = response.GetHeaderLookup();
 
-                            if (response.Content.Headers.ContentLength is null)
-                            {
-                                throw new InvalidOperationException($"No Content-Length header was returned for package URL: {url}");
-                            }
+                            var contentLength = response.Content.Headers.ContentLength is null
+                                ? requireContentLength
+                                    ? throw new InvalidOperationException($"No Content-Length header was returned for package URL: {url}")
+                                    : -1
+                                : response.Content.Headers.ContentLength.Value;
 
                             using var networkStream = await response.Content.ReadAsStreamAsync();
                             return await writer.CopyToTempStreamAsync(
                                 networkStream,
                                 getTempFileName,
-                                response.Content.Headers.ContentLength.Value,
+                                contentLength,
                                 getHasher());
                         },
                         _logger,
@@ -129,6 +141,7 @@ namespace NuGet.Insights
                     () => $"{StorageUtility.GenerateDescendingId()}.{id}.{version}.sig-bytes.nupkg",
                     IncrementalHash.CreateNone,
                     allowNotFound: false,
+                    requireContentLength: true,
                     CancellationToken.None);
                 try
                 {

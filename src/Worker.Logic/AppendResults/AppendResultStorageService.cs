@@ -39,10 +39,12 @@ namespace NuGet.Insights.Worker
 
             _appendRecordCount = _telemetryClient.GetMetric(
                 $"{MetricIdPrefix}{nameof(AppendToTableAsync)}.RecordCount",
-                "RecordType");
+                "RecordType",
+                "Bucket");
             _appendSize = _telemetryClient.GetMetric(
                 $"{MetricIdPrefix}{nameof(AppendToTableAsync)}.SizeInBytes",
-                "RecordType");
+                "RecordType",
+                "Bucket");
             _appendBucketsInBatch = _telemetryClient.GetMetric(
                 $"{MetricIdPrefix}{nameof(AppendToTableAsync)}.BucketsInBatch",
                 "RecordType");
@@ -117,6 +119,8 @@ namespace NuGet.Insights.Worker
                 return;
             }
 
+            var bucketString = bucket.ToString(CultureInfo.InvariantCulture);
+
             try
             {
                 var attempt = 0;
@@ -127,8 +131,8 @@ namespace NuGet.Insights.Worker
                     try
                     {
                         await _wideEntityService.InsertAsync(srcTable, partitionKey: bucket.ToString(CultureInfo.InvariantCulture), rowKey, content: bytes);
-                        _appendRecordCount.TrackValue(records.Count, recordType);
-                        _appendSize.TrackValue(bytes.Length, recordType);
+                        _appendRecordCount.TrackValue(records.Count, recordType, bucketString);
+                        _appendSize.TrackValue(bytes.Length, recordType, bucketString);
                         break;
                     }
                     catch (RequestFailedException ex) when (attempt < 3 && ex.Status == (int)HttpStatusCode.Conflict)

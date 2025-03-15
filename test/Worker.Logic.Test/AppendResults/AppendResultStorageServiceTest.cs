@@ -41,10 +41,10 @@ namespace NuGet.Insights.Worker
             await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
 
             // Assert
-            var metric = TelemetryClient.Metrics[new("CsvRecordStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
+            var metric = TelemetryClient.Metrics[new("CsvRecordStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType", "Bucket")];
             var value = Assert.Single(metric.MetricValues);
             Assert.Equal(1, value.MetricValue);
-            Assert.Equal<string[]>([DestContainer, typeof(PackageDeprecationRecord).Name], value.DimensionValues);
+            Assert.Equal<string[]>([DestContainer, typeof(PackageDeprecationRecord).Name, "0"], value.DimensionValues);
         }
 
         [Fact]
@@ -61,10 +61,10 @@ namespace NuGet.Insights.Worker
             await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
 
             // Assert
-            var metric = TelemetryClient.Metrics[new("CsvRecordStorageService.CompactAsync.BigMode.Switch", "DestContainer", "RecordType", "Reason")];
+            var metric = TelemetryClient.Metrics[new("CsvRecordStorageService.CompactAsync.BigMode.Switch", "DestContainer", "RecordType", "Bucket", "Reason")];
             var value = Assert.Single(metric.MetricValues);
             Assert.Equal(1, value.MetricValue);
-            Assert.Equal<string[]>([DestContainer, typeof(PackageDeprecationRecord).Name, "EstimatedRecordCount"], value.DimensionValues);
+            Assert.Equal<string[]>([DestContainer, typeof(PackageDeprecationRecord).Name, "0", "EstimatedRecordCount"], value.DimensionValues);
         }
 
         [Fact]
@@ -81,7 +81,7 @@ namespace NuGet.Insights.Worker
             await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
 
             // Assert
-            var metric = TelemetryClient.Metrics[new("CsvRecordStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
+            var metric = TelemetryClient.Metrics[new("CsvRecordStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType", "Bucket")];
             Assert.Equal(2, metric.MetricValues.Count);
             var values = metric.MetricValues.ToList();
             Assert.Equal(1, values[0].MetricValue);
@@ -102,7 +102,7 @@ namespace NuGet.Insights.Worker
             await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
 
             // Assert
-            var metric = TelemetryClient.Metrics[new("CsvRecordStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
+            var metric = TelemetryClient.Metrics[new("CsvRecordStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType", "Bucket")];
             Assert.Equal(2, metric.MetricValues.Count);
             var values = metric.MetricValues.ToList();
             Assert.Equal(1, values[0].MetricValue);
@@ -124,7 +124,7 @@ namespace NuGet.Insights.Worker
             await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
 
             // Assert
-            var metric = TelemetryClient.Metrics[new("CsvRecordStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
+            var metric = TelemetryClient.Metrics[new("CsvRecordStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType", "Bucket")];
             Assert.Equal(2, metric.MetricValues.Count);
             var values = metric.MetricValues.ToList();
             Assert.Equal(1, values[0].MetricValue);

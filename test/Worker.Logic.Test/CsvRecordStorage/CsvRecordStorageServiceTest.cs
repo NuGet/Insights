@@ -27,7 +27,7 @@ namespace NuGet.Insights.Worker
             await Target.CompactAsync(RecordProvider.Object, container, 0);
 
             // Assert
-            TelemetryClient.Metrics.TryGetValue(new("CsvRecordStorageService.CompactAsync.BigMode.Subdivisions", "DestContainer", "RecordType"), out var metric);
+            TelemetryClient.Metrics.TryGetValue(new("CsvRecordStorageService.CompactAsync.BigMode.Subdivisions", "DestContainer", "RecordType", "Bucket"), out var metric);
             Assert.NotNull(metric);
             Assert.Equal(50, Assert.Single(metric.MetricValues).MetricValue);
         }

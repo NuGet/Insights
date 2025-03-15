@@ -70,7 +70,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             Assert.Equal(5, leafScanBatchActions.Where(x => x.DimensionValues[1] == "Delete").Count());
 
             // 1 append of CSV records to table
-            Assert.True(TelemetryClient.Metrics.TryGetValue(new("AppendResultStorageService.AppendToTableAsync.RecordCount", "RecordType"), out var appendToTableRecordCountMetric));
+            Assert.True(TelemetryClient.Metrics.TryGetValue(new("AppendResultStorageService.AppendToTableAsync.RecordCount", "RecordType", "Bucket"), out var appendToTableRecordCountMetric));
             var appendValue = Assert.Single(appendToTableRecordCountMetric.MetricValues);
             Assert.Equal(10, appendValue.MetricValue);
             Assert.Equal(nameof(PackageAsset), appendValue.DimensionValues[0]);
@@ -88,7 +88,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             Assert.Equal("true", catalogLeafScanMessageValue.DimensionValues[2]);
 
             // 1 compacted blob
-            Assert.True(TelemetryClient.Metrics.TryGetValue(new("CsvRecordStorageService.CompactAsync.RecordCount", "DestContainer", "RecordType"), out var compactMetric));
+            Assert.True(TelemetryClient.Metrics.TryGetValue(new("CsvRecordStorageService.CompactAsync.FinalRecordCount", "DestContainer", "RecordType", "Bucket"), out var compactMetric));
             var compactValue = Assert.Single(compactMetric.MetricValues);
             Assert.Equal(10, compactValue.MetricValue);
             Assert.Equal(Options.Value.PackageAssetContainerName, compactValue.DimensionValues[0]);
@@ -137,11 +137,12 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             // Assert
             await AssertOutputAsync(PackageAssetToCsvDir, Step1, 0);
-            TelemetryClient.Metrics.TryGetValue(new("CsvRecordStorageService.CompactAsync.BigMode.Switch", "DestContainer", "RecordType", "Reason"), out var metric);
+            TelemetryClient.Metrics.TryGetValue(new("CsvRecordStorageService.CompactAsync.BigMode.Switch", "DestContainer", "RecordType", "Bucket", "Reason"), out var metric);
             Assert.NotNull(metric);
             Assert.All(metric.MetricValues, x => Assert.Equal(Options.Value.PackageAssetContainerName, x.DimensionValues[0]));
             Assert.All(metric.MetricValues, x => Assert.Equal("PackageAsset", x.DimensionValues[1]));
-            Assert.All(metric.MetricValues, x => Assert.Equal("EstimatedRecordCount", x.DimensionValues[2]));
+            Assert.All(metric.MetricValues, x => Assert.Equal("0", x.DimensionValues[2]));
+            Assert.All(metric.MetricValues, x => Assert.Equal("EstimatedRecordCount", x.DimensionValues[3]));
             TelemetryClient.Clear();
 
             // Act
@@ -149,11 +150,12 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             // Assert
             await AssertOutputAsync(PackageAssetToCsvDir, Step2, 0);
-            TelemetryClient.Metrics.TryGetValue(new("CsvRecordStorageService.CompactAsync.BigMode.Switch", "DestContainer", "RecordType", "Reason"), out metric);
+            TelemetryClient.Metrics.TryGetValue(new("CsvRecordStorageService.CompactAsync.BigMode.Switch", "DestContainer", "RecordType", "Bucket", "Reason"), out metric);
             Assert.NotNull(metric);
             Assert.All(metric.MetricValues, x => Assert.Equal(Options.Value.PackageAssetContainerName, x.DimensionValues[0]));
             Assert.All(metric.MetricValues, x => Assert.Equal("PackageAsset", x.DimensionValues[1]));
-            Assert.All(metric.MetricValues, x => Assert.Equal("ExistingRecordCount", x.DimensionValues[2]));
+            Assert.All(metric.MetricValues, x => Assert.Equal("0", x.DimensionValues[2]));
+            Assert.All(metric.MetricValues, x => Assert.Equal("ExistingRecordCount", x.DimensionValues[3]));
         }
 
         [Theory]

@@ -74,6 +74,7 @@ namespace NuGet.Insights
                     "icon",
                     ".tmp"),
                 IncrementalHash.CreateSHA256,
+                requireContentLength: false,
                 token);
             if (result is null)
             {

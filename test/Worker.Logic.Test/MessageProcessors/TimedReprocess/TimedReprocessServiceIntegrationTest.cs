@@ -200,7 +200,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
             await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_SameBucketRangesDir, Step1, "PackageReadmes.csv");
             Assert.Equal("177-178,402,541,756", runA.BucketRanges);
 
-            var metric = TelemetryClient.Metrics[new("CsvRecordStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType")];
+            var metric = TelemetryClient.Metrics[new("CsvRecordStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType", "Bucket")];
             var value = Assert.Single(metric.MetricValues);
             Assert.Equal(1, value.MetricValue);
             metric.MetricValues.Clear();
