@@ -14,7 +14,7 @@ namespace NuGet.Insights
         Uri Url,
         TimeSpan AgeLimit,
         string Name,
-        Func<Stream, IAsyncEnumerable<T>> Deserialize);
+        Func<Stream, IAsyncEnumerable<IReadOnlyList<T>>> Deserialize);
 
     public enum BlobRequestMethod
     {
@@ -142,7 +142,7 @@ namespace NuGet.Insights
             return await DownloadAsync(latest.Response, latest.Endpoint.Deserialize);
         }
 
-        public async Task<AsOfData<T>> DownloadNewestAsync<T>(IReadOnlyCollection<Uri> urls, TimeSpan ageLimit, string name, Func<Stream, IAsyncEnumerable<T>> deserialize)
+        public async Task<AsOfData<T>> DownloadNewestAsync<T>(IReadOnlyCollection<Uri> urls, TimeSpan ageLimit, string name, Func<Stream, IAsyncEnumerable<IReadOnlyList<T>>> deserialize)
         {
             var endpoints = urls
                 .Select(x => new BlobStorageJsonEndpoint<T>(x, ageLimit, name, deserialize))
@@ -181,7 +181,7 @@ namespace NuGet.Insights
             }
         }
 
-        private async Task<AsOfData<T>> DownloadAsync<T>(ExternalBlobResponse latest, Func<Stream, IAsyncEnumerable<T>> deserialize)
+        private async Task<AsOfData<T>> DownloadAsync<T>(ExternalBlobResponse latest, Func<Stream, IAsyncEnumerable<IReadOnlyList<T>>> deserialize)
         {
             var result = await GetResponseAsync(new ExternalBlobRequest(
                 BlobRequestMethod.Get,

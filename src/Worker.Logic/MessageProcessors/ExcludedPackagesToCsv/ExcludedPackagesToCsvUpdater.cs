@@ -31,42 +31,63 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
             return await _client.GetAsync();
         }
 
-        public async IAsyncEnumerable<ExcludedPackageRecord> ProduceRecordsAsync(IVersionSet versionSet, AsOfData<ExcludedPackage> data)
+        public async IAsyncEnumerable<IReadOnlyList<ExcludedPackageRecord>> ProduceRecordsAsync(IVersionSet versionSet, AsOfData<ExcludedPackage> data)
         {
             var verifiedPackageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            await foreach (var entry in data.Entries)
+            await foreach (IReadOnlyList<ExcludedPackage> page in data.Pages)
             {
-                var id = entry.Id;
-                if (!versionSet.TryGetId(entry.Id, out id))
+                foreach (ExcludedPackage entry in page)
                 {
-                    continue;
-                }
+                    var id = entry.Id;
+                    if (!versionSet.TryGetId(entry.Id, out id))
+                    {
+                        continue;
+                    }
 
-                verifiedPackageIds.Add(id);
+                    verifiedPackageIds.Add(id);
+                }
             }
+
+            const int pageSize = AsOfData<ExcludedPackageRecord>.DefaultPageSize;
+            var outputPage = new List<ExcludedPackageRecord>(capacity: pageSize);
 
             foreach (var packageId in verifiedPackageIds)
             {
-                yield return new ExcludedPackageRecord
+                outputPage.Add(new ExcludedPackageRecord
                 {
                     AsOfTimestamp = data.AsOfTimestamp,
                     Id = packageId,
                     LowerId = packageId.ToLowerInvariant(),
                     IsExcluded = true,
-                };
+                });
+                if (outputPage.Count >= pageSize)
+                {
+                    yield return outputPage;
+                    outputPage.Clear();
+                }
             }
 
             // Add IDs that are not mentioned in the data and therefore are not excluded. This makes joins on the
             // produced data set easier.
             foreach (var id in versionSet.GetUncheckedIds())
             {
-                yield return new ExcludedPackageRecord
+                outputPage.Add(new ExcludedPackageRecord
                 {
                     AsOfTimestamp = data.AsOfTimestamp,
                     Id = id,
                     LowerId = id.ToLowerInvariant(),
                     IsExcluded = false,
-                };
+                });
+                if (outputPage.Count >= pageSize)
+                {
+                    yield return outputPage;
+                    outputPage.Clear();
+                }
+            }
+
+            if (outputPage.Count > 0)
+            {
+                yield return outputPage;
             }
         }
     }

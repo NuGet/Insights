@@ -10,9 +10,6 @@
     "Entity": {
       "CommitTimestamp": "2022-03-14T23:06:36.1633247+00:00",
       "HttpHeaders": {
-        "Content-Length": [
-          "6499"
-        ],
         "Content-Type": [
           "binary/octet-stream"
         ],
@@ -46,9 +43,6 @@
     "Entity": {
       "CommitTimestamp": "2022-03-14T23:06:36.1633247+00:00",
       "HttpHeaders": {
-        "Content-Length": [
-          "5452"
-        ],
         "Content-Type": [
           "binary/octet-stream"
         ],
@@ -75,9 +69,6 @@
     "Entity": {
       "CommitTimestamp": "2022-03-14T23:06:07.7549588+00:00",
       "HttpHeaders": {
-        "Content-Length": [
-          "5137"
-        ],
         "Content-Type": [
           "binary/octet-stream"
         ],
@@ -104,9 +95,6 @@
     "Entity": {
       "CommitTimestamp": "2022-03-14T23:06:07.7549588+00:00",
       "HttpHeaders": {
-        "Content-Length": [
-          "5100"
-        ],
         "Content-Type": [
           "binary/octet-stream"
         ],

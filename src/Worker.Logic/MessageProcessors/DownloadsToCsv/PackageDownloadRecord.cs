@@ -41,11 +41,27 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
             ILogger logger)
         {
             // some duplicate records exist in the source data, prefer the one with the highest download count
-            return records
-                .GroupBy(x => x.Identity)
-                .Select(g => g.MaxBy(x => x.Downloads))
-                .Order()
-                .ToList();
+            var sortedRecords = new Dictionary<string, PackageDownloadRecord>();
+            foreach (var record in records)
+            {
+                if (sortedRecords.TryGetValue(record.Identity, out var existingRecord))
+                {
+                    if (record.Downloads > existingRecord.Downloads)
+                    {
+                        sortedRecords[record.Identity] = record;
+                    }
+                }
+                else
+                {
+                    sortedRecords.Add(record.Identity, record);
+                }
+            }
+
+            records.Clear();
+            records.AddRange(sortedRecords.Values);
+            records.Sort();
+
+            return records;
         }
 
         public class PackageDownloadRecordKeyComparer : IEqualityComparer<PackageDownloadRecord>

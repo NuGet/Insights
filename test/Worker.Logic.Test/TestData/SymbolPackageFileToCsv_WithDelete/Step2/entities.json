@@ -59,9 +59,6 @@
         }
       ],
       "HttpHeaders": {
-        "Content-Length": [
-          "10075"
-        ],
         "Content-Type": [
           "binary/octet-stream"
         ],
@@ -121,9 +118,6 @@
         }
       ],
       "HttpHeaders": {
-        "Content-Length": [
-          "8029"
-        ],
         "Content-Type": [
           "binary/octet-stream"
         ],
@@ -183,9 +177,6 @@
         }
       ],
       "HttpHeaders": {
-        "Content-Length": [
-          "8147"
-        ],
         "Content-Type": [
           "binary/octet-stream"
         ],

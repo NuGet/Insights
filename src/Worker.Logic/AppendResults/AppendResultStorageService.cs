@@ -27,8 +27,6 @@ namespace NuGet.Insights.Worker
         public AppendResultStorageService(
             WideEntityService wideEntityService,
             CsvRecordStorageService csvRecordStorageService,
-            ICsvReader csvReader,
-            IOptions<NuGetInsightsWorkerSettings> options,
             ITelemetryClient telemetryClient,
             ILogger<AppendResultStorageService> logger)
         {

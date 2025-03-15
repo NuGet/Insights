@@ -227,12 +227,20 @@ namespace NuGet.Insights
 
             ITypeSymbol? nullableType = null;
             bool isNullableEnum = false;
-            if (symbol.Type is INamedTypeSymbol typeSymbol
-                && typeSymbol.OriginalDefinition.ToDisplayString() == "System.Nullable<T>"
-                && typeSymbol.TypeArguments.Length == 1)
+            string? underlyingEnumType = null;
+            if (symbol.Type is INamedTypeSymbol typeSymbol)
             {
-                nullableType = typeSymbol.TypeArguments[0];
-                isNullableEnum = nullableType.TypeKind == TypeKind.Enum;
+                if (typeSymbol.OriginalDefinition.ToDisplayString() == "System.Nullable<T>"
+                    && typeSymbol.TypeArguments.Length == 1)
+                {
+                    nullableType = typeSymbol.TypeArguments[0];
+                    isNullableEnum = nullableType.TypeKind == TypeKind.Enum;
+                }
+
+                if (typeSymbol.EnumUnderlyingType is not null)
+                {
+                    underlyingEnumType = typeSymbol.EnumUnderlyingType.ToString();
+                }
             }
 
             return new CsvPropertyModel(
@@ -244,6 +252,7 @@ namespace NuGet.Insights
                 IsNullable: nullableType is not null,
                 IsNullableEnum: isNullableEnum,
                 IsEnum: symbol.Type.TypeKind == TypeKind.Enum,
+                UnderlyingEnumType: underlyingEnumType,
                 IsReferenceType: symbol.Type.IsReferenceType,
                 IsBucketKey: isBucketKey,
                 IsKustoIgnore: isKustoIgnore,
@@ -276,6 +285,8 @@ namespace NuGet.Insights
             var kustoMappingConstantBuilder = new KustoMappingBuilder(indent: 16, escapeQuotes: false);
             var validatePropertyNullability = new ValidatePropertyNullability();
             var findBucketKeyProperty = new GetBucketKeyProperty(indent: 8);
+            var messagePackFormatterSerializeBuilder = new MessagePackFormatterSerializeBuilder(indent: 16);
+            var messagePackFormatterDeserializeBuilder = new MessagePackFormatterDeserializeBuilder(indent: 16);
 
             var visitors = new List<IPropertyVisitor>
             {
@@ -293,6 +304,8 @@ namespace NuGet.Insights
                 kustoMappingConstantBuilder,
                 validatePropertyNullability,
                 findBucketKeyProperty,
+                messagePackFormatterSerializeBuilder,
+                messagePackFormatterDeserializeBuilder,
             };
 
 
@@ -346,6 +359,19 @@ namespace NuGet.Insights
                         Constants.KustoCsvMappingName,
                         setEmptyStringsBuilder.GetResult(),
                         findBucketKeyProperty.GetResult()),
+                    Encoding.UTF8));
+
+            context.AddSource(
+                $"{model.Name}.MessagePack.cs",
+                SourceText.From(
+                    string.Format(
+                        Constants.MessagePackTemplate,
+                        model.Namespace,
+                        model.TypeKeyword,
+                        model.Name,
+                        model.Properties.Count,
+                        messagePackFormatterSerializeBuilder.GetResult(),
+                        messagePackFormatterDeserializeBuilder.GetResult()),
                     Encoding.UTF8));
 
             if (!string.IsNullOrEmpty(model.KustoDDLName))

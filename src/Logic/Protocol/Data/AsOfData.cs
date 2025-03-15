@@ -5,22 +5,24 @@ namespace NuGet.Insights
 {
     public class AsOfData<T> : IAsyncDisposable, IAsOfData
     {
-        public AsOfData(DateTimeOffset asOfTimestamp, Uri url, string etag, IAsyncEnumerable<T> data)
+        public const int DefaultPageSize = 10000;
+
+        public AsOfData(DateTimeOffset asOfTimestamp, Uri url, string etag, IAsyncEnumerable<IReadOnlyList<T>> pages)
         {
             AsOfTimestamp = asOfTimestamp;
             Url = url;
             ETag = etag;
-            Entries = data;
+            Pages = pages;
         }
 
         public DateTimeOffset AsOfTimestamp { get; }
         public Uri Url { get; }
         public string ETag { get; }
-        public IAsyncEnumerable<T> Entries { get; }
+        public IAsyncEnumerable<IReadOnlyList<T>> Pages { get; }
 
         public ValueTask DisposeAsync()
         {
-            return Entries?.GetAsyncEnumerator().DisposeAsync() ?? default;
+            return Pages?.GetAsyncEnumerator().DisposeAsync() ?? default;
         }
     }
 }

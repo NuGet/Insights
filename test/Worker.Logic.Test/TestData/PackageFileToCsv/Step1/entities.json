@@ -36,9 +36,6 @@
         }
       ],
       "HttpHeaders": {
-        "Content-Length": [
-          "34399"
-        ],
         "Content-Type": [
           "application/octet-stream"
         ],
@@ -111,9 +108,6 @@
         }
       ],
       "HttpHeaders": {
-        "Content-Length": [
-          "56508"
-        ],
         "Content-Type": [
           "application/octet-stream"
         ],
@@ -651,9 +645,6 @@
         }
       ],
       "HttpHeaders": {
-        "Content-Length": [
-          "1070696"
-        ],
         "Content-Type": [
           "application/octet-stream"
         ],
@@ -731,9 +722,6 @@
         }
       ],
       "HttpHeaders": {
-        "Content-Length": [
-          "80549"
-        ],
         "Content-Type": [
           "application/octet-stream"
         ],
@@ -806,9 +794,6 @@
         }
       ],
       "HttpHeaders": {
-        "Content-Length": [
-          "199102"
-        ],
         "Content-Type": [
           "application/octet-stream"
         ],
@@ -881,9 +866,6 @@
         }
       ],
       "HttpHeaders": {
-        "Content-Length": [
-          "198711"
-        ],
         "Content-Type": [
           "application/octet-stream"
         ],
@@ -956,9 +938,6 @@
         }
       ],
       "HttpHeaders": {
-        "Content-Length": [
-          "198723"
-        ],
         "Content-Type": [
           "application/octet-stream"
         ],
@@ -1131,9 +1110,6 @@
         }
       ],
       "HttpHeaders": {
-        "Content-Length": [
-          "3860384"
-        ],
         "Content-Type": [
           "application/octet-stream"
         ],
@@ -1216,9 +1192,6 @@
         }
       ],
       "HttpHeaders": {
-        "Content-Length": [
-          "708111"
-        ],
         "Content-Type": [
           "application/octet-stream"
         ],
@@ -1301,9 +1274,6 @@
         }
       ],
       "HttpHeaders": {
-        "Content-Length": [
-          "903993"
-        ],
         "Content-Type": [
           "application/octet-stream"
         ],
@@ -1386,9 +1356,6 @@
         }
       ],
       "HttpHeaders": {
-        "Content-Length": [
-          "40745"
-        ],
         "Content-Type": [
           "application/octet-stream"
         ],

@@ -10,9 +10,6 @@
     "Entity": {
       "CommitTimestamp": "2020-12-20T02:39:03.372413+00:00",
       "HttpHeaders": {
-        "Content-Length": [
-          "48"
-        ],
         "Content-Type": [
           "text/markdown"
         ],

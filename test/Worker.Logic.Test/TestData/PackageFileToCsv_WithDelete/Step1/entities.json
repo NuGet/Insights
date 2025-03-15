@@ -36,9 +36,6 @@
         }
       ],
       "HttpHeaders": {
-        "Content-Length": [
-          "17489"
-        ],
         "Content-Type": [
           "application/octet-stream"
         ],
@@ -116,9 +113,6 @@
         }
       ],
       "HttpHeaders": {
-        "Content-Length": [
-          "14548"
-        ],
         "ETag": [
           "\u00221d6ea9f1363a8d4\u0022"
         ],
@@ -181,9 +175,6 @@
         }
       ],
       "HttpHeaders": {
-        "Content-Length": [
-          "72134"
-        ],
         "Content-Type": [
           "application/octet-stream"
         ],
@@ -261,9 +252,6 @@
         }
       ],
       "HttpHeaders": {
-        "Content-Length": [
-          "69028"
-        ],
         "Content-Type": [
           "application/octet-stream"
         ],
@@ -341,9 +329,6 @@
         }
       ],
       "HttpHeaders": {
-        "Content-Length": [
-          "27983"
-        ],
         "Content-Type": [
           "application/octet-stream"
         ],
@@ -416,9 +401,6 @@
         }
       ],
       "HttpHeaders": {
-        "Content-Length": [
-          "20723"
-        ],
         "Content-Type": [
           "application/octet-stream"
         ],
@@ -491,9 +473,6 @@
         }
       ],
       "HttpHeaders": {
-        "Content-Length": [
-          "19638"
-        ],
         "Content-Type": [
           "application/octet-stream"
         ],

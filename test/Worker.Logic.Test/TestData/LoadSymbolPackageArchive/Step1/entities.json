@@ -4,9 +4,6 @@
       "Available": true,
       "CommitTimestamp": "2021-03-22T20:13:54.6075418+00:00",
       "HttpHeaders": {
-        "Content-Length": [
-          "750829"
-        ],
         "Content-Type": [
           "binary/octet-stream"
         ],

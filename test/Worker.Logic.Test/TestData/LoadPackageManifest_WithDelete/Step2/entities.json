@@ -4,9 +4,6 @@
       "Available": true,
       "CommitTimestamp": "2020-12-20T02:39:20.5757299+00:00",
       "HttpHeaders": {
-        "Content-Length": [
-          "745"
-        ],
         "Content-Type": [
           "text/xml"
         ],
@@ -40,9 +37,6 @@
       "Available": true,
       "CommitTimestamp": "2020-12-20T03:01:57.2082154+00:00",
       "HttpHeaders": {
-        "Content-Length": [
-          "1243"
-        ],
         "Content-Type": [
           "text/xml"
         ],
@@ -69,9 +63,6 @@
       "Available": true,
       "CommitTimestamp": "2020-12-20T02:39:20.5757299+00:00",
       "HttpHeaders": {
-        "Content-Length": [
-          "1124"
-        ],
         "Content-Type": [
           "text/xml"
         ],
@@ -98,9 +89,6 @@
       "Available": true,
       "CommitTimestamp": "2020-12-20T02:37:52.9649363+00:00",
       "HttpHeaders": {
-        "Content-Length": [
-          "1262"
-        ],
         "Content-Type": [
           "text/xml"
         ],
@@ -127,9 +115,6 @@
       "Available": true,
       "CommitTimestamp": "2020-12-20T02:37:52.9649363+00:00",
       "HttpHeaders": {
-        "Content-Length": [
-          "1191"
-        ],
         "Content-Type": [
           "text/xml"
         ],
@@ -156,9 +141,6 @@
       "Available": true,
       "CommitTimestamp": "2020-12-20T02:37:52.9649363+00:00",
       "HttpHeaders": {
-        "Content-Length": [
-          "1275"
-        ],
         "Content-Type": [
           "text/xml"
         ],

@@ -29,7 +29,7 @@ namespace NuGet.Insights
                 DeserializeAsync);
         }
 
-        private async IAsyncEnumerable<PackageOwner> DeserializeAsync(Stream stream)
+        private async IAsyncEnumerable<IReadOnlyList<PackageOwner>> DeserializeAsync(Stream stream)
         {
             using var textReader = new StreamReader(stream);
             using var jsonReader = new JsonTextReader(textReader);
@@ -38,6 +38,9 @@ namespace NuGet.Insights
             {
                 throw new InvalidDataException("Expected a JSON document starting with an object.");
             }
+
+            const int pageSize = AsOfData<PackageOwner>.DefaultPageSize;
+            var page = new List<PackageOwner>(capacity: pageSize);
 
             string? id = null;
             while (await jsonReader.ReadAsync() && jsonReader.TokenType != JsonToken.EndObject)
@@ -49,14 +52,25 @@ namespace NuGet.Insights
                         break;
                     case JsonToken.String:
                         var username = (string)jsonReader.Value!;
-                        yield return new PackageOwner(id, username);
+                        page.Add(new PackageOwner(id, username));
                         break;
+                }
+
+                if (page.Count >= pageSize)
+                {
+                    yield return page;
+                    page.Clear();
                 }
             }
 
             if (await jsonReader.ReadAsync())
             {
                 throw new InvalidDataException("Expected the JSON document to end with the end of an object.");
+            }
+
+            if (page.Count > 0)
+            {
+                yield return page;
             }
         }
     }

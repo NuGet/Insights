@@ -17,6 +17,7 @@ namespace NuGet.Insights
         bool IsNullable,
         bool IsNullableEnum,
         bool IsEnum,
+        string? UnderlyingEnumType,
         bool IsReferenceType,
         bool IsBucketKey,
         bool IsKustoIgnore,
