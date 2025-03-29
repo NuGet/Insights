@@ -711,6 +711,7 @@ namespace NuGet.Insights.Worker
                     blobResult.Details.ContentLength,
                     TempStreamDirectory.DefaultBufferSize,
                     hasher,
+                    _telemetryClient,
                     _logger);
 
                 existingStream.Flush();

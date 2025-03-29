@@ -108,6 +108,18 @@ namespace NuGet.Insights
             IIncrementalHash hasher,
             ILogger logger)
         {
+            await CopyToSlowAsync(src, dest, length, bufferSize, hasher, telemetryClient: null, logger);
+        }
+
+        public static async Task CopyToSlowAsync(
+            this Stream src,
+            Stream dest,
+            long length,
+            int bufferSize,
+            IIncrementalHash hasher,
+            ITelemetryClient telemetryClient,
+            ILogger logger)
+        {
             var pool = ArrayPool<byte>.Shared;
             var buffer = pool.Rent(bufferSize);
             try
@@ -121,9 +133,20 @@ namespace NuGet.Insights
                     // Spend up to 5 second trying to fill up the buffer. This results is less chattiness on the "write" side
                     // of the copy operation. We pass the buffer size here because we want to observe the provided buffer size.
                     // The memory pool that gave us the buffer may have given us a buffer larger than the provided buffer size.
-                    bytesRead = await ReadForDurationAsync(src, buffer, bufferSize, TimeSpan.FromSeconds(5));
+                    bytesRead = await ReadForDurationAsync(src, buffer, bufferSize, TimeSpan.FromSeconds(5), telemetryClient);
 
                     copiedBytes += bytesRead;
+
+                    if (telemetryClient is not null)
+                    {
+                        telemetryClient.TrackMetric("SlowStreamExtensions.Debug.CopyToSlowAsync.BytesRead", bytesRead, new Dictionary<string, string>
+                        {
+                            { "BytesRead", bytesRead.ToString(CultureInfo.InvariantCulture) },
+                            { "CopiedBytes", copiedBytes.ToString(CultureInfo.InvariantCulture) },
+                            { "BufferSize", bufferSize.ToString(CultureInfo.InvariantCulture) },
+                            { "Length", length.ToString(CultureInfo.InvariantCulture) },
+                        });
+                    }
 
                     double mb = default;
                     double percent = default;
@@ -180,6 +203,16 @@ namespace NuGet.Insights
                 if (copiedBytes < dest.Length)
                 {
                     logger.LogInformation("Shortening destination stream from {OldLength} to {NewLength}.", dest.Length, copiedBytes);
+
+                    if (telemetryClient is not null)
+                    {
+                        telemetryClient.TrackMetric("SlowStreamExtensions.Debug.CopyToSlowAsync.Shortened", 1, new Dictionary<string, string>
+                        {
+                            { "OldLength", dest.Length.ToString(CultureInfo.InvariantCulture) },
+                            { "NewLength", copiedBytes.ToString(CultureInfo.InvariantCulture) },
+                        });
+                    }
+
                     dest.SetLength(copiedBytes);
                 }
 
@@ -232,7 +265,7 @@ namespace NuGet.Insights
             return totalRead;
         }
 
-        private static async Task<int> ReadForDurationAsync(Stream src, byte[] buffer, int bufferSize, TimeSpan timeLimit)
+        private static async Task<int> ReadForDurationAsync(Stream src, byte[] buffer, int bufferSize, TimeSpan timeLimit, ITelemetryClient telemetryClient)
         {
             var sw = Stopwatch.StartNew();
             var totalRead = 0;
@@ -241,6 +274,18 @@ namespace NuGet.Insights
             {
                 read = await src.ReadAsync(buffer, totalRead, bufferSize - totalRead);
                 totalRead += read;
+
+                if (telemetryClient is not null)
+                {
+                    telemetryClient.TrackMetric("SlowStreamExtensions.Debug.ReadForDurationAsync.Read", read, new Dictionary<string, string>
+                    {
+                        { "Read", read.ToString(CultureInfo.InvariantCulture) },
+                        { "TotalRead", totalRead.ToString(CultureInfo.InvariantCulture) },
+                        { "BufferSize", bufferSize.ToString(CultureInfo.InvariantCulture) },
+                        { "TimeLimit", timeLimit.ToString() },
+                        { "Elapsed", sw.Elapsed.ToString() },
+                    });
+                }
             }
             while (read > 0 && totalRead < bufferSize && sw.Elapsed < timeLimit);
 
