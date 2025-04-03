@@ -260,7 +260,8 @@ namespace NuGet.Insights
                     // lower timeout is either handled by the timeout policy (internally) or the Azure service client (externally).
                     httpClient.Timeout = TimeSpan.FromMinutes(5);
                     UserAgent.SetUserAgent(httpClient);
-                });
+                })
+                .SetHandlerLifetime(TimeSpan.FromMinutes(20));
 
             if (addRetryPolicy)
             {

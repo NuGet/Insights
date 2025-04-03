@@ -145,7 +145,7 @@ namespace NuGet.Insights
 
             }
 
-            var untilRefresh = GetTimeUntilRefresh(serviceClients);
+            var untilRefresh = GetTimeUntilRefresh(_options.Value, serviceClients.SharedAccessSignatureExpiry, serviceClients.Created);
             if (untilRefresh <= TimeSpan.Zero)
             {
                 serviceClients = null;
@@ -155,12 +155,12 @@ namespace NuGet.Insights
             return true;
         }
 
-        private TimeSpan GetTimeUntilRefresh(ServiceClients serviceClients)
+        private static TimeSpan GetTimeUntilRefresh(StorageSettings settings, DateTimeOffset sharedAccessSignatureExpiry, DateTimeOffset created)
         {
             // Refresh at half of the SAS duration or the default refresh period, whichever is lesser.
-            var sasDuration = serviceClients.SharedAccessSignatureExpiry - serviceClients.Created;
-            var refreshPeriod = TimeSpan.FromTicks(Math.Min(sasDuration.Ticks / 2, _options.Value.ServiceClientRefreshPeriod.Ticks));
-            var sinceCreated = DateTimeOffset.UtcNow - serviceClients.Created;
+            var sasDuration = sharedAccessSignatureExpiry - created;
+            var refreshPeriod = TimeSpan.FromTicks(Math.Min(sasDuration.Ticks / 2, settings.ServiceClientRefreshPeriod.Ticks));
+            var sinceCreated = DateTimeOffset.UtcNow - created;
             var untilRefresh = refreshPeriod - sinceCreated;
 
             return untilRefresh > TimeSpan.Zero ? untilRefresh : TimeSpan.Zero;
@@ -313,11 +313,12 @@ namespace NuGet.Insights
             TableServiceClient table = tableClientFactory.GetServiceClient();
 
             var sasExpiry = created.Add(settings.ServiceClientSasDuration);
+            var untilRefresh = GetTimeUntilRefresh(settings, sasExpiry, created);
             logger.LogInformation(
                 "Using storage account '{StorageAccountName}' with a {CredentialType} credential type. The service clients will be cached for {Duration} hours.",
                 blob.AccountName,
                 storageCredentialType,
-                (sasExpiry - created).TotalHours);
+                untilRefresh);
 
             logger.LogInformation("Blob endpoint: {BlobEndpoint}", blob.Uri.Obfuscate());
             logger.LogInformation("Queue endpoint: {QueueEndpoint}", queue.Uri.Obfuscate());

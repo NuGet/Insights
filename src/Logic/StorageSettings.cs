@@ -16,7 +16,12 @@ namespace NuGet.Insights
         public string StorageClientCertificateKeyVaultCertificateName { get; set; } = null;
         public string StorageAccessKey { get; set; } = null;
 
-        public TimeSpan ServiceClientRefreshPeriod { get; set; } = TimeSpan.FromMinutes(30);
+        /// <summary>
+        /// This is a relatively short period of time to allow the internal HTTP client to be released and refreshed
+        /// frequently.
+        /// </summary>
+        public TimeSpan ServiceClientRefreshPeriod { get; set; } = TimeSpan.FromSeconds(30);
+
         public TimeSpan ServiceClientSasDuration { get; set; } = TimeSpan.FromHours(12);
 
         /// <summary>

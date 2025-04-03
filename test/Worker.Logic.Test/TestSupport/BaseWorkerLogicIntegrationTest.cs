@@ -267,8 +267,7 @@ namespace NuGet.Insights.Worker
         protected async Task<CatalogIndexScan> UpdateAsync(
             CatalogIndexScan indexScan,
             int workerCount = 1,
-            TimeSpan? visibilityTimeout = null,
-            bool retryFailedMessages = false)
+            TimeSpan? visibilityTimeout = null)
         {
             Assert.NotNull(indexScan);
             await ProcessQueueAsync(async () =>
@@ -283,7 +282,7 @@ namespace NuGet.Insights.Worker
                 Assert.Equal(CatalogIndexScanState.Complete, indexScan.State);
 
                 return true;
-            }, workerCount, visibilityTimeout, retryFailedMessages);
+            }, workerCount, visibilityTimeout);
 
             ExpectedCatalogIndexScans.Add(indexScan);
 
@@ -328,9 +327,9 @@ namespace NuGet.Insights.Worker
         public async Task ProcessQueueAsync(
             Func<Task<bool>> isCompleteAsync,
             int workerCount = 1,
-            TimeSpan? visibilityTimeout = null,
-            bool retryFailedMessages = false)
+            TimeSpan? visibilityTimeout = null)
         {
+            const bool retryFailedMessages = true;
             Assert.InRange(workerCount, 1, DefaultParallelWorkers);
 
             var expandQueue = await WorkerQueueFactory.GetQueueAsync(QueueType.Expand);
