@@ -254,7 +254,7 @@ namespace NuGet.Insights
 
             if (tokenCredential is not null)
             {
-                tokenCredential = CachingTokenCredential.MaybeWrap(tokenCredential, loggerFactory, settings);
+                tokenCredential = CachingTokenCredential.MaybeWrap(tokenCredential, loggerFactory, settings, defaultTenantId: null);
             }
 
             // build the client options

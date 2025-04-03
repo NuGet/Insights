@@ -179,7 +179,11 @@ namespace NuGet.Insights.Kusto
 
             var builder = new KustoConnectionStringBuilder(settings.KustoConnectionString);
 
-            var tokenCredential = CachingTokenCredential.MaybeWrap(new DefaultAzureCredential(), loggerFactory, settings);
+            var tokenCredential = CachingTokenCredential.MaybeWrap(
+                new DefaultAzureCredential(),
+                loggerFactory,
+                settings,
+                builder.Authority);
 
             if (settings.KustoClientCertificatePath != null)
             {

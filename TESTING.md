@@ -101,12 +101,34 @@ foreach ($pair in $settings.GetEnumerator()) {
 This is the same as the previous option but also set up the tests for ingesting into Kusto.
 
 ```powershell
+# source: https://stackoverflow.com/a/65360674
+# this is useful when you have a Microsoft account joined to your personal Entra ID tenant
+function Get-CurrentUserObjectID {
+    $ctx = Get-AzContext
+    if ($ctx.Account.Type -ne "User") {
+      throw "Only User authentication is supported. Az context account type: $($ctx.Account.Type)"
+    }
+    $user = Get-AzADUser -Mail $ctx.Account.Id
+
+    if (!$user) {
+        $user = Get-AzADUser -UserPrincipalName $ctx.Account.Id
+    }
+    
+    if (-not $user) {
+        $externalMail = ($ctx.Account.Id -replace "@","_") + "#EXT#*"
+        $user = Get-AzADUser | Where-Object { $_.UserPrincipalName -like $externalMail}
+    }
+
+    return $user.id
+}
+
 $resourceGroupName = "joel-insights-tests"
 $storageAccountName = "joelinsightstests"
 $kustoClusterName = "joelinsightstests"
 $kustoDatabaseName = "JoelTestDb"
 $region = "northcentralus"
-$signInName = (Get-AzContext).Account.Id
+$currentUserId = Get-CurrentUserObjectID
+$currentTenantId = (Get-AzContext).Tenant.Id
 
 # create the resource group, completes very quickly
 New-AzResourceGroup -Name $resourceGroupName `
@@ -123,13 +145,13 @@ $storageAccount = Get-AzStorageAccount -ResourceGroupName $resourceGroupName `
     -Name $storageAccountName
 
 # assign permissions on the storage account
-New-AzRoleAssignment -SignInName $signInName `
+New-AzRoleAssignment -ObjectType User -ObjectId $currentUserId `
     -Scope $storageAccount.Id `
     -RoleDefinitionName "Storage Blob Data Contributor"
-New-AzRoleAssignment -SignInName $signInName `
+New-AzRoleAssignment -ObjectType User -ObjectId $currentUserId `
     -Scope $storageAccount.Id `
     -RoleDefinitionName "Storage Queue Data Contributor"
-New-AzRoleAssignment -SignInName $signInName `
+New-AzRoleAssignment -ObjectType User -ObjectId $currentUserId `
     -Scope $storageAccount.Id `
     -RoleDefinitionName "Storage Table Data Contributor"
 
@@ -149,10 +171,19 @@ New-AzKustoDatabase -ResourceGroupName $resourceGroupName `
 $kustoCluster = Get-AzKustoCluster -ResourceGroupName $resourceGroupName `
     -Name $kustoClusterName
 
+# assign permissions on the Kusto cluster
+New-AzKustoClusterPrincipalAssignment -ResourceGroupName $resourceGroupName `
+    -ClusterName $kustoClusterName `
+    -PrincipalId $currentUserId `
+    -TenantId $currentTenantId `
+    -PrincipalType User `
+    -Role AllDatabasesAdmin `
+    -PrincipalAssignmentName "NuGet Insights test access for $currentUserId"
+
 # set test environment variables for the created resources
 $settings = @{
   "NUGETINSIGHTS_STORAGEACCOUNTNAME" = $storageAccountName;
-  "NUGETINSIGHTS_KUSTOCONNECTIONSTRING" = "$($kustoCluster.Uri); Fed=true";
+  "NUGETINSIGHTS_KUSTOCONNECTIONSTRING" = "$($kustoCluster.Uri); TenantId=$currentTenantId; Fed=true";
   "NUGETINSIGHTS_KUSTODATABASENAME" = $kustoDatabaseName;
 }
 
