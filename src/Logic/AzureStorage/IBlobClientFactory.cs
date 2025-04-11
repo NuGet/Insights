@@ -18,9 +18,16 @@ namespace NuGet.Insights
 
     public class MemoryBlobClientFactory : IBlobClientFactory
     {
-        public static MemoryBlobServiceStore SharedStore { get; } = new();
+        private readonly TimeProvider _timeProvider;
+        private readonly MemoryBlobServiceStore _store;
 
-        public BlobServiceClient GetServiceClient() => new MemoryBlobServiceClient(SharedStore);
+        public MemoryBlobClientFactory(TimeProvider timeProvider, MemoryBlobServiceStore store)
+        {
+            _timeProvider = timeProvider;
+            _store = store;
+        }
+
+        public BlobServiceClient GetServiceClient() => new MemoryBlobServiceClient(_timeProvider, _store);
 
         public bool TryGetBlobClient(BlobServiceClient serviceClient, Uri blobUri, [NotNullWhen(true)] out BlobClient? blobClient)
         {

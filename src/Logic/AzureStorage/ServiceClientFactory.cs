@@ -12,6 +12,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Queues;
 using Azure.Storage.Sas;
+using NuGet.Insights.MemoryStorage;
 using NuGet.Insights.StorageNoOpRetry;
 
 #nullable enable
@@ -24,6 +25,10 @@ namespace NuGet.Insights
         private ServiceClients? _serviceClients;
 
         private readonly Func<HttpClient>? _httpClientFactory;
+        private readonly MemoryBlobServiceStore _memoryBlobStore;
+        private readonly MemoryQueueServiceStore _memoryQueueStore;
+        private readonly MemoryTableServiceStore _memoryTableStore;
+        private readonly TimeProvider _timeProvider;
         private readonly IOptions<NuGetInsightsSettings> _options;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILoggerFactory _loggerFactory;
@@ -32,17 +37,33 @@ namespace NuGet.Insights
         public ServiceClientFactory(
             IOptions<NuGetInsightsSettings> options,
             ITelemetryClient telemetryClient,
-            ILoggerFactory loggerFactory) : this(httpClientFactory: null, options, telemetryClient, loggerFactory)
+            ILoggerFactory loggerFactory) : this(
+                httpClientFactory: null,
+                MemoryBlobServiceStore.SharedStore,
+                MemoryQueueServiceStore.SharedStore,
+                MemoryTableServiceStore.SharedStore,
+                TimeProvider.System,
+                options,
+                telemetryClient,
+                loggerFactory)
         {
         }
 
         public ServiceClientFactory(
             Func<HttpClient>? httpClientFactory,
+            MemoryBlobServiceStore memoryBlobStore,
+            MemoryQueueServiceStore memoryQueueStore,
+            MemoryTableServiceStore memoryTableStore,
+            TimeProvider timeProvider,
             IOptions<NuGetInsightsSettings> options,
             ITelemetryClient telemetryClient,
             ILoggerFactory loggerFactory)
         {
             _httpClientFactory = httpClientFactory;
+            _memoryBlobStore = memoryBlobStore;
+            _memoryQueueStore = memoryQueueStore;
+            _memoryTableStore = memoryTableStore;
+            _timeProvider = timeProvider;
             _options = options;
             _telemetryClient = telemetryClient;
             _loggerFactory = loggerFactory;
@@ -123,6 +144,10 @@ namespace NuGet.Insights
                 _serviceClients = await GetServiceClientsAsync(
                     created: DateTimeOffset.UtcNow,
                     GetHttpPipelineTransport(),
+                    _memoryBlobStore,
+                    _memoryQueueStore,
+                    _memoryTableStore,
+                    _timeProvider,
                     _options.Value,
                     _telemetryClient,
                     _logger,
@@ -190,6 +215,10 @@ namespace NuGet.Insights
         private static async Task<ServiceClients> GetServiceClientsAsync(
             DateTimeOffset created,
             HttpPipelineTransport? httpPipelineTransport,
+            MemoryBlobServiceStore memoryBlobStore,
+            MemoryQueueServiceStore memoryQueueStore,
+            MemoryTableServiceStore memoryTableStore,
+            TimeProvider timeProvider,
             StorageSettings settings,
             ITelemetryClient telemetryClient,
             ILogger logger,
@@ -269,9 +298,9 @@ namespace NuGet.Insights
             bool supportsUserDelegationKey;
             if (storageCredentialType == StorageCredentialType.MemoryStorage)
             {
-                blobClientFactory = new MemoryBlobClientFactory();
-                queueClientFactory = new MemoryQueueClientFactory();
-                tableClientFactory = new MemoryTableClientFactory();
+                blobClientFactory = new MemoryBlobClientFactory(timeProvider, memoryBlobStore);
+                queueClientFactory = new MemoryQueueClientFactory(timeProvider, memoryQueueStore);
+                tableClientFactory = new MemoryTableClientFactory(timeProvider, memoryTableStore);
                 supportsUserDelegationKey = true;
             }
             else if (storageCredentialType == StorageCredentialType.DevelopmentStorage)

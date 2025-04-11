@@ -9,7 +9,12 @@ namespace NuGet.Insights.MemoryStorage
 {
     public class MemoryTokenCredential : TokenCredential
     {
-        public static MemoryTokenCredential Instance { get; } = new();
+        private readonly TimeProvider _timeProvider;
+
+        public MemoryTokenCredential(TimeProvider timeProvider)
+        {
+            _timeProvider = timeProvider;
+        }
 
         public override AccessToken GetToken(
             TokenRequestContext requestContext,
@@ -22,7 +27,7 @@ namespace NuGet.Insights.MemoryStorage
             TokenRequestContext requestContext,
             CancellationToken cancellationToken)
         {
-            return ValueTask.FromResult(new AccessToken($"access-token-{Guid.NewGuid()}", DateTimeOffset.UtcNow.AddMinutes(15)));
+            return ValueTask.FromResult(new AccessToken($"access-token-{Guid.NewGuid()}", _timeProvider.GetUtcNow().AddMinutes(15)));
         }
     }
 }

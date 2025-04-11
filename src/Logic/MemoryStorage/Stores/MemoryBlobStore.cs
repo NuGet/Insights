@@ -15,6 +15,7 @@ namespace NuGet.Insights.MemoryStorage
         private const string AcceptRanges = "bytes";
 
         private readonly object _lock = new();
+        private readonly TimeProvider _timeProvider;
         private readonly MemoryBlobContainerStore _parent;
         private string _name;
 
@@ -34,8 +35,9 @@ namespace NuGet.Insights.MemoryStorage
         private BlobHttpHeaders? _httpHeaders;
         private Dictionary<string, string>? _metadata;
 
-        public MemoryBlobStore(MemoryBlobContainerStore parent, string name)
+        public MemoryBlobStore(TimeProvider timeProvider, MemoryBlobContainerStore parent, string name)
         {
+            _timeProvider = timeProvider;
             _parent = parent;
             _name = name;
         }
@@ -45,7 +47,7 @@ namespace NuGet.Insights.MemoryStorage
         {
             { _leaseId: null } => LeaseState.Available,
             { _broken: true } => LeaseState.Broken,
-            { _leaseExpiration: DateTimeOffset expiration } when expiration > DateTimeOffset.UtcNow => LeaseState.Leased,
+            { _leaseExpiration: DateTimeOffset expiration } when expiration > _timeProvider.GetUtcNow() => LeaseState.Leased,
             _ => LeaseState.Expired,
         };
         private LeaseStatus LeaseStatus => LeaseState switch
@@ -177,7 +179,7 @@ namespace NuGet.Insights.MemoryStorage
                 }
 
                 _leaseId = Guid.NewGuid().ToString();
-                _leaseExpiration = DateTimeOffset.UtcNow.Add(duration);
+                _leaseExpiration = _timeProvider.GetUtcNow().Add(duration);
                 _leaseDuration = duration;
                 _broken = false;
                 return new(StorageResultType.Success, MakeBlobLease());
@@ -198,7 +200,7 @@ namespace NuGet.Insights.MemoryStorage
                     return new(StorageResultType.BlockedByDifferentLease);
                 }
 
-                _leaseExpiration = DateTimeOffset.UtcNow.Add(_leaseDuration);
+                _leaseExpiration = _timeProvider.GetUtcNow().Add(_leaseDuration);
                 return new(StorageResultType.Success, MakeBlobLease());
             }
         }
@@ -447,7 +449,7 @@ namespace NuGet.Insights.MemoryStorage
                 }
 
                 _copyStatus = CopyStatus.Success;
-                _copyCompletedOn = DateTimeOffset.UtcNow;
+                _copyCompletedOn = _timeProvider.GetUtcNow();
                 return StorageResultType.Success;
             }
         }
@@ -667,7 +669,7 @@ namespace NuGet.Insights.MemoryStorage
 
         private void UpdateLastModified()
         {
-            _lastModified = DateTimeOffset.UtcNow;
+            _lastModified = _timeProvider.GetUtcNow();
             _broken = false;
         }
 

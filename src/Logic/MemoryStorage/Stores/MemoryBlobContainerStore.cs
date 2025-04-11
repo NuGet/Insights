@@ -13,14 +13,15 @@ namespace NuGet.Insights.MemoryStorage
         private readonly ConcurrentDictionary<string, MemoryBlobStore> _blobs = new();
 
         private readonly object _lock = new();
-
+        private readonly TimeProvider _timeProvider;
         private string _name;
 
         private DateTimeOffset _lastModified;
         private bool _exists;
 
-        public MemoryBlobContainerStore(string name)
+        public MemoryBlobContainerStore(TimeProvider timeProvider, string name)
         {
+            _timeProvider = timeProvider;
             _name = name;
         }
 
@@ -43,7 +44,7 @@ namespace NuGet.Insights.MemoryStorage
 
         public virtual MemoryBlobStore GetBlob(string name)
         {
-            return _blobs.GetOrAdd(name, x => new MemoryBlobStore(this, x));
+            return _blobs.GetOrAdd(name, x => new MemoryBlobStore(_timeProvider, this, x));
         }
 
         public virtual bool Exists()
@@ -147,7 +148,7 @@ namespace NuGet.Insights.MemoryStorage
                 }
 
                 _exists = true;
-                _lastModified = DateTimeOffset.UtcNow;
+                _lastModified = _timeProvider.GetUtcNow();
                 return new(StorageResultType.Success, BlobsModelFactory.BlobContainerInfo(ETag, _lastModified));
             }
         }

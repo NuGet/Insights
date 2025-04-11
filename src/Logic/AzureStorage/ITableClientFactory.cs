@@ -16,9 +16,16 @@ namespace NuGet.Insights
 
     public class MemoryTableClientFactory : ITableClientFactory
     {
-        public static MemoryTableServiceStore SharedStore { get; } = new();
+        private readonly TimeProvider _timeProvider;
+        private readonly MemoryTableServiceStore _store;
 
-        public TableServiceClient GetServiceClient() => new MemoryTableServiceClient(SharedStore);
+        public MemoryTableClientFactory(TimeProvider timeProvider, MemoryTableServiceStore store)
+        {
+            _timeProvider = timeProvider;
+            _store = store;
+        }
+
+        public TableServiceClient GetServiceClient() => new MemoryTableServiceClient(_timeProvider, _store);
     }
 
     public class DevelopmentTableClientFactory : ITableClientFactory

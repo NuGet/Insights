@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Extensions.Hosting;
 using NuGet.Insights.Worker.LoadBucketedPackage;
 
 namespace NuGet.Insights.Worker.TimedReprocess
@@ -289,23 +288,8 @@ namespace NuGet.Insights.Worker.TimedReprocess
             Assert.All(scheduledBatches.Where(x => x.Count > 1), x => Assert.InRange(x.Count, 71, 72));
         }
 
-        protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
-        {
-            base.ConfigureHostBuilder(hostBuilder);
-
-            hostBuilder.ConfigureServices(services =>
-            {
-                services.AddSingleton(TimeProvider.Object);
-            });
-        }
-
-        public Mock<TimeProvider> TimeProvider { get; }
-        public DateTimeOffset? UtcNow { get; set; }
-
         public TimedReprocessStorageServiceIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
-            TimeProvider = new Mock<TimeProvider>();
-            TimeProvider.Setup(x => x.GetUtcNow()).Returns(() => UtcNow ?? DateTimeOffset.UtcNow);
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Knapcode.MiniZip;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Http;
+using NuGet.Insights.MemoryStorage;
 using NuGet.Insights.ReferenceTracking;
 using NuGet.Insights.TablePrefixScan;
 using NuGet.Insights.WideEntities;
@@ -108,11 +109,19 @@ namespace NuGet.Insights
                 o.AddFilter("System.Net.Http.HttpClient", LogLevel.Warning);
             });
 
+            serviceCollection.AddSingleton(s => MemoryBlobServiceStore.SharedStore);
+            serviceCollection.AddSingleton(s => MemoryQueueServiceStore.SharedStore);
+            serviceCollection.AddSingleton(s => MemoryTableServiceStore.SharedStore);
+
             serviceCollection.AddSingleton(provider =>
             {
                 var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
                 return new ServiceClientFactory(
                     () => httpClientFactory.CreateClient(ServiceClientHttpClient),
+                    provider.GetRequiredService<MemoryBlobServiceStore>(),
+                    provider.GetRequiredService<MemoryQueueServiceStore>(),
+                    provider.GetRequiredService<MemoryTableServiceStore>(),
+                    provider.GetRequiredService<TimeProvider>(),
                     provider.GetRequiredService<IOptions<NuGetInsightsSettings>>(),
                     provider.GetRequiredService<ITelemetryClient>(),
                     provider.GetRequiredService<ILoggerFactory>());

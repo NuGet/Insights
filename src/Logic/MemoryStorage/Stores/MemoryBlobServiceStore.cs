@@ -9,7 +9,16 @@ namespace NuGet.Insights.MemoryStorage
 {
     public class MemoryBlobServiceStore
     {
+        public static MemoryBlobServiceStore SharedStore { get; } = new(TimeProvider.System);
+
         private readonly ConcurrentDictionary<string, MemoryBlobContainerStore> _containers = new();
+
+        private readonly TimeProvider _timeProvider;
+
+        public MemoryBlobServiceStore(TimeProvider timeProvider)
+        {
+            _timeProvider = timeProvider;
+        }
 
         public virtual IEnumerable<BlobContainerItem> GetContainerItems(
             BlobContainerTraits traits,
@@ -41,7 +50,7 @@ namespace NuGet.Insights.MemoryStorage
 
         public virtual MemoryBlobContainerStore GetContainer(string name)
         {
-            return _containers.GetOrAdd(name, x => new MemoryBlobContainerStore(x));
+            return _containers.GetOrAdd(name, x => new MemoryBlobContainerStore(_timeProvider, x));
         }
     }
 }

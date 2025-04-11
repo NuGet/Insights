@@ -8,6 +8,7 @@ using Azure.Storage.Blobs;
 using MessagePack;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using NuGet.Insights.MemoryStorage;
 using NuGet.Insights.WideEntities;
 
 namespace NuGet.Insights
@@ -81,10 +82,22 @@ namespace NuGet.Insights
             ITestOutputHelper output,
             DefaultWebApplicationFactory<StaticFilesStartup> factory)
         {
+            // Remove xUnit synchronization context to avoid deadlocks in async tests.
+            // This is related to the usage of FakeTimeProvider.
+            // https://github.com/dotnet/extensions/tree/main/src/Libraries/Microsoft.Extensions.TimeProvider.Testing#synchronizationcontext-in-xunit-tests
+            SynchronizationContext.SetSynchronizationContext(null);
+
             Output = output;
             WebApplicationFactory = factory;
             StoragePrefix = LogicTestSettings.NewStoragePrefix();
             HttpMessageHandlerFactory = new TestHttpMessageHandlerFactory(output.GetLoggerFactory());
+
+            TimeProvider = new Mock<TimeProvider>() { CallBase = true };
+            TimeProvider.Setup(x => x.GetUtcNow()).Returns(() => UtcNow ?? DateTimeOffset.UtcNow);
+
+            MemoryBlobServiceStore = new MemoryBlobServiceStore(TimeProvider.Object);
+            MemoryQueueServiceStore = new MemoryQueueServiceStore(TimeProvider.Object);
+            MemoryTableServiceStore = new MemoryTableServiceStore(TimeProvider.Object);
 
             var currentDirectory = Directory.GetCurrentDirectory();
             var testWebHostBuilder = factory.WithWebHostBuilder(b => b
@@ -112,6 +125,12 @@ namespace NuGet.Insights
                         TestOutputHelperExtensions.ShouldIgnoreMetricLog,
                         s.GetRequiredService<ILogger<LoggerTelemetryClient>>()));
                     serviceCollection.AddSingleton<ITelemetryClient>(s => s.GetRequiredService<LoggerTelemetryClient>());
+
+                    serviceCollection.AddSingleton(TimeProvider.Object);
+
+                    serviceCollection.AddSingleton(MemoryBlobServiceStore);
+                    serviceCollection.AddSingleton(MemoryQueueServiceStore);
+                    serviceCollection.AddSingleton(MemoryTableServiceStore);
 
                     serviceCollection.AddLogging(o =>
                     {
@@ -324,6 +343,11 @@ namespace NuGet.Insights
         public HttpClient TestDataHttpClient { get; }
         public ConcurrentDictionary<LogLevel, int> LogLevelToCount { get; }
         public Action<NuGetInsightsSettings> ConfigureSettings { get; set; }
+        public Mock<TimeProvider> TimeProvider { get; }
+        public DateTimeOffset? UtcNow { get; set; }
+        public MemoryBlobServiceStore MemoryBlobServiceStore { get; }
+        public MemoryQueueServiceStore MemoryQueueServiceStore { get; }
+        public MemoryTableServiceStore MemoryTableServiceStore { get; }
         public IHost Host => _lazyHost.Value;
         public ServiceClientFactory ServiceClientFactory => Host.Services.GetRequiredService<ServiceClientFactory>();
         public LoggerTelemetryClient TelemetryClient => Host.Services.GetRequiredService<LoggerTelemetryClient>();

@@ -13,8 +13,8 @@ namespace NuGet.Insights.MemoryStorage
     {
         private readonly MemoryQueueStore _store;
 
-        public MemoryQueueClient(MemoryQueueServiceStore parent, Uri uri, QueueClientOptions options)
-            : base(uri, MemoryTokenCredential.Instance, options.AddBrokenTransport())
+        public MemoryQueueClient(TimeProvider timeProvider, MemoryQueueServiceStore parent, Uri uri, QueueClientOptions options)
+            : base(uri, new MemoryTokenCredential(timeProvider), options.AddBrokenTransport())
         {
             _store = parent.GetQueue(Name);
         }
