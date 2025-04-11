@@ -22,7 +22,7 @@ namespace NuGet.Insights.Worker.OwnersToCsv
         public string OperationName => "OwnersToCsv";
         public string Title => CatalogScanDriverMetadata.HumanizeCodeName(OperationName);
         public string ContainerName => _options.Value.PackageOwnerContainerName;
-        public TimeSpan Frequency => _options.Value.OwnersToCsvFrequency;
+        public TimerFrequency Frequency => TimerFrequency.Parse(_options.Value.OwnersToCsvFrequency);
         public bool HasRequiredConfiguration => _options.Value.OwnersV2Urls is not null && _options.Value.OwnersV2Urls.Count > 0;
         public bool AutoStart => _options.Value.AutoStartOwnersToCsv;
 

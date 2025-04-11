@@ -22,7 +22,7 @@ namespace NuGet.Insights.Worker.VerifiedPackagesToCsv
         public string OperationName => "VerifiedPackagesToCsv";
         public string Title => CatalogScanDriverMetadata.HumanizeCodeName(OperationName);
         public string ContainerName => _options.Value.VerifiedPackageContainerName;
-        public TimeSpan Frequency => _options.Value.VerifiedPackagesToCsvFrequency;
+        public TimerFrequency Frequency => TimerFrequency.Parse(_options.Value.VerifiedPackagesToCsvFrequency);
         public bool HasRequiredConfiguration => _options.Value.VerifiedPackagesV1Urls is not null && _options.Value.VerifiedPackagesV1Urls.Count > 0;
         public bool AutoStart => _options.Value.AutoStartVerifiedPackagesToCsv;
 

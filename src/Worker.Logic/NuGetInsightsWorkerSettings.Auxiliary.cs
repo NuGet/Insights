@@ -12,12 +12,12 @@ namespace NuGet.Insights.Worker
         public bool AutoStartPopularityTransfersToCsv { get; set; } = false;
         public bool AutoStartGitHubUsageToCsv { get; set; } = false;
 
-        public TimeSpan DownloadToCsvFrequency { get; set; } = TimeSpan.FromHours(3);
-        public TimeSpan OwnersToCsvFrequency { get; set; } = TimeSpan.FromHours(3);
-        public TimeSpan VerifiedPackagesToCsvFrequency { get; set; } = TimeSpan.FromHours(3);
-        public TimeSpan ExcludedPackagesToCsvFrequency { get; set; } = TimeSpan.FromHours(3);
-        public TimeSpan PopularityTransfersToCsvFrequency { get; set; } = TimeSpan.FromHours(3);
-        public TimeSpan GitHubUsageToCsvFrequency { get; set; } = TimeSpan.FromHours(3);
+        public string DownloadToCsvFrequency { get; set; } = TimeSpan.FromHours(3).ToString();
+        public string OwnersToCsvFrequency { get; set; } = TimeSpan.FromHours(3).ToString();
+        public string VerifiedPackagesToCsvFrequency { get; set; } = TimeSpan.FromHours(3).ToString();
+        public string ExcludedPackagesToCsvFrequency { get; set; } = TimeSpan.FromHours(3).ToString();
+        public string PopularityTransfersToCsvFrequency { get; set; } = TimeSpan.FromHours(3).ToString();
+        public string GitHubUsageToCsvFrequency { get; set; } = TimeSpan.FromHours(3).ToString();
 
         public string PackageDownloadContainerName { get; set; } = "packagedownloads";
         public string PackageOwnerContainerName { get; set; } = "packageowners";

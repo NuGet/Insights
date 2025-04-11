@@ -39,7 +39,16 @@
     }
 
     var now = DateTimeOffset.UtcNow;
-    var nextRunRounded = new DateTimeOffset((now.Ticks - (now.Ticks % Model.Frequency.Ticks)) + Model.Frequency.Ticks, TimeSpan.Zero);
+    DateTimeOffset nextRunRounded;
+    if (Model.Frequency.TimeSpan.HasValue)
+    {
+        var frequencyTicks = Model.Frequency.TimeSpan.Value.Ticks;
+        nextRunRounded = new DateTimeOffset((now.Ticks - (now.Ticks % frequencyTicks)) + frequencyTicks, TimeSpan.Zero);
+    }
+    else
+    {
+        nextRunRounded = Model.Frequency.Schedule.GetNextOccurrence(DateTime.SpecifyKind(now.UtcDateTime, DateTimeKind.Utc));
+    }
 
     string nextRun;
     string nextRunBasedOn;
@@ -58,7 +67,14 @@
         }
         else if (Model.LastExecuted.HasValue)
         {
-            nextRunTimestamp = Model.LastExecuted.Value + Model.Frequency;
+            if (Model.Frequency.TimeSpan.HasValue)
+            {
+                nextRunTimestamp = Model.LastExecuted.Value + Model.Frequency.TimeSpan.Value;
+            }
+            else
+            {
+                nextRunTimestamp = Model.Frequency.Schedule.GetNextOccurrence(DateTime.SpecifyKind(Model.LastExecuted.Value.UtcDateTime, DateTimeKind.Utc));
+            }
             nextRunBasedOn = "(based on last execution)";
         }
         else
@@ -94,7 +110,15 @@
             <b>Status:</b> @inlineStatus
         </li>
         <li class="list-group-item">
-            <b>Frequency:</b> @Model.Frequency.Humanize()
+            <b>Frequency: </b>
+            @if (Model.Frequency.TimeSpan.HasValue)
+            {
+                @Model.Frequency.TimeSpan.Value.Humanize()
+            }
+            else
+            {
+                @Model.Frequency.Schedule.ToString() <i> (cron expression)</i>
+            }
         </li>
         <li class="list-group-item">
             <b>Last started:</b> @lastStarted

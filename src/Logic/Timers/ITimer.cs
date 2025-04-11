@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 namespace NuGet.Insights
 {
     public interface ITimer
@@ -12,7 +14,11 @@ namespace NuGet.Insights
         /// </summary>
         string Title { get; }
 
-        TimeSpan Frequency { get; }
+        /// <summary>
+        /// The frequency at which the timer should run. This is used to determine the next run time.
+        /// </summary>
+        TimerFrequency Frequency { get; }
+
         bool AutoStart { get; }
         bool IsEnabled { get; }
         bool CanAbort { get; }

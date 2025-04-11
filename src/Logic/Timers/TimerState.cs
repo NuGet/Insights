@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 namespace NuGet.Insights
 {
     public record TimerState
@@ -21,7 +23,7 @@ namespace NuGet.Insights
         public required bool CanAbort { get; init; }
         public required bool CanDestroy { get; init; }
         public required DateTimeOffset? LastExecuted { get; init; }
-        public required TimeSpan Frequency { get; init; }
+        public required TimerFrequency Frequency { get; init; }
         public required DateTimeOffset? NextRun { get; init; }
     }
 }

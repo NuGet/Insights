@@ -11,6 +11,6 @@ namespace NuGet.Insights.Worker
 
         public int WorkflowMaxAttempts { get; set; } = 5;
 
-        public TimeSpan WorkflowFrequency { get; set; } = TimeSpan.FromDays(1);
+        public string WorkflowFrequency { get; set; } = TimeSpan.FromDays(1).ToString();
     }
 }

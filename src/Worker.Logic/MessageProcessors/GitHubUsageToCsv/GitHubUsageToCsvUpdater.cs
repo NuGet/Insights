@@ -22,7 +22,7 @@ namespace NuGet.Insights.Worker.GitHubUsageToCsv
         public string OperationName => "GitHubUsageToCsv";
         public string Title => "GitHub usage to CSV";
         public string ContainerName => _options.Value.GitHubUsageContainerName;
-        public TimeSpan Frequency => _options.Value.GitHubUsageToCsvFrequency;
+        public TimerFrequency Frequency => TimerFrequency.Parse(_options.Value.GitHubUsageToCsvFrequency);
         public bool HasRequiredConfiguration => _options.Value.GitHubUsageV1Urls is not null && _options.Value.GitHubUsageV1Urls.Count > 0;
         public bool AutoStart => _options.Value.AutoStartGitHubUsageToCsv;
 

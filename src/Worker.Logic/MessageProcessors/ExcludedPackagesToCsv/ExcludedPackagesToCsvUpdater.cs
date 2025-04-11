@@ -22,7 +22,7 @@ namespace NuGet.Insights.Worker.ExcludedPackagesToCsv
         public string OperationName => "ExcludedPackagesToCsv";
         public string Title => CatalogScanDriverMetadata.HumanizeCodeName(OperationName);
         public string ContainerName => _options.Value.ExcludedPackageContainerName;
-        public TimeSpan Frequency => _options.Value.ExcludedPackagesToCsvFrequency;
+        public TimerFrequency Frequency => TimerFrequency.Parse(_options.Value.ExcludedPackagesToCsvFrequency);
         public bool HasRequiredConfiguration => _options.Value.ExcludedPackagesV1Urls is not null && _options.Value.ExcludedPackagesV1Urls.Count > 0;
         public bool AutoStart => _options.Value.AutoStartVerifiedPackagesToCsv;
 

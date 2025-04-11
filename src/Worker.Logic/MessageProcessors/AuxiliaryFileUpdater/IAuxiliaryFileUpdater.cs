@@ -12,7 +12,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
         string ContainerName { get; }
         bool HasRequiredConfiguration { get; }
         bool AutoStart { get; }
-        TimeSpan Frequency { get; }
+        TimerFrequency Frequency { get; }
     }
 
     public interface IAuxiliaryFileUpdater<TInput, TRecord> : IAuxiliaryFileUpdater
