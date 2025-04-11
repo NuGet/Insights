@@ -1,1 +1,1 @@
-﻿$AzureFunctionsHostVersion = "v4.1038.400"
+﻿$AzureFunctionsHostVersion = "v4.1039.200"
