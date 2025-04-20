@@ -58,16 +58,12 @@ namespace NuGet.Insights
                     throw new NotImplementedException();
                 }
 
-                if (requestContext.TenantId != null)
-                {
-                    throw new NotImplementedException();
-                }
-
                 if (requestContext.IsCaeEnabled)
                 {
                     throw new NotImplementedException();
                 }
 
+                TenantId = requestContext.TenantId;
                 Scopes = requestContext.Scopes;
                 Credential = credential;
                 Logger = logger;
@@ -78,6 +74,8 @@ namespace NuGet.Insights
                     hashCode.Add(scope);
                 }
 
+                hashCode.Add(TenantId);
+
                 _hashCode = hashCode.ToHashCode();
             }
 
@@ -86,6 +84,7 @@ namespace NuGet.Insights
                 Scopes = Scopes.ToArray();
             }
 
+            public string? TenantId { get; private set; }
             public IReadOnlyList<string> Scopes { get; private set; }
             public TokenCredential Credential { get; }
             public ILogger Logger { get; }
@@ -110,6 +109,11 @@ namespace NuGet.Insights
                 if (ReferenceEquals(this, other))
                 {
                     return true;
+                }
+
+                if (TenantId != other.TenantId)
+                {
+                    return false;
                 }
 
                 if (Scopes.Count != other.Scopes.Count)

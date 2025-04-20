@@ -9,7 +9,16 @@ namespace NuGet.Insights.MemoryStorage
 {
     public class MemoryQueueServiceStore
     {
+        public static MemoryQueueServiceStore SharedStore { get; } = new(TimeProvider.System);
+
         private readonly ConcurrentDictionary<string, MemoryQueueStore> _queues = new();
+
+        private readonly TimeProvider _timeProvider;
+
+        public MemoryQueueServiceStore(TimeProvider timeProvider)
+        {
+            _timeProvider = timeProvider;
+        }
 
         public virtual IEnumerable<QueueItem> GetQueueItems(QueueTraits traits, string? prefix)
         {
@@ -28,7 +37,7 @@ namespace NuGet.Insights.MemoryStorage
 
         public virtual MemoryQueueStore GetQueue(string name)
         {
-            return _queues.GetOrAdd(name, x => new MemoryQueueStore(x));
+            return _queues.GetOrAdd(name, x => new MemoryQueueStore(_timeProvider, x));
         }
     }
 }

@@ -12,6 +12,7 @@ namespace NuGet.Insights
 
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IComparer<ITimer> _timerComparer;
+        private readonly TimeProvider _timeProvider;
         private readonly IOptions<NuGetInsightsSettings> _options;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<SpecificTimerExecutionService> _logger;
@@ -19,12 +20,14 @@ namespace NuGet.Insights
         public SpecificTimerExecutionService(
             ServiceClientFactory serviceClientFactory,
             IComparer<ITimer> timerComparer,
+            TimeProvider timeProvider,
             IOptions<NuGetInsightsSettings> options,
             ITelemetryClient telemetryClient,
             ILogger<SpecificTimerExecutionService> logger)
         {
             _serviceClientFactory = serviceClientFactory;
             _timerComparer = timerComparer;
+            _timeProvider = timeProvider;
             _options = options;
             _telemetryClient = telemetryClient;
             _logger = logger;
@@ -103,7 +106,7 @@ namespace NuGet.Insights
 
             // Determine what to do for each timer.
             var toExecute = new List<(ITimer timer, TimerEntity entity, Func<Task> persistAsync)>();
-            var now = DateTimeOffset.UtcNow;
+            var now = _timeProvider.GetUtcNow();
             foreach (var timer in timers)
             {
                 if (!timer.IsEnabled)
@@ -163,17 +166,50 @@ namespace NuGet.Insights
                         entity,
                         () => table.UpdateEntityAsync(entity, entity.ETag, mode: TableUpdateMode.Replace)));
                 }
-                else if ((now - entity.LastExecuted.Value) < timer.Frequency)
-                {
-                    _logger.LogInformation("Timer {Name} will not be run because it has been executed too recently.", timer.Name);
-                }
                 else
                 {
-                    _logger.LogInformation("Timer {Name} will be run because it has hasn't been run recently enough.", timer.Name);
-                    toExecute.Add((
-                        timer,
-                        entity,
-                        () => table.UpdateEntityAsync(entity, entity.ETag, mode: TableUpdateMode.Replace)));
+                    bool execute = false;
+                    TimeSpan scheduleOffset;
+                    if (timer.Frequency.Schedule is not null)
+                    {
+                        var nextRun = timer.Frequency.Schedule.GetNextOccurrence(DateTime.SpecifyKind(entity.LastExecuted.Value.UtcDateTime, DateTimeKind.Utc));
+                        scheduleOffset = now - nextRun;
+                        if (scheduleOffset >= TimeSpan.Zero)
+                        {
+                            _logger.LogInformation("Timer {Name} will run because it has hasn't been run recently enough (based on configured schedule {Schedule}).", timer.Name, timer.Frequency);
+                            execute = true;
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Timer {Name} will not run because it has been executed too recently (based on configured schedule {Schedule}).", timer.Name, timer.Frequency);
+                        }
+                    }
+                    else
+                    {
+                        scheduleOffset = now - (entity.LastExecuted.Value + timer.Frequency.TimeSpan.Value);
+                        if (scheduleOffset >= TimeSpan.Zero)
+                        {
+                            _logger.LogInformation("Timer {Name} will run because it has hasn't been run recently enough (based on configured frequency {Frequency}).", timer.Name, timer.Frequency);
+                            execute = true;
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Timer {Name} will not run because it has been executed too recently (based on configured frequency {Frequency}).", timer.Name, timer.Frequency);
+                        }
+                    }
+
+                    if (execute)
+                    {
+                        _telemetryClient.TrackMetric(
+                            "Timer.ScheduleOffsetSeconds",
+                            scheduleOffset.TotalSeconds,
+                            new Dictionary<string, string> { { "Name", entity.Name } });
+
+                        toExecute.Add((
+                            timer,
+                            entity,
+                            () => table.UpdateEntityAsync(entity, entity.ETag, mode: TableUpdateMode.Replace)));
+                    }
                 }
             }
 

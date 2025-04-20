@@ -10,6 +10,7 @@ namespace NuGet.Insights.MemoryStorage
     public class MemoryQueueMessageStore
     {
         private readonly object _lock = new();
+        private readonly TimeProvider _timeProvider;
 
         private readonly string _id;
         private string _popReceipt;
@@ -21,14 +22,16 @@ namespace NuGet.Insights.MemoryStorage
         private bool _deleted;
 
         public MemoryQueueMessageStore(
+            TimeProvider timeProvider,
             string id,
             string text,
             TimeSpan visibilityTimeout)
         {
+            _timeProvider = timeProvider;
             _id = id;
             _text = text;
             _popReceipt = MakePopReciept();
-            _insertionTime = DateTimeOffset.UtcNow;
+            _insertionTime = _timeProvider.GetUtcNow();
             _expirationTime = DateTimeOffset.MaxValue;
             _timeNextVisible = _insertionTime + visibilityTimeout;
             _dequeueCount = 0;
@@ -69,7 +72,7 @@ namespace NuGet.Insights.MemoryStorage
                     throw new InvalidOperationException();
                 }
 
-                var now = DateTimeOffset.UtcNow;
+                var now = _timeProvider.GetUtcNow();
 
                 if (_timeNextVisible > now)
                 {
@@ -100,7 +103,7 @@ namespace NuGet.Insights.MemoryStorage
                     throw new InvalidOperationException();
                 }
 
-                var now = DateTimeOffset.UtcNow;
+                var now = _timeProvider.GetUtcNow();
 
                 if (_timeNextVisible > now)
                 {
@@ -159,7 +162,7 @@ namespace NuGet.Insights.MemoryStorage
 
                 _popReceipt = MakePopReciept();
                 _text = messageText ?? _text;
-                _timeNextVisible = DateTimeOffset.UtcNow + visibilityTimeout;
+                _timeNextVisible = _timeProvider.GetUtcNow() + visibilityTimeout;
                 return QueuesModelFactory.UpdateReceipt(_popReceipt, _timeNextVisible);
             }
         }

@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Extensions.Hosting;
 using NuGet.Insights.Worker.LoadBucketedPackage;
 
 namespace NuGet.Insights.Worker.TimedReprocess
@@ -143,11 +142,12 @@ namespace NuGet.Insights.Worker.TimedReprocess
         public async Task ReturnsAllBucketsDuringTheTimeWindow(int hourJump, int minBucketsPerBatch, int maxBucketsPerBatch)
         {
             // Arrange
+            var frequencyTimeSpan = TimeSpan.FromHours(hourJump);
             ConfigureWorkerSettings = x =>
             {
                 x.TimedReprocessWindow = TimeSpan.FromDays(14); // 1 bucket per ~20 minutes (14 days * 24 hours per day * 60 minutes per hour / 1000 buckets)
                 x.TimedReprocessMaxBuckets = 50;
-                x.TimedReprocessFrequency = TimeSpan.FromHours(hourJump); // at least once every 16 hours is fast enough (14 days * (24 hour per day / 16 hours) * 50 buckets = 1050)
+                x.TimedReprocessFrequency = frequencyTimeSpan.ToString(); // at least once every 16 hours is fast enough (14 days * (24 hour per day / 16 hours) * 50 buckets = 1050)
             };
 
             UtcNow = new DateTimeOffset(2024, 9, 1, 23, 59, 0, TimeSpan.Zero);
@@ -163,7 +163,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
 
             while (UtcNow < windowEnd)
             {
-                UtcNow += Options.Value.TimedReprocessFrequency;
+                UtcNow += frequencyTimeSpan;
 
                 var buckets = (await TimedReprocessStorageService.GetBucketsToReprocessAsync()).Select(x => x.Index).ToList();
                 batches.Add(buckets);
@@ -185,11 +185,12 @@ namespace NuGet.Insights.Worker.TimedReprocess
         public async Task ReturnsAllBucketsDuringMultipleTimeWindows()
         {
             // Arrange
+            var frequencyTimeSpan = TimeSpan.FromHours(24);
             ConfigureWorkerSettings = x =>
             {
                 x.TimedReprocessWindow = TimeSpan.FromDays(14);
                 x.TimedReprocessMaxBuckets = 100;
-                x.TimedReprocessFrequency = TimeSpan.FromHours(24); // at least once every 24 hours is plenty fast enough to keep up (14 days * (24 hour per day / 24 hours) * 150 buckets = 1400)
+                x.TimedReprocessFrequency = frequencyTimeSpan.ToString(); // at least once every 24 hours is plenty fast enough to keep up (14 days * (24 hour per day / 24 hours) * 150 buckets = 1400)
             };
 
             UtcNow = new DateTimeOffset(2024, 9, 1, 23, 59, 0, TimeSpan.Zero);
@@ -206,7 +207,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
 
             while (UtcNow < lastWindowEnd)
             {
-                UtcNow += Options.Value.TimedReprocessFrequency;
+                UtcNow += frequencyTimeSpan;
 
                 var buckets = (await TimedReprocessStorageService.GetBucketsToReprocessAsync()).Select(x => x.Index).ToList();
                 batches.Add(buckets);
@@ -229,11 +230,12 @@ namespace NuGet.Insights.Worker.TimedReprocess
         public async Task CatchesUpWithVeryOldTimestamps()
         {
             // Arrange
+            var frequencyTimeSpan = TimeSpan.FromHours(24);
             ConfigureWorkerSettings = x =>
             {
                 x.TimedReprocessWindow = TimeSpan.FromDays(14);
                 x.TimedReprocessMaxBuckets = 100;
-                x.TimedReprocessFrequency = TimeSpan.FromHours(24); // at least once every 24 hours is plenty fast enough to keep up (14 days * (24 hour per day / 24 hours) * 150 buckets = 1400)
+                x.TimedReprocessFrequency = frequencyTimeSpan.ToString(); // at least once every 24 hours is plenty fast enough to keep up (14 days * (24 hour per day / 24 hours) * 150 buckets = 1400)
             };
 
             UtcNow = new DateTimeOffset(2024, 9, 1, 23, 59, 0, TimeSpan.Zero);
@@ -246,9 +248,9 @@ namespace NuGet.Insights.Worker.TimedReprocess
 
             // Act
             var catchUpBatches = new List<List<int>>();
-            while (UtcNow + Options.Value.TimedReprocessFrequency < currentTimeWindow.WindowEnd)
+            while (UtcNow + frequencyTimeSpan < currentTimeWindow.WindowEnd)
             {
-                UtcNow += Options.Value.TimedReprocessFrequency;
+                UtcNow += frequencyTimeSpan;
 
                 var buckets = (await TimedReprocessStorageService.GetBucketsToReprocessAsync()).Select(x => x.Index).ToList();
                 catchUpBatches.Add(buckets);
@@ -264,7 +266,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
             var scheduledBatches = new List<List<int>>();
             while (UtcNow < nextTimeWindow.WindowEnd)
             {
-                UtcNow += Options.Value.TimedReprocessFrequency;
+                UtcNow += frequencyTimeSpan;
 
                 var buckets = (await TimedReprocessStorageService.GetBucketsToReprocessAsync()).Select(x => x.Index).ToList();
                 scheduledBatches.Add(buckets);
@@ -289,23 +291,8 @@ namespace NuGet.Insights.Worker.TimedReprocess
             Assert.All(scheduledBatches.Where(x => x.Count > 1), x => Assert.InRange(x.Count, 71, 72));
         }
 
-        protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
-        {
-            base.ConfigureHostBuilder(hostBuilder);
-
-            hostBuilder.ConfigureServices(services =>
-            {
-                services.AddSingleton(TimeProvider.Object);
-            });
-        }
-
-        public Mock<TimeProvider> TimeProvider { get; }
-        public DateTimeOffset? UtcNow { get; set; }
-
         public TimedReprocessStorageServiceIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
-            TimeProvider = new Mock<TimeProvider>();
-            TimeProvider.Setup(x => x.GetUtcNow()).Returns(() => UtcNow ?? DateTimeOffset.UtcNow);
         }
     }
 }

@@ -16,10 +16,10 @@ namespace NuGet.Insights.MemoryStorage
         private readonly TokenCredential _credential;
         private readonly TableClientOptions _options;
 
-        public MemoryTableServiceClient(MemoryTableServiceStore store) : this(
+        public MemoryTableServiceClient(TimeProvider timeProvider, MemoryTableServiceStore store) : this(
             store,
             StorageUtility.GetTableEndpoint(StorageUtility.MemoryStorageAccountName),
-            MemoryTokenCredential.Instance,
+            new MemoryTokenCredential(timeProvider),
             new TableClientOptions().AddBrokenTransport())
         {
         }

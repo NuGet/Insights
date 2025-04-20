@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Extensions.Hosting;
 using NuGet.Insights.Worker.LoadBucketedPackage;
 using NuGet.Insights.Worker.PackageReadmeToCsv;
 using NuGet.Insights.Worker.SymbolPackageArchiveToCsv;
@@ -341,22 +340,8 @@ namespace NuGet.Insights.Worker.TimedReprocess
             return await AssertCsvAsync<T>(containerName, testName, stepName, 0, fileName);
         }
 
-        protected override void ConfigureHostBuilder(IHostBuilder hostBuilder)
-        {
-            base.ConfigureHostBuilder(hostBuilder);
-
-            hostBuilder.ConfigureServices(services =>
-            {
-                services.AddSingleton(TimeProvider.Object);
-            });
-        }
-        public Mock<TimeProvider> TimeProvider { get; }
-        public DateTimeOffset? UtcNow { get; set; }
-
         public TimedReprocessServiceIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
-            TimeProvider = new Mock<TimeProvider>();
-            TimeProvider.Setup(x => x.GetUtcNow()).Returns(() => UtcNow ?? DateTimeOffset.UtcNow);
         }
     }
 }

@@ -23,7 +23,7 @@ namespace NuGet.Insights.Worker
         /// This is the frequency that the timed preprocess service processes a set of package buckets. If you're using
         /// the workflow system, this configuration value is overridden by <see cref="WorkflowFrequency"/>.
         /// </summary>
-        public TimeSpan TimedReprocessFrequency { get; set; } = TimeSpan.FromHours(6);
+        public string TimedReprocessFrequency { get; set; } = TimeSpan.FromHours(6).ToString();
 
         /// <summary>
         /// This is the maximum number of buckets to reprocess in a single execution. This configuration exists so that if

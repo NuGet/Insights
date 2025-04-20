@@ -44,7 +44,7 @@ namespace NuGet.Insights.MemoryStorage
                 BlobsModelFactory.UserDelegationKey(
                     nameof(UserDelegationKey.SignedObjectId),
                     nameof(UserDelegationKey.SignedTenantId),
-                    startsOn ?? DateTimeOffset.UtcNow,
+                    startsOn ?? _timeProvider.GetUtcNow(),
                     expiresOn,
                     signedService: "b",
                     LatestServiceVersion,

@@ -13,12 +13,13 @@ namespace NuGet.Insights.MemoryStorage
         private ConcurrentQueue<string> _queue = new();
 
         private readonly object _lock = new();
-
+        private readonly TimeProvider _timeProvider;
         private string _name;
         private bool _exists;
 
-        public MemoryQueueStore(string name)
+        public MemoryQueueStore(TimeProvider timeProvider, string name)
         {
+            _timeProvider = timeProvider;
             _name = name;
         }
 
@@ -86,6 +87,7 @@ namespace NuGet.Insights.MemoryStorage
 
                 var messageId = $"message-id-{Guid.NewGuid()}";
                 var message = new MemoryQueueMessageStore(
+                    _timeProvider,
                     messageId,
                     messageText,
                     visibilityTimeout.GetValueOrDefault(TimeSpan.Zero));

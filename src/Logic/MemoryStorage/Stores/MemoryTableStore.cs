@@ -17,12 +17,13 @@ namespace NuGet.Insights.MemoryStorage
         private readonly ConcurrentDictionary<(string, string), EntityData> _entityData = new();
 
         private readonly object _lock = new();
-
+        private readonly TimeProvider _timeProvider;
         private string _name;
         private bool _exists;
 
-        public MemoryTableStore(string name)
+        public MemoryTableStore(TimeProvider timeProvider, string name)
         {
+            _timeProvider = timeProvider;
             _name = name;
         }
 
@@ -151,7 +152,7 @@ namespace NuGet.Insights.MemoryStorage
                         var entity = existingEntity;
                         if (entity is null)
                         {
-                            entity = new EntityData();
+                            entity = new EntityData(_timeProvider);
                             if (!_entityData.TryAdd((action.Entity.PartitionKey, action.Entity.RowKey), entity))
                             {
                                 throw new InvalidOperationException();
@@ -347,10 +348,12 @@ namespace NuGet.Insights.MemoryStorage
                 GetOdataAnnotatedDictionary = x => (IDictionary<string, object>)extensionMethod.Invoke(null, [x])!;
             }
 
+            private readonly TimeProvider _timeProvider;
             private readonly Dictionary<string, object> _fields;
 
-            public EntityData()
+            public EntityData(TimeProvider timeProvider)
             {
+                _timeProvider = timeProvider;
                 _fields = new();
             }
 
@@ -359,7 +362,7 @@ namespace NuGet.Insights.MemoryStorage
 
             public void UpdateReplace(ITableEntity entity)
             {
-                Timestamp = DateTimeOffset.UtcNow;
+                Timestamp = _timeProvider.GetUtcNow();
                 _fields.Clear();
                 foreach (var field in GetNewFields(entity))
                 {

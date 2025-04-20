@@ -9,7 +9,15 @@ namespace NuGet.Insights.MemoryStorage
 {
     public class MemoryTableServiceStore
     {
+        public static MemoryTableServiceStore SharedStore { get; } = new(TimeProvider.System);
+
         private readonly ConcurrentDictionary<string, MemoryTableStore> _tables = new();
+        private readonly TimeProvider _timeProvider;
+
+        public MemoryTableServiceStore(TimeProvider timeProvider)
+        {
+            _timeProvider = timeProvider;
+        }
 
         public virtual IEnumerable<TableItem> GetTableItems(Func<TableItem, bool> filter)
         {
@@ -28,7 +36,7 @@ namespace NuGet.Insights.MemoryStorage
 
         public virtual MemoryTableStore GetTable(string name)
         {
-            return _tables.GetOrAdd(name, x => new MemoryTableStore(x));
+            return _tables.GetOrAdd(name, x => new MemoryTableStore(_timeProvider, x));
         }
 
         public virtual StorageResultType DeleteTable(string tableName)

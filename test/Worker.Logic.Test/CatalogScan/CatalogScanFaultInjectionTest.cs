@@ -76,8 +76,7 @@ namespace NuGet.Insights.Worker
             await UpdateAsync(
                 scan,
                 workerCount: 2,
-                visibilityTimeout: TimeSpan.FromSeconds(1),
-                retryFailedMessages: true);
+                visibilityTimeout: TimeSpan.FromSeconds(1));
 
             // Assert
             Assert.True(TelemetryClient.Metrics.TryGetValue(new("FanOutRecoveryService.UnstartedWorkCount", "WorkType", "StepName"), out var metric));
@@ -152,8 +151,7 @@ namespace NuGet.Insights.Worker
             await UpdateAsync(
                 scan,
                 workerCount: 2,
-                visibilityTimeout: TimeSpan.FromSeconds(1),
-                retryFailedMessages: true);
+                visibilityTimeout: TimeSpan.FromSeconds(1));
 
             // Assert
             Assert.True(TelemetryClient.Metrics.TryGetValue(new("FanOutRecoveryService.UnstartedWorkCount", "WorkType", "StepName"), out var metric));
@@ -208,8 +206,7 @@ namespace NuGet.Insights.Worker
             await UpdateAsync(
                 scan,
                 workerCount: 1,
-                visibilityTimeout: TimeSpan.FromSeconds(1),
-                retryFailedMessages: true);
+                visibilityTimeout: TimeSpan.FromSeconds(1));
 
             // Assert
             Assert.True(TelemetryClient.Metrics.TryGetValue(new("FanOutRecoveryService.UnstartedWorkCount", "WorkType", "StepName"), out var metric));
@@ -267,8 +264,7 @@ namespace NuGet.Insights.Worker
             await UpdateAsync(
                 scan,
                 workerCount: 1,
-                visibilityTimeout: TimeSpan.FromSeconds(1),
-                retryFailedMessages: true);
+                visibilityTimeout: TimeSpan.FromSeconds(1));
 
             // Assert
             Assert.True(TelemetryClient.Metrics.TryGetValue(new("FanOutRecoveryService.UnstartedWorkCount", "WorkType", "StepName"), out var metric));

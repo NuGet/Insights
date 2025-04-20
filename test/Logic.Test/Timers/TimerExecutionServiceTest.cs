@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Azure.Data.Tables;
+using NCrontab;
 using NuGet.Insights.StorageNoOpRetry;
 
 namespace NuGet.Insights
@@ -264,7 +265,7 @@ namespace NuGet.Insights
                 Assert.True(await Target.ExecuteAsync());
                 var after = DateTimeOffset.UtcNow;
                 Timer.Setup(x => x.ExecuteAsync()).ReturnsAsync(false);
-                Timer.Setup(x => x.Frequency).Returns(TimeSpan.Zero);
+                Timer.Setup(x => x.Frequency).Returns(new TimerFrequency(TimeSpan.Zero));
 
                 Assert.True(await Target.ExecuteAsync());
 
@@ -288,11 +289,11 @@ namespace NuGet.Insights
             }
 
             [Fact]
-            public async Task RunsATimerAgainIfTheFrequencyAllows()
+            public async Task RunsATimerAgainIfTheTimeSpanFrequencyAllows()
             {
                 Assert.True(await Target.ExecuteAsync());
 
-                Timer.Setup(x => x.Frequency).Returns(TimeSpan.Zero);
+                Timer.Setup(x => x.Frequency).Returns(new TimerFrequency(TimeSpan.Zero));
 
                 var before = DateTimeOffset.UtcNow;
                 Assert.True(await Target.ExecuteAsync());
@@ -301,6 +302,57 @@ namespace NuGet.Insights
                 var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
                 Timer.Verify(x => x.ExecuteAsync(), Times.Exactly(2));
                 Assert.InRange(entity.LastExecuted.Value, before, after);
+            }
+
+            [Fact]
+            public async Task RunsATimerAgainIfTheTimeSpanFrequencyAllowsMultipleTimeWindows()
+            {
+                Now = new DateTimeOffset(2025, 3, 22, 12, 55, 0, TimeSpan.Zero);
+                Assert.True(await Target.ExecuteAsync());
+
+                Timer.Setup(x => x.Frequency).Returns(new TimerFrequency(TimeSpan.FromMinutes(30)));
+
+                Now = new DateTimeOffset(2025, 3, 22, 13, 29, 0, TimeSpan.Zero);
+                Assert.True(await Target.ExecuteAsync());
+
+                var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
+                Timer.Verify(x => x.ExecuteAsync(), Times.Exactly(2));
+            }
+
+            [Fact]
+            public async Task RunsATimerAgainIfTheScheduleFrequencyAllows()
+            {
+                Now = new DateTimeOffset(2025, 3, 22, 12, 55, 0, TimeSpan.Zero);
+                Assert.True(await Target.ExecuteAsync());
+
+                var schedule = CrontabSchedule.Parse("0,30 * * * *");
+                Timer.Setup(x => x.Frequency).Returns(new TimerFrequency(schedule));
+
+                Now = new DateTimeOffset(2025, 3, 22, 13, 5, 0, TimeSpan.Zero);
+                Assert.True(await Target.ExecuteAsync());
+                Now = new DateTimeOffset(2025, 3, 22, 13, 29, 0, TimeSpan.Zero);
+                Assert.True(await Target.ExecuteAsync());
+
+                var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
+                Timer.Verify(x => x.ExecuteAsync(), Times.Exactly(2));
+            }
+
+            [Fact]
+            public async Task RunsATimerAgainIfTheScheduleFrequencyAllowsMultipleTimeWindows()
+            {
+                Now = new DateTimeOffset(2025, 3, 22, 12, 55, 0, TimeSpan.Zero);
+                Assert.True(await Target.ExecuteAsync());
+
+                var schedule = CrontabSchedule.Parse("0,30 * * * *");
+                Timer.Setup(x => x.Frequency).Returns(new TimerFrequency(schedule));
+
+                Now = new DateTimeOffset(2025, 3, 22, 13, 5, 0, TimeSpan.Zero);
+                Assert.True(await Target.ExecuteAsync());
+                Now = new DateTimeOffset(2025, 3, 22, 13, 30, 0, TimeSpan.Zero);
+                Assert.True(await Target.ExecuteAsync());
+
+                var entity = Assert.Single(await GetEntitiesAsync<TimerEntity>());
+                Timer.Verify(x => x.ExecuteAsync(), Times.Exactly(3));
             }
 
             [Fact]
@@ -343,7 +395,7 @@ namespace NuGet.Insights
             Timer.Setup(x => x.Name).Returns(TimerName);
             Timer.Setup(x => x.IsEnabled).Returns(true);
             Timer.Setup(x => x.AutoStart).Returns(true);
-            Timer.Setup(x => x.Frequency).Returns(TimeSpan.FromMinutes(5));
+            Timer.Setup(x => x.Frequency).Returns(new TimerFrequency(TimeSpan.FromMinutes(5)));
             Timer.Setup(x => x.ExecuteAsync()).ReturnsAsync(true);
 
             TimerComparer = new Mock<IComparer<ITimer>>();
@@ -357,18 +409,22 @@ namespace NuGet.Insights
         public Mock<ITimer> Timer { get; }
         public List<ITimer> Timers { get; }
         public Mock<IComparer<ITimer>> TimerComparer { get; }
+        public DateTimeOffset? Now { get; set; }
 
         public TimerExecutionService Target
         {
             get
             {
                 var serviceClientFactory = _fixture.GetServiceClientFactory(_output.GetLoggerFactory());
+                var timeProvider = new Mock<TimeProvider>();
+                timeProvider.Setup(x => x.GetUtcNow()).Returns(() => Now ?? DateTimeOffset.UtcNow);
                 return new TimerExecutionService(
                     Timers,
                     _fixture.GetLeaseService(serviceClientFactory, _output.GetLoggerFactory()),
                     new SpecificTimerExecutionService(
                         serviceClientFactory,
                         TimerComparer.Object,
+                        timeProvider.Object,
                         _fixture.Options.Object,
                         _output.GetTelemetryClient(),
                         _output.GetLogger<SpecificTimerExecutionService>()),

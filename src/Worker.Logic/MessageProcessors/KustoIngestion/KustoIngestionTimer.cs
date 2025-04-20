@@ -20,7 +20,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
         public string Name => TimerName;
         public string Title => CatalogScanDriverMetadata.HumanizeCodeName(Name);
-        public TimeSpan Frequency => TimeSpan.FromDays(1);
+        public TimerFrequency Frequency => new TimerFrequency(TimeSpan.FromDays(1));
         public bool AutoStart => false;
         public bool IsEnabled => _kustoIngestionService.HasRequiredConfiguration;
         public bool CanAbort => true;

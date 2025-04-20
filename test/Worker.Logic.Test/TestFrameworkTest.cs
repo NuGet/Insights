@@ -54,8 +54,7 @@ namespace NuGet.Insights.Worker
                     return Task.FromResult(complete);
                 },
                 workerCount: 2,
-                visibilityTimeout: TimeSpan.FromSeconds(1),
-                retryFailedMessages: true);
+                visibilityTimeout: TimeSpan.FromSeconds(1));
 
             // Assert
             Assert.Contains(LogMessages, IsMatchingMessage);

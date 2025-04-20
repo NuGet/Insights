@@ -17,9 +17,16 @@ namespace NuGet.Insights
 
     public class MemoryQueueClientFactory : IQueueClientFactory
     {
-        public static MemoryQueueServiceStore SharedStore { get; } = new();
+        private readonly TimeProvider _timeProvider;
+        private readonly MemoryQueueServiceStore _store;
 
-        public QueueServiceClient GetServiceClient() => new MemoryQueueServiceClient(SharedStore);
+        public MemoryQueueClientFactory(TimeProvider timeProvider, MemoryQueueServiceStore store)
+        {
+            _timeProvider = timeProvider;
+            _store = store;
+        }
+
+        public QueueServiceClient GetServiceClient() => new MemoryQueueServiceClient(_timeProvider, _store);
     }
 
     public class DevelopmentQueueClientFactory : IQueueClientFactory

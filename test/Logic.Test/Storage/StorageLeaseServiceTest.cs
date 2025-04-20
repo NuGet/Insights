@@ -3,11 +3,11 @@
 
 namespace NuGet.Insights
 {
-    public class StorageLeaseServiceTest
+    public class StorageLeaseServiceTest : BaseLogicIntegrationTest
     {
-        public class BreakAsync : BaseTest
+        public class BreakAsync : StorageLeaseServiceTest
         {
-            public BreakAsync(ITestOutputHelper output) : base(output)
+            public BreakAsync(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {
             }
 
@@ -27,9 +27,9 @@ namespace NuGet.Insights
             }
         }
 
-        public class TryReleaseAsync : BaseTest
+        public class TryReleaseAsync : StorageLeaseServiceTest
         {
-            public TryReleaseAsync(ITestOutputHelper output) : base(output)
+            public TryReleaseAsync(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {
             }
 
@@ -69,7 +69,7 @@ namespace NuGet.Insights
                 // arrange
                 var leaseResultA = await AcquireWithRetryAsync(LeaseName, MaxDuration);
                 var requestCount = 0;
-                ServiceClientFactory.HandlerFactory.OnSendAsync = async (r, b, t) =>
+                HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
                 {
                     if (r.Headers.TryGetValues("x-ms-lease-action", out var values)
                         && values.FirstOrDefault() == "release")
@@ -103,7 +103,7 @@ namespace NuGet.Insights
 
                 var requestCount = 0;
                 StorageLeaseResult leaseResultB = null;
-                ServiceClientFactory.HandlerFactory.OnSendAsync = async (r, b, t) =>
+                HttpMessageHandlerFactory.OnSendAsync = async (r, b, t) =>
                 {
                     if (r.Headers.TryGetValues("x-ms-lease-action", out var values)
                         && values.FirstOrDefault() == "release")
@@ -166,9 +166,9 @@ namespace NuGet.Insights
             }
         }
 
-        public class ReleaseAsync : BaseTest
+        public class ReleaseAsync : StorageLeaseServiceTest
         {
-            public ReleaseAsync(ITestOutputHelper output) : base(output)
+            public ReleaseAsync(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {
             }
 
@@ -187,9 +187,9 @@ namespace NuGet.Insights
             }
         }
 
-        public class RenewAsync : BaseTest
+        public class RenewAsync : StorageLeaseServiceTest
         {
-            public RenewAsync(ITestOutputHelper output) : base(output)
+            public RenewAsync(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {
             }
 
@@ -207,9 +207,9 @@ namespace NuGet.Insights
             }
         }
 
-        public class TryRenewAsync : BaseTest
+        public class TryRenewAsync : StorageLeaseServiceTest
         {
-            public TryRenewAsync(ITestOutputHelper output) : base(output)
+            public TryRenewAsync(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {
             }
 
@@ -242,9 +242,9 @@ namespace NuGet.Insights
             }
         }
 
-        public class AcquireAsync : BaseTest
+        public class AcquireAsync : StorageLeaseServiceTest
         {
-            public AcquireAsync(ITestOutputHelper output) : base(output)
+            public AcquireAsync(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {
             }
 
@@ -261,9 +261,9 @@ namespace NuGet.Insights
             }
         }
 
-        public class TryAcquireAsync : BaseTest
+        public class TryAcquireAsync : StorageLeaseServiceTest
         {
-            public TryAcquireAsync(ITestOutputHelper output) : base(output)
+            public TryAcquireAsync(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {
             }
 
@@ -335,101 +335,63 @@ namespace NuGet.Insights
             }
         }
 
-        public abstract class BaseTest : IAsyncLifetime
+
+        public StorageLeaseServiceTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
-            public BaseTest(ITestOutputHelper output)
-            {
-                Output = output;
-                ContainerName = LogicTestSettings.NewStoragePrefix() + "1l1";
-                LeaseName = "some-lease";
-                MinDuration = TimeSpan.FromSeconds(15);
-                MaxDuration = TimeSpan.FromSeconds(60);
-                TelemetryClient = output.GetTelemetryClient();
-                Settings = new NuGetInsightsSettings
-                {
-                    LeaseContainerName = ContainerName,
-                }.WithTestStorageSettings();
-                Options = new Mock<IOptions<NuGetInsightsSettings>>();
-                Options.Setup(x => x.Value).Returns(() => Settings);
-                HttpClientHandler = new HttpClientHandler();
-                ServiceClientFactory = new TestServiceClientFactory(
-                    () => new LoggingHttpHandler(output.GetLogger<LoggingHttpHandler>()),
-                    HttpClientHandler,
-                    Options.Object,
-                    output.GetTelemetryClient(),
-                    output.GetLoggerFactory());
-                Target = new StorageLeaseService(
-                    ServiceClientFactory,
-                    TelemetryClient,
-                    Options.Object);
-            }
+            LeaseName = "some-lease";
+            MinDuration = TimeSpan.FromSeconds(15);
+            MaxDuration = TimeSpan.FromSeconds(60);
+        }
 
-            public ITestOutputHelper Output { get; }
-            public string ContainerName { get; }
-            public string LeaseName { get; }
-            public TimeSpan MinDuration { get; }
-            public TimeSpan MaxDuration { get; }
-            public LoggerTelemetryClient TelemetryClient { get; }
-            public NuGetInsightsSettings Settings { get; }
-            public Mock<IOptions<NuGetInsightsSettings>> Options { get; }
-            public HttpClientHandler HttpClientHandler { get; }
-            public TestServiceClientFactory ServiceClientFactory { get; }
-            public StorageLeaseService Target { get; }
+        public string ContainerName { get; }
+        public string LeaseName { get; }
+        public TimeSpan MinDuration { get; }
+        public TimeSpan MaxDuration { get; }
+        public StorageLeaseService Target => Host.Services.GetRequiredService<StorageLeaseService>();
 
-            /// <summary>
-            /// This should only be used in the "arrange" or setup step of a unit test.
-            /// </summary>
-            public async Task<StorageLeaseResult> AcquireWithRetryAsync(string lease, TimeSpan leaseDuration)
+        public override async Task InitializeAsync()
+        {
+            await base.InitializeAsync();
+            await Target.InitializeAsync();
+        }
+
+        /// <summary>
+        /// This should only be used in the "arrange" or setup step of a unit test.
+        /// </summary>
+        public async Task<StorageLeaseResult> AcquireWithRetryAsync(string lease, TimeSpan leaseDuration)
+        {
+            const int maxAttempts = 3;
+            for (var attempt = 1; attempt <= maxAttempts; attempt++)
             {
-                const int maxAttempts = 3;
-                for (var attempt = 1; attempt <= maxAttempts; attempt++)
+                try
                 {
-                    try
-                    {
-                        return await Target.AcquireAsync(lease, leaseDuration);
-                    }
-                    catch (StorageLeaseException ex) when (attempt < maxAttempts)
-                    {
-                        Output.GetLogger<BaseTest>().LogTransientWarning(ex, "Failed to acquire lease. Trying again.");
-                    }
+                    return await Target.AcquireAsync(lease, leaseDuration);
                 }
-
-                throw new NotImplementedException();
-            }
-
-            /// <summary>
-            /// The tests in this test suite are flaky due to the timing nature of a blob lease.
-            /// </summary>
-            public async Task RetryAsync(Func<Task> testAsync)
-            {
-                const int maxAttempts = 3;
-                for (var attempt = 1; attempt <= maxAttempts; attempt++)
+                catch (StorageLeaseException ex) when (attempt < maxAttempts)
                 {
-                    try
-                    {
-                        await testAsync();
-                    }
-                    catch (StorageLeaseException ex) when (attempt < maxAttempts)
-                    {
-                        Output.GetLogger<BaseTest>().LogTransientWarning(ex, "[Attempt {Attempt}] A retriable exception was thrown. Retrying.", attempt);
-                    }
+                    Output.GetLogger<StorageLeaseServiceTest>().LogTransientWarning(ex, "Failed to acquire lease. Trying again.");
                 }
             }
 
-            public async Task DisposeAsync()
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// The tests in this test suite are flaky due to the timing nature of a blob lease.
+        /// </summary>
+        public async Task RetryAsync(Func<Task> testAsync)
+        {
+            const int maxAttempts = 3;
+            for (var attempt = 1; attempt <= maxAttempts; attempt++)
             {
-                Output.WriteTestCleanup();
-
-                await (await ServiceClientFactory.GetBlobServiceClientAsync())
-                    .GetBlobContainerClient(ContainerName)
-                    .DeleteIfExistsAsync();
-
-                HttpClientHandler.Dispose();
-            }
-
-            public async Task InitializeAsync()
-            {
-                await Target.InitializeAsync();
+                try
+                {
+                    await testAsync();
+                }
+                catch (StorageLeaseException ex) when (attempt < maxAttempts)
+                {
+                    Output.GetLogger<StorageLeaseServiceTest>().LogTransientWarning(ex, "[Attempt {Attempt}] A retriable exception was thrown. Retrying.", attempt);
+                }
             }
         }
     }

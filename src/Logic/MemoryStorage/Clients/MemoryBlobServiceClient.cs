@@ -12,25 +12,29 @@ namespace NuGet.Insights.MemoryStorage
 {
     public partial class MemoryBlobServiceClient : BlobServiceClient
     {
+        private readonly TimeProvider _timeProvider;
         private readonly MemoryBlobServiceStore _store;
         private TokenCredential _credential;
         private readonly BlobClientOptions _options;
 
-        public MemoryBlobServiceClient(MemoryBlobServiceStore store) : this(
+        public MemoryBlobServiceClient(TimeProvider timeProvider, MemoryBlobServiceStore store) : this(
+            timeProvider,
             store,
             StorageUtility.GetBlobEndpoint(StorageUtility.MemoryStorageAccountName),
-            MemoryTokenCredential.Instance,
+            new MemoryTokenCredential(timeProvider),
             new BlobClientOptions().AddBrokenTransport())
         {
         }
 
         private MemoryBlobServiceClient(
+            TimeProvider timeProvider,
             MemoryBlobServiceStore store,
             Uri serviceUri,
             TokenCredential credential,
             BlobClientOptions options)
             : base(serviceUri, credential, options.AddBrokenTransport())
         {
+            _timeProvider = timeProvider;
             _store = store;
             _credential = credential;
             _options = options;

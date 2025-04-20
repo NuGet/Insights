@@ -12,20 +12,23 @@ namespace NuGet.Insights.MemoryStorage
 {
     public partial class MemoryQueueServiceClient : QueueServiceClient
     {
+        private readonly TimeProvider _timeProvider;
         private readonly MemoryQueueServiceStore _store;
         private readonly QueueClientOptions _options;
 
-        public MemoryQueueServiceClient(MemoryQueueServiceStore store) : this(
+        public MemoryQueueServiceClient(TimeProvider timeProvider, MemoryQueueServiceStore store) : this(
+            timeProvider,
             store,
             StorageUtility.GetQueueEndpoint(StorageUtility.MemoryStorageAccountName),
-            MemoryTokenCredential.Instance,
+            new MemoryTokenCredential(timeProvider),
             new QueueClientOptions().AddBrokenTransport())
         {
         }
 
-        private MemoryQueueServiceClient(MemoryQueueServiceStore store, Uri serviceUri, TokenCredential tokenCredential, QueueClientOptions options)
+        private MemoryQueueServiceClient(TimeProvider timeProvider, MemoryQueueServiceStore store, Uri serviceUri, TokenCredential tokenCredential, QueueClientOptions options)
             : base(serviceUri, tokenCredential, options.AddBrokenTransport())
         {
+            _timeProvider = timeProvider;
             _store = store;
             _options = options;
         }
@@ -34,7 +37,7 @@ namespace NuGet.Insights.MemoryStorage
             string queueName)
         {
             var uri = Uri.AppendToPath(queueName);
-            return new MemoryQueueClient(_store, uri, _options);
+            return new MemoryQueueClient(_timeProvider, _store, uri, _options);
         }
 
         public override AsyncPageable<QueueItem> GetQueuesAsync(

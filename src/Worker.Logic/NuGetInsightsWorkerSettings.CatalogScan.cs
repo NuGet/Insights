@@ -11,7 +11,7 @@ namespace NuGet.Insights.Worker
 
         public bool AutoStartCatalogScanUpdate { get; set; } = false;
 
-        public TimeSpan CatalogScanUpdateFrequency { get; set; } = TimeSpan.FromHours(6);
+        public string CatalogScanUpdateFrequency { get; set; } = TimeSpan.FromHours(6).ToString();
 
         /// <summary>
         /// If the duration that the catalog scan covers (max cursor minus min cursor) is less than or equal to this

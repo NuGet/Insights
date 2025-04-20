@@ -22,7 +22,7 @@ namespace NuGet.Insights.Worker.DownloadsToCsv
         public string OperationName => "DownloadsToCsv";
         public string Title => CatalogScanDriverMetadata.HumanizeCodeName(OperationName);
         public string ContainerName => _options.Value.PackageDownloadContainerName;
-        public TimeSpan Frequency => _options.Value.DownloadToCsvFrequency;
+        public TimerFrequency Frequency => TimerFrequency.Parse(_options.Value.DownloadToCsvFrequency);
         public bool HasRequiredConfiguration => _options.Value.DownloadsV1Urls is not null && _options.Value.DownloadsV1Urls.Count > 0;
         public bool AutoStart => _options.Value.AutoStartDownloadToCsv;
 

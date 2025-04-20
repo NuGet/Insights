@@ -15,7 +15,8 @@ Import-Module (Join-Path $PSScriptRoot "scripts/NuGet.Insights.psm1") -Force
 $RuntimeIdentifier = Get-DefaultRuntimeIdentifier $RuntimeIdentifier
 
 $hostRepo = "https://github.com/Azure/azure-functions-host.git"
-$hostVersion = "v4.1037.1"
+. (Join-Path $PSScriptRoot "host-version.ps1")
+$hostVersion = $AzureFunctionsHostVersion
 
 $artifactsDir = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "../artifacts/azure-functions"))
 $hostSrcDir = Join-Path $artifactsDir "azure-functions-host-$hostVersion"

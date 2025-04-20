@@ -25,6 +25,7 @@
     <PackageReference Include="Microsoft.Extensions.ObjectPool" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     <PackageReference Include="Microsoft.NET.StringTools" />
+    <PackageReference Include="NCrontab.Signed" />
     <PackageReference Include="NuGetPackageExplorer.Core" Condition="'$(EnableNPE)' == 'true'" />
     <PackageReference Include="System.Interactive.Async" />
     <PackageReference Include="System.Net.Http" />

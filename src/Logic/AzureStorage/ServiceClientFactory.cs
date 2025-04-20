@@ -12,6 +12,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Queues;
 using Azure.Storage.Sas;
+using NuGet.Insights.MemoryStorage;
 using NuGet.Insights.StorageNoOpRetry;
 
 #nullable enable
@@ -24,6 +25,10 @@ namespace NuGet.Insights
         private ServiceClients? _serviceClients;
 
         private readonly Func<HttpClient>? _httpClientFactory;
+        private readonly MemoryBlobServiceStore _memoryBlobStore;
+        private readonly MemoryQueueServiceStore _memoryQueueStore;
+        private readonly MemoryTableServiceStore _memoryTableStore;
+        private readonly TimeProvider _timeProvider;
         private readonly IOptions<NuGetInsightsSettings> _options;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILoggerFactory _loggerFactory;
@@ -32,17 +37,33 @@ namespace NuGet.Insights
         public ServiceClientFactory(
             IOptions<NuGetInsightsSettings> options,
             ITelemetryClient telemetryClient,
-            ILoggerFactory loggerFactory) : this(httpClientFactory: null, options, telemetryClient, loggerFactory)
+            ILoggerFactory loggerFactory) : this(
+                httpClientFactory: null,
+                MemoryBlobServiceStore.SharedStore,
+                MemoryQueueServiceStore.SharedStore,
+                MemoryTableServiceStore.SharedStore,
+                TimeProvider.System,
+                options,
+                telemetryClient,
+                loggerFactory)
         {
         }
 
         public ServiceClientFactory(
             Func<HttpClient>? httpClientFactory,
+            MemoryBlobServiceStore memoryBlobStore,
+            MemoryQueueServiceStore memoryQueueStore,
+            MemoryTableServiceStore memoryTableStore,
+            TimeProvider timeProvider,
             IOptions<NuGetInsightsSettings> options,
             ITelemetryClient telemetryClient,
             ILoggerFactory loggerFactory)
         {
             _httpClientFactory = httpClientFactory;
+            _memoryBlobStore = memoryBlobStore;
+            _memoryQueueStore = memoryQueueStore;
+            _memoryTableStore = memoryTableStore;
+            _timeProvider = timeProvider;
             _options = options;
             _telemetryClient = telemetryClient;
             _loggerFactory = loggerFactory;
@@ -123,6 +144,10 @@ namespace NuGet.Insights
                 _serviceClients = await GetServiceClientsAsync(
                     created: DateTimeOffset.UtcNow,
                     GetHttpPipelineTransport(),
+                    _memoryBlobStore,
+                    _memoryQueueStore,
+                    _memoryTableStore,
+                    _timeProvider,
                     _options.Value,
                     _telemetryClient,
                     _logger,
@@ -145,7 +170,7 @@ namespace NuGet.Insights
 
             }
 
-            var untilRefresh = GetTimeUntilRefresh(serviceClients);
+            var untilRefresh = GetTimeUntilRefresh(_options.Value, serviceClients.SharedAccessSignatureExpiry, serviceClients.Created);
             if (untilRefresh <= TimeSpan.Zero)
             {
                 serviceClients = null;
@@ -155,12 +180,12 @@ namespace NuGet.Insights
             return true;
         }
 
-        private TimeSpan GetTimeUntilRefresh(ServiceClients serviceClients)
+        private static TimeSpan GetTimeUntilRefresh(StorageSettings settings, DateTimeOffset sharedAccessSignatureExpiry, DateTimeOffset created)
         {
             // Refresh at half of the SAS duration or the default refresh period, whichever is lesser.
-            var sasDuration = serviceClients.SharedAccessSignatureExpiry - serviceClients.Created;
-            var refreshPeriod = TimeSpan.FromTicks(Math.Min(sasDuration.Ticks / 2, _options.Value.ServiceClientRefreshPeriod.Ticks));
-            var sinceCreated = DateTimeOffset.UtcNow - serviceClients.Created;
+            var sasDuration = sharedAccessSignatureExpiry - created;
+            var refreshPeriod = TimeSpan.FromTicks(Math.Min(sasDuration.Ticks / 2, settings.ServiceClientRefreshPeriod.Ticks));
+            var sinceCreated = DateTimeOffset.UtcNow - created;
             var untilRefresh = refreshPeriod - sinceCreated;
 
             return untilRefresh > TimeSpan.Zero ? untilRefresh : TimeSpan.Zero;
@@ -190,6 +215,10 @@ namespace NuGet.Insights
         private static async Task<ServiceClients> GetServiceClientsAsync(
             DateTimeOffset created,
             HttpPipelineTransport? httpPipelineTransport,
+            MemoryBlobServiceStore memoryBlobStore,
+            MemoryQueueServiceStore memoryQueueStore,
+            MemoryTableServiceStore memoryTableStore,
+            TimeProvider timeProvider,
             StorageSettings settings,
             ITelemetryClient telemetryClient,
             ILogger logger,
@@ -254,7 +283,7 @@ namespace NuGet.Insights
 
             if (tokenCredential is not null)
             {
-                tokenCredential = CachingTokenCredential.MaybeWrap(tokenCredential, loggerFactory, settings);
+                tokenCredential = CachingTokenCredential.MaybeWrap(tokenCredential, loggerFactory, settings, defaultTenantId: null);
             }
 
             // build the client options
@@ -269,9 +298,9 @@ namespace NuGet.Insights
             bool supportsUserDelegationKey;
             if (storageCredentialType == StorageCredentialType.MemoryStorage)
             {
-                blobClientFactory = new MemoryBlobClientFactory();
-                queueClientFactory = new MemoryQueueClientFactory();
-                tableClientFactory = new MemoryTableClientFactory();
+                blobClientFactory = new MemoryBlobClientFactory(timeProvider, memoryBlobStore);
+                queueClientFactory = new MemoryQueueClientFactory(timeProvider, memoryQueueStore);
+                tableClientFactory = new MemoryTableClientFactory(timeProvider, memoryTableStore);
                 supportsUserDelegationKey = true;
             }
             else if (storageCredentialType == StorageCredentialType.DevelopmentStorage)
@@ -313,11 +342,12 @@ namespace NuGet.Insights
             TableServiceClient table = tableClientFactory.GetServiceClient();
 
             var sasExpiry = created.Add(settings.ServiceClientSasDuration);
+            var untilRefresh = GetTimeUntilRefresh(settings, sasExpiry, created);
             logger.LogInformation(
                 "Using storage account '{StorageAccountName}' with a {CredentialType} credential type. The service clients will be cached for {Duration} hours.",
                 blob.AccountName,
                 storageCredentialType,
-                (sasExpiry - created).TotalHours);
+                untilRefresh);
 
             logger.LogInformation("Blob endpoint: {BlobEndpoint}", blob.Uri.Obfuscate());
             logger.LogInformation("Queue endpoint: {QueueEndpoint}", queue.Uri.Obfuscate());
