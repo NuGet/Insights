@@ -20,13 +20,13 @@ namespace NuGet.Insights.Worker.KustoIngestion
         [KustoFact(Timeout = 15 * 60 * 1000)]
         public async Task ExecuteRealIngestion()
         {
+            // Arrange
             ConfigureWorkerSettings = x =>
             {
                 x.KustoTableNameFormat = StoragePrefix + "_{0}";
                 x.WithTestKustoSettings();
             };
 
-            // Arrange
             var min0 = DateTimeOffset.Parse("2018-12-31T21:16:31.1342711Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2018-12-31T21:22:25.1269269Z", CultureInfo.InvariantCulture);
 

@@ -434,7 +434,7 @@ namespace NuGet.Insights
                 .Split(Path.DirectorySeparatorChar)
                 .Reverse()
                 .First(ProjectDirs.Contains);
-            var repoDir = LogicTestSettings.GetRepositoryRoot();
+            var repoDir = DirectoryHelper.GetRepositoryRoot();
             var destPath = Path.Combine(repoDir, "test", projectDir, testDataFile);
 
             lock (StringLock.GetOrAdd(sourcePath, _ => new object()))

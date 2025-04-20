@@ -7,6 +7,9 @@ namespace NuGet.Insights.Worker.LoadPackageArchive
     {
         public const string LoadPackageArchiveDir = nameof(LoadPackageArchive);
         public const string LoadPackageArchive_WithDeleteDir = nameof(LoadPackageArchive_WithDelete);
+        public const string LoadPackageArchive_WithManyAssembliesDir = nameof(LoadPackageArchive_WithManyAssemblies);
+        public const string LoadPackageArchive_WithManyAssembliesWithDeleteDir = nameof(LoadPackageArchive_WithManyAssembliesWithDelete);
+        public const string LoadPackageArchive_WithCommonReferenceDir = nameof(LoadPackageArchive_WithCommonReference);
 
         [Fact]
         public async Task LoadPackageArchive()
@@ -55,6 +58,74 @@ namespace NuGet.Insights.Worker.LoadPackageArchive
 
             // Assert
             await AssertPackageArchiveTableAsync(LoadPackageArchive_WithDeleteDir, Step2);
+        }
+
+        [Fact]
+        public async Task LoadPackageArchive_WithManyAssemblies()
+        {
+            // Arrange
+            MakeDeletedPackageAvailable();
+            var min0 = DateTimeOffset.Parse("2020-11-27T19:34:24.4257168Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-11-27T19:35:06.0046046Z", CultureInfo.InvariantCulture);
+            var max2 = DateTimeOffset.Parse("2020-11-27T19:36:50.4909042Z", CultureInfo.InvariantCulture);
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
+
+            // Act
+            await UpdateAsync(max1);
+
+            // Assert
+            await AssertPackageArchiveTableAsync(LoadPackageArchive_WithManyAssembliesDir, Step1);
+
+            // Act
+            await UpdateAsync(max2);
+
+            // Assert
+            await AssertPackageArchiveTableAsync(LoadPackageArchive_WithManyAssembliesDir, Step2);
+        }
+
+        [Fact]
+        public async Task LoadPackageArchive_WithManyAssembliesWithDelete()
+        {
+            // Arrange
+            MakeDeletedPackageAvailable();
+            var min0 = DateTimeOffset.Parse("2020-12-20T02:37:31.5269913Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-12-20T03:01:57.2082154Z", CultureInfo.InvariantCulture);
+            var max2 = DateTimeOffset.Parse("2020-12-20T03:03:53.7885893Z", CultureInfo.InvariantCulture);
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
+
+            // Act
+            await UpdateAsync(max1);
+
+            // Assert
+            await AssertPackageArchiveTableAsync(LoadPackageArchive_WithManyAssembliesWithDeleteDir, Step1);
+
+            // Act
+            await UpdateAsync(max2);
+
+            // Assert
+            await AssertPackageArchiveTableAsync(LoadPackageArchive_WithManyAssembliesWithDeleteDir, Step2);
+        }
+
+        [Fact]
+        public async Task LoadPackageArchive_WithCommonReference()
+        {
+            // Arrange
+            MakeDeletedPackageAvailable();
+            var min0 = DateTimeOffset.Parse("2020-05-12T14:57:48.4894728Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2020-05-12T14:58:03.3232189Z", CultureInfo.InvariantCulture);
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
+
+            // Act
+            await UpdateAsync(max1);
+
+            // Assert
+            await AssertPackageArchiveTableAsync(LoadPackageArchive_WithCommonReferenceDir, Step1);
         }
 
         public LoadPackageArchiveIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

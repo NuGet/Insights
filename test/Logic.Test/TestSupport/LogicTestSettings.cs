@@ -267,19 +267,5 @@ namespace NuGet.Insights
             Assert.Matches("^" + StoragePrefixPattern + "$", storagePrefix);
             return storagePrefix;
         }
-
-        public static string GetRepositoryRoot()
-        {
-            const string markerFile = "NuGet.config";
-            var repoDir = Directory.GetCurrentDirectory();
-            while (repoDir != null && !Directory.GetFiles(repoDir).Any(x => Path.GetFileName(x) == markerFile))
-            {
-                repoDir = Path.GetDirectoryName(repoDir);
-            }
-
-            Assert.NotNull(repoDir);
-
-            return repoDir;
-        }
     }
 }

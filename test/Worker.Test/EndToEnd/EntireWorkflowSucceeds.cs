@@ -98,6 +98,7 @@ namespace NuGet.Insights.Worker
                 {
                     return new HttpResponseMessage(HttpStatusCode.OK)
                     {
+                        RequestMessage = req,
                         Content = new StringContent(@$"{{""value"":""{max1:O}""}}")
                     };
                 }
