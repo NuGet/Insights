@@ -50,10 +50,10 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="8.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Identity.Web.MicrosoftGraph" Version="3.2.2" />
-    <PackageVersion Include="Microsoft.Identity.Web.UI" Version="3.2.2" />
-    <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.1.2" />
-    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.1.2" />
+    <PackageVersion Include="Microsoft.Identity.Web.MicrosoftGraph" Version="3.8.3" />
+    <PackageVersion Include="Microsoft.Identity.Web.UI" Version="3.8.3" />
+    <PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.8.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.8.0" />
     <PackageVersion Include="Microsoft.NET.Sdk.Functions" Version="4.2.0" />
     <PackageVersion Include="Microsoft.NET.StringTools" Version="17.11.4" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
