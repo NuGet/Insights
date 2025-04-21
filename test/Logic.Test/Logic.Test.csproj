@@ -22,5 +22,6 @@
     <None Update="TestInput\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Remove="TestInput\Cache\**\*" />
   </ItemGroup>
 </Project>

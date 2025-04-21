@@ -3,6 +3,8 @@
 
 #nullable enable
 
+using NuGet.Insights.FileSystemHttpCache;
+
 namespace NuGet.Insights
 {
     /// <summary>
@@ -36,5 +38,10 @@ namespace NuGet.Insights
         /// Override <see cref="LogicTestSettings.StorageAccountNameEnvName"/> environment variable, used by <see cref="LogicTestSettings"/>.
         /// </summary>
         public static readonly string? StorageAccountName = null;
+
+        /// <summary>
+        /// Override <see cref="LogicTestSettings.FileSystemHttpCacheModeEnvName"/> environment variable, used by <see cref="LogicTestSettings"/>.
+        /// </summary>
+        public static readonly FileSystemHttpCacheMode? HttpCacheMode = null;
     }
 }

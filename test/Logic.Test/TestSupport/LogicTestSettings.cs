@@ -4,6 +4,7 @@
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using Azure.Identity;
+using NuGet.Insights.FileSystemHttpCache;
 
 #nullable enable
 
@@ -27,6 +28,7 @@ namespace NuGet.Insights
         private const string StorageClientCertificatePathEnvName = "NUGETINSIGHTS_STORAGECLIENTCERTIFICATEPATH";
         private const string StorageClientCertificateKeyVaultEnvName = "NUGETINSIGHTS_STORAGECLIENTCERTIFICATEKEYVAULT";
         private const string StorageClientCertificateKeyVaultCertificateNameEnvName = "NUGETINSIGHTS_STORAGECLIENTCERTIFICATEKEYVAULTCERTIFICATENAME";
+        private const string FileSystemHttpCacheModeEnvName = "NUGETINSIGHTS_FILESYSTEMHTTPCACHEMODE";
 
         public static bool UseMemoryStorage => StorageCredentialType == StorageCredentialType.MemoryStorage;
         public static bool UseDevelopmentStorage => StorageCredentialType == StorageCredentialType.DevelopmentStorage;
@@ -40,6 +42,7 @@ namespace NuGet.Insights
         private static string? StorageClientCertificatePathEnv => GetEnvOrNull(StorageClientCertificatePathEnvName);
         private static string? StorageClientCertificateKeyVaultEnv => GetEnvOrNull(StorageClientCertificateKeyVaultEnvName);
         private static string? StorageClientCertificateKeyVaultCertificateNameEnv => GetEnvOrNull(StorageClientCertificateKeyVaultCertificateNameEnvName);
+        private static string? FileSystemHttpCacheModeEnv => GetEnvOrNull(FileSystemHttpCacheModeEnvName);
 
         public static T WithTestStorageSettings<T>(this T settings) where T : NuGetInsightsSettings
         {
@@ -69,6 +72,9 @@ namespace NuGet.Insights
             settings.StorageClientCertificatePath = StorageClientCertificatePathEnv;
             settings.StorageClientCertificateKeyVault = StorageClientCertificateKeyVaultEnv;
             settings.StorageClientCertificateKeyVaultCertificateName = StorageClientCertificateKeyVaultCertificateNameEnv;
+
+            settings.HttpCacheDirectory = Path.Combine(DirectoryHelper.GetRepositoryRoot(), "test", "Logic.Test", "TestInput", "Cache");
+            settings.HttpCacheMode = TestLevers.HttpCacheMode ?? (FileSystemHttpCacheModeEnv is null ? FileSystemHttpCacheMode.Disabled : Enum.Parse<FileSystemHttpCacheMode>(FileSystemHttpCacheModeEnv));
 
             settings.UseAccessTokenCaching = true;
 
