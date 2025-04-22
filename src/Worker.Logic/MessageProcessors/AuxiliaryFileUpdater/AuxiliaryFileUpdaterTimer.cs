@@ -25,6 +25,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
         public bool AutoStart => _updater.AutoStart;
         public bool CanAbort => false;
         public bool CanDestroy => true;
+        public string ContainerName => _updater.ContainerName;
 
         public Task AbortAsync()
         {

@@ -37,8 +37,9 @@ namespace NuGet.Insights
 
         public async Task InitializeAsync()
         {
-            await _leaseService.InitializeAsync();
-            await _timerExecutionService.InitializeAsync(_nameToTimer.Values);
+            await Task.WhenAll(
+                _leaseService.InitializeAsync(),
+                _timerExecutionService.InitializeAsync());
         }
 
         public async Task<IReadOnlyList<TimerState>> GetStateAsync()

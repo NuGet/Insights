@@ -139,7 +139,8 @@ New-AzStorageAccount -ResourceGroupName $resourceGroupName `
   -Name $storageAccountName `
   -Location $region `
   -SkuName Standard_LRS `
-  -Kind StorageV2
+  -Kind StorageV2 `
+  -AllowSharedKeyAccess $false
 
 $storageAccount = Get-AzStorageAccount -ResourceGroupName $resourceGroupName `
     -Name $storageAccountName

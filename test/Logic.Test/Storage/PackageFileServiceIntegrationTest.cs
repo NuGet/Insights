@@ -133,8 +133,10 @@ namespace NuGet.Insights
             // Assert
             Assert.NotNull(info);
             Assert.True(info.Available);
-            var nupkgRequests = HttpMessageHandlerFactory.SuccessRequests.Where(x => x.RequestUri.AbsolutePath.EndsWith(".nupkg", StringComparison.Ordinal));
-            Assert.Contains(nupkgRequests, x => x.RequestUri.Query.Contains("cache-bust=", StringComparison.Ordinal));
+            var nupkgRequests = HttpMessageHandlerFactory.RequestAndResponses
+                .Where(x => x.Response.IsSuccessStatusCode)
+                .Where(x => x.OriginalRequest.RequestUri.AbsolutePath.EndsWith(".nupkg", StringComparison.Ordinal));
+            Assert.Contains(nupkgRequests, x => x.OriginalRequest.RequestUri.Query.Contains("cache-bust=", StringComparison.Ordinal));
         }
 
         [Fact]

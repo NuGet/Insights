@@ -7,6 +7,7 @@ namespace NuGet.Insights.Worker.LoadBucketedPackage
 {
     public class BucketedPackageService
     {
+        private readonly ContainerInitializationState _initializationState;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
@@ -14,24 +15,26 @@ namespace NuGet.Insights.Worker.LoadBucketedPackage
             ServiceClientFactory serviceClientFactory,
             IOptions<NuGetInsightsWorkerSettings> options)
         {
+            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value.BucketedPackageTableName);
             _serviceClientFactory = serviceClientFactory;
             _options = options;
         }
 
         public async Task InitializeAsync()
         {
-            await (await GetTableAsync()).CreateIfNotExistsAsync(retry: true);
+            await _initializationState.InitializeAsync();
         }
 
         public async Task DestroyAsync()
         {
-            await (await GetTableAsync()).DeleteAsync();
+            await _initializationState.DestroyAsync();
         }
 
         internal async Task<TableClientWithRetryContext> GetTableAsync()
         {
-            return (await _serviceClientFactory.GetTableServiceClientAsync())
-                .GetTableClient(_options.Value.BucketedPackageTableName);
+            var tableServiceClient = await _serviceClientFactory.GetTableServiceClientAsync();
+            var table = tableServiceClient.GetTableClient(_options.Value.BucketedPackageTableName);
+            return table;
         }
     }
 }

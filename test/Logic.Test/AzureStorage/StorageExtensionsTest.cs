@@ -93,9 +93,9 @@ namespace NuGet.Insights
             public async Task CreateIfNotExistsAsync_TableDoesNotExist()
             {
                 var table = GetTable("b");
-                Assert.False(await table.ExistsAsync());
+                Assert.False(await TableServiceClient.TableExistsAsync(table.Name));
                 await table.CreateIfNotExistsAsync(retry: true);
-                Assert.True(await table.ExistsAsync());
+                Assert.True(await TableServiceClient.TableExistsAsync(table.Name));
             }
 
             [Fact]
@@ -103,9 +103,9 @@ namespace NuGet.Insights
             {
                 var table = GetTable("b");
                 await table.CreateIfNotExistsAsync();
-                Assert.True(await table.ExistsAsync());
+                Assert.True(await TableServiceClient.TableExistsAsync(table.Name));
                 await table.CreateIfNotExistsAsync(retry: true);
-                Assert.True(await table.ExistsAsync());
+                Assert.True(await TableServiceClient.TableExistsAsync(table.Name));
             }
 
             [Fact]
@@ -114,9 +114,9 @@ namespace NuGet.Insights
                 var table = GetTable("b");
                 await table.CreateIfNotExistsAsync();
                 await table.DeleteAsync();
-                Assert.False(await table.ExistsAsync());
+                Assert.False(await TableServiceClient.TableExistsAsync(table.Name));
                 await table.CreateIfNotExistsAsync(retry: true);
-                Assert.True(await table.ExistsAsync());
+                Assert.True(await TableServiceClient.TableExistsAsync(table.Name));
             }
         }
 

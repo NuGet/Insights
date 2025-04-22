@@ -31,14 +31,16 @@ namespace NuGet.Insights.ReferenceTracking
 
         public async Task InitializeAsync(string ownerToSubjectTableName, string subjectToOwnerTableName)
         {
-            await (await GetOwnerToSubjectTableAsync(ownerToSubjectTableName)).CreateIfNotExistsAsync(retry: true);
-            await (await GetSubjectToOwnerTableAsync(subjectToOwnerTableName)).CreateIfNotExistsAsync(retry: true);
+            await Task.WhenAll(
+                (await GetOwnerToSubjectTableAsync(ownerToSubjectTableName)).CreateIfNotExistsAsync(retry: true),
+                (await GetSubjectToOwnerTableAsync(subjectToOwnerTableName)).CreateIfNotExistsAsync(retry: true));
         }
 
         public async Task DestroyAsync(string ownerToSubjectTableName, string subjectToOwnerTableName)
         {
-            await (await GetOwnerToSubjectTableAsync(ownerToSubjectTableName)).DeleteAsync();
-            await (await GetSubjectToOwnerTableAsync(subjectToOwnerTableName)).DeleteAsync();
+            await Task.WhenAll(
+                (await GetOwnerToSubjectTableAsync(ownerToSubjectTableName)).DeleteAsync(),
+                (await GetSubjectToOwnerTableAsync(subjectToOwnerTableName)).DeleteAsync());
         }
 
         private async Task<TableClientWithRetryContext> GetOwnerToSubjectTableAsync(string ownerToSubjectTableName)

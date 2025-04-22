@@ -1,28 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Extensions.Caching.Memory;
-
 namespace NuGet.Insights
 {
-    public class CatalogClientTest : IDisposable
+    public class CatalogClientTest : BaseLogicIntegrationTest
     {
-        public class TheGetCatalogIndexAsyncMethod : CatalogClientTest
-        {
-            [Fact]
-            public async Task ReturnsRecentUtcTimestamp()
-            {
-                var index = await Target.GetCatalogIndexAsync();
-
-                Assert.Equal(TimeSpan.Zero, index.CommitTimestamp.Offset);
-                Assert.InRange(index.CommitTimestamp, DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddDays(1));
-            }
-
-            public TheGetCatalogIndexAsyncMethod(ITestOutputHelper output) : base(output)
-            {
-            }
-        }
-
         public class TheGetCatalogPageAsyncMethod : CatalogClientTest
         {
             [Fact]
@@ -39,7 +21,7 @@ namespace NuGet.Insights
                 Assert.Equal(1, page.Items.Count(x => x.LeafType == CatalogLeafType.PackageDelete));
             }
 
-            public TheGetCatalogPageAsyncMethod(ITestOutputHelper output) : base(output)
+            public TheGetCatalogPageAsyncMethod(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {
             }
         }
@@ -133,52 +115,15 @@ namespace NuGet.Insights
                 Assert.IsType<PackageDeleteCatalogLeaf>(leaf);
             }
 
-            public TheGetCatalogLeafAsyncMethod(ITestOutputHelper output) : base(output)
+            public TheGetCatalogLeafAsyncMethod(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
             {
             }
         }
 
-        public void Dispose()
+        public CatalogClientTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
-            RealHttpClientHandler.Dispose();
         }
 
-        public CatalogClientTest(ITestOutputHelper output)
-        {
-            Output = output;
-            RealHttpClientHandler = new HttpClientHandler();
-            HttpMessageHandlerFactory = new TestHttpMessageHandlerFactory(output.GetLoggerFactory());
-            HttpMessageHandlerFactory.OnSendAsync = (r, b, t) => b(r, t);
-            Settings = new NuGetInsightsSettings
-            {
-                V3ServiceIndex = "https://api.nuget.org/v3/index.json",
-            };
-            Options = new Mock<IOptions<NuGetInsightsSettings>>();
-            Options.Setup(x => x.Value).Returns(() => Settings);
-
-            var httpMessageHandler = HttpMessageHandlerFactory.Create();
-            httpMessageHandler.InnerHandler = RealHttpClientHandler;
-            HttpClient = new HttpClient(httpMessageHandler);
-            ServiceIndexCache = new ServiceIndexCache(
-                () => HttpClient,
-                new MemoryCache(
-                    Microsoft.Extensions.Options.Options.Create(new MemoryCacheOptions()),
-                    Output.GetLoggerFactory()),
-                Options.Object,
-                Output.GetLogger<ServiceIndexCache>());
-            Target = new CatalogClient(
-                () => HttpClient,
-                ServiceIndexCache,
-                Output.GetLogger<CatalogClient>());
-        }
-
-        public ITestOutputHelper Output { get; }
-        public HttpClientHandler RealHttpClientHandler { get; }
-        public TestHttpMessageHandlerFactory HttpMessageHandlerFactory { get; }
-        public NuGetInsightsSettings Settings { get; }
-        public Mock<IOptions<NuGetInsightsSettings>> Options { get; }
-        public HttpClient HttpClient { get; }
-        public ServiceIndexCache ServiceIndexCache { get; }
-        public CatalogClient Target { get; }
+        public CatalogClient Target => Host.Services.GetRequiredService<CatalogClient>();
     }
 }

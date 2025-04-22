@@ -1,0 +1,464 @@
+[
+  {
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-05-12T14:58:03.3232189+00:00",
+      "HttpHeaders": {
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D7F684EB076CA0\u0022"
+        ],
+        "Last-Modified": [
+          "Tue, 12 May 2020 14:58:23 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "Zf1adC/3kLIk\u002BP2E9qV4GbTEmWyPfMaSS2YjdBqOggjYItd3JJ9BQslZe4dBGt2UCsgCryHS3U37fkLXuqMAAg=="
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "60bb2866-4e54-46b8-9734-bb4e684d70df"
+        ]
+      },
+      "MZipHash": "b00124bb766a8b9c0ff72768a3825eaabdada0eca800e9fbce0c5aa2a8e2da53",
+      "SignatureHash": "588feaa248b467508f163b9e852610901c76addff318a7de71fa63dda9c59ecc"
+    },
+    "PartitionKey": "microsoft.aspnetcore.authentication.azuread.ui",
+    "RowKey": "3.1.4"
+  },
+  {
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-05-12T14:58:03.3232189+00:00",
+      "HttpHeaders": {
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D7F684EB512F9C\u0022"
+        ],
+        "Last-Modified": [
+          "Tue, 12 May 2020 14:58:24 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "wZ5PbdS8jAC6DqEQn5ByQIPF/0NTN0OldQr47OHhfRV8xQKm9g/S\u002BAclsluffawS1BAEXBnCb\u002BlYLh9F/jM4AQ=="
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "72018c3a-1c5d-4b12-b5e4-b1a3359c8b60"
+        ]
+      },
+      "MZipHash": "81b5eedd0dacd3369ba593bfa8ff9ca6a1913c608ec43eb6deba1a8fc6151338",
+      "SignatureHash": "767d673d67a41d9de5553249e2bed8770737de37168335da7dc1c726fd1953ff"
+    },
+    "PartitionKey": "microsoft.aspnetcore.authentication.google",
+    "RowKey": "3.1.4"
+  },
+  {
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-05-12T14:58:03.3232189+00:00",
+      "HttpHeaders": {
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D7F684EB574B62\u0022"
+        ],
+        "Last-Modified": [
+          "Tue, 12 May 2020 14:58:24 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "m3xulSieLYh3r9pkydW3yHMP/b\u002Bc17Evd4CmMeiHgaSzh5hW4fpFVIkHHq4AnVA5M1HRevl3nX8ZU8Z2DhMErQ=="
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "516b6dae-fcce-4140-b8db-af61894298e8"
+        ]
+      },
+      "MZipHash": "c3ced35e733d536805ca2bb2a207c9ae98abc66bf07accd0477bd3eb95ffbfaf",
+      "SignatureHash": "67f2e83e184badfd37ad315bac80617b555eeb289186fc3ff9aff09ebe713dfb"
+    },
+    "PartitionKey": "microsoft.aspnetcore.authentication.jwtbearer",
+    "RowKey": "3.1.4"
+  },
+  {
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-05-12T14:58:03.3232189+00:00",
+      "HttpHeaders": {
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D7F684EB0B6519\u0022"
+        ],
+        "Last-Modified": [
+          "Tue, 12 May 2020 14:58:23 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "DwZs0FVV0c/9MRYg79tohu4VnJilV7TTxrVIdnxlVd7Q\u002BfTYUim65yZeU9p2S57E5zUaF\u002B\u002BpVg9PQ7zNlXW\u002BEg=="
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "22a221f9-de25-49e1-8ac7-977b64f5b356"
+        ]
+      },
+      "MZipHash": "80a425f8fe964bc547c4533b76b841e135a87bea880baa2d300bee1b5bc29af6",
+      "SignatureHash": "a9d4c36e58bdae7067970be9716780dfa7f57d929800d48a1ca9597ad0595a08"
+    },
+    "PartitionKey": "microsoft.netcore.dotnetapphost",
+    "RowKey": "3.1.4"
+  },
+  {
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-05-12T14:58:03.3232189+00:00",
+      "HttpHeaders": {
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D7F684EB4D372F\u0022"
+        ],
+        "Last-Modified": [
+          "Tue, 12 May 2020 14:58:24 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "qFBNFo2V/C7rmxU\u002BrfXrqnIUIR56TdTbI9duxk1SiezzWyAMZpK4Q6gJ/cmZWSJdnVQ5XxUXGtUamuGinhOClQ=="
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "267010d3-9495-432b-9147-592afaa51149"
+        ]
+      },
+      "MZipHash": "d4b667c007ba54cde63777a7004b8bc8125215aa7632a39ff1af26d54cd1775a",
+      "SignatureHash": "10878287115c30b8be3f4a611d9c226bf1afda3bab1bf2b4b0030f3ddd9bb3f4"
+    },
+    "PartitionKey": "microsoft.netcore.dotnethostpolicy",
+    "RowKey": "3.1.4"
+  },
+  {
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-05-12T14:58:03.3232189+00:00",
+      "HttpHeaders": {
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D7F684EB1B46FB\u0022"
+        ],
+        "Last-Modified": [
+          "Tue, 12 May 2020 14:58:23 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "5C6bkLcTB3dqKpBUDQlJwiu6zfKjRZA0d/TCuKaO9PMoNRtnzyBx6vyyVAByGTgj0vaCOF9kACWDFI9HSYBIGw=="
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "7872c1c7-ef91-4367-9615-a547f7441ddd"
+        ]
+      },
+      "MZipHash": "0e957e82efcb2083ded449c6feaaafce146905efaf77cb71914ac3b2ef904252",
+      "SignatureHash": "ba043e0c4223edd339e279e2fe988e6cc56a9b6622a5fde8ba7ed3216edd6a7e"
+    },
+    "PartitionKey": "microsoft.netcore.dotnethostresolver",
+    "RowKey": "3.1.4"
+  },
+  {
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-05-12T14:58:03.3232189+00:00",
+      "HttpHeaders": {
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D7F684EBC36ABB\u0022"
+        ],
+        "Last-Modified": [
+          "Tue, 12 May 2020 14:58:24 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "WSLKrbD1Jlxvo4teJ3QG1o0hXCC/mZiV6t2DA7t6DQW49rfDLRjumZwFNmHCbHBNe\u002BmN8YJmL78QI6scoOhQmQ=="
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "7daea983-c697-44d2-9b9d-58f8b97e24d8"
+        ]
+      },
+      "MZipHash": "4180e73d48b91fc39f67c6a58d8ff909c3d11d8625a75f698466270f7a09e074",
+      "SignatureHash": "df12f8f34886cb34ee1f06107fcca164afa6a1871dc50368904ff0c39f36e2e4"
+    },
+    "PartitionKey": "microsoft.windowsdesktop.app.runtime.win-x64",
+    "RowKey": "3.1.4"
+  },
+  {
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-05-12T14:58:03.3232189+00:00",
+      "HttpHeaders": {
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D7F684EB09A875\u0022"
+        ],
+        "Last-Modified": [
+          "Tue, 12 May 2020 14:58:23 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "46sy4KxAzQ48SSqU5TIpZqvbI3NL/n66qfoD5smYVZDzbDz05\u002BF5\u002BiTvmbjOOjumP1efiq0BGfOUb0dgPAKlaQ=="
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "401531db-bf37-422e-899d-88e5bfd620ad"
+        ]
+      },
+      "MZipHash": "44395158559df26b77e5a34ce002e7b22e6d9548e117f43828c3a56aef626953",
+      "SignatureHash": "dcf3b1a538ba2aff1bd2ed0de5d44fbd8250497e8038216134d8d43d0001a35d"
+    },
+    "PartitionKey": "runtime.rhel.6-x64.microsoft.netcore.dotnetapphost",
+    "RowKey": "2.1.18"
+  },
+  {
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-05-12T14:58:03.3232189+00:00",
+      "HttpHeaders": {
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D7F684EB185121\u0022"
+        ],
+        "Last-Modified": [
+          "Tue, 12 May 2020 14:58:23 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "2MEgFBO5CiI\u002BecxpC9FVgV2SKhh5PgbdHAyDuZnGP6WYgEfCsfh2UTII8MRY1DQJzNcaY/5FhhXDxsMowxoogg=="
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "85531140-817c-4009-a999-a5000476aba8"
+        ]
+      },
+      "MZipHash": "719ae4efb9e583302df3d338c0c8eeaf4ba2c85dc48fffe8e6fc0411a41bcfbe",
+      "SignatureHash": "06b76b6b3afee56c04dbf694646733b6a5b0079cbdd1122ad0a9f0f204814098"
+    },
+    "PartitionKey": "runtime.rhel.6-x64.microsoft.netcore.dotnetapphost",
+    "RowKey": "3.1.4"
+  },
+  {
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-05-12T14:58:03.3232189+00:00",
+      "HttpHeaders": {
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D7F684EB0D79B7\u0022"
+        ],
+        "Last-Modified": [
+          "Tue, 12 May 2020 14:58:23 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "1v6GBApiuddJqn52eIzRx7Mao2SQfPLLaszmSPgA1YcLfPMTXt57q\u002B5TwXUXqwvY\u002BhmwEMqH4OTCvEiXu89rLA=="
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "4018c96e-1c72-495a-b09a-50a58b8d2e5a"
+        ]
+      },
+      "MZipHash": "bc5f71a4eb6c46e3e044ce569e3a96ca1426b37c5ed781eeee664dea802bcece",
+      "SignatureHash": "7e93aedcc65591c788587c350cffd75fb6dd24bc2f88d86c54944698e4692dbc"
+    },
+    "PartitionKey": "runtime.rhel.6-x64.microsoft.netcore.dotnethostpolicy",
+    "RowKey": "3.1.4"
+  },
+  {
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-05-12T14:58:03.3232189+00:00",
+      "HttpHeaders": {
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D7F684EB22B346\u0022"
+        ],
+        "Last-Modified": [
+          "Tue, 12 May 2020 14:58:23 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "\u002BpRUp4EvMzTMKNZdlt6s1yjSFr7u/\u002BphjJm/xmofIOX9LKhHh8xRwCHuTsRHzhjsixX6rvi5wvhEh4h9Dy02XA=="
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "c446c6dd-24d5-4f83-94f1-57764d34803b"
+        ]
+      },
+      "MZipHash": "2915463ea6a2ed2407140dd9d438d57ba858d8baf5b4b4313d839a8c1ae35087",
+      "SignatureHash": "04361cb49caa52d7852051e88512648955d68c65c3a7c94cea3e12df7c85b40a"
+    },
+    "PartitionKey": "runtime.win-arm.microsoft.netcore.dotnetapphost",
+    "RowKey": "3.1.4"
+  },
+  {
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-05-12T14:58:03.3232189+00:00",
+      "HttpHeaders": {
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D7F684EB35A27A\u0022"
+        ],
+        "Last-Modified": [
+          "Tue, 12 May 2020 14:58:23 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "/mZt1lGlR3Lcl26sYe5j\u002BlFde/WaabDjeXWhrmjenXSNt7oZFvAqL6GarGpD\u002BnnJF2VX/TJs2uJzM6ky3aODbg=="
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "b9cf9c72-24a2-4ce2-8202-6403e3e7e13e"
+        ]
+      },
+      "MZipHash": "5884c8c959cd1d13bf181361cf16144062da6e1db5fdb6f602728e5a9d47aea2",
+      "SignatureHash": "8904ab9bc2daf55e80f07ff0d814d45cb53b023232a9574dd1cc964af9ccb272"
+    },
+    "PartitionKey": "runtime.win-arm.microsoft.netcore.dotnethost",
+    "RowKey": "3.1.4"
+  },
+  {
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-05-12T14:58:03.3232189+00:00",
+      "HttpHeaders": {
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D7F684EB5A70F2\u0022"
+        ],
+        "Last-Modified": [
+          "Tue, 12 May 2020 14:58:24 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "CAYR3ErDf6lloP7cXZD/OpzdSo0Jy4kKolEOi1snncnn74y/y6y\u002B23sw8//QRhFTQLL6y0H2cSkhSdOb6Gztog=="
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "fa3ef288-2546-4cd8-9317-f67fb5751d9f"
+        ]
+      },
+      "MZipHash": "f3f130536a98721abf8d55bab3d1ade1231752db72dbe0f6b382f25aa35d3712",
+      "SignatureHash": "106f2cf7806d17fbf23d70a585e74dc415213dc11158115a94944ba6fd6ceddf"
+    },
+    "PartitionKey": "vs.redist.common.netcore.hostfxr.x86.2.1",
+    "RowKey": "2.1.18-servicing-28802-01"
+  },
+  {
+    "Entity": {
+      "Available": true,
+      "CommitTimestamp": "2020-05-12T14:58:03.3232189+00:00",
+      "HttpHeaders": {
+        "Content-Type": [
+          "application/octet-stream"
+        ],
+        "ETag": [
+          "\u00220x8D7F684EB3A8613\u0022"
+        ],
+        "Last-Modified": [
+          "Tue, 12 May 2020 14:58:23 GMT"
+        ],
+        "x-ms-blob-type": [
+          "BlockBlob"
+        ],
+        "x-ms-lease-status": [
+          "unlocked"
+        ],
+        "x-ms-meta-SHA512": [
+          "yTGHnhCsn\u002BJ3O1Y9HrK4uglwod\u002Bwq7tRSJIdp1JBKGtLbUZR5WSOvap/GGSmBDGwgS8rgL70jXBY7zbeW1UPQw=="
+        ],
+        "x-ms-meta-da7b2905_0f3c_4262_921c_b1593d1336f1_ESRP_RequestId": [
+          "66f8197c-4a89-44ec-80e2-8994e4fe9760"
+        ]
+      },
+      "MZipHash": "67781c43195d8f4fabedcd517a19f26b8bbc87db359fa2cd17581bb6a98d730e",
+      "SignatureHash": "2eae50e2df3b68fdff5acadbc8b29eb67201dc2126e4e460dbfa21d4008c14b5"
+    },
+    "PartitionKey": "vs.redist.common.netcore.sharedhost.x64.2.1",
+    "RowKey": "2.1.18-servicing-28802-01"
+  }
+]

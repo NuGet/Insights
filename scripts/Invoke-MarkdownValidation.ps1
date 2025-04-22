@@ -42,7 +42,8 @@ else {
 $documents = $documents | `
     Where-Object { !$_.StartsWith((Join-Path $RootDirectory "node_modules")) } | `
     Where-Object { !$_.StartsWith((Join-Path $RootDirectory "submodules")) } | `
-    Where-Object { !$_.StartsWith((Join-Path $RootDirectory "artifacts")) }
+    Where-Object { !$_.StartsWith((Join-Path $RootDirectory "artifacts")) } | `
+    Where-Object { !$_.StartsWith((Join-Path $RootDirectory "test/Logic.Test/TestInput/Cache")) }
 
 foreach ($md in $documents) {
     $failed = $true

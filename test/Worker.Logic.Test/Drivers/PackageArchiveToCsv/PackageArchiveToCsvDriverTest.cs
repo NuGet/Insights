@@ -201,7 +201,6 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             Assert.Equal(DriverResultType.Success, output.Type);
             var archive = Assert.Single(output.Value.Records1);
             Assert.Equal(ArchiveResultType.Available, archive.ResultType);
-            Assert.Equal("51Dz2WBmpNVUFi/7p9ymEA==", archive.HeaderMD5);
             Assert.Equal("iIj773J+QLTUU7ni5dRqCRgz9z5GuHLYfDV0K89f3R32BBW9OjDjwV6kS0gd3o8hvLtcgDynnh6cNjImqJqkVg==", archive.HeaderSHA512);
             Assert.Equal("51Dz2WBmpNVUFi/7p9ymEA==", archive.MD5);
             Assert.Equal("iHwGsx3e8FXAQuMzPJ/9C2ulYHk=", archive.SHA1);

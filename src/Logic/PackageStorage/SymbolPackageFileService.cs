@@ -11,6 +11,7 @@ namespace NuGet.Insights
 {
     public class SymbolPackageFileService
     {
+        private readonly ContainerInitializationState _initializationState;
         private readonly SymbolPackageClient _symbolPackageClient;
         private readonly PackageWideEntityService _wideEntityService;
         private readonly FileDownloader _fileDownloader;
@@ -24,6 +25,7 @@ namespace NuGet.Insights
             MZipFormat mzipFormat,
             IOptions<NuGetInsightsSettings> options)
         {
+            _initializationState = ContainerInitializationState.New(InitializeInternalAsync, DestroyInternalAsync);
             _symbolPackageClient = symbolPackageClient;
             _wideEntityService = wideEntityService;
             _fileDownloader = fileDownloader;
@@ -33,10 +35,20 @@ namespace NuGet.Insights
 
         public async Task InitializeAsync()
         {
-            await _wideEntityService.InitializeAsync(_options.Value.SymbolPackageArchiveTableName);
+            await _initializationState.InitializeAsync();
         }
 
         public async Task DestroyAsync()
+        {
+            await _initializationState.DestroyAsync();
+        }
+
+        private async Task InitializeInternalAsync()
+        {
+            await _wideEntityService.InitializeAsync(_options.Value.SymbolPackageArchiveTableName);
+        }
+
+        private async Task DestroyInternalAsync()
         {
             await _wideEntityService.DeleteTableAsync(_options.Value.SymbolPackageArchiveTableName);
         }

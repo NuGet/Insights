@@ -1,11 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Extensions.Caching.Memory;
-
 namespace NuGet.Insights
 {
-    public class ServiceIndexCacheTest : IDisposable
+    public class ServiceIndexCacheTest : BaseLogicIntegrationTest
     {
         [Fact]
         public async Task CachesServiceIndex()
@@ -14,7 +12,7 @@ namespace NuGet.Insights
             var urlB = await Target.GetUrlAsync(ServiceIndexTypes.Catalog);
 
             var session = Assert.Single(HttpMessageHandlerFactory.RequestAndResponses);
-            Assert.Equal(Settings.V3ServiceIndex, session.Response.RequestMessage.RequestUri.AbsoluteUri);
+            Assert.Equal(Options.Value.V3ServiceIndex, session.Response.RequestMessage.RequestUri.AbsoluteUri);
         }
 
         [Theory]
@@ -59,44 +57,10 @@ namespace NuGet.Insights
             Assert.Equal(HttpStatusCode.OK, HttpMessageHandlerFactory.RequestAndResponses.Last().Response.StatusCode);
         }
 
-        public ServiceIndexCacheTest(ITestOutputHelper output)
+        public ServiceIndexCacheTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
         {
-            Output = output;
-            RealHttpClientHandler = new HttpClientHandler();
-            HttpMessageHandlerFactory = new TestHttpMessageHandlerFactory(output.GetLoggerFactory());
-            HttpMessageHandlerFactory.OnSendAsync = (r, b, t) => b(r, t);
-            Settings = new NuGetInsightsSettings
-            {
-                V3ServiceIndex = "https://api.nuget.org/v3/index.json",
-            };
-            Options = new Mock<IOptions<NuGetInsightsSettings>>();
-            Options.Setup(x => x.Value).Returns(() => Settings);
-            var httpMessageHandler = HttpMessageHandlerFactory.Create();
-            httpMessageHandler.InnerHandler = RealHttpClientHandler;
-            HttpClient = new HttpClient(httpMessageHandler);
-            MemoryCache = new MemoryCache(
-                Microsoft.Extensions.Options.Options.Create(new MemoryCacheOptions()),
-                Output.GetLoggerFactory());
-            Target = new ServiceIndexCache(
-                () => HttpClient,
-                MemoryCache,
-                Options.Object,
-                Output.GetLogger<ServiceIndexCache>());
         }
 
-        public void Dispose()
-        {
-            RealHttpClientHandler.Dispose();
-            HttpClient.Dispose();
-        }
-
-        public ITestOutputHelper Output { get; }
-        public HttpClientHandler RealHttpClientHandler { get; }
-        public TestHttpMessageHandlerFactory HttpMessageHandlerFactory { get; }
-        public NuGetInsightsSettings Settings { get; }
-        public Mock<IOptions<NuGetInsightsSettings>> Options { get; }
-        public HttpClient HttpClient { get; }
-        public MemoryCache MemoryCache { get; }
-        public ServiceIndexCache Target { get; }
+        public ServiceIndexCache Target => Host.Services.GetService<ServiceIndexCache>();
     }
 }

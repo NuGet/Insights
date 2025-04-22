@@ -11,7 +11,7 @@ namespace NuGet.Insights
         [Fact]
         public async Task ExistsAsync_FalseWhenNotCreated()
         {
-            Assert.False(await Table.ExistsAsync());
+            Assert.False(await TableServiceClient.TableExistsAsync(Table.Name));
         }
 
         [Fact]
@@ -19,7 +19,7 @@ namespace NuGet.Insights
         {
             await Table.CreateIfNotExistsAsync();
 
-            Assert.True(await Table.ExistsAsync());
+            Assert.True(await TableServiceClient.TableExistsAsync(Table.Name));
         }
 
         [Fact]
@@ -28,7 +28,7 @@ namespace NuGet.Insights
             await Table.CreateIfNotExistsAsync();
             await Table.DeleteAsync();
 
-            Assert.False(await Table.ExistsAsync());
+            Assert.False(await TableServiceClient.TableExistsAsync(Table.Name));
         }
 
         [Fact]

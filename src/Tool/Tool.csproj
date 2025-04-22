@@ -1,16 +1,18 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>NuGet.Insights.Tool</AssemblyName>
     <RootNamespace>NuGet.Insights.Tool</RootNamespace>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="DiffPlex" />
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Worker.Logic\Worker.Logic.csproj" />
+    <ProjectReference Include="..\Website\Website.csproj" />
+    <ProjectReference Include="..\..\test\Worker.Logic.Test\Worker.Logic.Test.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="appsettings.Development.json">

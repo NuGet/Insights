@@ -7,6 +7,11 @@ namespace NuGet.Insights.Worker
 {
     public class WorkerQueueFactory : IWorkerQueueFactory
     {
+        private readonly ContainerInitializationState _workInitializationState;
+        private readonly ContainerInitializationState _workPoisonInitializationState;
+        private readonly ContainerInitializationState _expandInitializationState;
+        private readonly ContainerInitializationState _expandPoisonInitializationState;
+
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
@@ -16,39 +21,50 @@ namespace NuGet.Insights.Worker
         {
             _serviceClientFactory = serviceClientFactory;
             _options = options;
+
+            _workInitializationState = ContainerInitializationState.Queue(serviceClientFactory, GetQueueName(QueueType.Work, poison: false));
+            _workPoisonInitializationState = ContainerInitializationState.Queue(serviceClientFactory, GetQueueName(QueueType.Work, poison: true));
+            _expandInitializationState = ContainerInitializationState.Queue(serviceClientFactory, GetQueueName(QueueType.Expand, poison: false));
+            _expandPoisonInitializationState = ContainerInitializationState.Queue(serviceClientFactory, GetQueueName(QueueType.Expand, poison: true));
         }
 
         public async Task InitializeAsync()
         {
-            foreach (var type in Enum.GetValues(typeof(QueueType)).Cast<QueueType>())
-            {
-                await (await GetQueueAsync(type)).CreateIfNotExistsAsync(retry: true);
-                await (await GetPoisonQueueAsync(type)).CreateIfNotExistsAsync(retry: true);
-            }
+            await Task.WhenAll(
+                _workInitializationState.InitializeAsync(),
+                _workPoisonInitializationState.InitializeAsync(),
+                _expandInitializationState.InitializeAsync(),
+                _expandPoisonInitializationState.InitializeAsync());
         }
 
         public async Task<QueueClient> GetQueueAsync(QueueType type)
         {
             return (await _serviceClientFactory.GetQueueServiceClientAsync())
-                .GetQueueClient(GetQueueName(type));
+                .GetQueueClient(GetQueueName(type, poison: false));
         }
 
         public async Task<QueueClient> GetPoisonQueueAsync(QueueType type)
         {
             return (await _serviceClientFactory.GetQueueServiceClientAsync())
-                .GetQueueClient(GetQueueName(type) + "-poison");
+                .GetQueueClient(GetQueueName(type, poison: true));
         }
 
-        private string GetQueueName(QueueType type)
+        private string GetQueueName(QueueType type, bool poison)
         {
-            switch (type)
+            var queueName = type switch
             {
-                case QueueType.Work:
-                    return _options.Value.WorkQueueName;
-                case QueueType.Expand:
-                    return _options.Value.ExpandQueueName;
-                default:
-                    throw new NotImplementedException();
+                QueueType.Work => _options.Value.WorkQueueName,
+                QueueType.Expand => _options.Value.ExpandQueueName,
+                _ => throw new NotImplementedException(),
+            };
+
+            if (poison)
+            {
+                return queueName + "-poison";
+            }
+            else
+            {
+                return queueName;
             }
         }
     }

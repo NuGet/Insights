@@ -183,12 +183,14 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 
         private async Task InitializeCsvBlobs(List<TestSubjectRecord> subjectRecords)
         {
-            await AppendResultStorageService.InitializeAsync(Options.Value.CsvRecordTableNamePrefix, CsvResultStorage.ResultContainerName);
+            await AppendResultStorageService.InitializeAsync(Options.Value.CsvRecordTableNamePrefix);
             await AppendResultStorageService.AppendAsync(
                 Options.Value.CsvRecordTableNamePrefix,
                 Options.Value.AppendResultStorageBucketCount,
                 subjectRecords);
             var buckets = await AppendResultStorageService.GetAppendedBucketsAsync(Options.Value.CsvRecordTableNamePrefix);
+
+            await (await ServiceClientFactory.GetBlobServiceClientAsync()).GetBlobContainerClient(CsvResultStorage.ResultContainerName).CreateIfNotExistsAsync(retry: true);
             foreach (var bucket in buckets)
             {
                 await AppendResultStorageService.CompactAsync<TestSubjectRecord>(
@@ -196,6 +198,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
                     CsvResultStorage.ResultContainerName,
                     bucket);
             }
+
             await AppendResultStorageService.DeleteAsync(Options.Value.CsvRecordTableNamePrefix);
         }
 

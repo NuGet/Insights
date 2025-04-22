@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Azure;
-using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using MessagePack;
@@ -14,7 +13,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
     {
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
         private readonly EntityReferenceCounter<Task<Versions<VersionListData>>> _cachedVersionSet = new EntityReferenceCounter<Task<Versions<VersionListData>>>();
-
+        private readonly ContainerInitializationState _initializationState;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -26,6 +25,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<VersionSetService> logger)
         {
+            _initializationState = ContainerInitializationState.BlobContainer(serviceClientFactory, options.Value.VersionSetContainerName);
             _serviceClientFactory = serviceClientFactory;
             _telemetryClient = telemetryClient;
             _options = options;
@@ -34,12 +34,12 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
         public async Task InitializeAsync()
         {
-            await (await GetContainerAsync()).CreateIfNotExistsAsync(retry: true);
+            await _initializationState.InitializeAsync();
         }
 
         public async Task DestroyAsync()
         {
-            await (await GetContainerAsync()).DeleteIfExistsAsync();
+            await _initializationState.DestroyAsync();
         }
 
         public async Task<EntityHandle<IVersionSet>> GetAsync()
@@ -226,18 +226,9 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
         private async Task<BlockBlobClient> GetBlobAsync()
         {
-            return (await GetContainerAsync()).GetBlockBlobClient("version-set.dat");
-        }
-
-        private async Task<BlockBlobClient> GetTempBlobAsync()
-        {
-            return (await GetContainerAsync()).GetBlockBlobClient("version-set.dat.temp");
-        }
-
-        private async Task<BlobContainerClient> GetContainerAsync()
-        {
-            return (await _serviceClientFactory.GetBlobServiceClientAsync())
-                .GetBlobContainerClient(_options.Value.VersionSetContainerName);
+            var blobServiceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
+            var container = blobServiceClient.GetBlobContainerClient(_options.Value.VersionSetContainerName);
+            return container.GetBlockBlobClient("version-set.dat");
         }
 
         [MessagePackObject]

@@ -49,6 +49,7 @@ namespace NuGet.Insights
             "tn",
         };
 
+        [return: NotNullIfNotNull(nameof(uri))]
         public static string? Obfuscate(this Uri? uri)
         {
             if (uri is null)

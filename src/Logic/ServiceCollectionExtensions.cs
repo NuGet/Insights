@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Knapcode.MiniZip;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Http;
+using NuGet.Insights.FileSystemHttpCache;
 using NuGet.Insights.MemoryStorage;
 using NuGet.Insights.ReferenceTracking;
 using NuGet.Insights.TablePrefixScan;
@@ -20,8 +21,8 @@ namespace NuGet.Insights
         {
         }
 
-        private const string DefaultHttpClient = "NuGet.Insights.HttpClient.Decompressing";
-        private const string ServiceClientHttpClient = "NuGet.Insights.HttpClient.ServiceClient";
+        public const string DefaultHttpClient = "NuGet.Insights.HttpClient.Decompressing";
+        public const string ServiceClientHttpClient = "NuGet.Insights.HttpClient.ServiceClient";
 
         public static IServiceCollection AddNuGetInsights(
             this IServiceCollection serviceCollection,
@@ -86,7 +87,8 @@ namespace NuGet.Insights
                 decompressionMethods: DecompressionMethods.All,
                 addRetryPolicy: true,
                 enableLogging: x => x.GetRequiredService<ILogger<LoggingHttpHandler>>().IsEnabled(LogLevel.Information),
-                addTimeoutPolicy: true);
+                addTimeoutPolicy: true,
+                allowFileSystemHttpCache: true);
 
             serviceCollection.AddHttpClient(
                 ServiceClientHttpClient,
@@ -94,7 +96,8 @@ namespace NuGet.Insights
                 decompressionMethods: DecompressionMethods.None,
                 addRetryPolicy: false,
                 enableLogging: x => x.GetRequiredService<ILogger<ServiceClientFactory>>().IsEnabled(LogLevel.Debug),
-                addTimeoutPolicy: false);
+                addTimeoutPolicy: false,
+                allowFileSystemHttpCache: false);
 
             serviceCollection.AddSingleton<Func<HttpClient>>(provider =>
             {
@@ -259,7 +262,8 @@ namespace NuGet.Insights
             DecompressionMethods decompressionMethods,
             bool addRetryPolicy,
             Func<IServiceProvider, bool> enableLogging,
-            bool addTimeoutPolicy)
+            bool addTimeoutPolicy,
+            bool allowFileSystemHttpCache)
         {
             var builder = serviceCollection
                 .AddHttpClient(name)
@@ -328,6 +332,25 @@ namespace NuGet.Insights
                         }
                     });
                 });
+
+            if (allowFileSystemHttpCache)
+            {
+                builder.Services.Configure<HttpClientFactoryOptions>(
+                    builder.Name,
+                    options =>
+                    {
+                        options.HttpMessageHandlerBuilderActions.Add(builder =>
+                        {
+                            var options = builder.Services.GetRequiredService<IOptions<NuGetInsightsSettings>>();
+                            if (options.Value.HttpCacheMode != FileSystemHttpCacheMode.Disabled)
+                            {
+                                builder.AdditionalHandlers.Add(FileSystemHttpCacheIntegrationTestSettings.Create(
+                                    options.Value.HttpCacheDirectory,
+                                    options.Value.HttpCacheMode));
+                            }
+                        });
+                    });
+            }
 
             builder
                 .ConfigurePrimaryHttpMessageHandler(provider =>

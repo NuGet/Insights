@@ -209,6 +209,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                         }
                         catch (Exception ex) when (ex is FileNotFoundException || ex is FormatException)
                         {
+                            // handles https://github.com/NuGetPackageExplorer/NuGetPackageExplorer/issues/1505
                             _logger.LogWarning(ex, "Could not get symbol validator files for {Id} {Version}.", leaf.PackageId, leaf.PackageVersion);
                             return MakeSingleItem(scanId, scanTimestamp, leaf, NuGetPackageExplorerResultType.InvalidMetadata);
                         }

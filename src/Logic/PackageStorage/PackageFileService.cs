@@ -13,32 +13,47 @@ namespace NuGet.Insights
 {
     public class PackageFileService
     {
+        private readonly ContainerInitializationState _initializationState;
         private readonly PackageWideEntityService _wideEntityService;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly FileDownloader _fileDownloader;
         private readonly MZipFormat _mzipFormat;
         private readonly IOptions<NuGetInsightsSettings> _options;
+        private readonly ILogger<PackageFileService> _logger;
 
         public PackageFileService(
             PackageWideEntityService wideEntityService,
             FlatContainerClient flatContainerClient,
             FileDownloader fileDownloader,
             MZipFormat mzipFormat,
-            IOptions<NuGetInsightsSettings> options)
+            IOptions<NuGetInsightsSettings> options,
+            ILogger<PackageFileService> logger)
         {
+            _initializationState = ContainerInitializationState.New(InitializeInternalAsync, DestroyInternalAsync);
             _wideEntityService = wideEntityService;
             _flatContainerClient = flatContainerClient;
             _fileDownloader = fileDownloader;
             _mzipFormat = mzipFormat;
             _options = options;
+            _logger = logger;
         }
 
         public async Task InitializeAsync()
         {
-            await _wideEntityService.InitializeAsync(_options.Value.PackageArchiveTableName);
+            await _initializationState.InitializeAsync();
         }
 
         public async Task DestroyAsync()
+        {
+            await _initializationState.DestroyAsync();
+        }
+
+        private async Task InitializeInternalAsync()
+        {
+            await _wideEntityService.InitializeAsync(_options.Value.PackageArchiveTableName);
+        }
+
+        private async Task DestroyInternalAsync()
         {
             await _wideEntityService.DeleteTableAsync(_options.Value.PackageArchiveTableName);
         }

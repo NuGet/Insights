@@ -4,6 +4,7 @@
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Configuration;
+using NuGet.Insights.Website;
 using NuGet.Insights.Worker;
 
 namespace NuGet.Insights.Tool
@@ -12,6 +13,7 @@ namespace NuGet.Insights.Tool
     {
         private static readonly IReadOnlyDictionary<string, Type> Commands = new Dictionary<string, Type>
         {
+            { "analyze-http-cache", typeof(AnalyzeHttpCacheCommand) },
             { "process-messages", typeof(ProcessMessagesCommand) },
             { "ingest-downloads-json", typeof(IngestDownloadsJsonCommand) },
             { "sandbox", typeof(SandboxCommand) },
@@ -26,7 +28,7 @@ namespace NuGet.Insights.Tool
         {
             // Initialize the dependency injection container.
             var serviceCollection = InitializeServiceCollection();
-            using (var serviceProvider = serviceCollection.BuildServiceProvider())
+            await using (var serviceProvider = serviceCollection.BuildServiceProvider())
             {
                 // Set up the cancel event to release the lease if someone hits Ctrl + C while the program is running.
                 var cancelEvent = new SemaphoreSlim(0);
@@ -187,6 +189,7 @@ namespace NuGet.Insights.Tool
 
             serviceCollection.AddNuGetInsights(configuration, "NuGet.Insights.Tool");
             serviceCollection.AddNuGetInsightsWorker();
+            serviceCollection.AddNuGetInsightsWebsite();
 
             serviceCollection.AddLogging(o =>
             {

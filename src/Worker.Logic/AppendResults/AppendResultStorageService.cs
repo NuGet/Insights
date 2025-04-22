@@ -54,10 +54,9 @@ namespace NuGet.Insights.Worker
                 "RecordType");
         }
 
-        public async Task InitializeAsync(string srcTable, string destContainer)
+        public async Task InitializeAsync(string srcTable)
         {
             await _wideEntityService.CreateTableAsync(srcTable);
-            await _csvRecordStorageService.InitializeAsync(destContainer);
         }
 
         public async Task DeleteAsync(string srcTable)

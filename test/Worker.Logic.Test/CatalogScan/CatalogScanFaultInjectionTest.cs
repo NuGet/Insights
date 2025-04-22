@@ -7,6 +7,29 @@ namespace NuGet.Insights.Worker
 {
     public class CatalogScanFaultInjectionTest : BaseWorkerLogicIntegrationTest
     {
+        [Fact]
+        public async Task PopulateHttpCache()
+        {
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2024-01-01T00:03:03.6703369Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2024-01-01T00:05:46.7438130Z", CultureInfo.InvariantCulture);
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.CatalogDataToCsv, min0);
+            await SetCursorAsync(CatalogScanDriverType.PackageIconToCsv, min0);
+
+            var scanA = await CatalogScanService.UpdateAsync(CatalogScanDriverType.CatalogDataToCsv, max1);
+            var scanB = await CatalogScanService.UpdateAsync(CatalogScanDriverType.PackageIconToCsv, max1);
+
+            // Act
+            var resultA = await UpdateAsync(scanA);
+            var resultB = await UpdateAsync(scanB);
+
+            // Assert
+            Assert.Equal(CatalogIndexScanState.Complete, resultA.State);
+            Assert.Equal(CatalogIndexScanState.Complete, resultB.State);
+        }
+
         [NoInMemoryStorageFact]
         public async Task CanRecoverPageScanFanOutProblemWithRequeue()
         {

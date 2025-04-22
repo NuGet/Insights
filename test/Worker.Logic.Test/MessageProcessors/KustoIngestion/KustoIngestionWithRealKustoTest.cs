@@ -11,6 +11,25 @@ namespace NuGet.Insights.Worker.KustoIngestion
     {
         public string Dir = nameof(KustoIngestionWithRealKustoTest);
 
+        [Fact]
+        public async Task PopulateHttpCache()
+        {
+            // Arrange
+            ConfigureWorkerSettings = x => x.WithTestKustoSettings();
+
+            var min0 = DateTimeOffset.Parse("2018-12-31T21:16:31.1342711Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2018-12-31T21:22:25.1269269Z", CultureInfo.InvariantCulture);
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.CatalogDataToCsv, min0);
+
+            // Act
+            var scan = await UpdateAsync(CatalogScanDriverType.CatalogDataToCsv, max1);
+
+            // Assert
+            Assert.Equal(CatalogIndexScanState.Complete, scan.State);
+        }
+
         /// <summary>
         /// If this fails with Kusto permissions, use a command like this:
         /// For MSA users: .add database DB_NAME admins('msauser=MSA_EMAIL')
@@ -20,13 +39,13 @@ namespace NuGet.Insights.Worker.KustoIngestion
         [KustoFact(Timeout = 15 * 60 * 1000)]
         public async Task ExecuteRealIngestion()
         {
+            // Arrange
             ConfigureWorkerSettings = x =>
             {
                 x.KustoTableNameFormat = StoragePrefix + "_{0}";
                 x.WithTestKustoSettings();
             };
 
-            // Arrange
             var min0 = DateTimeOffset.Parse("2018-12-31T21:16:31.1342711Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2018-12-31T21:22:25.1269269Z", CultureInfo.InvariantCulture);
 

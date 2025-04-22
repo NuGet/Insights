@@ -36,7 +36,7 @@ namespace NuGet.Insights
         public static async Task CreateIfNotExistsAsync(this TableClientWithRetryContext tableClient, bool retry)
         {
             await CreateIfNotExistsAsync(
-                () => tableClient.ExistsAsync(),
+                () => Task.FromResult(false), // write operations are cheaper than list operations (such as in https://stackoverflow.com/a/72023295)
                 () => tableClient.CreateIfNotExistsAsync(),
                 retry,
                 TableErrorCode.TableBeingDeleted.ToString());

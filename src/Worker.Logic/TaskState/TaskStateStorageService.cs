@@ -12,7 +12,7 @@ namespace NuGet.Insights.Worker
     public class TaskStateStorageService
     {
         public const string SingletonStorageSuffix = "";
-
+        private readonly ContainerInitializationState _singletonTableInitializationState;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly EntityUpsertStorageService<TaskState, TaskState> _upsertStorageService;
         private readonly ITelemetryClient _telemetryClient;
@@ -24,6 +24,8 @@ namespace NuGet.Insights.Worker
             ITelemetryClient telemetryClient,
             IOptions<NuGetInsightsWorkerSettings> options)
         {
+            _singletonTableInitializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value.SingletonTaskStateTableName);
+
             _serviceClientFactory = serviceClientFactory;
             _upsertStorageService = upsertStorageService;
             _telemetryClient = telemetryClient;
@@ -32,11 +34,23 @@ namespace NuGet.Insights.Worker
 
         public async Task InitializeAsync(string storageSuffix)
         {
-            await (await GetTableAsync(storageSuffix)).CreateIfNotExistsAsync(retry: true);
+            if (storageSuffix == SingletonStorageSuffix)
+            {
+                await _singletonTableInitializationState.InitializeAsync();
+            }
+            else
+            {
+                await (await GetTableAsync(storageSuffix)).CreateIfNotExistsAsync(retry: true);
+            }
         }
 
         public async Task DeleteTableAsync(string storageSuffix)
         {
+            if (storageSuffix == SingletonStorageSuffix)
+            {
+                throw new ArgumentException($"Cannot delete the table for the singleton storage suffix.");
+            }
+
             await (await GetTableAsync(storageSuffix)).DeleteAsync();
         }
 
@@ -210,12 +224,21 @@ namespace NuGet.Insights.Worker
 
         private async Task<TableClientWithRetryContext> GetTableAsync(string suffix)
         {
+            var serviceClient = await _serviceClientFactory.GetTableServiceClientAsync();
+            var tableName = GetTableName(suffix);
+            var table = serviceClient.GetTableClient(tableName);
+            return table;
+        }
+
+        private string GetTableName(string suffix)
+        {
             if (suffix is null)
             {
                 throw new ArgumentNullException(nameof(suffix));
             }
 
             string tableName;
+
             if (suffix == SingletonStorageSuffix)
             {
                 tableName = _options.Value.SingletonTaskStateTableName;
@@ -225,7 +248,7 @@ namespace NuGet.Insights.Worker
                 tableName = $"{_options.Value.TaskStateTableNamePrefix}{suffix}";
             }
 
-            return (await _serviceClientFactory.GetTableServiceClientAsync()).GetTableClient(tableName);
+            return tableName;
         }
     }
 }

@@ -507,8 +507,8 @@ namespace NuGet.Insights
 
             public async Task DisposeAsync()
             {
-                var blobServiceClient = await GetServiceClientFactory(NullLoggerFactory.Instance).GetBlobServiceClientAsync();
-                await blobServiceClient
+                var serviceClient = await GetServiceClientFactory(NullLoggerFactory.Instance).GetBlobServiceClientAsync();
+                await serviceClient
                     .GetBlobContainerClient(Options.Object.Value.LeaseContainerName)
                     .DeleteIfExistsAsync();
 

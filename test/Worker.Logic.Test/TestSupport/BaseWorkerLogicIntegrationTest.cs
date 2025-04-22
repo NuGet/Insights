@@ -19,6 +19,7 @@ using MessagePack;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Linq;
+using NuGet.Insights.FileSystemHttpCache;
 using NuGet.Insights.Kusto;
 using NuGet.Insights.ReferenceTracking;
 using NuGet.Insights.StorageNoOpRetry;
@@ -619,6 +620,7 @@ namespace NuGet.Insights.Worker
             // These headers are unstable
             var ignoredHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
+                FileSystemHttpCacheHandler.CacheHeaderName,
                 "Accept-Ranges",
                 "Access-Control-Allow-Origin",
                 "Access-Control-Expose-Headers",

@@ -11,7 +11,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
     public class TimedReprocessStorageService
     {
         public const string MetricIdPrefix = $"{nameof(TimedReprocessStorageService)}.";
-
+        private readonly ContainerInitializationState _initializationState;
         private readonly TimeProvider _timeProvider;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
@@ -26,6 +26,8 @@ namespace NuGet.Insights.Worker.TimedReprocess
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<TimedReprocessStorageService> logger)
         {
+            _initializationState = ContainerInitializationState.New(InitializeInternalAsync);
+
             _timeProvider = timeProvider;
             _serviceClientFactory = serviceClientFactory;
             _telemetryClient = telemetryClient;
@@ -36,6 +38,11 @@ namespace NuGet.Insights.Worker.TimedReprocess
         }
 
         public async Task InitializeAsync()
+        {
+            await _initializationState.InitializeAsync();
+        }
+
+        private async Task InitializeInternalAsync()
         {
             var table = await GetTableAsync();
             await table.CreateIfNotExistsAsync(retry: true);
@@ -291,12 +298,6 @@ namespace NuGet.Insights.Worker.TimedReprocess
             }
 
             await batch.SubmitBatchIfNotEmptyAsync();
-        }
-
-        private static DateTimeOffset RoundDown(DateTimeOffset time, TimeSpan modulus)
-        {
-            var ticks = time.Ticks;
-            return new DateTimeOffset(ticks - (ticks % modulus.Ticks), TimeSpan.Zero);
         }
 
         private async Task<List<TimedReprocessBucket>> GetBucketsAsync(TableClientWithRetryContext table)

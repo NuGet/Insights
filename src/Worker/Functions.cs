@@ -13,9 +13,6 @@ namespace NuGet.Insights.Worker
         private const string ExpandQueueVariable = $"%{NuGetInsightsSettings.DefaultSectionName}:{nameof(NuGetInsightsWorkerSettings.ExpandQueueName)}%";
         private const string ConnectionName = "QueueTriggerConnection";
 
-        private static bool IsMetricsFunctionInitialized = false;
-        private static bool IsTimerFunctionInitialized = false;
-
         private readonly MetricsTimer _metricsTimer;
         private readonly TimerExecutionService _timerExecutionService;
         private readonly IGenericMessageProcessor _messageProcessor;
@@ -44,11 +41,7 @@ namespace NuGet.Insights.Worker
         public async Task MetricsFunction(
             [TimerTrigger("*/10 * * * * *")] TimerInfo timerInfo)
         {
-            if (!IsMetricsFunctionInitialized)
-            {
-                await _metricsTimer.InitializeAsync();
-                IsMetricsFunctionInitialized = true;
-            }
+            await _metricsTimer.InitializeAsync();
             await _metricsTimer.ExecuteAsync();
         }
 
@@ -56,11 +49,7 @@ namespace NuGet.Insights.Worker
         public async Task TimerAsync(
             [TimerTrigger("0 * * * * *")] TimerInfo timerInfo)
         {
-            if (!IsTimerFunctionInitialized)
-            {
-                await _timerExecutionService.InitializeAsync();
-                IsTimerFunctionInitialized = true;
-            }
+            await _timerExecutionService.InitializeAsync();
             await _timerExecutionService.ExecuteAsync();
         }
 

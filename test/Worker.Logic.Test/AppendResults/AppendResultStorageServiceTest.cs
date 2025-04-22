@@ -14,7 +14,7 @@ namespace NuGet.Insights.Worker
         public async Task SetsNullStringAsEmptyOnRecord()
         {
             // Arrange
-            await Target.InitializeAsync(SrcTable, DestContainer);
+            await Target.InitializeAsync(SrcTable);
 
             var record = new PackageDeprecationRecord { Id = "Newtonsoft.Json", Version = "9.0.1", ResultType = PackageDeprecationResultType.NotDeprecated }.InitializeFromIdVersion();
             record.Message = null;
@@ -32,7 +32,8 @@ namespace NuGet.Insights.Worker
         public async Task TracksBlobChangeForNewBlob()
         {
             // Arrange
-            await Target.InitializeAsync(SrcTable, DestContainer);
+            await Target.InitializeAsync(SrcTable);
+            await CreateDestContainerAsync();
 
             await Target.AppendAsync(SrcTable, BucketCount, RecordsA);
             await Target.AppendAsync(SrcTable, BucketCount, RecordsB);
@@ -52,7 +53,8 @@ namespace NuGet.Insights.Worker
         {
             // Arrange
             ConfigureWorkerSettings = x => x.AppendResultBigModeRecordThreshold = 0;
-            await Target.InitializeAsync(SrcTable, DestContainer);
+            await Target.InitializeAsync(SrcTable);
+            await CreateDestContainerAsync();
 
             await Target.AppendAsync(SrcTable, BucketCount, RecordsA);
             await Target.AppendAsync(SrcTable, BucketCount, RecordsB);
@@ -71,7 +73,8 @@ namespace NuGet.Insights.Worker
         public async Task TracksBlobChangeForChangedBlob()
         {
             // Arrange
-            await Target.InitializeAsync(SrcTable, DestContainer);
+            await Target.InitializeAsync(SrcTable);
+            await CreateDestContainerAsync();
 
             await Target.AppendAsync(SrcTable, BucketCount, RecordsA);
             await Target.CompactAsync<PackageDeprecationRecord>(SrcTable, DestContainer, Bucket);
@@ -92,7 +95,8 @@ namespace NuGet.Insights.Worker
         public async Task TracksNoBlobChangeForNoExtraRecords()
         {
             // Arrange
-            await Target.InitializeAsync(SrcTable, DestContainer);
+            await Target.InitializeAsync(SrcTable);
+            await CreateDestContainerAsync();
 
             await Target.AppendAsync(SrcTable, BucketCount, RecordsA);
             await Target.AppendAsync(SrcTable, BucketCount, RecordsB);
@@ -113,7 +117,8 @@ namespace NuGet.Insights.Worker
         public async Task TracksNoBlobChangeForExtraDuplicateRecords()
         {
             // Arrange
-            await Target.InitializeAsync(SrcTable, DestContainer);
+            await Target.InitializeAsync(SrcTable);
+            await CreateDestContainerAsync();
 
             await Target.AppendAsync(SrcTable, BucketCount, RecordsA);
             await Target.AppendAsync(SrcTable, BucketCount, RecordsB);
@@ -139,7 +144,8 @@ namespace NuGet.Insights.Worker
             // Arrange
             var random = new Random(Seed: 0);
             ConfigureWorkerSettings = x => x.AppendResultBigModeRecordThreshold = bigMode ? 0 : int.MaxValue;
-            await Target.InitializeAsync(SrcTable, DestContainer);
+            await Target.InitializeAsync(SrcTable);
+            await CreateDestContainerAsync();
 
             // Step 1: append two sets of records
             // Act
@@ -260,6 +266,11 @@ namespace NuGet.Insights.Worker
             gzipStream.Dispose();
 
             return decompressStream.ToArray();
+        }
+
+        private async Task CreateDestContainerAsync()
+        {
+            await (await ServiceClientFactory.GetBlobServiceClientAsync()).GetBlobContainerClient(DestContainer).CreateIfNotExistsAsync(retry: true);
         }
     }
 }

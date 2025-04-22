@@ -57,6 +57,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Forks", "src\Forks\Forks.cs
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Performance", "src\Performance\Performance.csproj", "{0CEE6974-71DD-4D84-A0FF-66D0A97A89E1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Website.Test", "test\Website.Test\Website.Test.csproj", "{2E730B8B-D75E-4167-9B12-53D443FD5B68}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -107,6 +109,10 @@ Global
 		{0CEE6974-71DD-4D84-A0FF-66D0A97A89E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0CEE6974-71DD-4D84-A0FF-66D0A97A89E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0CEE6974-71DD-4D84-A0FF-66D0A97A89E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E730B8B-D75E-4167-9B12-53D443FD5B68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E730B8B-D75E-4167-9B12-53D443FD5B68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E730B8B-D75E-4167-9B12-53D443FD5B68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E730B8B-D75E-4167-9B12-53D443FD5B68}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -127,6 +133,7 @@ Global
 		{AC017AE2-4766-447E-8ACF-BACF3BF7787C} = {91E9E59E-B9FE-4A00-BE48-1FB70595F7AE}
 		{A420EE84-82DB-4040-8640-00F3ADE64587} = {E875EFB7-FE35-4EF2-AC37-C81E696F4DEA}
 		{0CEE6974-71DD-4D84-A0FF-66D0A97A89E1} = {E875EFB7-FE35-4EF2-AC37-C81E696F4DEA}
+		{2E730B8B-D75E-4167-9B12-53D443FD5B68} = {CE6F8939-81A2-4BD4-9D9F-C1BF37DB1589}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9D014703-53BC-4276-AAFF-F773AA86D208}

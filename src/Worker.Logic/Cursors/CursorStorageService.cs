@@ -8,6 +8,7 @@ namespace NuGet.Insights.Worker
 {
     public class CursorStorageService
     {
+        private readonly ContainerInitializationState _initializationState;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<CursorStorageService> _logger;
@@ -17,6 +18,7 @@ namespace NuGet.Insights.Worker
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<CursorStorageService> logger)
         {
+            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value.CursorTableName);
             _serviceClientFactory = serviceClientFactory;
             _options = options;
             _logger = logger;
@@ -24,7 +26,7 @@ namespace NuGet.Insights.Worker
 
         public async Task InitializeAsync()
         {
-            await (await GetTableAsync()).CreateIfNotExistsAsync(retry: true);
+            await _initializationState.InitializeAsync();
         }
 
         public async Task<IReadOnlyList<CursorTableEntity>> GetOrCreateAllAsync(IReadOnlyList<string> names)

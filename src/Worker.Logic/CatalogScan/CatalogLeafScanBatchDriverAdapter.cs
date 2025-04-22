@@ -14,6 +14,11 @@ namespace NuGet.Insights.Worker
             _logger = logger;
         }
 
+        public async Task InitializeAsync()
+        {
+            await _inner.InitializeAsync();
+        }
+
         public async Task InitializeAsync(CatalogIndexScan indexScan)
         {
             await _inner.InitializeAsync(indexScan);

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using NuGet.Insights.FileSystemHttpCache;
+
 namespace NuGet.Insights
 {
     public class NuGetInsightsSettings : StorageSettings
@@ -59,5 +61,7 @@ namespace NuGet.Insights
         public int HttpClientMaxRetries { get; set; } = 4;
         public TimeSpan HttpClientMaxRetryDelay { get; set; } = TimeSpan.FromSeconds(30);
         public bool HttpClientAddRetryJitter { get; set; } = true;
+        public string HttpCacheDirectory { get; set; } = null;
+        public FileSystemHttpCacheMode HttpCacheMode { get; set; } = FileSystemHttpCacheMode.Disabled;
     }
 }

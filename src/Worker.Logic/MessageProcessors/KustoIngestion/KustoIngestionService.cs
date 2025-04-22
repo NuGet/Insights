@@ -36,9 +36,10 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
         public async Task InitializeAsync()
         {
-            await _storageService.InitializeAsync();
-            await _messageEnqueuer.InitializeAsync();
-            await _leaseService.InitializeAsync();
+            await Task.WhenAll(
+                _storageService.InitializeAsync(),
+                _messageEnqueuer.InitializeAsync(),
+                _leaseService.InitializeAsync());
         }
 
         public bool HasRequiredConfiguration => _options.Value.KustoConnectionString != null && _options.Value.KustoDatabaseName != null;

@@ -19,10 +19,14 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             _versionSetService = versionSetService;
         }
 
+        public async Task InitializeAsync()
+        {
+            await _versionSetService.InitializeAsync();
+        }
+
         public async Task InitializeAsync(CatalogIndexScan indexScan)
         {
             await _aggregateStorageService.InitializeAsync(indexScan.StorageSuffix);
-            await _versionSetService.InitializeAsync();
         }
 
         public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)

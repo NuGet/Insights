@@ -42,8 +42,9 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
 
         public async Task InitializeAsync()
         {
-            await _packageFileService.InitializeAsync();
-            await _packageManifestService.InitializeAsync();
+            await Task.WhenAll(
+                _packageFileService.InitializeAsync(),
+                _packageManifestService.InitializeAsync());
         }
 
         public Task DestroyAsync()
