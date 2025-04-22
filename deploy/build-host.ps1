@@ -59,7 +59,7 @@ Copy-Item (Resolve-Path (Join-Path $PSScriptRoot "../NuGet.config")) (Resolve-Pa
 
 Write-Host "Publishing host"
 dotnet restore $hostProjectPath --verbosity Normal
-dotnet publish $hostProjectPath -c Release --output $hostBinDir --framework "net8.0" --runtime $RuntimeIdentifier --self-contained false
+dotnet publish $hostProjectPath -c Release --output $hostBinDir --framework "net8.0" --runtime $RuntimeIdentifier --self-contained false -p:UpdateBuildNumber=false
 
 if ($LASTEXITCODE -ne 0) {
   throw "Failed to publish the Azure Functions Host."

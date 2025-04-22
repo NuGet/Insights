@@ -52,6 +52,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         ICsvResultStorage<PackageCertificateRecord>,
         ICsvResultStorage<CertificateRecord>
     {
+        private readonly ContainerInitializationState _initializationState;
         private readonly CatalogClient _catalogClient;
         private readonly PackageFileService _packageFileService;
         private readonly ReferenceTracker _referenceTracker;
@@ -67,6 +68,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<PackageCertificateToCsvDriver> logger)
         {
+            _initializationState = ContainerInitializationState.New(InitializeInternalAsync, DestroyInternalAsync);
             _catalogClient = catalogClient;
             _packageFileService = packageFileService;
             _referenceTracker = referenceTracker;
@@ -77,13 +79,24 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
 
         public async Task InitializeAsync()
         {
-            await _packageFileService.InitializeAsync();
-            await _referenceTracker.InitializeAsync(
-                _options.Value.PackageToCertificateTableName,
-                _options.Value.CertificateToPackageTableName);
+            await _initializationState.InitializeAsync();
         }
 
         public async Task DestroyAsync()
+        {
+            await _initializationState.DestroyAsync();
+        }
+
+        private async Task InitializeInternalAsync()
+        {
+            await Task.WhenAll(
+                _packageFileService.InitializeAsync(),
+                _referenceTracker.InitializeAsync(
+                    _options.Value.PackageToCertificateTableName,
+                    _options.Value.CertificateToPackageTableName));
+        }
+
+        private async Task DestroyInternalAsync()
         {
             await _referenceTracker.DestroyAsync(
                 _options.Value.PackageToCertificateTableName,

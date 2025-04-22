@@ -1,21 +1,18 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Azure.Storage.Blobs;
-
 namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 {
     public class AuxiliaryFileUpdaterService<TInput, TRecord> : IAuxiliaryFileUpdaterService<TRecord>
         where TInput : IAsOfData
         where TRecord : IAuxiliaryFileCsvRecord<TRecord>
     {
-        private static readonly string StorageSuffix = string.Empty;
-
+        private readonly ContainerInitializationState _initializationState;
+        private readonly ContainerInitializationState _containerState;
         private readonly IAuxiliaryFileUpdater<TInput, TRecord> _updater;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly TaskStateStorageService _taskStateStorageService;
         private readonly AutoRenewingStorageLeaseService _leaseService;
-        private readonly ServiceClientFactory _serviceClientFactory;
 
         public AuxiliaryFileUpdaterService(
             IAuxiliaryFileUpdater<TInput, TRecord> updater,
@@ -24,39 +21,38 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
             AutoRenewingStorageLeaseService leaseService,
             ServiceClientFactory serviceClientFactory)
         {
+            _initializationState = ContainerInitializationState.New(InitializeInternalAsync, DestroyInternalAsync);
+            _containerState = ContainerInitializationState.BlobContainer(serviceClientFactory, updater.ContainerName);
             _updater = updater;
             _messageEnqueuer = messageEnqueuer;
             _taskStateStorageService = taskStateStorageService;
             _leaseService = leaseService;
-            _serviceClientFactory = serviceClientFactory;
         }
 
         public async Task InitializeAsync()
         {
-            await _leaseService.InitializeAsync();
-            await _messageEnqueuer.InitializeAsync();
-            await _taskStateStorageService.InitializeAsync(TaskStateStorageService.SingletonStorageSuffix);
-            await CreateContainerAsync();
-        }
-
-        private async Task CreateContainerAsync()
-        {
-            await (await GetContainerAsync()).CreateIfNotExistsAsync(retry: true);
+            await _initializationState.InitializeAsync();
         }
 
         public async Task DestroyAsync()
         {
-            await (await GetContainerAsync()).DeleteIfExistsAsync();
-
-            var taskStates = await _taskStateStorageService.GetByRowKeyPrefixAsync(TaskStateStorageService.SingletonStorageSuffix, _updater.OperationName, string.Empty);
-            await _taskStateStorageService.DeleteAsync(taskStates);
+            await Task.WhenAll(
+                _initializationState.DestroyAsync(),
+                _containerState.DestroyAsync());
         }
 
-        private async Task<BlobContainerClient> GetContainerAsync()
+        private async Task InitializeInternalAsync()
         {
-            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
-            var container = serviceClient.GetBlobContainerClient(_updater.ContainerName);
-            return container;
+            await Task.WhenAll(
+                _leaseService.InitializeAsync(),
+                _messageEnqueuer.InitializeAsync(),
+                _taskStateStorageService.InitializeAsync(TaskStateStorageService.SingletonStorageSuffix));
+        }
+
+        private async Task DestroyInternalAsync()
+        {
+            var taskStates = await _taskStateStorageService.GetByRowKeyPrefixAsync(TaskStateStorageService.SingletonStorageSuffix, _updater.OperationName, string.Empty);
+            await _taskStateStorageService.DeleteAsync(taskStates);
         }
 
         public async Task<bool> StartAsync()
@@ -68,18 +64,20 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
                     return false;
                 }
 
-                await CreateContainerAsync();
+                await InitializeAsync();
 
                 if (await IsRunningAsync())
                 {
                     return false;
                 }
 
+                await _containerState.InitializeAsync();
+
                 var taskStateKey = new TaskStateKey(
-                    StorageSuffix,
+                    TaskStateStorageService.SingletonStorageSuffix,
                     _updater.OperationName,
                     StorageUtility.GenerateDescendingId().ToString());
-                await _messageEnqueuer.EnqueueAsync(new[] { new AuxiliaryFileUpdaterMessage<TRecord> { TaskStateKey = taskStateKey } });
+                await _messageEnqueuer.EnqueueAsync([new AuxiliaryFileUpdaterMessage<TRecord> { TaskStateKey = taskStateKey }]);
                 await _taskStateStorageService.GetOrAddAsync(taskStateKey);
                 return true;
             }
@@ -87,7 +85,7 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 
         public async Task<bool> IsRunningAsync()
         {
-            var countLowerBound = await _taskStateStorageService.GetCountLowerBoundAsync(StorageSuffix, _updater.OperationName);
+            var countLowerBound = await _taskStateStorageService.GetCountLowerBoundAsync(TaskStateStorageService.SingletonStorageSuffix, _updater.OperationName);
             return countLowerBound > 0;
         }
     }

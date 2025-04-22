@@ -13,7 +13,6 @@ namespace NuGet.Insights.Website.Controllers
     {
         private const string CatalogScansFragment = "CatalogScans";
 
-        private readonly ControllerInitializer _initializer;
         private readonly ViewModelFactory _viewModelFactory;
         private readonly CatalogScanService _catalogScanService;
         private readonly IRawMessageEnqueuer _rawMessageEnqueuer;
@@ -22,7 +21,6 @@ namespace NuGet.Insights.Website.Controllers
         private readonly MoveMessagesTaskQueue _moveMessagesTaskQueue;
 
         public AdminController(
-            ControllerInitializer initializer,
             ViewModelFactory service,
             CatalogScanService catalogScanService,
             IRawMessageEnqueuer rawMessageEnqueuer,
@@ -30,7 +28,6 @@ namespace NuGet.Insights.Website.Controllers
             CatalogScanCursorService catalogScanCursorService,
             MoveMessagesTaskQueue moveMessagesTaskQueue)
         {
-            _initializer = initializer;
             _viewModelFactory = service;
             _catalogScanService = catalogScanService;
             _rawMessageEnqueuer = rawMessageEnqueuer;
@@ -42,8 +39,6 @@ namespace NuGet.Insights.Website.Controllers
         [HttpGet]
         public async Task<ViewResult> Index()
         {
-            await _initializer.InitializeAsync();
-
             var model = await _viewModelFactory.GetAdminViewModelAsync();
             return View(model);
         }

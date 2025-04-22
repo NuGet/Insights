@@ -1,6 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Azure;
+using Azure.Data.Tables;
+using Azure.Storage.Blobs;
+using Kusto.Cloud.Platform.Utils;
+using NuGet.Insights.StorageNoOpRetry;
+using NuGet.Insights.Worker.Workflow;
+
+#nullable enable
+
 namespace NuGet.Insights.Worker
 {
     public class AllOutputCanBeReset : EndToEndTest
@@ -12,7 +21,13 @@ namespace NuGet.Insights.Worker
         [Fact]
         public async Task Execute()
         {
-            // Initialize all drivers and timers
+            ConfigureSettings = x => ConfigureAllAuxiliaryFiles(x);
+
+            // Initilize the workflow
+            var workflowService = Host.Services.GetRequiredService<WorkflowService>();
+            await workflowService.InitializeAsync();
+
+            // Initialize all drivers
             var driverFactory = Host.Services.GetRequiredService<ICatalogScanDriverFactory>();
             foreach (var driverType in CatalogScanDriverMetadata.StartableDriverTypes)
             {
@@ -22,14 +37,47 @@ namespace NuGet.Insights.Worker
                     driverType,
                     descendingId.ToString(),
                     descendingId.Unique);
+                await driver.InitializeAsync();
                 await driver.InitializeAsync(catalogIndexScan);
                 await driver.FinalizeAsync(catalogIndexScan);
             }
 
+            // Initialize all timers
+            var timerExecutionService = Host.Services.GetRequiredService<SpecificTimerExecutionService>();
             var timers = Host.Services.GetServices<ITimer>();
             foreach (var timer in timers)
             {
                 await timer.InitializeAsync();
+                await timerExecutionService.ExecuteAsync([timer], executeNow: true);
+            }
+
+            // Add marker data to all existing tables and containers. The destroy step below should remove these.
+            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
+            var allTables = await tableServiceClient.QueryAsync().ToListAsync();
+            foreach (var table in allTables)
+            {
+                if (!table.Name.StartsWith(StoragePrefix, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                var tableClient = tableServiceClient.GetTableClient(table.Name);
+                var entity = new TableEntity(nameof(AllOutputCanBeReset), table.Name);
+                await tableClient.AddEntityAsync(entity);
+            }
+
+            var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
+            var allContainers = await blobServiceClient.GetBlobContainersAsync().ToListAsync();
+            foreach (var container in allContainers)
+            {
+                if (!container.Name.StartsWith(StoragePrefix, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                var containerClient = blobServiceClient.GetBlobContainerClient(container.Name);
+                var blob = containerClient.GetBlobClient(nameof(AllOutputCanBeReset));
+                await blob.UploadAsync(Stream.Null);
             }
 
             // Get all table names and blob storage container names in the configuration
@@ -40,14 +88,11 @@ namespace NuGet.Insights.Worker
             var blobContainers = properties.Where(x => x.StorageType == StorageType.Blob).ToDictionary(x => x.Name, x => x.Value);
 
             // Verify all table and blob storage container names are created
-            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
             foreach ((var key, var tableName) in tables)
             {
-                var table = tableServiceClient.GetTableClient(tableName);
-                Assert.True(await table.ExistsAsync(), $"The table for {key} ('{tableName}') should have been created.");
+                Assert.True(await tableServiceClient.TableExistsAsync(tableName), $"The table for {key} ('{tableName}') should have been created.");
             }
 
-            var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
             foreach ((var key, var containerName) in blobContainers)
             {
                 var container = blobServiceClient.GetBlobContainerClient(containerName);
@@ -55,65 +100,99 @@ namespace NuGet.Insights.Worker
             }
 
             // Destroy output for all drivers and timers
+            var destroyTasks = new List<Task>();
             foreach (var driverType in CatalogScanDriverMetadata.StartableDriverTypes)
             {
                 var driver = driverFactory.Create(driverType);
-                await driver.DestroyOutputAsync();
+                destroyTasks.Add(driver.DestroyOutputAsync());
             }
 
             foreach (var timer in timers)
             {
                 if (timer.CanDestroy)
                 {
-                    await timer.DestroyAsync();
+                    destroyTasks.Add(timer.DestroyAsync());
                 }
             }
+            await Task.WhenAll(destroyTasks);
 
             // Remove non-output tables
-            tables.Remove(nameof(NuGetInsightsWorkerSettings.CatalogIndexScanTableName));
-            tables.Remove(nameof(NuGetInsightsWorkerSettings.CursorTableName));
-            tables.Remove(nameof(NuGetInsightsWorkerSettings.KustoIngestionTableName));
-            tables.Remove(nameof(NuGetInsightsWorkerSettings.SingletonTaskStateTableName));
-            tables.Remove(nameof(NuGetInsightsWorkerSettings.TimedReprocessTableName));
-            tables.Remove(nameof(NuGetInsightsWorkerSettings.TimerTableName));
-            tables.Remove(nameof(NuGetInsightsWorkerSettings.WorkflowRunTableName));
+            Assert.True(tables.Remove(nameof(NuGetInsightsWorkerSettings.CatalogIndexScanTableName)));
+            Assert.True(tables.Remove(nameof(NuGetInsightsWorkerSettings.CursorTableName)));
+            Assert.True(tables.Remove(nameof(NuGetInsightsWorkerSettings.KustoIngestionTableName)));
+            Assert.True(tables.Remove(nameof(NuGetInsightsWorkerSettings.SingletonTaskStateTableName)));
+            Assert.True(tables.Remove(nameof(NuGetInsightsWorkerSettings.TimedReprocessTableName)));
+            Assert.True(tables.Remove(nameof(NuGetInsightsWorkerSettings.TimerTableName)));
+            Assert.True(tables.Remove(nameof(NuGetInsightsWorkerSettings.WorkflowRunTableName)));
 
             // Remove non-output containers
-            blobContainers.Remove(nameof(NuGetInsightsWorkerSettings.LeaseContainerName));
+            Assert.True(blobContainers.Remove(nameof(NuGetInsightsWorkerSettings.LeaseContainerName)));
 
-            // Verify all out table and blob storage containers are deleted
+            // Verify all persistent output tables and blob containers are empty, and transient tables are deleted
             foreach ((var key, var tableName) in tables)
             {
                 var table = tableServiceClient.GetTableClient(tableName);
-                Assert.True(await WaitForAsync(async () => !await table.ExistsAsync()), $"The table for {key} ('{tableName}') should have been deleted.");
-            }
-
-            foreach ((var key, var tableNamePrefix) in tablePrefixes)
-            {
-                Assert.True(await WaitForAsync(async () =>
-                {
-                    var existingTables = await tableServiceClient.QueryAsync(prefix: tableNamePrefix).ToListAsync();
-                    return existingTables.Count == 0;
-                }), $"The tables for {key} (starting with '{tableNamePrefix}') should have been deleted.");
+                await WaitForAsync(() => IsEmptyAsync(table), $"The table for {key} ('{tableName}') should be empty.");
             }
 
             foreach ((var key, var containerName) in blobContainers)
             {
                 var container = blobServiceClient.GetBlobContainerClient(containerName);
-                Assert.True(await WaitForAsync(async () => !await container.ExistsAsync()), $"The blob container for {key} ('{containerName}') should have been deleted.");
+                await WaitForAsync(() => IsEmptyAsync(container), $"The blob container for {key} ('{containerName}') should be empty.");
+            }
+
+            foreach ((var key, var tableNamePrefix) in tablePrefixes)
+            {
+                await WaitForAsync(async () =>
+                {
+                    var existingTables = await tableServiceClient.QueryAsync(prefix: tableNamePrefix).ToListAsync();
+                    return existingTables.Count == 0;
+                }, $"The tables for {key} (starting with '{tableNamePrefix}') should be empty.");
             }
         }
 
-        private static async Task<bool> WaitForAsync(Func<Task<bool>> isCompleteAsync)
+        private async Task<bool> IsEmptyAsync(TableClientWithRetryContext table)
+        {
+            var entities = await table.QueryAsync<TableEntity>(x => true, maxPerPage: 1).Take(1).ToListAsync();
+            return entities.Count == 0;
+        }
+
+        private async Task<bool> IsEmptyAsync(BlobContainerClient container)
+        {
+            var blobs = await container.GetBlobsAsync().Take(1).ToListAsync();
+            return blobs.Count == 0;
+        }
+
+        private async Task WaitForAsync(Func<Task<bool>> isCompleteAsync, string message)
         {
             var sw = Stopwatch.StartNew();
-            bool complete;
-            while (!(complete = await isCompleteAsync()) && sw.Elapsed < TimeSpan.FromSeconds(5 * 60))
+            bool complete = false;
+            Exception? lastException = null;
+            while (sw.Elapsed < TimeSpan.FromSeconds(1 * 60))
             {
+                try
+                {
+                    complete = await isCompleteAsync();
+                }
+                catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
+                {
+                    lastException = ex;
+                    Logger.LogTransientWarning("{Message} HTTP 404 encountered. This problem should be transient.", message);
+                }
+
+                if (complete)
+                {
+                    break;
+                }
+
                 await Task.Delay(TimeSpan.FromSeconds(1));
             }
 
-            return complete;
+            if (lastException is not null)
+            {
+                Logger.LogError(lastException, "The exception never resolved.");
+            }
+            Assert.True(complete, message);
         }
     }
 }

@@ -14,6 +14,7 @@ namespace NuGet.Insights
     {
         public const string MetricIdPrefix = $"{nameof(StorageLeaseService)}.";
 
+        private readonly ContainerInitializationState _initializationState;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<NuGetInsightsSettings> _options;
@@ -29,6 +30,7 @@ namespace NuGet.Insights
             ITelemetryClient telemetryClient,
             IOptions<NuGetInsightsSettings> options)
         {
+            _initializationState = ContainerInitializationState.BlobContainer(serviceClientFactory, options.Value.LeaseContainerName);
             _serviceClientFactory = serviceClientFactory;
             _telemetryClient = telemetryClient;
             _options = options;
@@ -43,7 +45,7 @@ namespace NuGet.Insights
 
         public async Task InitializeAsync()
         {
-            await (await GetContainerAsync()).CreateIfNotExistsAsync(retry: true);
+            await _initializationState.InitializeAsync();
         }
 
         public async Task<StorageLeaseResult> AcquireAsync(string name, TimeSpan leaseDuration)
@@ -220,14 +222,9 @@ namespace NuGet.Insights
 
         private async Task<BlobClient> GetBlobAsync(string name)
         {
-            return (await GetContainerAsync())
-                .GetBlobClient(name);
-        }
-
-        private async Task<BlobContainerClient> GetContainerAsync()
-        {
-            return (await _serviceClientFactory.GetBlobServiceClientAsync())
-                .GetBlobContainerClient(_options.Value.LeaseContainerName);
+            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
+            var container = serviceClient.GetBlobContainerClient(_options.Value.LeaseContainerName);
+            return container.GetBlobClient(name);
         }
     }
 }

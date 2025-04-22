@@ -321,3 +321,4 @@ src/Worker/Properties/**/*.arm.json
 *.binlog
 /NuGet.Insights.sln.metaproj
 /.pid
+/AzuriteConfig

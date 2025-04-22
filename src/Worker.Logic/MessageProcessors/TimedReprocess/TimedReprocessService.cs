@@ -39,10 +39,11 @@ namespace NuGet.Insights.Worker.TimedReprocess
 
         public async Task InitializeAsync()
         {
-            await _bucketedPackageService.InitializeAsync();
-            await _storageService.InitializeAsync();
-            await _leaseService.InitializeAsync();
-            await _messageEnqueuer.InitializeAsync();
+            await Task.WhenAll(
+                _storageService.InitializeAsync(),
+                _leaseService.InitializeAsync(),
+                _messageEnqueuer.InitializeAsync(),
+                _catalogScanService.InitializeAsync());
         }
 
         public IReadOnlyList<IReadOnlyList<CatalogScanDriverType>> GetReprocessBatches()
@@ -92,6 +93,8 @@ namespace NuGet.Insights.Worker.TimedReprocess
             {
                 return null;
             }
+
+            await _bucketedPackageService.InitializeAsync();
 
             var reprocessDriverTypes = GetReprocessBatches().SelectMany(x => x).ToList();
             if (reprocessDriverTypes.Count == 0)

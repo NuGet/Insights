@@ -5,6 +5,7 @@ namespace NuGet.Insights.Worker
 {
     public interface ICatalogScanDriver
     {
+        Task InitializeAsync();
         Task InitializeAsync(CatalogIndexScan indexScan);
         Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan);
         Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan);

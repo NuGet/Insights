@@ -7,6 +7,8 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 {
     public class CleanupOrphanRecordsService<T> : ICleanupOrphanRecordsService<T> where T : ICleanupOrphanCsvRecord
     {
+        private readonly ContainerInitializationState _initializationState;
+        private readonly ContainerInitializationState _referenceTrackerInitializationState;
         private readonly AutoRenewingStorageLeaseService _leaseService;
         private readonly ICleanupOrphanRecordsAdapter<T> _adapter;
         private readonly IMessageEnqueuer _messageEnqueuer;
@@ -22,6 +24,10 @@ namespace NuGet.Insights.Worker.ReferenceTracking
             ReferenceTracker referenceTracker,
             SchemaSerializer schemaSerializer)
         {
+            _initializationState = ContainerInitializationState.New(InitializeInternalAsync);
+            _referenceTrackerInitializationState = ContainerInitializationState.New(() => referenceTracker.InitializeAsync(
+                adapter.OwnerToSubjectTableName,
+                adapter.SubjectToOwnerTableName));
             _leaseService = leaseService;
             _adapter = adapter;
             _messageEnqueuer = messageEnqueuer;
@@ -32,12 +38,15 @@ namespace NuGet.Insights.Worker.ReferenceTracking
 
         public async Task InitializeAsync()
         {
-            await _leaseService.InitializeAsync();
-            await _messageEnqueuer.InitializeAsync();
-            await _taskStateStorageService.InitializeAsync(TaskStateStorageService.SingletonStorageSuffix);
-            await _referenceTracker.InitializeAsync(
-                _adapter.OwnerToSubjectTableName,
-                _adapter.SubjectToOwnerTableName);
+            await _initializationState.InitializeAsync();
+        }
+
+        private async Task InitializeInternalAsync()
+        {
+            await Task.WhenAll(
+                _leaseService.InitializeAsync(),
+                _messageEnqueuer.InitializeAsync(),
+                _taskStateStorageService.InitializeAsync(TaskStateStorageService.SingletonStorageSuffix));
         }
 
         private string OperationName => $"CleanupOrphans-{_adapter.OwnerType}-{_adapter.SubjectType}";
@@ -55,6 +64,8 @@ namespace NuGet.Insights.Worker.ReferenceTracking
                 {
                     return false;
                 }
+
+                await _referenceTrackerInitializationState.InitializeAsync();
 
                 var cleanupId = StorageUtility.GenerateDescendingId();
                 var cleanupIdStr = cleanupId.ToString();

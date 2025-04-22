@@ -9,6 +9,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
 {
     public class KustoIngestionStorageService
     {
+        private readonly ContainerInitializationState _initializationState;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -20,6 +21,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<KustoIngestionStorageService> logger)
         {
+            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value.KustoIngestionTableName);
             _serviceClientFactory = serviceClientFactory;
             _telemetryClient = telemetryClient;
             _options = options;
@@ -28,7 +30,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
         public async Task InitializeAsync()
         {
-            await (await GetKustoIngestionTableAsync()).CreateIfNotExistsAsync(retry: true);
+            await _initializationState.InitializeAsync();
         }
 
         public async Task InitializeChildTableAsync(string storageSuffix)
@@ -337,14 +339,16 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
         private async Task<TableClientWithRetryContext> GetKustoIngestionTableAsync()
         {
-            return (await _serviceClientFactory.GetTableServiceClientAsync())
-                .GetTableClient(_options.Value.KustoIngestionTableName);
+            var tableServiceClient = await _serviceClientFactory.GetTableServiceClientAsync();
+            var table = tableServiceClient.GetTableClient(_options.Value.KustoIngestionTableName);
+            return table;
         }
 
         private async Task<TableClientWithRetryContext> GetKustoIngestionTableAsync(string storageSuffix)
         {
-            return (await _serviceClientFactory.GetTableServiceClientAsync())
-                .GetTableClient(_options.Value.KustoIngestionTableName + storageSuffix);
+            var tableServiceClient = await _serviceClientFactory.GetTableServiceClientAsync();
+            var table = tableServiceClient.GetTableClient(_options.Value.KustoIngestionTableName + storageSuffix);
+            return table;
         }
     }
 }

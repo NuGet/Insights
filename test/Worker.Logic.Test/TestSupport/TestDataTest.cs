@@ -102,6 +102,37 @@ namespace NuGet.Insights.Worker
             await CleanUpKustoTablesAsync(IsOldStoragePrefix);
         }
 
+        /// <summary>
+        /// This test generates a table of all storage names and their types. The test output is used as a reference
+        /// for looking up container names found in logs. If this test fails, it means that the set of storage names
+        /// has changesd and the test output needs to be updated. This can be done by setting <see cref="TestLevers.OverwriteTestData"/>
+        /// to true and running the test again.
+        /// </summary>
+        [Fact]
+        public void GeneratedStorageNames()
+        {
+            var storageNameProperties = GetStorageNameProperties(Options.Value);
+            var header = new[] { "Storage Name", "Storage Type", "Property Name" };
+            var dataRows = storageNameProperties
+                .Select(x => new[] { x.Value.Replace(StoragePrefix, "{STORAGE PREFIX}", StringComparison.Ordinal), x.StorageType.ToString(), x.Name })
+                .OrderBy(x => x[0], StringComparer.Ordinal)
+                .ThenBy(x => x[1], StringComparer.Ordinal)
+                .ThenBy(x => x[2], StringComparer.Ordinal);
+
+            var sb = new StringBuilder();
+            var columnWidths = header.Select((x, i) => Math.Max(x.Length, dataRows.Max(y => y[i].Length))).ToArray();
+            sb.AppendLine(string.Join(" | ", header.Select((x, i) => x.PadRight(columnWidths[i]))));
+            sb.AppendLine(string.Join(" | ", header.Select((x, i) => new string('-', columnWidths[i]))));
+            foreach (var row in dataRows)
+            {
+                sb.AppendLine(string.Join(" | ", row.Select((x, i) => x.PadRight(columnWidths[i]))));
+            }
+
+            var table = sb.ToString().Replace(Environment.NewLine, "\n", StringComparison.OrdinalIgnoreCase);
+
+            AssertEqualWithDiff(Path.Combine(TestData, nameof(GeneratedStorageNames), "table.md"), table);
+        }
+
         private bool IsOldStoragePrefix(string name)
         {
             var match = LogicTestSettings.StoragePrefixPattern.Match(name);

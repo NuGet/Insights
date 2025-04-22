@@ -7,6 +7,7 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
 {
     public class LatestPackageLeafService
     {
+        private readonly ContainerInitializationState _initializationState;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
@@ -14,31 +15,34 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
             ServiceClientFactory serviceClientFactory,
             IOptions<NuGetInsightsWorkerSettings> options)
         {
+            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value.LatestPackageLeafTableName);
             _serviceClientFactory = serviceClientFactory;
             _options = options;
         }
 
         public async Task InitializeAsync()
         {
-            await (await GetTableAsync()).CreateIfNotExistsAsync(retry: true);
+            await _initializationState.InitializeAsync();
         }
 
         public async Task DestroyAsync()
         {
-            await (await GetTableAsync()).DeleteAsync();
+            await _initializationState.DestroyAsync();
         }
 
         public async Task<LatestPackageLeaf> GetOrNullAsync(string id, string version)
         {
-            return await (await GetTableAsync()).GetEntityOrNullAsync<LatestPackageLeaf>(
+            var table = await GetTableAsync();
+            return await table.GetEntityOrNullAsync<LatestPackageLeaf>(
                 LatestPackageLeaf.GetPartitionKey(id),
                 LatestPackageLeaf.GetRowKey(version));
         }
 
         internal async Task<TableClientWithRetryContext> GetTableAsync()
         {
-            return (await _serviceClientFactory.GetTableServiceClientAsync())
-                .GetTableClient(_options.Value.LatestPackageLeafTableName);
+            var tableServiceClient = await _serviceClientFactory.GetTableServiceClientAsync();
+            var tableClient = tableServiceClient.GetTableClient(_options.Value.LatestPackageLeafTableName);
+            return tableClient;
         }
     }
 }

@@ -8,6 +8,7 @@ namespace NuGet.Insights.Worker.Workflow
 {
     public class WorkflowStorageService
     {
+        private readonly ContainerInitializationState _initializationState;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ITelemetryClient _telemetryClient;
@@ -19,6 +20,7 @@ namespace NuGet.Insights.Worker.Workflow
             ITelemetryClient telemetryClient,
             ILogger<WorkflowStorageService> logger)
         {
+            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value.WorkflowRunTableName);
             _serviceClientFactory = serviceClientFactory;
             _options = options;
             _telemetryClient = telemetryClient;
@@ -27,7 +29,7 @@ namespace NuGet.Insights.Worker.Workflow
 
         public async Task InitializeAsync()
         {
-            await (await GetTableAsync()).CreateIfNotExistsAsync(retry: true);
+            await _initializationState.InitializeAsync();
         }
 
         public async Task<WorkflowRun> GetRunAsync(string runId)
@@ -104,8 +106,9 @@ namespace NuGet.Insights.Worker.Workflow
 
         private async Task<TableClientWithRetryContext> GetTableAsync()
         {
-            return (await _serviceClientFactory.GetTableServiceClientAsync())
-                .GetTableClient(_options.Value.WorkflowRunTableName);
+            var serviceClient = await _serviceClientFactory.GetTableServiceClientAsync();
+            var table = serviceClient.GetTableClient(_options.Value.WorkflowRunTableName);
+            return table;
         }
     }
 }

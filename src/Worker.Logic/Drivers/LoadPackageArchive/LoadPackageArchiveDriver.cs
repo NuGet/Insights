@@ -14,9 +14,14 @@ namespace NuGet.Insights.Worker.LoadPackageArchive
             _logger = logger;
         }
 
-        public async Task InitializeAsync(CatalogIndexScan indexScan)
+        public async Task InitializeAsync()
         {
             await _packageFileService.InitializeAsync();
+        }
+
+        public Task InitializeAsync(CatalogIndexScan indexScan)
+        {
+            return Task.CompletedTask;
         }
 
         public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)

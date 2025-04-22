@@ -55,6 +55,11 @@ namespace NuGet.Insights.Website
             _options = options;
         }
 
+        public async Task InitializeAsync()
+        {
+            await _workflowService.InitializeAsync();
+        }
+
         public async Task<AdminViewModel> GetAdminViewModelAsync()
         {
             var workQueueTask = GetQueueAsync(QueueType.Work);

@@ -91,6 +91,7 @@ namespace NuGet.Insights.Worker
             // Created: initialize the storage for the driver and set the started time
             if (scan.State == CatalogIndexScanState.Created)
             {
+                await driver.InitializeAsync();
                 await driver.InitializeAsync(scan);
 
                 scan.State = CatalogIndexScanState.Initialized;

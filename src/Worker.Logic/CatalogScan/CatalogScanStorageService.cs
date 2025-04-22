@@ -12,6 +12,7 @@ namespace NuGet.Insights.Worker
     {
         private static readonly IReadOnlyDictionary<string, CatalogLeafScan> EmptyLeafIdToLeafScans = new Dictionary<string, CatalogLeafScan>();
 
+        private readonly ContainerInitializationState _initializationState;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -23,6 +24,7 @@ namespace NuGet.Insights.Worker
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<CatalogScanStorageService> logger)
         {
+            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value.CatalogIndexScanTableName);
             _serviceClientFactory = serviceClientFactory;
             _telemetryClient = telemetryClient;
             _options = options;
@@ -31,7 +33,7 @@ namespace NuGet.Insights.Worker
 
         public async Task InitializeAsync()
         {
-            await (await GetIndexScanTableAsync()).CreateIfNotExistsAsync(retry: true);
+            await _initializationState.InitializeAsync();
         }
 
         public async Task InitializePageScanTableAsync(string storageSuffix)

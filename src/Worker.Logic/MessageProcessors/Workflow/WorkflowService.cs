@@ -54,10 +54,12 @@ namespace NuGet.Insights.Worker.Workflow
 
         public async Task InitializeAsync()
         {
-            await _workflowStorageService.InitializeAsync();
-            await _leaseService.InitializeAsync();
-            await _messageEnqueuer.InitializeAsync();
-            await _timerExecutionService.InitializeAsync(_allTimers);
+            await Task.WhenAll(
+                _workflowStorageService.InitializeAsync(),
+                _leaseService.InitializeAsync(),
+                _messageEnqueuer.InitializeAsync(),
+                _timerExecutionService.InitializeAsync(),
+                Task.WhenAll(_allTimers.Select(x => x.InitializeAsync())));
         }
 
         public async Task AbortAsync()
@@ -93,6 +95,7 @@ namespace NuGet.Insights.Worker.Workflow
 
             if (await IsAnyWorkflowStepRunningAsync())
             {
+                _logger.LogTransientWarning("A workflow step is already running. A new workflow will not start.");
                 return null;
             }
 

@@ -35,17 +35,9 @@ namespace NuGet.Insights
             }
         }
 
-        public static async Task<bool> ExistsAsync(this TableClientWithRetryContext table)
+        public static async Task<bool> TableExistsAsync(this TableServiceClientWithRetryContext serviceClient, string tableName)
         {
-            try
-            {
-                await table.GetEntityAsync<TableEntity>("does-table-exist", "", select: []);
-                return true;
-            }
-            catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
-            {
-                return ex.ErrorCode != TableErrorCode.TableNotFound.ToString();
-            }
+            return await serviceClient.QueryAsync(x => x.Name == tableName, maxPerPage: 1).AnyAsync();
         }
 
         public static async Task DeleteEntityAsync<T>(this TableClientWithRetryContext table, T entity, ETag ifMatch) where T : class, ITableEntity, new()

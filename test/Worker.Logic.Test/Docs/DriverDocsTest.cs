@@ -466,6 +466,7 @@ namespace NuGet.Insights.Worker
                 intermediateContainers.UnionWith(await GetContainersAsync(testExecution));
             }
 
+            await driver.InitializeAsync();
             await driver.InitializeAsync(indexScan);
 
             await UpdateIntermediateContainers();

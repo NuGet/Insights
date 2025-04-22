@@ -5,5 +5,6 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
 {
     public interface IAuxiliaryFileUpdaterTimer : ITimer
     {
+        string ContainerName { get; }
     }
 }

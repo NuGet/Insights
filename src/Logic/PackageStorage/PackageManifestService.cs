@@ -11,6 +11,7 @@ namespace NuGet.Insights
 {
     public class PackageManifestService
     {
+        private readonly ContainerInitializationState _initializationState;
         private readonly PackageWideEntityService _wideEntityService;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly Func<HttpClient> _httpClientFactory;
@@ -26,6 +27,7 @@ namespace NuGet.Insights
             IOptions<NuGetInsightsSettings> options,
             ILogger<PackageManifestService> logger)
         {
+            _initializationState = ContainerInitializationState.New(InitializeInternalAsync, DestroyInternalAsync);
             _wideEntityService = wideEntityService;
             _flatContainerClient = flatContainerClient;
             _httpClientFactory = httpClientFactory;
@@ -36,10 +38,20 @@ namespace NuGet.Insights
 
         public async Task InitializeAsync()
         {
-            await _wideEntityService.InitializeAsync(_options.Value.PackageManifestTableName);
+            await _initializationState.InitializeAsync();
         }
 
         public async Task DestroyAsync()
+        {
+            await _initializationState.DestroyAsync();
+        }
+
+        public async Task InitializeInternalAsync()
+        {
+            await _wideEntityService.InitializeAsync(_options.Value.PackageManifestTableName);
+        }
+
+        public async Task DestroyInternalAsync()
         {
             await _wideEntityService.DeleteTableAsync(_options.Value.PackageManifestTableName);
         }

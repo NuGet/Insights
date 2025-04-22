@@ -5,6 +5,7 @@ namespace NuGet.Insights.Worker
 {
     public abstract class BaseCatalogLeafScanToCsvAdapter
     {
+        private readonly ContainerInitializationState _initializationState;
         private readonly CsvTemporaryStorageFactory _storageFactory;
         protected readonly IReadOnlyList<ICsvTemporaryStorage> _storage;
         private readonly ICatalogLeafToCsvDriver _driver;
@@ -18,6 +19,7 @@ namespace NuGet.Insights.Worker
             ServiceClientFactory serviceClientFactory,
             IReadOnlyList<string> resultContainerNames)
         {
+            _initializationState = ContainerInitializationState.New(InitializeInternalAsync, DestroyInternalAsync);
             _storageFactory = storageFactory;
             _storage = storage;
             _driver = driver;
@@ -25,14 +27,37 @@ namespace NuGet.Insights.Worker
             _resultContainerNames = resultContainerNames;
         }
 
+        public async Task InitializeAsync()
+        {
+            await _initializationState.InitializeAsync();
+        }
+
         public async Task InitializeAsync(CatalogIndexScan indexScan)
         {
-            foreach (var storage in _storage)
-            {
-                await storage.InitializeAsync(indexScan.StorageSuffix);
-            }
-            await _storageFactory.InitializeAsync(indexScan.StorageSuffix);
-            await _driver.InitializeAsync();
+            await Task.WhenAll(
+                Task.WhenAll(_storage.Select(x => x.InitializeAsync(indexScan.StorageSuffix))),
+                _storageFactory.InitializeAsync(indexScan.StorageSuffix));
+        }
+
+        public async Task DestroyOutputAsync()
+        {
+            await _initializationState.DestroyAsync();
+        }
+
+        private async Task InitializeInternalAsync()
+        {
+            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
+            await Task.WhenAll(
+                Task.WhenAll(_resultContainerNames.Select(x => serviceClient.GetBlobContainerClient(x).CreateIfNotExistsAsync(retry: true))),
+                _driver.InitializeAsync());
+        }
+
+        private async Task DestroyInternalAsync()
+        {
+            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
+            await Task.WhenAll(
+                Task.WhenAll(_resultContainerNames.Select(x => serviceClient.GetBlobContainerClient(x).DeleteIfExistsAsync())),
+                _driver.DestroyAsync());
         }
 
         public Task<CatalogIndexScanResult> ProcessIndexAsync(CatalogIndexScan indexScan)
@@ -94,18 +119,6 @@ namespace NuGet.Insights.Worker
             {
                 await storage.FinalizeAsync(indexScan.StorageSuffix);
             }
-        }
-
-        public async Task DestroyOutputAsync()
-        {
-            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
-            foreach (var container in _resultContainerNames)
-            {
-                var containerClient = serviceClient.GetBlobContainerClient(container);
-                await containerClient.DeleteIfExistsAsync();
-            }
-
-            await _driver.DestroyAsync();
         }
     }
 }

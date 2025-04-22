@@ -31,8 +31,9 @@ namespace NuGet.Insights.Worker
 
         public async Task InitializeAsync()
         {
-            await _hashService.InitializeAsync();
-            await InternalInitializeAsync();
+            await Task.WhenAll(
+                _hashService.InitializeAsync(),
+                InternalInitializeAsync());
         }
 
         protected abstract TArchive NewArchiveDeleteRecord(Guid scanId, DateTimeOffset scanTimestamp, PackageDeleteCatalogLeaf leaf);

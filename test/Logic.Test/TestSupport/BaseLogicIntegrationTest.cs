@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Frozen;
 using System.Text.RegularExpressions;
 using Azure;
 using Azure.Data.Tables;
@@ -236,6 +237,22 @@ namespace NuGet.Insights
             StorageType StorageType,
             bool DirectProperty);
 
+        /// <summary>
+        /// These are property names on <see cref="NuGetInsightsSettings"/> (or child classes) that look like
+        /// name or name patterns for Azure Storage entities, but are not.
+        /// </summary>
+        private static readonly FrozenSet<string> NonStoragePropertyNames = new string[]
+        {
+            "FlatContainerBaseUrlOverride",
+            "KustoOldTableNameFormat",
+            "KustoTableDocstringFormat",
+            "KustoTableFolder",
+            "KustoTableNameFormat",
+            "KustoTempTableNameFormat",
+            "PackagesContainerBaseUrl",
+            "SymbolPackagesContainerBaseUrl",
+        }.ToFrozenSet();
+
         protected static List<StorageProperty> GetStorageNameProperties<T>(T settings) where T : NuGetInsightsSettings
         {
             int CountBaseTypes(Type type)
@@ -272,11 +289,21 @@ namespace NuGet.Insights
                     return StorageType.TablePrefix;
                 }
 
+                if (!NonStoragePropertyNames.Contains(propertyName)
+                    && (propertyName.Contains("Container", StringComparison.OrdinalIgnoreCase)
+                        || propertyName.Contains("Queue", StringComparison.OrdinalIgnoreCase)
+                        || propertyName.Contains("Table", StringComparison.OrdinalIgnoreCase)
+                        || propertyName.Contains("Blob", StringComparison.OrdinalIgnoreCase)))
+                {
+                    throw new NotSupportedException($"Property name {propertyName} looks like an Azure storage entity name, but cannot be categorized.");
+                }
+
                 return null;
             }
 
             return typeof(T)
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                .Where(x => x.PropertyType == typeof(string))
                 .Select(x => (PropertyInfo: x, StorageType: GetStorageType(x.Name)!))
                 .Where(x => x.StorageType.HasValue)
                 .OrderBy(x => CountBaseTypes(x.PropertyInfo.DeclaringType))
@@ -310,6 +337,16 @@ namespace NuGet.Insights
         {
             ConfigureDefaultsAndSettings(x);
             AssertStoragePrefix(x);
+        }
+
+        protected void ConfigureAllAuxiliaryFiles(NuGetInsightsSettings settings)
+        {
+            settings.DownloadsV1Urls = new List<string> { $"http://localhost/{TestInput}/DownloadsToCsv/{Step1}/downloads.v1.json" };
+            settings.OwnersV2Urls = new List<string> { $"http://localhost/{TestInput}/OwnersToCsv/{Step1}/owners.v2.json" };
+            settings.VerifiedPackagesV1Urls = new List<string> { $"http://localhost/{TestInput}/VerifiedPackagesToCsv/{Step1}/verifiedPackages.json" };
+            settings.ExcludedPackagesV1Urls = new List<string> { $"http://localhost/{TestInput}/ExcludedPackagesToCsv/{Step1}/excludedPackages.json" };
+            settings.PopularityTransfersV1Urls = new List<string> { $"http://localhost/{TestInput}/PopularityTransfersToCsv/{Step1}/popularity-transfers.v1.json" };
+            settings.GitHubUsageV1Urls = new List<string> { $"http://localhost/{TestInput}/GitHubUsageToCsv/{Step1}/GitHubUsage.v1.json" };
         }
 
         protected void ConfigureDefaultsAndSettings(NuGetInsightsSettings x)
@@ -385,8 +422,8 @@ namespace NuGet.Insights
 
         protected async Task AssertBlobCountAsync(string containerName, int expected)
         {
-            var client = await ServiceClientFactory.GetBlobServiceClientAsync();
-            var container = client.GetBlobContainerClient(containerName);
+            var serviceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
+            var container = serviceClient.GetBlobContainerClient(containerName);
             var blobs = await container.GetBlobsAsync().ToListAsync();
             Assert.Equal(expected, blobs.Count);
         }
@@ -398,8 +435,8 @@ namespace NuGet.Insights
 
         protected async Task<BlobClient> GetBlobAsync(string containerName, string blobName)
         {
-            var client = await ServiceClientFactory.GetBlobServiceClientAsync();
-            var container = client.GetBlobContainerClient(containerName);
+            var serviceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
+            var container = serviceClient.GetBlobContainerClient(containerName);
             return container.GetBlobClient(blobName);
         }
 
@@ -499,14 +536,14 @@ namespace NuGet.Insights
 
         protected async Task CleanUpStorageContainers(Predicate<string> shouldDelete)
         {
-            var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
-            var containerItems = await blobServiceClient.GetBlobContainersAsync().ToListAsync();
+            var serviceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
+            var containerItems = await serviceClient.GetBlobContainersAsync().ToListAsync();
             foreach (var containerItem in containerItems.Where(x => shouldDelete(x.Name)))
             {
                 Logger.LogInformation("Deleting blob container: {Name}", containerItem.Name);
                 try
                 {
-                    await blobServiceClient.DeleteBlobContainerAsync(containerItem.Name);
+                    await serviceClient.DeleteBlobContainerAsync(containerItem.Name);
                 }
                 catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
                 {

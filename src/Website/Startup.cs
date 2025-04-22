@@ -5,7 +5,6 @@ using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using NuGet.Insights.Worker;
@@ -29,18 +28,7 @@ namespace NuGet.Insights.Website
 
             services.AddNuGetInsights(Configuration, "NuGet.Insights.Website");
             services.AddNuGetInsightsWorker();
-
-            services.AddSingleton<ControllerInitializer>();
-            services.AddSingleton<MoveMessagesTaskQueue>();
-            services.AddSingleton<CachedAdminViewModelService.AdminViewModelCache>();
-            services.AddSingleton<IAdminViewModelCache>(s => s.GetRequiredService<CachedAdminViewModelService.AdminViewModelCache>());
-            services.AddScoped<IAuthorizationHandler, AllowListAuthorizationHandler>();
-            services.AddScoped<AllowListAuthorizationHandler>();
-            services.AddSingleton<ViewModelFactory>();
-            services.AddSingleton<InitializerHostedService>();
-            services.AddHostedService(s => s.GetRequiredService<InitializerHostedService>());
-            services.AddHostedService<MoveMessagesHostedService>();
-            services.AddHostedService<CachedAdminViewModelService>();
+            services.AddNuGetInsightsWebsite();
 
             services.AddApplicationInsightsTelemetry(options =>
             {

@@ -44,10 +44,11 @@ namespace NuGet.Insights.Worker
 
         public async Task InitializeAsync()
         {
-            await _cursorService.InitializeAsync();
-            await _storageService.InitializeAsync();
-            await _messageEnqueuer.InitializeAsync();
-            await _leaseService.InitializeAsync();
+            await Task.WhenAll(
+                _cursorService.InitializeAsync(),
+                _storageService.InitializeAsync(),
+                _messageEnqueuer.InitializeAsync(),
+                _leaseService.InitializeAsync());
         }
 
         public bool IsEnabled(CatalogScanDriverType type)
@@ -72,10 +73,7 @@ namespace NuGet.Insights.Worker
 
         public async Task DestroyAllOutputAsync()
         {
-            foreach (var driverType in CatalogScanDriverMetadata.StartableDriverTypes)
-            {
-                await DestroyOutputAsync(driverType);
-            }
+            await Task.WhenAll(CatalogScanDriverMetadata.StartableDriverTypes.Select(DestroyOutputAsync));
         }
 
         public async Task<CatalogIndexScan> AbortAsync(CatalogScanDriverType driverType)

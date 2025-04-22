@@ -1,10 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 namespace NuGet.Insights.Website
 {
     public class InitializerHostedService : BackgroundService
     {
+        private readonly IReadOnlyList<(Type Type, Func<IServiceProvider, Task> InitializeAsync)> _servicesToInitialize;
         private readonly IServiceProvider _serviceProvider;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<InitializerHostedService> _logger;
@@ -15,6 +18,9 @@ namespace NuGet.Insights.Website
             ITelemetryClient telemetryClient,
             ILogger<InitializerHostedService> logger)
         {
+            _servicesToInitialize = [
+                (typeof(ViewModelFactory), x => x.GetRequiredService<ViewModelFactory>().InitializeAsync()),
+            ];
             _serviceProvider = serviceProvider;
             _telemetryClient = telemetryClient;
             _logger = logger;
@@ -30,79 +36,61 @@ namespace NuGet.Insights.Website
         {
             await Task.Yield();
 
-            try
+            bool allSucceeded;
+            do
             {
-                using (var operation = _telemetryClient.StartOperation(nameof(InitializerHostedService)))
+                allSucceeded = await InitializeAsync(warmUp: true, stoppingToken);
+                if (!allSucceeded)
                 {
-                    var types = new List<Type>
-                    {
-                        typeof(ControllerInitializer)
-                    };
-
-                    var initializedTypes = new HashSet<Type>();
-                    using (var scope = _serviceProvider.CreateScope())
-                    {
-                        foreach (var type in types)
-                        {
-                            stoppingToken.ThrowIfCancellationRequested();
-
-                            await InitializeAsync(scope.ServiceProvider, initializedTypes, type, stoppingToken);
-                        }
-                    }
+                    var sleep = TimeSpan.FromSeconds(2);
+                    _logger.LogWarning("Failed to initialize some services. Waiting {Sleep} seconds before retrying.", sleep);
+                    await Task.Delay(sleep, stoppingToken);
                 }
             }
-            finally
-            {
-                _taskCompletionSource.TrySetResult();
-            }
+            while (!stoppingToken.IsCancellationRequested && !allSucceeded);
+
+            _taskCompletionSource.TrySetResult();
         }
 
-        private async Task InitializeAsync(
-            IServiceProvider serviceProvider,
-            HashSet<Type> initializedTypes,
-            Type serviceType,
-            CancellationToken stoppingToken)
+        public async Task<bool> InitializeAsync(bool warmUp, CancellationToken token)
         {
-            var initializeMethod = serviceType.GetMethod(
-                "InitializeAsync",
-                BindingFlags.Instance | BindingFlags.Public,
-                Array.Empty<Type>());
-            var hasInitializeAsync = initializeMethod is not null
-                && initializeMethod.ReturnType.IsAssignableTo(typeof(Task));
-            if (!hasInitializeAsync)
+            using var operation = _telemetryClient.StartOperation(nameof(InitializerHostedService));
+            using var scope = _serviceProvider.CreateScope();
+
+            // initialize
+            bool allSucceeded = true;
+            foreach (var (type, initializeServiceAsync) in _servicesToInitialize)
             {
-                return;
+                token.ThrowIfCancellationRequested();
+                allSucceeded &= await InitializeServiceAsync(scope.ServiceProvider, type, initializeServiceAsync, token);
             }
 
-            if (!initializedTypes.Add(serviceType))
+            if (warmUp && allSucceeded)
             {
-                return;
+                // warm up
+                _logger.LogInformation("Successfully initialized all services. Warming up the admin view.");
+                await scope.ServiceProvider.GetRequiredService<ViewModelFactory>().GetAdminViewModelAsync();
             }
 
-            IEnumerable<object> services;
+            return allSucceeded;
+        }
+
+        private async Task<bool> InitializeServiceAsync(
+            IServiceProvider serviceProvider,
+            Type type,
+            Func<IServiceProvider, Task> initializeServiceAsync,
+            CancellationToken token)
+        {
             try
             {
-                services = serviceProvider.GetServices(serviceType);
+                await initializeServiceAsync(serviceProvider);
+                _logger.LogInformation("Successfully initialized {Type} service.", type.FullName);
+                return true;
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to get {Type} services from the service provider.", serviceType);
-                return;
-            }
-
-            foreach (var service in services)
-            {
-                stoppingToken.ThrowIfCancellationRequested();
-                try
-                {
-                    await (Task)initializeMethod.Invoke(service, Array.Empty<object>());
-                    _logger.LogInformation("Successfully initialized {Type} service.", service.GetType());
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to get {Type} services from the service provider.", serviceType);
-                    continue;
-                }
+                _logger.LogWarning(ex, "Failed to initialize {Type} service.", type.FullName);
+                return false;
             }
         }
     }

@@ -7,6 +7,7 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
 {
     public class PackageVersionStorageService
     {
+        private readonly ContainerInitializationState _initializationState;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly CatalogClient _catalogClient;
         private readonly ITelemetryClient _telemetryClient;
@@ -18,6 +19,7 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
             ITelemetryClient telemetryClient,
             IOptions<NuGetInsightsWorkerSettings> options)
         {
+            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value.PackageVersionTableName);
             _serviceClientFactory = serviceClientFactory;
             _catalogClient = catalogClient;
             _telemetryClient = telemetryClient;
@@ -26,12 +28,12 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
 
         public async Task InitializeAsync()
         {
-            await (await GetTableAsync()).CreateIfNotExistsAsync(retry: true);
+            await _initializationState.InitializeAsync();
         }
 
         public async Task DestroyAsync()
         {
-            await (await GetTableAsync()).DeleteAsync();
+            await _initializationState.DestroyAsync();
         }
 
         public async Task<ILatestPackageLeafStorage<PackageVersionEntity>> GetLatestPackageLeafStorageAsync()
@@ -48,8 +50,9 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
 
         internal async Task<TableClientWithRetryContext> GetTableAsync()
         {
-            return (await _serviceClientFactory.GetTableServiceClientAsync())
-                .GetTableClient(_options.Value.PackageVersionTableName);
+            var tableServiceClient = await _serviceClientFactory.GetTableServiceClientAsync();
+            var table = tableServiceClient.GetTableClient(_options.Value.PackageVersionTableName);
+            return table;
         }
 
         private class PackageVersionStorage : ILatestPackageLeafStorage<PackageVersionEntity>

@@ -29,7 +29,7 @@ namespace NuGet.Insights.Worker
         {
             return
             [
-                new CatalogScanToCsvStorage<T>(storage.ResultContainerName, 0, this)
+                new CatalogScanToCsvStorage<T>(0, this)
             ];
         }
 
@@ -39,8 +39,8 @@ namespace NuGet.Insights.Worker
         {
             return
             [
-                new CatalogScanToCsvStorage<T1>(storage1.ResultContainerName, 0, this),
-                new CatalogScanToCsvStorage<T2>(storage2.ResultContainerName, 1, this),
+                new CatalogScanToCsvStorage<T1>(0, this),
+                new CatalogScanToCsvStorage<T2>(1, this),
             ];
         }
 
@@ -51,9 +51,9 @@ namespace NuGet.Insights.Worker
         {
             return
             [
-                new CatalogScanToCsvStorage<T1>(storage1.ResultContainerName, 0, this),
-                new CatalogScanToCsvStorage<T2>(storage2.ResultContainerName, 1, this),
-                new CatalogScanToCsvStorage<T3>(storage3.ResultContainerName, 2, this),
+                new CatalogScanToCsvStorage<T1>(0, this),
+                new CatalogScanToCsvStorage<T2>(1, this),
+                new CatalogScanToCsvStorage<T3>(2, this),
             ];
         }
 
@@ -69,23 +69,20 @@ namespace NuGet.Insights.Worker
 
         private class CatalogScanToCsvStorage<T> : ICsvTemporaryStorage where T : class, IAggregatedCsvRecord<T>
         {
-            private readonly string _resultsContainerName;
             private readonly int _setIndex;
             private readonly CsvTemporaryStorageFactory _parent;
 
             public CatalogScanToCsvStorage(
-                string resultsContainerName,
                 int setIndex,
                 CsvTemporaryStorageFactory parent)
             {
-                _resultsContainerName = resultsContainerName;
                 _setIndex = setIndex;
                 _parent = parent;
             }
 
             public async Task InitializeAsync(string storageSuffix)
             {
-                await _parent._storageService.InitializeAsync(GetTableName(storageSuffix), _resultsContainerName);
+                await _parent._storageService.InitializeAsync(GetTableName(storageSuffix));
             }
 
             public async Task AppendAsync<TRecord>(string storageSuffix, IReadOnlyList<TRecord> records) where TRecord : class, IAggregatedCsvRecord

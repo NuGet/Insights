@@ -10,6 +10,7 @@ namespace NuGet.Insights
     {
         public static readonly string PartitionKey = string.Empty;
 
+        private readonly ContainerInitializationState _initializationState;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IComparer<ITimer> _timerComparer;
         private readonly TimeProvider _timeProvider;
@@ -25,6 +26,7 @@ namespace NuGet.Insights
             ITelemetryClient telemetryClient,
             ILogger<SpecificTimerExecutionService> logger)
         {
+            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value.TimerTableName);
             _serviceClientFactory = serviceClientFactory;
             _timerComparer = timerComparer;
             _timeProvider = timeProvider;
@@ -33,13 +35,9 @@ namespace NuGet.Insights
             _logger = logger;
         }
 
-        public async Task InitializeAsync(IEnumerable<ITimer> timers)
+        public async Task InitializeAsync()
         {
-            await (await GetTableAsync()).CreateIfNotExistsAsync(retry: true);
-            foreach (var timer in timers)
-            {
-                await timer.InitializeAsync();
-            }
+            await _initializationState.InitializeAsync();
         }
 
         public async Task SetIsEnabledAsync(ITimer timer, bool isEnabled)
@@ -58,12 +56,17 @@ namespace NuGet.Insights
 
         public async Task<IReadOnlyList<TimerState>> GetStateAsync(IEnumerable<ITimer> timers)
         {
-            var pairs = timers
+            var sortedTimers = timers
                 .Order(_timerComparer)
                 .ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            var isRunningTask = Task.WhenAll(pairs.Select(x => x.IsRunningAsync()));
+            var isRunningTask = Task.WhenAll(sortedTimers.Select(async x =>
+            {
+                await x.InitializeAsync();
+                return await x.IsRunningAsync();
+            }));
+
             var table = await GetTableAsync();
             var entitiesTask = table
                 .QueryAsync<TimerEntity>(e => e.PartitionKey == PartitionKey)
@@ -73,22 +76,22 @@ namespace NuGet.Insights
 
             var nameToEntity = (await entitiesTask).ToDictionary(x => x.RowKey);
 
-            return pairs
-                .Zip(await isRunningTask, (pair, isRunning) =>
+            return sortedTimers
+                .Zip(await isRunningTask, (timer, isRunning) =>
                 {
-                    nameToEntity.TryGetValue(pair.Name, out var entity);
+                    nameToEntity.TryGetValue(timer.Name, out var entity);
 
                     return new TimerState
                     {
-                        Name = pair.Name,
-                        Title = pair.Title,
+                        Name = timer.Name,
+                        Title = timer.Title,
                         IsRunning = isRunning,
-                        IsEnabledInConfig = pair.IsEnabled,
-                        IsEnabledInStorage = entity?.IsEnabled ?? pair.AutoStart,
+                        IsEnabledInConfig = timer.IsEnabled,
+                        IsEnabledInStorage = entity?.IsEnabled ?? timer.AutoStart,
                         LastExecuted = entity?.LastExecuted,
-                        Frequency = pair.Frequency,
-                        CanAbort = pair.CanAbort,
-                        CanDestroy = pair.CanDestroy,
+                        Frequency = timer.Frequency,
+                        CanAbort = timer.CanAbort,
+                        CanDestroy = timer.CanDestroy,
                         NextRun = entity?.NextRun,
                     };
                 })
@@ -262,6 +265,7 @@ namespace NuGet.Insights
                     1,
                     new Dictionary<string, string> { { "Name", entity.Name } });
 
+                await timer.InitializeAsync();
                 executed = await timer.ExecuteAsync();
                 if (executed)
                 {

@@ -11,10 +11,12 @@ namespace NuGet.Insights
 
     public abstract class PackageSpecificHashService
     {
+        private readonly ContainerInitializationState _initializationState;
         private readonly PackageWideEntityService _packageWideEntityService;
 
         public PackageSpecificHashService(PackageWideEntityService packageWideEntityService)
         {
+            _initializationState = ContainerInitializationState.New(InitializeInternalAsync, DestroyInternalAsync);
             _packageWideEntityService = packageWideEntityService;
         }
 
@@ -23,10 +25,20 @@ namespace NuGet.Insights
 
         public async Task InitializeAsync()
         {
-            await _packageWideEntityService.InitializeAsync(TableName);
+            await _initializationState.InitializeAsync();
         }
 
         public async Task DeleteTableAsync()
+        {
+            await _initializationState.DestroyAsync();
+        }
+
+        private async Task InitializeInternalAsync()
+        {
+            await _packageWideEntityService.InitializeAsync(TableName);
+        }
+
+        private async Task DestroyInternalAsync()
         {
             await _packageWideEntityService.DeleteTableAsync(TableName);
         }
