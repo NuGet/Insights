@@ -18,7 +18,7 @@ namespace NuGet.Insights
         {
             if (!settings.UseAccessTokenCaching)
             {
-                if (defaultTenantId is not null)
+                if (!string.IsNullOrWhiteSpace(defaultTenantId))
                 {
                     throw new ArgumentException($"The tenant ID override is not supported when {nameof(settings.UseAccessTokenCaching)} is false.", nameof(defaultTenantId));
                 }
