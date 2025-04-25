@@ -61,7 +61,7 @@ namespace NuGet.Insights
                 Microsoft.Extensions.Options.Options.Create(new NuGetInsightsSettings().WithTestStorageSettings()),
                 TelemetryClient,
                 Output.GetLoggerFactory());
-            var serviceClient = await serviceClientFactory.GetBlobServiceClientAsync();
+            var serviceClient = await serviceClientFactory.GetBlobServiceClientAsync(Options.Value);
             var container = serviceClient.GetBlobContainerClient($"{StoragePrefix}1lr1");
             await container.CreateIfNotExistsAsync();
             var blob = container.GetBlobClient("windowsazure.storage/9.3.3/legacy-readme");

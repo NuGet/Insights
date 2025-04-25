@@ -190,7 +190,7 @@ namespace NuGet.Insights.Worker.ReferenceTracking
                 subjectRecords);
             var buckets = await AppendResultStorageService.GetAppendedBucketsAsync(Options.Value.CsvRecordTableNamePrefix);
 
-            await (await ServiceClientFactory.GetBlobServiceClientAsync()).GetBlobContainerClient(CsvResultStorage.ResultContainerName).CreateIfNotExistsAsync(retry: true);
+            await (await ServiceClientFactory.GetBlobServiceClientAsync(Options.Value)).GetBlobContainerClient(CsvResultStorage.ResultContainerName).CreateIfNotExistsAsync(retry: true);
             foreach (var bucket in buckets)
             {
                 await AppendResultStorageService.CompactAsync<TestSubjectRecord>(

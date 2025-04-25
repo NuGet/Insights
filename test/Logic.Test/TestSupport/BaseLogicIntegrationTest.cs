@@ -394,7 +394,7 @@ namespace NuGet.Insights
 
         protected async Task<List<T>> GetEntitiesAsync<T>(string tableName) where T : class, ITableEntity
         {
-            var client = await ServiceClientFactory.GetTableServiceClientAsync();
+            var client = await ServiceClientFactory.GetTableServiceClientAsync(Options.Value);
             var table = client.GetTableClient(tableName);
             return await table.QueryAsync<T>().ToListAsync();
         }
@@ -422,7 +422,7 @@ namespace NuGet.Insights
 
         protected async Task AssertBlobCountAsync(string containerName, int expected)
         {
-            var serviceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
+            var serviceClient = await ServiceClientFactory.GetBlobServiceClientAsync(Options.Value);
             var container = serviceClient.GetBlobContainerClient(containerName);
             var blobs = await container.GetBlobsAsync().ToListAsync();
             Assert.Equal(expected, blobs.Count);
@@ -435,7 +435,7 @@ namespace NuGet.Insights
 
         protected async Task<BlobClient> GetBlobAsync(string containerName, string blobName)
         {
-            var serviceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
+            var serviceClient = await ServiceClientFactory.GetBlobServiceClientAsync(Options.Value);
             var container = serviceClient.GetBlobContainerClient(containerName);
             return container.GetBlobClient(blobName);
         }
@@ -536,7 +536,7 @@ namespace NuGet.Insights
 
         protected async Task CleanUpStorageContainers(Predicate<string> shouldDelete)
         {
-            var serviceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
+            var serviceClient = await ServiceClientFactory.GetBlobServiceClientAsync(Options.Value);
             var containerItems = await serviceClient.GetBlobContainersAsync().ToListAsync();
             foreach (var containerItem in containerItems.Where(x => shouldDelete(x.Name)))
             {
@@ -551,7 +551,7 @@ namespace NuGet.Insights
                 }
             }
 
-            var queueServiceClient = await ServiceClientFactory.GetQueueServiceClientAsync();
+            var queueServiceClient = await ServiceClientFactory.GetQueueServiceClientAsync(Options.Value);
             var queueItems = await queueServiceClient.GetQueuesAsync().ToListAsync();
             foreach (var queueItem in queueItems.Where(x => shouldDelete(x.Name)))
             {
@@ -566,7 +566,7 @@ namespace NuGet.Insights
                 }
             }
 
-            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
+            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync(Options.Value);
             var tableItems = await tableServiceClient.QueryAsync().ToListAsync();
             foreach (var tableItem in tableItems.Where(x => shouldDelete(x.Name)))
             {

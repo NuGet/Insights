@@ -10,21 +10,24 @@ namespace NuGet.Insights.Worker.TableCopy
     {
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
+        private readonly IOptions<NuGetInsightsSettings> _options;
         private readonly ILogger<TableRowCopyMessageProcessor<T>> _logger;
 
         public TableRowCopyMessageProcessor(
             ServiceClientFactory serviceClientFactory,
             ITelemetryClient telemetryClient,
+            IOptions<NuGetInsightsSettings> options,
             ILogger<TableRowCopyMessageProcessor<T>> logger)
         {
             _serviceClientFactory = serviceClientFactory;
             _telemetryClient = telemetryClient;
+            _options = options;
             _logger = logger;
         }
 
         public async Task ProcessAsync(TableRowCopyMessage<T> message, long dequeueCount)
         {
-            var client = await _serviceClientFactory.GetTableServiceClientAsync();
+            var client = await _serviceClientFactory.GetTableServiceClientAsync(_options.Value);
             var sourceTable = client.GetTableClient(message.SourceTableName);
 
             var rows = await GetSourceRowsAsync(sourceTable, message);

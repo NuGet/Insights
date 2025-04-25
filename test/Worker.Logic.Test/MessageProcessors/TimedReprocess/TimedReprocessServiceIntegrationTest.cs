@@ -80,7 +80,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
             await AssertCsvAsync<SymbolPackageArchiveRecord>(Options.Value.SymbolPackageArchiveContainerName, TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageArchives.csv");
             await AssertCsvAsync<SymbolPackageArchiveEntry>(Options.Value.SymbolPackageArchiveEntryContainerName, TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageArchiveEntries.csv");
 
-            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
+            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync(Options.Value);
             var tables = await tableServiceClient.QueryAsync(prefix: StoragePrefix).ToListAsync();
             Assert.Equal(
                 new string[]
@@ -98,7 +98,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
                 }.Order().ToArray(),
                 tables.Select(x => x.Name).ToArray());
 
-            var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
+            var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync(Options.Value);
             var containers = await blobServiceClient.GetBlobContainersAsync(prefix: StoragePrefix).ToListAsync();
             Assert.Equal(
                 new string[]

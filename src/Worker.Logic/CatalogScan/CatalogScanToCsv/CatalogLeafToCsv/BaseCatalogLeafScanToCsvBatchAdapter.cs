@@ -10,8 +10,9 @@ namespace NuGet.Insights.Worker
             IReadOnlyList<ICsvTemporaryStorage> storage,
             ICatalogLeafToCsvDriver driver,
             ServiceClientFactory serviceClientFactory,
-            IReadOnlyList<string> resultContainerNames)
-            : base(storageFactory, storage, driver, serviceClientFactory, resultContainerNames)
+            IReadOnlyList<string> resultContainerNames,
+            IOptions<NuGetInsightsWorkerSettings> options)
+            : base(storageFactory, storage, driver, serviceClientFactory, resultContainerNames, options)
         {
         }
 

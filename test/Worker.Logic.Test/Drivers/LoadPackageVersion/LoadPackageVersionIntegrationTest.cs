@@ -101,7 +101,7 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
 
         private async Task AssertOutputAsync(string dir, string stepName)
         {
-            var table = (await ServiceClientFactory.GetTableServiceClientAsync())
+            var table = (await ServiceClientFactory.GetTableServiceClientAsync(Options.Value))
                 .GetTableClient(Options.Value.PackageVersionTableName);
 
             await AssertEntityOutputAsync<PackageVersionEntity>(table, Path.Combine(dir, stepName));

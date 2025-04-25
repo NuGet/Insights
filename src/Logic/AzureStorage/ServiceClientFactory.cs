@@ -22,14 +22,13 @@ namespace NuGet.Insights
     public class ServiceClientFactory
     {
         private readonly SemaphoreSlim _lock = new SemaphoreSlim(1);
-        private ServiceClients? _serviceClients;
+        private readonly ConcurrentDictionary<StorageSettings, ServiceClients> _serviceClients = new(StorageSettingsComparer.Instance);
 
         private readonly Func<HttpClient>? _httpClientFactory;
         private readonly MemoryBlobServiceStore _memoryBlobStore;
         private readonly MemoryQueueServiceStore _memoryQueueStore;
         private readonly MemoryTableServiceStore _memoryTableStore;
         private readonly TimeProvider _timeProvider;
-        private readonly IOptions<NuGetInsightsSettings> _options;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger<ServiceClientFactory> _logger;
@@ -64,25 +63,24 @@ namespace NuGet.Insights
             _memoryQueueStore = memoryQueueStore;
             _memoryTableStore = memoryTableStore;
             _timeProvider = timeProvider;
-            _options = options;
             _telemetryClient = telemetryClient;
             _loggerFactory = loggerFactory;
             _logger = loggerFactory.CreateLogger<ServiceClientFactory>();
         }
 
-        public async Task<QueueServiceClient> GetQueueServiceClientAsync()
+        public async Task<QueueServiceClient> GetQueueServiceClientAsync(StorageSettings settings)
         {
-            return (await GetCachedServiceClientsAsync()).QueueServiceClient;
+            return (await GetCachedServiceClientsAsync(settings)).QueueServiceClient;
         }
 
-        public async Task<BlobServiceClient> GetBlobServiceClientAsync()
+        public async Task<BlobServiceClient> GetBlobServiceClientAsync(StorageSettings settings)
         {
-            return (await GetCachedServiceClientsAsync()).BlobServiceClient;
+            return (await GetCachedServiceClientsAsync(settings)).BlobServiceClient;
         }
 
-        public async Task<BlobClient?> TryGetBlobClientAsync(Uri blobUrl)
+        public async Task<BlobClient?> TryGetBlobClientAsync(StorageSettings settings, Uri blobUrl)
         {
-            var serviceClients = await GetCachedServiceClientsAsync();
+            var serviceClients = await GetCachedServiceClientsAsync(settings);
 
             if (!serviceClients.BlobClientFactory.TryGetBlobClient(serviceClients.BlobServiceClient, blobUrl, out var blobClient))
             {
@@ -92,9 +90,9 @@ namespace NuGet.Insights
             return blobClient;
         }
 
-        public async Task<Uri> GetBlobReadUrlAsync(string containerName, string blobName)
+        public async Task<Uri> GetBlobReadUrlAsync(StorageSettings settings, string containerName, string blobName)
         {
-            var serviceClients = await GetCachedServiceClientsAsync();
+            var serviceClients = await GetCachedServiceClientsAsync(settings);
             var blobClient = serviceClients
                 .BlobServiceClient
                 .GetBlobContainerClient(containerName)
@@ -121,14 +119,14 @@ namespace NuGet.Insights
                 .GenerateSasUri(BlobSasPermissions.Read, serviceClients.SharedAccessSignatureExpiry);
         }
 
-        public async Task<TableServiceClientWithRetryContext> GetTableServiceClientAsync()
+        public async Task<TableServiceClientWithRetryContext> GetTableServiceClientAsync(StorageSettings settings)
         {
-            return (await GetCachedServiceClientsAsync()).TableServiceClientWithRetryContext;
+            return (await GetCachedServiceClientsAsync(settings)).TableServiceClientWithRetryContext;
         }
 
-        private async Task<ServiceClients> GetCachedServiceClientsAsync(CancellationToken token = default)
+        private async Task<ServiceClients> GetCachedServiceClientsAsync(StorageSettings settings, CancellationToken token = default)
         {
-            if (TryGetServiceClients(out var serviceClients))
+            if (TryGetServiceClients(settings, out var serviceClients))
             {
                 return serviceClients;
             }
@@ -136,24 +134,25 @@ namespace NuGet.Insights
             await _lock.WaitAsync(token);
             try
             {
-                if (TryGetServiceClients(out serviceClients))
+                if (TryGetServiceClients(settings, out serviceClients))
                 {
                     return serviceClients;
                 }
 
-                _serviceClients = await GetServiceClientsAsync(
+                serviceClients = await GetServiceClientsAsync(
                     created: DateTimeOffset.UtcNow,
                     GetHttpPipelineTransport(),
                     _memoryBlobStore,
                     _memoryQueueStore,
                     _memoryTableStore,
                     _timeProvider,
-                    _options.Value,
+                    settings,
                     _telemetryClient,
                     _logger,
                     _loggerFactory);
+                _serviceClients.TryUpdate(settings, serviceClients, serviceClients);
 
-                return _serviceClients;
+                return serviceClients;
             }
             finally
             {
@@ -161,16 +160,14 @@ namespace NuGet.Insights
             }
         }
 
-        private bool TryGetServiceClients([NotNullWhen(true)] out ServiceClients? serviceClients)
+        private bool TryGetServiceClients(StorageSettings settings, [NotNullWhen(true)] out ServiceClients? serviceClients)
         {
-            serviceClients = _serviceClients;
-            if (serviceClients is null)
+            if (!_serviceClients.TryGetValue(settings, out serviceClients))
             {
                 return false;
-
             }
 
-            var untilRefresh = GetTimeUntilRefresh(_options.Value, serviceClients.SharedAccessSignatureExpiry, serviceClients.Created);
+            var untilRefresh = GetTimeUntilRefresh(settings, serviceClients.SharedAccessSignatureExpiry, serviceClients.Created);
             if (untilRefresh <= TimeSpan.Zero)
             {
                 serviceClients = null;
@@ -388,5 +385,32 @@ namespace NuGet.Insights
             IBlobClientFactory BlobClientFactory,
             QueueServiceClient QueueServiceClient,
             TableServiceClientWithRetryContext TableServiceClientWithRetryContext);
+
+        private class StorageSettingsComparer : IEqualityComparer<StorageSettings>
+        {
+            public static StorageSettingsComparer Instance { get; } = new StorageSettingsComparer();
+
+            public bool Equals(StorageSettings? x, StorageSettings? y)
+            {
+                if (x is null && y is null)
+                {
+                    return true;
+                }
+
+                if (x is null || y is null)
+                {
+                    return false;
+                }
+
+                return x.StorageAccountName == y.StorageAccountName;
+            }
+
+            public int GetHashCode([DisallowNull] StorageSettings obj)
+            {
+                var hashCode = new HashCode();
+                hashCode.Add(obj.StorageAccountName);
+                return hashCode.ToHashCode();
+            }
+        }
     }
 }

@@ -1183,7 +1183,7 @@ namespace NuGet.Insights.Worker
 
         private async Task<BlobContainerClient> GetContainerAsync(string name)
         {
-            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
+            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync(_options.Value);
             return serviceClient.GetBlobContainerClient(name);
         }
 

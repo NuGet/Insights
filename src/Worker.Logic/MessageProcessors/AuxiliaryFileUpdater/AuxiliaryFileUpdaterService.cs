@@ -19,10 +19,11 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
             IMessageEnqueuer messageEnqueuer,
             TaskStateStorageService taskStateStorageService,
             AutoRenewingStorageLeaseService leaseService,
-            ServiceClientFactory serviceClientFactory)
+            ServiceClientFactory serviceClientFactory,
+            IOptions<NuGetInsightsWorkerSettings> options)
         {
             _initializationState = ContainerInitializationState.New(InitializeInternalAsync, DestroyInternalAsync);
-            _containerState = ContainerInitializationState.BlobContainer(serviceClientFactory, updater.ContainerName);
+            _containerState = ContainerInitializationState.BlobContainer(serviceClientFactory, options.Value, updater.ContainerName);
             _updater = updater;
             _messageEnqueuer = messageEnqueuer;
             _taskStateStorageService = taskStateStorageService;

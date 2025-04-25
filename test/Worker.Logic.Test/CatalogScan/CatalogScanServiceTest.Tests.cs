@@ -108,7 +108,7 @@ namespace NuGet.Insights.Worker
 
             private async Task<List<string>> GetTableNamesAsync()
             {
-                var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
+                var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync(Options.Value);
                 var tables = await tableServiceClient.QueryAsync().ToListAsync();
                 return tables.Select(x => x.Name).Where(x => x.StartsWith(StoragePrefix, StringComparison.Ordinal)).ToList();
             }

@@ -13,8 +13,9 @@ namespace NuGet.Insights.Worker
             ICatalogLeafToCsvDriver driver,
             ServiceClientFactory serviceClientFactory,
             IReadOnlyList<string> resultContainerNames,
+            IOptions<NuGetInsightsWorkerSettings> options,
             ILogger logger)
-            : base(storageFactory, storage, driver, serviceClientFactory, resultContainerNames)
+            : base(storageFactory, storage, driver, serviceClientFactory, resultContainerNames, options)
         {
             _logger = logger;
         }

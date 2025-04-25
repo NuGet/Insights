@@ -136,7 +136,7 @@ namespace NuGet.Insights.Worker
 
                 await Target.DeleteOldIndexScansAsync(DriverType, currentScanId);
 
-                var remainingScans = await (await ServiceClientFactory.GetTableServiceClientAsync())
+                var remainingScans = await (await ServiceClientFactory.GetTableServiceClientAsync(Options.Value))
                     .GetTableClient(Options.Value.CatalogIndexScanTableName)
                     .QueryAsync<CatalogIndexScan>()
                     .ToListAsync();
@@ -162,7 +162,7 @@ namespace NuGet.Insights.Worker
 
                 await Target.DeleteOldIndexScansAsync(DriverType, currentScanId);
 
-                var remainingScans = await (await ServiceClientFactory.GetTableServiceClientAsync())
+                var remainingScans = await (await ServiceClientFactory.GetTableServiceClientAsync(Options.Value))
                     .GetTableClient(Options.Value.CatalogIndexScanTableName)
                     .QueryAsync<CatalogIndexScan>()
                     .ToListAsync();

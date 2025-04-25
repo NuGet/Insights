@@ -22,10 +22,10 @@ namespace NuGet.Insights.Worker
             _serviceClientFactory = serviceClientFactory;
             _options = options;
 
-            _workInitializationState = ContainerInitializationState.Queue(serviceClientFactory, GetQueueName(QueueType.Work, poison: false));
-            _workPoisonInitializationState = ContainerInitializationState.Queue(serviceClientFactory, GetQueueName(QueueType.Work, poison: true));
-            _expandInitializationState = ContainerInitializationState.Queue(serviceClientFactory, GetQueueName(QueueType.Expand, poison: false));
-            _expandPoisonInitializationState = ContainerInitializationState.Queue(serviceClientFactory, GetQueueName(QueueType.Expand, poison: true));
+            _workInitializationState = ContainerInitializationState.Queue(serviceClientFactory, options.Value, GetQueueName(QueueType.Work, poison: false));
+            _workPoisonInitializationState = ContainerInitializationState.Queue(serviceClientFactory, options.Value, GetQueueName(QueueType.Work, poison: true));
+            _expandInitializationState = ContainerInitializationState.Queue(serviceClientFactory, options.Value, GetQueueName(QueueType.Expand, poison: false));
+            _expandPoisonInitializationState = ContainerInitializationState.Queue(serviceClientFactory, options.Value, GetQueueName(QueueType.Expand, poison: true));
         }
 
         public async Task InitializeAsync()
@@ -39,13 +39,13 @@ namespace NuGet.Insights.Worker
 
         public async Task<QueueClient> GetQueueAsync(QueueType type)
         {
-            return (await _serviceClientFactory.GetQueueServiceClientAsync())
+            return (await _serviceClientFactory.GetQueueServiceClientAsync(_options.Value))
                 .GetQueueClient(GetQueueName(type, poison: false));
         }
 
         public async Task<QueueClient> GetPoisonQueueAsync(QueueType type)
         {
-            return (await _serviceClientFactory.GetQueueServiceClientAsync())
+            return (await _serviceClientFactory.GetQueueServiceClientAsync(_options.Value))
                 .GetQueueClient(GetQueueName(type, poison: true));
         }
 
