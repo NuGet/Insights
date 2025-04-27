@@ -105,8 +105,8 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
         {
             return base.GetExpectedTableNames().Concat(new[]
             {
-                Options.Value.SymbolPackageArchiveTableName,
-                Options.Value.SymbolPackageHashesTableName,
+                Options.Value.SymbolPackageArchiveTable,
+                Options.Value.SymbolPackageHashesTable,
             });
         }
     }

@@ -50,12 +50,12 @@ namespace NuGet.Insights
 
         private async Task InitializeInternalAsync()
         {
-            await _wideEntityService.InitializeAsync(_options.Value.PackageArchiveTableName);
+            await _wideEntityService.InitializeAsync(_options.Value.PackageArchiveTable);
         }
 
         private async Task DestroyInternalAsync()
         {
-            await _wideEntityService.DeleteTableAsync(_options.Value.PackageArchiveTableName);
+            await _wideEntityService.DeleteTableAsync(_options.Value.PackageArchiveTable);
         }
 
         public async Task<PrimarySignature?> GetPrimarySignatureAsync(IPackageIdentityCommit leafItem)
@@ -93,7 +93,7 @@ namespace NuGet.Insights
         public async Task<IReadOnlyDictionary<IPackageIdentityCommit, PackageFileInfoV1>> UpdateBatchAsync(string id, IReadOnlyCollection<IPackageIdentityCommit> leafItems)
         {
             return await _wideEntityService.UpdateBatchAsync(
-                _options.Value.PackageArchiveTableName,
+                _options.Value.PackageArchiveTable,
                 id,
                 leafItems,
                 GetInfoAsync,
@@ -104,7 +104,7 @@ namespace NuGet.Insights
         public async Task<PackageFileInfoV1> GetOrUpdateInfoFromLeafItemAsync(IPackageIdentityCommit leafItem)
         {
             return await _wideEntityService.GetOrUpdateInfoAsync(
-                _options.Value.PackageArchiveTableName,
+                _options.Value.PackageArchiveTable,
                 leafItem,
                 GetInfoAsync,
                 OutputToData,

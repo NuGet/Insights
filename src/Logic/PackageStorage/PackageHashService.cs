@@ -16,7 +16,7 @@ namespace NuGet.Insights
             _options = options;
         }
 
-        protected override string TableName => _options.Value.PackageHashesTableName;
+        protected override string TableName => _options.Value.PackageHashesTable;
         protected override bool MissingHashesIsDeleted => true;
     }
 }

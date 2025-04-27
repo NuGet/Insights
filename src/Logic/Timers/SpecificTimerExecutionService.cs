@@ -26,7 +26,7 @@ namespace NuGet.Insights
             ITelemetryClient telemetryClient,
             ILogger<SpecificTimerExecutionService> logger)
         {
-            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value, options.Value.TimerTableName);
+            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value, options.Value.TimerTable);
             _serviceClientFactory = serviceClientFactory;
             _timerComparer = timerComparer;
             _timeProvider = timeProvider;
@@ -298,7 +298,7 @@ namespace NuGet.Insights
         private async Task<TableClientWithRetryContext> GetTableAsync()
         {
             return (await _serviceClientFactory.GetTableServiceClientAsync(_options.Value))
-                .GetTableClient(_options.Value.TimerTableName);
+                .GetTableClient(_options.Value.TimerTable);
         }
     }
 }

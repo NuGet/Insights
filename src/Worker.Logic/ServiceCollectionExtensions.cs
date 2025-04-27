@@ -41,6 +41,9 @@ namespace NuGet.Insights.Worker
                 setup(serviceCollection);
             }
 
+            serviceCollection.AddTransient<IConfigureOptions<NuGetInsightsWorkerSettings>, NuGetInsightsSettings.CopyStorageSettings>();
+            serviceCollection.AddTransient<IConfigureOptions<NuGetInsightsWorkerSettings>, NuGetInsightsWorkerSettings.CopyWorkerStorageSettings>();
+
             serviceCollection.AddSingleton<CachingKustoClientFactory>();
 
             serviceCollection.AddSingleton<IRawMessageEnqueuer, QueueStorageEnqueuer>();

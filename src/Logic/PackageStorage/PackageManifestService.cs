@@ -48,12 +48,12 @@ namespace NuGet.Insights
 
         public async Task InitializeInternalAsync()
         {
-            await _wideEntityService.InitializeAsync(_options.Value.PackageManifestTableName);
+            await _wideEntityService.InitializeAsync(_options.Value.PackageManifestTable);
         }
 
         public async Task DestroyInternalAsync()
         {
-            await _wideEntityService.DeleteTableAsync(_options.Value.PackageManifestTableName);
+            await _wideEntityService.DeleteTableAsync(_options.Value.PackageManifestTable);
         }
 
         public async Task<(NuspecReader NuspecReader, int ManifestLength)?> GetNuspecReaderAndSizeAsync(IPackageIdentityCommit leafItem)
@@ -81,7 +81,7 @@ namespace NuGet.Insights
         public async Task<IReadOnlyDictionary<IPackageIdentityCommit, PackageManifestInfoV1>> UpdateBatchAsync(string id, IReadOnlyCollection<IPackageIdentityCommit> leafItems)
         {
             return await _wideEntityService.UpdateBatchAsync(
-                _options.Value.PackageManifestTableName,
+                _options.Value.PackageManifestTable,
                 id,
                 leafItems,
                 GetInfoAsync,
@@ -92,7 +92,7 @@ namespace NuGet.Insights
         public async Task<PackageManifestInfoV1> GetOrUpdateInfoAsync(IPackageIdentityCommit leafItem)
         {
             return await _wideEntityService.GetOrUpdateInfoAsync(
-                _options.Value.PackageManifestTableName,
+                _options.Value.PackageManifestTable,
                 leafItem,
                 GetInfoAsync,
                 OutputToData,

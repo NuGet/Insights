@@ -94,9 +94,9 @@ namespace NuGet.Insights.Worker.TimedReprocess
                     Options.Value.TimedReprocessTableName,
 
                     // intermediate data
-                    Options.Value.PackageReadmeTableName,
-                    Options.Value.SymbolPackageArchiveTableName,
-                    Options.Value.SymbolPackageHashesTableName,
+                    Options.Value.PackageReadmeTable,
+                    Options.Value.SymbolPackageArchiveTable,
+                    Options.Value.SymbolPackageHashesTable,
                 }.Order().ToArray(),
                 tables.Select(x => x.Name).ToArray());
 
@@ -106,7 +106,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
                 new string[]
                 {
                     // infrastructure
-                    Options.Value.LeaseContainerName,
+                    Options.Value.LeaseContainer,
 
                     // intermediate data
                     Options.Value.PackageReadmeContainerName,

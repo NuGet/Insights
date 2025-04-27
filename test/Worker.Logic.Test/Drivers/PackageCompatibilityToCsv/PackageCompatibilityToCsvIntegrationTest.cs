@@ -123,8 +123,8 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         {
             return base.GetExpectedTableNames().Concat(new[]
             {
-                Options.Value.PackageArchiveTableName,
-                Options.Value.PackageManifestTableName,
+                Options.Value.PackageArchiveTable,
+                Options.Value.PackageManifestTable,
             });
         }
     }

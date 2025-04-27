@@ -44,11 +44,11 @@ namespace NuGet.Insights.Worker
 
             var containers = await blobServiceClient.GetBlobContainersAsync(prefix: StoragePrefix).ToListAsync();
             Assert.Equal(
-                GetExpectedBlobContainerNames().Concat(new[] { Options.Value.LeaseContainerName }).OrderBy(x => x, StringComparer.Ordinal).ToArray(),
+                GetExpectedBlobContainerNames().Concat(new[] { Options.Value.LeaseContainer }).OrderBy(x => x, StringComparer.Ordinal).ToArray(),
                 containers.Select(x => x.Name).ToArray());
 
             var leaseBlobs = await blobServiceClient
-                .GetBlobContainerClient(Options.Value.LeaseContainerName)
+                .GetBlobContainerClient(Options.Value.LeaseContainer)
                 .GetBlobsAsync()
                 .ToListAsync();
             var expectedLeaseNames = GetExpectedLeaseNames().Distinct().OrderBy(x => x, StringComparer.Ordinal).ToArray();

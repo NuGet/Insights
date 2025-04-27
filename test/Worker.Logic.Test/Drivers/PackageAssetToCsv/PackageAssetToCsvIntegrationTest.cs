@@ -371,7 +371,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {
-            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageArchiveTableName });
+            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageArchiveTable });
         }
     }
 }

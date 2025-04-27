@@ -73,6 +73,8 @@ namespace NuGet.Insights
 
             serviceCollection.AddMemoryCache();
 
+            serviceCollection.AddTransient<IConfigureOptions<NuGetInsightsSettings>, NuGetInsightsSettings.CopyStorageSettings>();
+
             var userAgent = GetUserAgent(configuration, userAgentAppName);
 
             // Set the user agent for NuGet Client HTTP requests (i.e. HttpSource)

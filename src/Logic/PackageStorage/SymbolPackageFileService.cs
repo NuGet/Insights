@@ -45,12 +45,12 @@ namespace NuGet.Insights
 
         private async Task InitializeInternalAsync()
         {
-            await _wideEntityService.InitializeAsync(_options.Value.SymbolPackageArchiveTableName);
+            await _wideEntityService.InitializeAsync(_options.Value.SymbolPackageArchiveTable);
         }
 
         private async Task DestroyInternalAsync()
         {
-            await _wideEntityService.DeleteTableAsync(_options.Value.SymbolPackageArchiveTableName);
+            await _wideEntityService.DeleteTableAsync(_options.Value.SymbolPackageArchiveTable);
         }
 
         public async Task<(ZipDirectory Directory, long Length, ILookup<string, string> Headers)?> GetZipDirectoryAndLengthAsync(IPackageIdentityCommit leafItem)
@@ -72,7 +72,7 @@ namespace NuGet.Insights
             IReadOnlyCollection<IPackageIdentityCommit> leafItems)
         {
             return await _wideEntityService.UpdateBatchAsync(
-                _options.Value.SymbolPackageArchiveTableName,
+                _options.Value.SymbolPackageArchiveTable,
                 id,
                 leafItems,
                 GetInfoFromLeafItemAsync,
@@ -83,7 +83,7 @@ namespace NuGet.Insights
         public async Task<SymbolPackageFileInfoV1> GetOrUpdateInfoFromLeafItemAsync(IPackageIdentityCommit leafItem)
         {
             return await _wideEntityService.GetOrUpdateInfoAsync(
-                _options.Value.SymbolPackageArchiveTableName,
+                _options.Value.SymbolPackageArchiveTable,
                 leafItem,
                 GetInfoFromLeafItemAsync,
                 OutputToData,

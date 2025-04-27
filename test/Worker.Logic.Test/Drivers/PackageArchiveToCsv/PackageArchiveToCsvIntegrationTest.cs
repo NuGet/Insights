@@ -151,8 +151,8 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         {
             return base.GetExpectedTableNames().Concat(
             [
-                Options.Value.PackageArchiveTableName,
-                Options.Value.PackageHashesTableName,
+                Options.Value.PackageArchiveTable,
+                Options.Value.PackageHashesTable,
             ]);
         }
     }

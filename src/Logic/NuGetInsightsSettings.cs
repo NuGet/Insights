@@ -41,14 +41,14 @@ namespace NuGet.Insights
         public TimeSpan GitHubUsageV1AgeLimit { get; set; } = TimeSpan.FromDays(7);
         public string LegacyReadmeUrlPattern { get; set; } = null;
 
-        public string LeaseContainerName { get; set; } = "leases";
-        public string PackageArchiveTableName { get; set; } = "packagearchives";
-        public string SymbolPackageArchiveTableName { get; set; } = "symbolpackagearchives";
-        public string PackageManifestTableName { get; set; } = "packagemanifests";
-        public string PackageReadmeTableName { get; set; } = "packagereadmes";
-        public string PackageHashesTableName { get; set; } = "packagehashes";
-        public string SymbolPackageHashesTableName { get; set; } = "symbolpackagehashes";
-        public string TimerTableName { get; set; } = "timers";
+        public BlobContainerStorageSettings LeaseContainer { get; set; } = new("leases");
+        public TableStorageSettings PackageArchiveTable { get; set; } = new("packagearchives");
+        public TableStorageSettings SymbolPackageArchiveTable { get; set; } = new("symbolpackagearchives");
+        public TableStorageSettings PackageManifestTable { get; set; } = new("packagemanifests");
+        public TableStorageSettings PackageReadmeTable { get; set; } = new("packagereadmes");
+        public TableStorageSettings PackageHashesTable { get; set; } = new("packagehashes");
+        public TableStorageSettings SymbolPackageHashesTable { get; set; } = new("symbolpackagehashes");
+        public TableStorageSettings TimerTable { get; set; } = new("timers");
 
         public int MaxTempMemoryStreamSize { get; set; } = 1024 * 1024 * 196;
 
@@ -63,5 +63,18 @@ namespace NuGet.Insights
         public bool HttpClientAddRetryJitter { get; set; } = true;
         public string HttpCacheDirectory { get; set; } = null;
         public FileSystemHttpCacheMode HttpCacheMode { get; set; } = FileSystemHttpCacheMode.Disabled;
+
+        /// <summary>
+        /// The key is the storage account name, and the value is the settings for that storage account.
+        /// </summary>
+        public Dictionary<string, StorageSettings> StorageAccountSettings = new();
+
+        public class CopyStorageSettings : IConfigureOptions<NuGetInsightsSettings>
+        {
+            public void Configure(NuGetInsightsSettings options)
+            {
+                options.stor
+            }
+        }
     }
 }

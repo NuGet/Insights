@@ -461,8 +461,8 @@ namespace NuGet.Insights
                 Options = new Mock<IOptions<NuGetInsightsSettings>>();
                 Settings = new NuGetInsightsSettings
                 {
-                    TimerTableName = LogicTestSettings.NewStoragePrefix() + "1t1",
-                    LeaseContainerName = LogicTestSettings.NewStoragePrefix() + "1l1",
+                    TimerTable = LogicTestSettings.NewStoragePrefix() + "1t1",
+                    LeaseContainer = LogicTestSettings.NewStoragePrefix() + "1l1",
                 }.WithTestStorageSettings();
                 Options.Setup(x => x.Value).Returns(() => Settings);
             }
@@ -479,7 +479,7 @@ namespace NuGet.Insights
             {
                 var serviceClientFactory = GetServiceClientFactory(loggerFactory);
                 var table = (await serviceClientFactory.GetTableServiceClientAsync(Options.Object.Value))
-                    .GetTableClient(Options.Object.Value.TimerTableName);
+                    .GetTableClient(Options.Object.Value.TimerTable);
 
                 if (!_created)
                 {
@@ -509,7 +509,7 @@ namespace NuGet.Insights
             {
                 var serviceClient = await GetServiceClientFactory(NullLoggerFactory.Instance).GetBlobServiceClientAsync(Options.Object.Value);
                 await serviceClient
-                    .GetBlobContainerClient(Options.Object.Value.LeaseContainerName)
+                    .GetBlobContainerClient(Options.Object.Value.LeaseContainer)
                     .DeleteIfExistsAsync();
 
                 var table = await GetTableAsync(NullLoggerFactory.Instance);

@@ -122,11 +122,11 @@ namespace NuGet.Insights.Worker
             Assert.True(tables.Remove(nameof(NuGetInsightsWorkerSettings.KustoIngestionTableName)));
             Assert.True(tables.Remove(nameof(NuGetInsightsWorkerSettings.SingletonTaskStateTableName)));
             Assert.True(tables.Remove(nameof(NuGetInsightsWorkerSettings.TimedReprocessTableName)));
-            Assert.True(tables.Remove(nameof(NuGetInsightsWorkerSettings.TimerTableName)));
+            Assert.True(tables.Remove(nameof(NuGetInsightsWorkerSettings.TimerTable)));
             Assert.True(tables.Remove(nameof(NuGetInsightsWorkerSettings.WorkflowRunTableName)));
 
             // Remove non-output containers
-            Assert.True(blobContainers.Remove(nameof(NuGetInsightsWorkerSettings.LeaseContainerName)));
+            Assert.True(blobContainers.Remove(nameof(NuGetInsightsWorkerSettings.LeaseContainer)));
 
             // Verify all persistent output tables and blob containers are empty, and transient tables are deleted
             foreach ((var key, var tableName) in tables)

@@ -159,7 +159,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {
-            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageArchiveTableName });
+            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageArchiveTable });
         }
 
         private async Task PackageAssemblyToCsv_WithDuplicates()

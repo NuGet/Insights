@@ -102,7 +102,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {
-            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageManifestTableName });
+            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageManifestTable });
         }
     }
 }

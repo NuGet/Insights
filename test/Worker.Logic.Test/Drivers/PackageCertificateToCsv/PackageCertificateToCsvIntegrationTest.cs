@@ -276,7 +276,7 @@ namespace NuGet.Insights.Worker.PackageCertificateToCsv
         {
             return base.GetExpectedTableNames().Concat(new[]
             {
-                Options.Value.PackageArchiveTableName,
+                Options.Value.PackageArchiveTable,
                 Options.Value.PackageToCertificateTableName,
                 Options.Value.CertificateToPackageTableName,
             }).Concat(AdditionalTableNames);

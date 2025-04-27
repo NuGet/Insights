@@ -95,7 +95,7 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {
-            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageReadmeTableName });
+            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageReadmeTable });
         }
     }
 }

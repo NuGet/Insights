@@ -52,7 +52,7 @@ namespace NuGet.Insights.Worker
                     .OrderBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase)
                     .ThenBy(x => x.PackageVersion, StringComparer.OrdinalIgnoreCase)
                     .ToList();
-                var packageArchiveEntities = (await GetWideEntitiesAsync<PackageFileService.PackageFileInfoVersions>(Options.Value.PackageArchiveTableName))
+                var packageArchiveEntities = (await GetWideEntitiesAsync<PackageFileService.PackageFileInfoVersions>(Options.Value.PackageArchiveTable))
                     .OrderBy(x => x.PartitionKey, StringComparer.OrdinalIgnoreCase)
                     .ThenBy(x => x.RowKey, StringComparer.OrdinalIgnoreCase)
                     .ToList();

@@ -49,12 +49,12 @@ namespace NuGet.Insights
 
         private async Task InitializeInternalAsync()
         {
-            await _wideEntityService.InitializeAsync(_options.Value.PackageReadmeTableName);
+            await _wideEntityService.InitializeAsync(_options.Value.PackageReadmeTable);
         }
 
         private async Task DestroyInternalAsync()
         {
-            await _wideEntityService.DeleteTableAsync(_options.Value.PackageReadmeTableName);
+            await _wideEntityService.DeleteTableAsync(_options.Value.PackageReadmeTable);
         }
 
         public async Task<IReadOnlyDictionary<IPackageIdentityCommit, PackageReadmeInfoV1>> UpdateBatchFromLeafItemsAsync(
@@ -62,7 +62,7 @@ namespace NuGet.Insights
             IReadOnlyCollection<IPackageIdentityCommit> leafItems)
         {
             return await _wideEntityService.UpdateBatchAsync(
-                _options.Value.PackageReadmeTableName,
+                _options.Value.PackageReadmeTable,
                 id,
                 leafItems,
                 GetInfoFromLeafItemAsync,
@@ -73,7 +73,7 @@ namespace NuGet.Insights
         public async Task<PackageReadmeInfoV1> GetOrUpdateInfoFromLeafItemAsync(IPackageIdentityCommit leafItem)
         {
             return await _wideEntityService.GetOrUpdateInfoAsync(
-                _options.Value.PackageReadmeTableName,
+                _options.Value.PackageReadmeTable,
                 leafItem,
                 GetInfoFromLeafItemAsync,
                 OutputToData,

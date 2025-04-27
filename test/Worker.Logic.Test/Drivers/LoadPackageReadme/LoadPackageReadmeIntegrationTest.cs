@@ -59,7 +59,7 @@ namespace NuGet.Insights.Worker.LoadPackageReadme
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {
-            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageReadmeTableName });
+            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageReadmeTable });
         }
 
         public LoadPackageReadmeIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)

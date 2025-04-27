@@ -774,7 +774,7 @@ namespace NuGet.Insights.Worker
         protected async Task AssertPackageArchiveTableAsync(string testName, string stepName, string fileName = null, bool logActual = false)
         {
             await AssertWideEntityOutputAsync(
-                Options.Value.PackageArchiveTableName,
+                Options.Value.PackageArchiveTable,
                 Path.Combine(testName, stepName),
                 stream =>
                 {
@@ -811,7 +811,7 @@ namespace NuGet.Insights.Worker
             Assert.Contains(HttpMessageHandlerFactory.Responses, x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith("/readme", StringComparison.Ordinal));
 
             await AssertWideEntityOutputAsync(
-                Options.Value.PackageReadmeTableName,
+                Options.Value.PackageReadmeTable,
                 Path.Combine(testName, stepName),
                 stream =>
                 {
@@ -841,7 +841,7 @@ namespace NuGet.Insights.Worker
         protected async Task AssertPackageHashesTableAsync(string testName, string stepName, string fileName = null)
         {
             await AssertPackageSpecificHashTableAsync(
-                Options.Value.PackageHashesTableName,
+                Options.Value.PackageHashesTable,
                 testName,
                 stepName,
                 fileName);
@@ -850,7 +850,7 @@ namespace NuGet.Insights.Worker
         protected async Task AssertSymbolPackageHashesTableAsync(string testName, string stepName, string fileName = null)
         {
             await AssertPackageSpecificHashTableAsync(
-                Options.Value.SymbolPackageHashesTableName,
+                Options.Value.SymbolPackageHashesTable,
                 testName,
                 stepName,
                 fileName);
@@ -909,7 +909,7 @@ namespace NuGet.Insights.Worker
         protected async Task AssertSymbolPackageArchiveTableAsync(string testName, string stepName, string fileName = null)
         {
             await AssertWideEntityOutputAsync(
-                Options.Value.SymbolPackageArchiveTableName,
+                Options.Value.SymbolPackageArchiveTable,
                 Path.Combine(testName, stepName),
                 stream =>
                 {

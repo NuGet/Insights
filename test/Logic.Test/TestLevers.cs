@@ -37,7 +37,7 @@ namespace NuGet.Insights
         /// <summary>
         /// Override <see cref="LogicTestSettings.StorageAccountNameEnvName"/> environment variable, used by <see cref="LogicTestSettings"/>.
         /// </summary>
-        public static readonly string? StorageAccountName = null;
+        public static readonly string? StorageAccountName = "joelinsightstests";
 
         /// <summary>
         /// Override <see cref="LogicTestSettings.FileSystemHttpCacheModeEnvName"/> environment variable, used by <see cref="LogicTestSettings"/>.

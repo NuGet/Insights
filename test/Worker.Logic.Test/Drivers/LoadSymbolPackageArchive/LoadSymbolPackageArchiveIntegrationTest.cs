@@ -67,7 +67,7 @@ namespace NuGet.Insights.Worker.LoadSymbolPackageArchive
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {
-            return base.GetExpectedTableNames().Concat(new[] { Options.Value.SymbolPackageArchiveTableName });
+            return base.GetExpectedTableNames().Concat(new[] { Options.Value.SymbolPackageArchiveTable });
         }
     }
 }

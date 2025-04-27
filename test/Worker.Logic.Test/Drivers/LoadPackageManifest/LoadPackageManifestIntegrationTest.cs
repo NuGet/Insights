@@ -62,7 +62,7 @@ namespace NuGet.Insights.Worker.LoadPackageManifest
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {
-            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageManifestTableName });
+            return base.GetExpectedTableNames().Concat(new[] { Options.Value.PackageManifestTable });
         }
 
         public LoadPackageManifestIntegrationTest(ITestOutputHelper output, DefaultWebApplicationFactory<StaticFilesStartup> factory) : base(output, factory)
@@ -79,7 +79,7 @@ namespace NuGet.Insights.Worker.LoadPackageManifest
             Assert.Contains(HttpMessageHandlerFactory.Responses, x => x.RequestMessage.RequestUri.AbsoluteUri.EndsWith(".nuspec", StringComparison.Ordinal));
 
             await AssertWideEntityOutputAsync(
-                Options.Value.PackageManifestTableName,
+                Options.Value.PackageManifestTable,
                 Path.Combine(testName, stepName),
                 stream =>
                 {
