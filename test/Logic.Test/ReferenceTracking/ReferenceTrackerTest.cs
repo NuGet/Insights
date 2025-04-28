@@ -1153,9 +1153,9 @@ namespace NuGet.Insights.ReferenceTracking
 
             public async Task<(TableClientWithRetryContext OwnerToSubject, TableClientWithRetryContext SubjectToOwner)> GetTablesAsync(ILoggerFactory loggerFactory)
             {
-                var ownerToSubject = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync())
+                var ownerToSubject = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync(Settings))
                     .GetTableClient(OwnerToSubjectTableName);
-                var subjectToOwner = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync())
+                var subjectToOwner = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync(Settings))
                     .GetTableClient(SubjectToOwnerTableName);
 
                 if (!_created)

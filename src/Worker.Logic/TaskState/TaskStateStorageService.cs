@@ -24,7 +24,7 @@ namespace NuGet.Insights.Worker
             ITelemetryClient telemetryClient,
             IOptions<NuGetInsightsWorkerSettings> options)
         {
-            _singletonTableInitializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value.SingletonTaskStateTableName);
+            _singletonTableInitializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value, options.Value.SingletonTaskStateTableName);
 
             _serviceClientFactory = serviceClientFactory;
             _upsertStorageService = upsertStorageService;
@@ -224,7 +224,7 @@ namespace NuGet.Insights.Worker
 
         private async Task<TableClientWithRetryContext> GetTableAsync(string suffix)
         {
-            var serviceClient = await _serviceClientFactory.GetTableServiceClientAsync();
+            var serviceClient = await _serviceClientFactory.GetTableServiceClientAsync(_options.Value);
             var tableName = GetTableName(suffix);
             var table = serviceClient.GetTableClient(tableName);
             return table;

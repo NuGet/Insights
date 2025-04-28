@@ -356,17 +356,17 @@ namespace NuGet.Insights.Worker
 
             var serviceClientFactory = testExecution.Host.Services.GetRequiredService<ServiceClientFactory>();
 
-            var blobServiceClient = await serviceClientFactory.GetBlobServiceClientAsync();
+            var blobServiceClient = await serviceClientFactory.GetBlobServiceClientAsync(settings);
             var blobContainerItems = await blobServiceClient.GetBlobContainersAsync().ToListAsync();
             var blobContainers = blobContainerItems
                 .Select(x => (Type: StorageContainerType.BlobContainer, Name: configurationValueToName.GetValueOrDefault(x.Name), Value: x.Name));
 
-            var queueServiceClient = await serviceClientFactory.GetQueueServiceClientAsync();
+            var queueServiceClient = await serviceClientFactory.GetQueueServiceClientAsync(settings);
             var queueItems = await queueServiceClient.GetQueuesAsync().ToListAsync();
             var queues = queueItems
                 .Select(x => (Type: StorageContainerType.Queue, Name: configurationValueToName.GetValueOrDefault(x.Name), Value: x.Name));
 
-            var tableServiceClient = await serviceClientFactory.GetTableServiceClientAsync();
+            var tableServiceClient = await serviceClientFactory.GetTableServiceClientAsync(settings);
             var tableItems = await tableServiceClient.QueryAsync().ToListAsync();
             var tables = tableItems
                 .Select(x => (Type: StorageContainerType.Table, Name: configurationValueToName.GetValueOrDefault(x.Name), Value: x.Name));

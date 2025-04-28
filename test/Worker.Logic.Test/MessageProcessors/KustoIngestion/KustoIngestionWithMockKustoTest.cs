@@ -294,7 +294,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 .Select(x => (string)x.Arguments[0]);
             foreach (var url in urls)
             {
-                var blobClient = await ServiceClientFactory.TryGetBlobClientAsync(new UriBuilder(url) { Query = null }.Uri);
+                var blobClient = await ServiceClientFactory.TryGetBlobClientAsync(Options.Value, new UriBuilder(url) { Query = null }.Uri);
                 Assert.NotNull(blobClient);
                 BlobProperties properties = await blobClient.GetPropertiesAsync();
                 Assert.NotNull(properties);

@@ -24,7 +24,7 @@ namespace NuGet.Insights.Worker
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<CatalogScanStorageService> logger)
         {
-            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value.CatalogIndexScanTableName);
+            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value, options.Value.CatalogIndexScanTableName);
             _serviceClientFactory = serviceClientFactory;
             _telemetryClient = telemetryClient;
             _options = options;
@@ -545,13 +545,13 @@ namespace NuGet.Insights.Worker
 
         private async Task<TableClientWithRetryContext> GetIndexScanTableAsync()
         {
-            return (await _serviceClientFactory.GetTableServiceClientAsync())
+            return (await _serviceClientFactory.GetTableServiceClientAsync(_options.Value))
                 .GetTableClient(_options.Value.CatalogIndexScanTableName);
         }
 
         private async Task<TableClientWithRetryContext> GetPageScanTableAsync(string suffix)
         {
-            return (await _serviceClientFactory.GetTableServiceClientAsync())
+            return (await _serviceClientFactory.GetTableServiceClientAsync(_options.Value))
                 .GetTableClient($"{_options.Value.CatalogPageScanTableNamePrefix}{suffix}");
         }
 
@@ -562,7 +562,7 @@ namespace NuGet.Insights.Worker
 
         public async Task<TableClientWithRetryContext> GetLeafScanTableAsync(string suffix)
         {
-            return (await _serviceClientFactory.GetTableServiceClientAsync())
+            return (await _serviceClientFactory.GetTableServiceClientAsync(_options.Value))
                 .GetTableClient(GetLeafScanTableName(suffix));
         }
     }

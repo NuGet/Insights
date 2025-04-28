@@ -80,7 +80,7 @@ namespace NuGet.Insights
         {
             await base.InitializeAsync();
 
-            TableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
+            TableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync(Options.Value);
             Table = GetTable("1t1");
         }
 

@@ -30,7 +30,7 @@ namespace NuGet.Insights
             ITelemetryClient telemetryClient,
             IOptions<NuGetInsightsSettings> options)
         {
-            _initializationState = ContainerInitializationState.BlobContainer(serviceClientFactory, options.Value.LeaseContainerName);
+            _initializationState = ContainerInitializationState.BlobContainer(serviceClientFactory, options.Value, options.Value.LeaseContainerName);
             _serviceClientFactory = serviceClientFactory;
             _telemetryClient = telemetryClient;
             _options = options;
@@ -222,7 +222,7 @@ namespace NuGet.Insights
 
         private async Task<BlobClient> GetBlobAsync(string name)
         {
-            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
+            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync(_options.Value);
             var container = serviceClient.GetBlobContainerClient(_options.Value.LeaseContainerName);
             return container.GetBlobClient(name);
         }

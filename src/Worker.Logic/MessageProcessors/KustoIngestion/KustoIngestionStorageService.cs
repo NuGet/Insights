@@ -21,7 +21,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<KustoIngestionStorageService> logger)
         {
-            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value.KustoIngestionTableName);
+            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value, options.Value.KustoIngestionTableName);
             _serviceClientFactory = serviceClientFactory;
             _telemetryClient = telemetryClient;
             _options = options;
@@ -339,14 +339,14 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
         private async Task<TableClientWithRetryContext> GetKustoIngestionTableAsync()
         {
-            var tableServiceClient = await _serviceClientFactory.GetTableServiceClientAsync();
+            var tableServiceClient = await _serviceClientFactory.GetTableServiceClientAsync(_options.Value);
             var table = tableServiceClient.GetTableClient(_options.Value.KustoIngestionTableName);
             return table;
         }
 
         private async Task<TableClientWithRetryContext> GetKustoIngestionTableAsync(string storageSuffix)
         {
-            var tableServiceClient = await _serviceClientFactory.GetTableServiceClientAsync();
+            var tableServiceClient = await _serviceClientFactory.GetTableServiceClientAsync(_options.Value);
             var table = tableServiceClient.GetTableClient(_options.Value.KustoIngestionTableName + storageSuffix);
             return table;
         }

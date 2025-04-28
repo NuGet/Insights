@@ -479,7 +479,7 @@ namespace NuGet.Insights
 
             public async Task<TableClientWithRetryContext> GetTableAsync(ILoggerFactory loggerFactory)
             {
-                var table = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync())
+                var table = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync(Settings))
                     .GetTableClient(TableName);
 
                 if (!_created)

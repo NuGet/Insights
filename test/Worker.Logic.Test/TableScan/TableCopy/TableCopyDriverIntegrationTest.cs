@@ -43,7 +43,7 @@ namespace NuGet.Insights.Worker.TableCopy
 
             var serviceClientFactory = Host.Services.GetRequiredService<ServiceClientFactory>();
             var destTableName = StoragePrefix + "1d1";
-            var tableServiceClient = await serviceClientFactory.GetTableServiceClientAsync();
+            var tableServiceClient = await serviceClientFactory.GetTableServiceClientAsync(Options.Value);
             var sourceTable = tableServiceClient.GetTableClient(Options.Value.LatestPackageLeafTableName);
             var destinationTable = tableServiceClient.GetTableClient(destTableName);
 

@@ -11,13 +11,15 @@ namespace NuGet.Insights.Worker
         private readonly ICatalogLeafToCsvDriver _driver;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IReadOnlyList<string> _resultContainerNames;
+        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
         public BaseCatalogLeafScanToCsvAdapter(
             CsvTemporaryStorageFactory storageFactory,
             IReadOnlyList<ICsvTemporaryStorage> storage,
             ICatalogLeafToCsvDriver driver,
             ServiceClientFactory serviceClientFactory,
-            IReadOnlyList<string> resultContainerNames)
+            IReadOnlyList<string> resultContainerNames,
+            IOptions<NuGetInsightsWorkerSettings> options)
         {
             _initializationState = ContainerInitializationState.New(InitializeInternalAsync, DestroyInternalAsync);
             _storageFactory = storageFactory;
@@ -25,6 +27,7 @@ namespace NuGet.Insights.Worker
             _driver = driver;
             _serviceClientFactory = serviceClientFactory;
             _resultContainerNames = resultContainerNames;
+            _options = options;
         }
 
         public async Task InitializeAsync()
@@ -46,7 +49,7 @@ namespace NuGet.Insights.Worker
 
         private async Task InitializeInternalAsync()
         {
-            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
+            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync(_options.Value);
             await Task.WhenAll(
                 Task.WhenAll(_resultContainerNames.Select(x => serviceClient.GetBlobContainerClient(x).CreateIfNotExistsAsync(retry: true))),
                 _driver.InitializeAsync());
@@ -54,7 +57,7 @@ namespace NuGet.Insights.Worker
 
         private async Task DestroyInternalAsync()
         {
-            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
+            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync(_options.Value);
             await Task.WhenAll(
                 Task.WhenAll(_resultContainerNames.Select(x => serviceClient.GetBlobContainerClient(x).DeleteIfExistsAsync())),
                 _driver.DestroyAsync());

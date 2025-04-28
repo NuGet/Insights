@@ -18,7 +18,7 @@ namespace NuGet.Insights.Worker
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<CursorStorageService> logger)
         {
-            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value.CursorTableName);
+            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value, options.Value.CursorTableName);
             _serviceClientFactory = serviceClientFactory;
             _options = options;
             _logger = logger;
@@ -129,7 +129,7 @@ namespace NuGet.Insights.Worker
 
         private async Task<TableClientWithRetryContext> GetTableAsync()
         {
-            return (await _serviceClientFactory.GetTableServiceClientAsync())
+            return (await _serviceClientFactory.GetTableServiceClientAsync(_options.Value))
                 .GetTableClient(_options.Value.CursorTableName);
         }
     }

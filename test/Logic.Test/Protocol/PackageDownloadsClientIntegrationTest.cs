@@ -13,18 +13,15 @@ namespace NuGet.Insights
                 Microsoft.Extensions.Options.Options.Create(new NuGetInsightsSettings().WithTestStorageSettings()),
                 TelemetryClient,
                 Output.GetLoggerFactory());
-            var serviceClient = await serviceClientFactory.GetBlobServiceClientAsync();
+            var serviceClient = await serviceClientFactory.GetBlobServiceClientAsync(Options.Value);
             var container = serviceClient.GetBlobContainerClient($"{StoragePrefix}1b1");
             await container.CreateIfNotExistsAsync();
             var blob = container.GetBlobClient("downloads.v1.json");
             await blob.UploadAsync(Resources.LoadMemoryStream(TestDataPath));
 
-            ConfigureSettings = x =>
-            {
-                x.UseBlobClientForExternalData = true;
-                x.DownloadsV1Urls = [blob.Uri.AbsoluteUri];
-                x.DownloadsV1AgeLimit = TimeSpan.MaxValue;
-            };
+            Options.Value.UseBlobClientForExternalData = true;
+            Options.Value.DownloadsV1Urls = new List<string> { blob.Uri.AbsoluteUri };
+            Options.Value.DownloadsV1AgeLimit = TimeSpan.MaxValue;
 
             var expected = await PackageDownloadsClient.DeserializeV1Async(Resources.LoadMemoryStream(TestDataPath)).ToListAsync();
 

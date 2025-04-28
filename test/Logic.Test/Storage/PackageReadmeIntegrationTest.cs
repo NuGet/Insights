@@ -61,17 +61,14 @@ namespace NuGet.Insights
                 Microsoft.Extensions.Options.Options.Create(new NuGetInsightsSettings().WithTestStorageSettings()),
                 TelemetryClient,
                 Output.GetLoggerFactory());
-            var serviceClient = await serviceClientFactory.GetBlobServiceClientAsync();
+            var serviceClient = await serviceClientFactory.GetBlobServiceClientAsync(Options.Value);
             var container = serviceClient.GetBlobContainerClient($"{StoragePrefix}1lr1");
             await container.CreateIfNotExistsAsync();
             var blob = container.GetBlobClient("windowsazure.storage/9.3.3/legacy-readme");
             await blob.UploadAsync(Resources.LoadMemoryStream(WindowsAzure_Storage_9_3_3));
 
-            ConfigureSettings = x =>
-            {
-                x.UseBlobClientForExternalData = true;
-                x.LegacyReadmeUrlPattern = container.Uri.AbsoluteUri + "/{0}/{1}/legacy-readme";
-            };
+            Options.Value.UseBlobClientForExternalData = true;
+            Options.Value.LegacyReadmeUrlPattern = container.Uri.AbsoluteUri + "/{0}/{1}/legacy-readme";
 
             var expected = await Resources.LoadStringReader(WindowsAzure_Storage_9_3_3).ReadToEndAsync();
 

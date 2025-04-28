@@ -10,15 +10,18 @@ namespace NuGet.Insights.Worker.TableCopy
         private readonly SchemaSerializer _serializer;
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly IMessageEnqueuer _enqueuer;
+        private readonly IOptions<NuGetInsightsSettings> _options;
 
         public TableCopyDriver(
             SchemaSerializer serializer,
             ServiceClientFactory serviceClientFactory,
-            IMessageEnqueuer enqueuer)
+            IMessageEnqueuer enqueuer,
+            IOptions<NuGetInsightsSettings> options)
         {
             _serializer = serializer;
             _serviceClientFactory = serviceClientFactory;
             _enqueuer = enqueuer;
+            _options = options;
         }
 
         public IList<string> SelectColumns => StorageUtility.MinSelectColumns;
@@ -27,7 +30,7 @@ namespace NuGet.Insights.Worker.TableCopy
         {
             var deserializedParameters = DeserializeParameters(parameters);
 
-            var table = (await _serviceClientFactory.GetTableServiceClientAsync())
+            var table = (await _serviceClientFactory.GetTableServiceClientAsync(_options.Value))
                .GetTableClient(deserializedParameters.DestinationTableName);
 
             await table.CreateIfNotExistsAsync(retry: true);

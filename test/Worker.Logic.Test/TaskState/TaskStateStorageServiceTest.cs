@@ -425,7 +425,7 @@ namespace NuGet.Insights.Worker
 
             public async Task<TableClientWithRetryContext> GetTableAsync(ILoggerFactory loggerFactory)
             {
-                var table = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync())
+                var table = (await GetServiceClientFactory(loggerFactory).GetTableServiceClientAsync(Options.Object.Value))
                     .GetTableClient(Options.Object.Value.TaskStateTableNamePrefix + StorageSuffix);
 
                 if (!_created)

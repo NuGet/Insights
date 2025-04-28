@@ -38,9 +38,9 @@ namespace NuGet.Insights.Worker
 
         private async Task AssertExpectedStorageAsync()
         {
-            var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
-            var queueServiceClient = await ServiceClientFactory.GetQueueServiceClientAsync();
-            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
+            var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync(Options.Value);
+            var queueServiceClient = await ServiceClientFactory.GetQueueServiceClientAsync(Options.Value);
+            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync(Options.Value);
 
             var containers = await blobServiceClient.GetBlobContainersAsync(prefix: StoragePrefix).ToListAsync();
             Assert.Equal(
@@ -68,7 +68,7 @@ namespace NuGet.Insights.Worker
 
             foreach (var queueItem in queueItems)
             {
-                var queueClient = (await ServiceClientFactory.GetQueueServiceClientAsync())
+                var queueClient = (await ServiceClientFactory.GetQueueServiceClientAsync(Options.Value))
                     .GetQueueClient(queueItem.Name);
                 QueueProperties properties = await queueClient.GetPropertiesAsync();
                 Assert.Equal(0, properties.ApproximateMessagesCount);
