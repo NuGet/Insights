@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker
 {
-    public partial class NuGetInsightsWorkerSettings : NuGetInsightsSettings
+    public partial class NuGetInsightsWorkerSettings
     {
         public List<CatalogScanDriverType> DisabledDrivers { get; set; } = new List<CatalogScanDriverType>();
 

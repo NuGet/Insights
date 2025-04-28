@@ -6,6 +6,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
     public class PackageAssetToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest<PackageAsset>
     {
         private const string PackageAssetToCsvDir = nameof(PackageAssetToCsv);
+        private const string PackageAssetToCsv_ExcludedPackagesDir = nameof(PackageAssetToCsv_ExcludedPackages);
         private const string PackageAssetToCsv_WithSingleBucketDir = nameof(PackageAssetToCsv_WithSingleBucket);
         private const string PackageAssetToCsv_WithDeleteDir = nameof(PackageAssetToCsv_WithDelete);
         private const string PackageAssetToCsv_WithDuplicatesDir = nameof(PackageAssetToCsv_WithDuplicates);
@@ -33,6 +34,29 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
 
             // Assert
             await AssertOutputAsync(PackageAssetToCsvDir, Step2, 0);
+        }
+
+        [Fact]
+        public async Task PackageAssetToCsv_ExcludedPackages()
+        {
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2025-04-23T21:18:45.5295392Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2025-04-23T21:22:16.2507724Z", CultureInfo.InvariantCulture);
+            ConfigureWorkerSettings = x => x.IgnoredPackages =
+                [new IgnoredPackagePattern { IdRegex = @"Milvasoft|[^A-Za-z0-9_\.\-]|FluidSharp", MinTimestamp = min0, MaxTimestamp = max1.AddTicks(-1) }];
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max1);
+            await SetCursorAsync(min0);
+
+            // Act
+            await UpdateAsync(max1);
+
+            // Assert
+            await AssertOutputAsync(PackageAssetToCsv_ExcludedPackagesDir, Step1, 0);
+            var apiRequests = HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.Host.EndsWith("nuget.org", StringComparison.OrdinalIgnoreCase));
+            Assert.All(apiRequests, r => Assert.DoesNotContain("Milvasoft", r.RequestUri.AbsoluteUri, StringComparison.OrdinalIgnoreCase));
+            Assert.All(apiRequests, r => Assert.DoesNotContain("test2.avaloni", r.RequestUri.AbsoluteUri, StringComparison.OrdinalIgnoreCase));
         }
 
         [Fact]

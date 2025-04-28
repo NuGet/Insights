@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker
 {
-    public partial class NuGetInsightsWorkerSettings : NuGetInsightsSettings
+    public partial class NuGetInsightsWorkerSettings
     {
         public bool UseBulkEnqueueStrategy { get; set; } = true;
         public int BulkEnqueueThreshold { get; set; } = 10;
