@@ -19,12 +19,9 @@ namespace NuGet.Insights
             var blob = container.GetBlobClient("downloads.v1.json");
             await blob.UploadAsync(Resources.LoadMemoryStream(TestDataPath));
 
-            ConfigureSettings = x =>
-            {
-                x.UseBlobClientForExternalData = true;
-                x.DownloadsV1Urls = [blob.Uri.AbsoluteUri];
-                x.DownloadsV1AgeLimit = TimeSpan.MaxValue;
-            };
+            Options.Value.UseBlobClientForExternalData = true;
+            Options.Value.DownloadsV1Urls = new List<string> { blob.Uri.AbsoluteUri };
+            Options.Value.DownloadsV1AgeLimit = TimeSpan.MaxValue;
 
             var expected = await PackageDownloadsClient.DeserializeV1Async(Resources.LoadMemoryStream(TestDataPath)).ToListAsync();
 
