@@ -9,25 +9,27 @@ namespace NuGet.Insights.Worker
 {
     public class PackageFilter
     {
+        private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
 
-        public PackageFilter(IOptions<NuGetInsightsWorkerSettings> options)
+        public PackageFilter(ITelemetryClient telemetryClient, IOptions<NuGetInsightsWorkerSettings> options)
         {
+            _telemetryClient = telemetryClient;
             _options = options;
         }
 
-        public IReadOnlyList<CatalogLeafScan> FilterCatalogLeafScans(IReadOnlyList<CatalogLeafScan> leafScans)
+        public IReadOnlyList<T> FilterCatalogLeafItems<T>(string scanId, IReadOnlyList<T> leafScans) where T : ICatalogLeafItem
         {
-            List<CatalogLeafScan>? filtered = null;
+            List<T>? filtered = null;
 
             for (var i = 0; i < leafScans.Count; i++)
             {
                 var leafScan = leafScans[i];
-                if (!IsLeafScanIncluded(leafScan))
+                if (IsLeafScanIgnored(scanId, leafScan))
                 {
                     if (filtered is null)
                     {
-                        filtered = new List<CatalogLeafScan>(leafScans.Count);
+                        filtered = new List<T>(leafScans.Count);
                         for (var j = 0; j < i; j++)
                         {
                             filtered.Add(leafScans[j]);
@@ -43,32 +45,34 @@ namespace NuGet.Insights.Worker
             return filtered ?? leafScans;
         }
 
-        private bool IsLeafScanIncluded(CatalogLeafScan leafScan)
-        {
-            return IsPackageIdIncluded(leafScan.PackageId, leafScan.CommitTimestamp);
-        }
-
-        private bool IsPackageIdIncluded(string id, DateTimeOffset commitTimestamp)
+        private bool IsLeafScanIgnored(string scanId, ICatalogLeafItem leafScan)
         {
             for (var i = 0; i < _options.Value.IgnoredPackages.Count; i++)
             {
                 var pattern = _options.Value.IgnoredPackages[i];
-                if (commitTimestamp < pattern.MinTimestamp || commitTimestamp > pattern.MaxTimestamp)
+                if (leafScan.CommitTimestamp < pattern.MinTimestamp || leafScan.CommitTimestamp > pattern.MaxTimestamp)
                 {
                     continue;
                 }
 
                 var isIgnored = Regex.IsMatch(
-                    id,
+                    leafScan.PackageId,
                     pattern.IdRegex,
                     RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture | RegexOptions.Singleline | RegexOptions.Compiled);
                 if (isIgnored)
                 {
-                    return false;
+                    _telemetryClient.TrackMetric($"{nameof(PackageFilter)}.IgnoredPackage", 1, new Dictionary<string, string>
+                    {
+                        ["ScanId"] = scanId,
+                        ["Id"] = leafScan.PackageId,
+                        ["Version"] = leafScan.PackageVersion,
+                        ["CommitTimestamp"] = leafScan.CommitTimestamp.ToZulu(),
+                    });
+                    return true;
                 }
             }
 
-            return true;
+            return false;
         }
     }
 }

@@ -9,6 +9,7 @@ namespace NuGet.Insights.Worker
         private readonly ICatalogScanDriverFactory _driverFactory;
         private readonly CatalogScanStorageService _storageService;
         private readonly CatalogScanExpandService _expandService;
+        private readonly PackageFilter _packageFilter;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<CatalogPageScanMessageProcessor> _logger;
 
@@ -17,6 +18,7 @@ namespace NuGet.Insights.Worker
             ICatalogScanDriverFactory driverFactory,
             CatalogScanStorageService storageService,
             CatalogScanExpandService expandService,
+            PackageFilter packageFilter,
             ITelemetryClient telemetryClient,
             ILogger<CatalogPageScanMessageProcessor> logger)
         {
@@ -24,6 +26,7 @@ namespace NuGet.Insights.Worker
             _driverFactory = driverFactory;
             _storageService = storageService;
             _expandService = expandService;
+            _packageFilter = packageFilter;
             _telemetryClient = telemetryClient;
             _logger = logger;
         }
@@ -112,7 +115,10 @@ namespace NuGet.Insights.Worker
             _logger.LogInformation("Loading catalog page URL: {Url}", scan.Url);
             var page = await _catalogClient.GetCatalogPageAsync(scan.Url);
 
-            var items = page.GetLeavesInBounds(scan.Min, scan.Max, excludeRedundantLeaves);
+            IReadOnlyList<CatalogLeafItem> items = page.GetLeavesInBounds(scan.Min, scan.Max, excludeRedundantLeaves);
+
+            items = _packageFilter.FilterCatalogLeafItems(scan.ScanId, items);
+
             var leafItemToRank = page.GetLeafItemToRank();
 
             _logger.LogInformation("Starting scan of {LeafCount} leaves from ({Min:O}, {Max:O}].", items.Count, scan.Min, scan.Max);

@@ -66,7 +66,7 @@ namespace NuGet.Insights.Worker
 
                     if (batchDriver != null)
                     {
-                        await ProcessBatchAsync(driverType, batchDriver, dequeueCount, failed, tryAgainLater, toProcess, throwOnException);
+                        await ProcessBatchAsync(pageGroup.Key.ScanId, driverType, batchDriver, dequeueCount, failed, tryAgainLater, toProcess, throwOnException);
                     }
                     else
                     {
@@ -254,6 +254,7 @@ namespace NuGet.Insights.Worker
         }
 
         private async Task ProcessBatchAsync(
+            string scanId,
             CatalogScanDriverType driverType,
             ICatalogLeafScanBatchDriver batchDriver,
             long dequeueCount,
@@ -332,7 +333,7 @@ namespace NuGet.Insights.Worker
             }
 
             // filter out ignored catalog leaf scans
-            var filteredScans = _packageFilter.FilterCatalogLeafScans(scans);
+            var filteredScans = _packageFilter.FilterCatalogLeafItems(scanId, scans);
 
             // Execute the batch logic
             BatchMessageProcessorResult<CatalogLeafScan> result;
@@ -406,7 +407,7 @@ namespace NuGet.Insights.Worker
                 }
 
                 // check if the catalog leaf scan is ignored
-                var filteredScans = _packageFilter.FilterCatalogLeafScans([scan]);
+                var filteredScans = _packageFilter.FilterCatalogLeafItems(scan.ScanId, [scan]);
 
                 // Execute the non-batch logic
                 DriverResult result;

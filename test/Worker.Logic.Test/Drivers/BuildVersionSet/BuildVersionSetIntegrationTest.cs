@@ -8,6 +8,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
     public class BuildVersionSetIntegrationTest : BaseCatalogScanIntegrationTest
     {
         private const string BuildVersionSetDir = nameof(BuildVersionSet);
+        private const string BuildVersionSet_IgnoredPackagesDir = nameof(BuildVersionSet_IgnoredPackages);
         private const string BuildVersionSet_WithDeleteDir = nameof(BuildVersionSet_WithDelete);
         private const string BuildVersionSet_WithDuplicatesDir = nameof(BuildVersionSet_WithDuplicates);
         private const string BuildVersionSet_WithUnicodeDuplicatesDir = nameof(BuildVersionSet_WithUnicodeDuplicates);
@@ -28,6 +29,25 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
             // Assert
             await AssertOutputAsync(BuildVersionSetDir, Step1);
+        }
+
+        [Fact]
+        public async Task BuildVersionSet_IgnoredPackages()
+        {
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2025-04-23T21:18:45.5295392Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2025-04-23T21:22:16.2507724Z", CultureInfo.InvariantCulture);
+            ConfigureWorkerSettings = x => x.IgnoredPackages =
+                [new IgnoredPackagePattern { IdRegex = @"Milvasoft|[^A-Za-z0-9_\.\-]|FluidSharp", MinTimestamp = min0, MaxTimestamp = max1.AddTicks(-1) }];
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(min0);
+
+            // Act
+            await UpdateAsync(max1);
+
+            // Assert
+            await AssertOutputAsync(BuildVersionSet_IgnoredPackagesDir, Step1);
         }
 
         [Fact]

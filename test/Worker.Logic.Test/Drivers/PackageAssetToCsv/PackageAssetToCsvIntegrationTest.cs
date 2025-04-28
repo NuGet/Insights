@@ -6,7 +6,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
     public class PackageAssetToCsvIntegrationTest : BaseCatalogLeafScanToCsvIntegrationTest<PackageAsset>
     {
         private const string PackageAssetToCsvDir = nameof(PackageAssetToCsv);
-        private const string PackageAssetToCsv_ExcludedPackagesDir = nameof(PackageAssetToCsv_ExcludedPackages);
+        private const string PackageAssetToCsv_IgnoredPackagesDir = nameof(PackageAssetToCsv_IgnoredPackages);
         private const string PackageAssetToCsv_WithSingleBucketDir = nameof(PackageAssetToCsv_WithSingleBucket);
         private const string PackageAssetToCsv_WithDeleteDir = nameof(PackageAssetToCsv_WithDelete);
         private const string PackageAssetToCsv_WithDuplicatesDir = nameof(PackageAssetToCsv_WithDuplicates);
@@ -37,7 +37,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
         }
 
         [Fact]
-        public async Task PackageAssetToCsv_ExcludedPackages()
+        public async Task PackageAssetToCsv_IgnoredPackages()
         {
             // Arrange
             var min0 = DateTimeOffset.Parse("2025-04-23T21:18:45.5295392Z", CultureInfo.InvariantCulture);
@@ -53,7 +53,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             await UpdateAsync(max1);
 
             // Assert
-            await AssertOutputAsync(PackageAssetToCsv_ExcludedPackagesDir, Step1, 0);
+            await AssertOutputAsync(PackageAssetToCsv_IgnoredPackagesDir, Step1, 0);
             var apiRequests = HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.Host.EndsWith("nuget.org", StringComparison.OrdinalIgnoreCase));
             Assert.All(apiRequests, r => Assert.DoesNotContain("Milvasoft", r.RequestUri.AbsoluteUri, StringComparison.OrdinalIgnoreCase));
             Assert.All(apiRequests, r => Assert.DoesNotContain("test2.avaloni", r.RequestUri.AbsoluteUri, StringComparison.OrdinalIgnoreCase));
