@@ -150,7 +150,7 @@ namespace NuGet.Insights
                     _telemetryClient,
                     _logger,
                     _loggerFactory);
-                _serviceClients.TryUpdate(settings, serviceClients, serviceClients);
+                _serviceClients[settings] = serviceClients;
 
                 return serviceClients;
             }
