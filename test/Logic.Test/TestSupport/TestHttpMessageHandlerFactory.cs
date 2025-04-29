@@ -20,9 +20,9 @@ namespace NuGet.Insights
 
         public SendMessageWithBaseAsync? OnSendAsync { get; set; }
 
-        public LimitedConcurrentQueue<HttpRequestMessage> Requests { get; } = new(limit: 1000);
+        public LimitedConcurrentQueue<HttpRequestMessage> Requests { get; } = new(limit: 2000);
 
-        public LimitedConcurrentQueue<(HttpRequestMessage OriginalRequest, HttpResponseMessage Response)> RequestAndResponses { get; } = new(limit: 1000);
+        public LimitedConcurrentQueue<(HttpRequestMessage OriginalRequest, HttpResponseMessage Response)> RequestAndResponses { get; } = new(limit: 2000);
 
         public IEnumerable<HttpResponseMessage> Responses => RequestAndResponses
             .Select(x => x.Response);

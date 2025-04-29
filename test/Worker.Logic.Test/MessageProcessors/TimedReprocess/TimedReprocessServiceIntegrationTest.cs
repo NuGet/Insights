@@ -18,6 +18,8 @@ namespace NuGet.Insights.Worker.TimedReprocess
         public async Task TimedReprocess_AllReprocessDrivers()
         {
             // Arrange
+            HttpMessageHandlerFactory.Requests.Limit = int.MaxValue;
+            HttpMessageHandlerFactory.RequestAndResponses.Limit = int.MaxValue;
             await CatalogScanService.InitializeAsync();
             var min0 = DateTimeOffset.Parse("2024-04-25T02:12:34.0496440Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2024-04-25T02:13:04.3170295Z", CultureInfo.InvariantCulture);
