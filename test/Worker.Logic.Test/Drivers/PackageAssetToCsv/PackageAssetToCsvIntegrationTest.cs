@@ -7,6 +7,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
     {
         private const string PackageAssetToCsvDir = nameof(PackageAssetToCsv);
         private const string PackageAssetToCsv_IgnoredPackagesDir = nameof(PackageAssetToCsv_IgnoredPackages);
+        private const string PackageAssetToCsv_IgnoredPackages_PruneCsvDir = nameof(PackageAssetToCsv_IgnoredPackages_PruneCsv);
         private const string PackageAssetToCsv_WithSingleBucketDir = nameof(PackageAssetToCsv_WithSingleBucket);
         private const string PackageAssetToCsv_WithDeleteDir = nameof(PackageAssetToCsv_WithDelete);
         private const string PackageAssetToCsv_WithDuplicatesDir = nameof(PackageAssetToCsv_WithDuplicates);
@@ -57,6 +58,36 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             var apiRequests = HttpMessageHandlerFactory.Requests.Where(x => x.RequestUri.Host.EndsWith("nuget.org", StringComparison.OrdinalIgnoreCase));
             Assert.All(apiRequests, r => Assert.DoesNotContain("Milvasoft", r.RequestUri.AbsoluteUri, StringComparison.OrdinalIgnoreCase));
             Assert.All(apiRequests, r => Assert.DoesNotContain("test2.avaloni", r.RequestUri.AbsoluteUri, StringComparison.OrdinalIgnoreCase));
+        }
+
+        [Fact]
+        public async Task PackageAssetToCsv_IgnoredPackages_PruneCsv()
+        {
+            // Arrange
+            var min0 = DateTimeOffset.Parse("2025-04-23T21:18:45.5295392Z", CultureInfo.InvariantCulture);
+            var max1 = DateTimeOffset.Parse("2025-04-23T21:20:31.1453877Z", CultureInfo.InvariantCulture);
+            var max2 = DateTimeOffset.Parse("2025-04-23T21:22:16.2507724Z", CultureInfo.InvariantCulture);
+            ConfigureWorkerSettings = x => x.IgnoredPackages =
+                [new IgnoredPackagePattern { IdRegex = @"[^A-Za-z0-9_\.\-]|FluidSharp", MinTimestamp = min0, MaxTimestamp = max2.AddTicks(-1) }];
+
+            await CatalogScanService.InitializeAsync();
+            await SetCursorAsync(CatalogScanDriverType.LoadPackageArchive, max2);
+            await SetCursorAsync(min0);
+
+            // Act
+            await UpdateAsync(max1);
+
+            // Assert
+            await AssertOutputAsync(PackageAssetToCsv_IgnoredPackages_PruneCsvDir, Step1, 0);
+
+            // Arrange
+            Options.Value.IgnoredPackages[0].IdRegex = @"Milvasoft|[^A-Za-z0-9_\.\-]|FluidSharp";
+
+            // Act
+            await UpdateAsync(max2);
+
+            // Assert
+            await AssertOutputAsync(PackageAssetToCsv_IgnoredPackages_PruneCsvDir, Step2, 0);
         }
 
         [Fact]

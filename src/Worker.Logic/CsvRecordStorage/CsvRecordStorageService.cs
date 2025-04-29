@@ -27,6 +27,7 @@ namespace NuGet.Insights.Worker
 
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ICsvReader _csvReader;
+        private readonly PackageFilter _packageFilter;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<CsvRecordStorageService> _logger;
@@ -54,12 +55,14 @@ namespace NuGet.Insights.Worker
         public CsvRecordStorageService(
             ServiceClientFactory serviceClientFactory,
             ICsvReader csvReader,
+            PackageFilter packageFilter,
             IOptions<NuGetInsightsWorkerSettings> options,
             ITelemetryClient telemetryClient,
             ILogger<CsvRecordStorageService> logger)
         {
             _serviceClientFactory = serviceClientFactory;
             _csvReader = csvReader;
+            _packageFilter = packageFilter;
             _options = options;
             _telemetryClient = telemetryClient;
             _logger = logger;
@@ -315,70 +318,77 @@ namespace NuGet.Insights.Worker
                 }
             }
 
-            if (isFinalPrune)
+            if (isFinalPrune && records.Count > 0)
             {
-                var recordToDuplicates = new Dictionary<T, DuplicateRecord<T>>(records.Count, T.KeyComparer);
-                var allDuplicates = new List<DuplicateRecord<T>>();
-                foreach (var record in records)
-                {
-                    if (recordToDuplicates.TryGetValue(record, out var duplicates))
-                    {
-                        if (duplicates.Other is null)
-                        {
-                            duplicates.Other = new List<T> { duplicates.Record };
-                        }
-                        else
-                        {
-                            duplicates.Other.Add(record);
-                        }
+                _packageFilter.FilterCsvRecords(destContainer, records);
 
-                        allDuplicates.Add(duplicates);
-                    }
-                    else
-                    {
-                        recordToDuplicates.Add(record, new DuplicateRecord<T> { Record = record });
-                    }
-                }
-
-                if (allDuplicates.Count > 0)
-                {
-                    using var errorCsv = new StringWriter();
-                    var totalWritten = 0;
-                    const int maxWrite = 10;
-                    var totalErrorCount = 0;
-                    T.WriteHeader(errorCsv);
-                    foreach (var duplicates in allDuplicates)
-                    {
-                        if (totalWritten < maxWrite - 1)
-                        {
-                            var written = 0;
-                            foreach (var record in duplicates.Enumerate())
-                            {
-                                written++;
-                                if (written > 2 && totalWritten >= maxWrite)
-                                {
-                                    break;
-                                }
-
-                                record.Write(errorCsv);
-                            }
-
-                            totalWritten += written;
-                        }
-
-                        totalErrorCount += duplicates.Count;
-                    }
-
-                    throw new InvalidOperationException(
-                        $"At least two records had the same key.{Environment.NewLine}" +
-                        $"Type: {typeof(T).FullName}{Environment.NewLine}" +
-                        $"Key fields: {string.Join(", ", T.KeyFields)}{Environment.NewLine}" +
-                        $"Total duplicates: {totalErrorCount}{Environment.NewLine}" +
-                        $"Sample of duplicate records (as CSV):{Environment.NewLine}{errorCsv}");
-                }
+                RejectDuplicateRecords(records);
             }
 
             return records;
+        }
+
+        private static void RejectDuplicateRecords<T>(List<T> records) where T : ICsvRecord<T>
+        {
+            var recordToDuplicates = new Dictionary<T, DuplicateRecord<T>>(records.Count, T.KeyComparer);
+            var allDuplicates = new List<DuplicateRecord<T>>();
+            foreach (var record in records)
+            {
+                if (recordToDuplicates.TryGetValue(record, out var duplicates))
+                {
+                    if (duplicates.Other is null)
+                    {
+                        duplicates.Other = new List<T> { duplicates.Record };
+                    }
+                    else
+                    {
+                        duplicates.Other.Add(record);
+                    }
+
+                    allDuplicates.Add(duplicates);
+                }
+                else
+                {
+                    recordToDuplicates.Add(record, new DuplicateRecord<T> { Record = record });
+                }
+            }
+
+            if (allDuplicates.Count > 0)
+            {
+                using var errorCsv = new StringWriter();
+                var totalWritten = 0;
+                const int maxWrite = 10;
+                var totalErrorCount = 0;
+                T.WriteHeader(errorCsv);
+                foreach (var duplicates in allDuplicates)
+                {
+                    if (totalWritten < maxWrite - 1)
+                    {
+                        var written = 0;
+                        foreach (var record in duplicates.Enumerate())
+                        {
+                            written++;
+                            if (written > 2 && totalWritten >= maxWrite)
+                            {
+                                break;
+                            }
+
+                            record.Write(errorCsv);
+                        }
+
+                        totalWritten += written;
+                    }
+
+                    totalErrorCount += duplicates.Count;
+                }
+
+                throw new InvalidOperationException(
+                    $"At least two records had the same key.{Environment.NewLine}" +
+                    $"Type: {typeof(T).FullName}{Environment.NewLine}" +
+                    $"Key fields: {string.Join(", ", T.KeyFields)}{Environment.NewLine}" +
+                    $"Total duplicates: {totalErrorCount}{Environment.NewLine}" +
+                    $"Sample of duplicate records (as CSV):{Environment.NewLine}{errorCsv}");
+            }
         }
 
         private struct DuplicateRecord<T> where T : ICsvRecord<T>

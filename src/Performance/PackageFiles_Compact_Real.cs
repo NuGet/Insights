@@ -43,9 +43,11 @@ public class PackageFiles_Compact_Real
             telemetryClientWrapper,
             LoggerFactory);
         CsvReader = new CsvReaderAdapter(LoggerFactory.CreateLogger<CsvReaderAdapter>());
+        var packageFilter = new PackageFilter(telemetryClientWrapper, options);
         Service = new CsvRecordStorageService(
             serviceClientFactory,
             CsvReader,
+            packageFilter,
             options,
             telemetryClientWrapper,
             LoggerFactory.CreateLogger<CsvRecordStorageService>());

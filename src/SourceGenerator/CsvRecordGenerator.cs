@@ -178,6 +178,7 @@ namespace NuGet.Insights
                     .Where(x => !x.IsImplicitlyDeclared)
                     .Where(x => !x.IsStatic)
                     .OfType<IPropertySymbol>()
+                    .Where(x => x.ExplicitInterfaceImplementations.IsEmpty)
                     .OrderByDescending(x => x.Locations.First().SourceSpan.Start));
 
                 currentType = currentType.BaseType;
