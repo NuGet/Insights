@@ -173,6 +173,7 @@ namespace NuGet.Insights.Worker
                 try
                 {
                     complete = await isCompleteAsync();
+                    lastException = null;
                 }
                 catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
                 {
