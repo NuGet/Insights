@@ -631,6 +631,7 @@ namespace NuGet.Insights.Worker
                 "Content-Length",
                 "Content-MD5",
                 "Date",
+                "ETag",
                 "Expires",
                 "Pragma",
                 "Server",

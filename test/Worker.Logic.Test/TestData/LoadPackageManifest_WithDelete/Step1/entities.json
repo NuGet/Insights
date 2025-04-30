@@ -7,9 +7,6 @@
         "Content-Type": [
           "text/xml"
         ],
-        "ETag": [
-          "\u00220x8D8A4907FE65FDF\u0022"
-        ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:39:40 GMT"
         ],
@@ -30,9 +27,6 @@
       "Available": true,
       "CommitTimestamp": "2020-12-20T02:39:03.372413+00:00",
       "HttpHeaders": {
-        "ETag": [
-          "\u00221d6eaa77527f9da\u0022"
-        ],
         "Last-Modified": [
           "Thu, 14 Jan 2021 19:00:00 GMT"
         ]
@@ -50,11 +44,11 @@
         "Content-Type": [
           "text/xml"
         ],
-        "ETag": [
-          "\u00220x8D8A493B1169DA5\u0022"
-        ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 03:02:31 GMT"
+        ],
+        "Transfer-Encoding": [
+          "chunked"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -76,11 +70,11 @@
         "Content-Type": [
           "text/xml"
         ],
-        "ETag": [
-          "\u00220x8D8A4907FE10786\u0022"
-        ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:39:40 GMT"
+        ],
+        "Transfer-Encoding": [
+          "chunked"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -102,11 +96,11 @@
         "Content-Type": [
           "text/xml"
         ],
-        "ETag": [
-          "\u00220x8D8A4905A4EDAA9\u0022"
-        ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:38:37 GMT"
+        ],
+        "Transfer-Encoding": [
+          "chunked"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -128,11 +122,11 @@
         "Content-Type": [
           "text/xml"
         ],
-        "ETag": [
-          "\u00220x8D8A4905A5740E6\u0022"
-        ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:38:37 GMT"
+        ],
+        "Transfer-Encoding": [
+          "chunked"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -154,11 +148,11 @@
         "Content-Type": [
           "text/xml"
         ],
-        "ETag": [
-          "\u00220x8D8A4905A427BFC\u0022"
-        ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:38:36 GMT"
+        ],
+        "Transfer-Encoding": [
+          "chunked"
         ],
         "x-ms-blob-type": [
           "BlockBlob"

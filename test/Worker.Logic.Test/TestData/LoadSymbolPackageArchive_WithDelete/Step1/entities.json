@@ -11,9 +11,6 @@
       "Available": true,
       "CommitTimestamp": "2020-12-20T02:39:03.372413+00:00",
       "HttpHeaders": {
-        "ETag": [
-          "\u00221d6eab838b0fd56\u0022"
-        ],
         "Last-Modified": [
           "Thu, 14 Jan 2021 21:00:00 GMT"
         ],
@@ -48,9 +45,6 @@
         "Content-Type": [
           "binary/octet-stream"
         ],
-        "ETag": [
-          "\u00220x8D8A490837254E0\u0022"
-        ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:39:46 GMT"
         ],
@@ -77,9 +71,6 @@
         "Content-Type": [
           "binary/octet-stream"
         ],
-        "ETag": [
-          "\u00220x8D8A4903E458B1F\u0022"
-        ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:37:49 GMT"
         ],
@@ -105,9 +96,6 @@
       "HttpHeaders": {
         "Content-Type": [
           "binary/octet-stream"
-        ],
-        "ETag": [
-          "\u00220x8D8A4903BAC7744\u0022"
         ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:37:45 GMT"

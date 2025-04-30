@@ -7,9 +7,6 @@
         "Content-Type": [
           "text/xml"
         ],
-        "ETag": [
-          "\u00220x8D8930B98D10E3E\u0022"
-        ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
         ],
@@ -32,9 +29,6 @@
       "HttpHeaders": {
         "Content-Type": [
           "text/xml"
-        ],
-        "ETag": [
-          "\u00220x8D8930B99043725\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
@@ -59,11 +53,11 @@
         "Content-Type": [
           "text/xml"
         ],
-        "ETag": [
-          "\u00220x8D8930BD55418A4\u0022"
-        ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:37:10 GMT"
+        ],
+        "Transfer-Encoding": [
+          "chunked"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -85,11 +79,11 @@
         "Content-Type": [
           "text/xml"
         ],
-        "ETag": [
-          "\u00220x8D8930BD53D305F\u0022"
-        ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:37:10 GMT"
+        ],
+        "Transfer-Encoding": [
+          "chunked"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -111,11 +105,11 @@
         "Content-Type": [
           "text/xml"
         ],
-        "ETag": [
-          "\u00220x8D8930BD5568A2A\u0022"
-        ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:37:10 GMT"
+        ],
+        "Transfer-Encoding": [
+          "chunked"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -136,9 +130,6 @@
       "HttpHeaders": {
         "Content-Type": [
           "text/xml"
-        ],
-        "ETag": [
-          "\u00220x8D8930B990E999F\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
@@ -163,11 +154,11 @@
         "Content-Type": [
           "text/xml"
         ],
-        "ETag": [
-          "\u00220x8D8930B994EBD9F\u0022"
-        ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
+        ],
+        "Transfer-Encoding": [
+          "chunked"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -189,11 +180,11 @@
         "Content-Type": [
           "text/xml"
         ],
-        "ETag": [
-          "\u00220x8D8930B99200276\u0022"
-        ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
+        ],
+        "Transfer-Encoding": [
+          "chunked"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -215,11 +206,11 @@
         "Content-Type": [
           "text/xml"
         ],
-        "ETag": [
-          "\u00220x8D8930B995B1C56\u0022"
-        ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
+        ],
+        "Transfer-Encoding": [
+          "chunked"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -241,11 +232,11 @@
         "Content-Type": [
           "text/xml"
         ],
-        "ETag": [
-          "\u00220x8D8930B98C46156\u0022"
-        ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:28 GMT"
+        ],
+        "Transfer-Encoding": [
+          "chunked"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -267,11 +258,11 @@
         "Content-Type": [
           "text/xml"
         ],
-        "ETag": [
-          "\u00220x8D8930B99235EA0\u0022"
-        ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
+        ],
+        "Transfer-Encoding": [
+          "chunked"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -293,11 +284,11 @@
         "Content-Type": [
           "text/xml"
         ],
-        "ETag": [
-          "\u00220x8D8930B992E0F42\u0022"
-        ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
+        ],
+        "Transfer-Encoding": [
+          "chunked"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -319,11 +310,11 @@
         "Content-Type": [
           "text/xml"
         ],
-        "ETag": [
-          "\u00220x8D8930B994A9E0D\u0022"
-        ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
+        ],
+        "Transfer-Encoding": [
+          "chunked"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -345,11 +336,11 @@
         "Content-Type": [
           "text/xml"
         ],
-        "ETag": [
-          "\u00220x8D8930B98FF05E8\u0022"
-        ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
+        ],
+        "Transfer-Encoding": [
+          "chunked"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -371,11 +362,11 @@
         "Content-Type": [
           "text/xml"
         ],
-        "ETag": [
-          "\u00220x8D8930BAFB30EE2\u0022"
-        ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:36:07 GMT"
+        ],
+        "Transfer-Encoding": [
+          "chunked"
         ],
         "x-ms-blob-type": [
           "BlockBlob"

@@ -7,9 +7,6 @@
         "Content-Type": [
           "binary/octet-stream"
         ],
-        "ETag": [
-          "\u00220x8D8ED6EB6B15B75\u0022"
-        ],
         "Last-Modified": [
           "Mon, 22 Mar 2021 20:11:44 GMT"
         ],
@@ -42,9 +39,6 @@
       "HttpHeaders": {
         "Content-Type": [
           "binary/octet-stream"
-        ],
-        "ETag": [
-          "\u00220x8D8ED6EDCF11441\u0022"
         ],
         "Last-Modified": [
           "Mon, 22 Mar 2021 20:12:48 GMT"

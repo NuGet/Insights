@@ -7,9 +7,6 @@
         "Content-Type": [
           "application/octet-stream"
         ],
-        "ETag": [
-          "\u00220x8DD82AD106AD4F7\u0022"
-        ],
         "Last-Modified": [
           "Wed, 23 Apr 2025 21:23:17 GMT"
         ],
@@ -39,9 +36,6 @@
       "HttpHeaders": {
         "Content-Type": [
           "application/octet-stream"
-        ],
-        "ETag": [
-          "\u00220x8DD82AC9D88C961\u0022"
         ],
         "Last-Modified": [
           "Wed, 23 Apr 2025 21:20:04 GMT"
@@ -73,9 +67,6 @@
         "Content-Type": [
           "application/octet-stream"
         ],
-        "ETag": [
-          "\u00220x8DD82ACB17357D8\u0022"
-        ],
         "Last-Modified": [
           "Wed, 23 Apr 2025 21:20:37 GMT"
         ],
@@ -106,9 +97,6 @@
         "Content-Type": [
           "application/octet-stream"
         ],
-        "ETag": [
-          "\u00220x8DD82AD10829296\u0022"
-        ],
         "Last-Modified": [
           "Wed, 23 Apr 2025 21:23:17 GMT"
         ],
@@ -138,9 +126,6 @@
       "HttpHeaders": {
         "Content-Type": [
           "application/octet-stream"
-        ],
-        "ETag": [
-          "\u00220x8DD82AD106F0D60\u0022"
         ],
         "Last-Modified": [
           "Wed, 23 Apr 2025 21:23:17 GMT"

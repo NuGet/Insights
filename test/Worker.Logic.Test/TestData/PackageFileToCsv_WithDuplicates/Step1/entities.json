@@ -39,9 +39,6 @@
         "Content-Type": [
           "application/octet-stream"
         ],
-        "ETag": [
-          "\u00220x8D8932128B8E869\u0022"
-        ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 22:09:49 GMT"
         ],
@@ -110,9 +107,6 @@
       "HttpHeaders": {
         "Content-Type": [
           "application/octet-stream"
-        ],
-        "ETag": [
-          "\u00220x8D893201156EBE7\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 22:02:01 GMT"
@@ -193,9 +187,6 @@
         "Content-Type": [
           "application/octet-stream"
         ],
-        "ETag": [
-          "\u00220x8D89320DDFF6977\u0022"
-        ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 22:07:44 GMT"
         ],
@@ -269,9 +260,6 @@
       "HttpHeaders": {
         "Content-Type": [
           "application/octet-stream"
-        ],
-        "ETag": [
-          "\u00220x8D8932011743E35\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 22:02:01 GMT"
@@ -347,9 +335,6 @@
         "Content-Type": [
           "application/octet-stream"
         ],
-        "ETag": [
-          "\u00220x8D893213E2B0AFC\u0022"
-        ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 22:10:25 GMT"
         ],
@@ -423,9 +408,6 @@
       "HttpHeaders": {
         "Content-Type": [
           "application/octet-stream"
-        ],
-        "ETag": [
-          "\u00220x8D8932129A093DE\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 22:09:51 GMT"
@@ -516,9 +498,6 @@
         "Content-Type": [
           "application/octet-stream"
         ],
-        "ETag": [
-          "\u00220x8D8931FD97989EC\u0022"
-        ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 22:00:27 GMT"
         ],
@@ -582,9 +561,6 @@
       "HttpHeaders": {
         "Content-Type": [
           "application/octet-stream"
-        ],
-        "ETag": [
-          "\u00220x8D6F40E65F7606C\u0022"
         ],
         "Last-Modified": [
           "Tue, 18 Jun 2019 16:59:59 GMT"
@@ -654,9 +630,6 @@
       "HttpHeaders": {
         "Content-Type": [
           "application/octet-stream"
-        ],
-        "ETag": [
-          "\u00220x8D8931FFE9DFFD6\u0022"
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 22:01:29 GMT"
