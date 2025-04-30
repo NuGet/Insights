@@ -618,7 +618,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
         [Fact]
         public async Task HandlesInvalidZipEntry()
         {
-            ConfigureWorkerSettings = x => x.PackageContentFileExtensions = new List<string> { "props" };
+            ConfigureWorkerSettings = x => x.PackageContentFileExtensions = new List<string> { ".props" };
 
             await Target.InitializeAsync();
             var leaf = new CatalogLeafScan
@@ -635,7 +635,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             var records = output.Value;
             Assert.Single(records);
             Assert.All(records, r => Assert.Equal(PackageContentResultType.InvalidZipEntry, r.ResultType));
-            Assert.All(records, r => Assert.Equal("props", r.FileExtension));
+            Assert.All(records, r => Assert.Equal(".props", r.FileExtension));
 
             Assert.Equal("build/BunnyTail.ServiceRegistration.props", records[0].Path);
             Assert.Null(records[0].SHA256);
@@ -645,6 +645,38 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             Assert.Null(records[0].TruncatedSize);
             Assert.Null(records[0].Content);
             Assert.Null(records[0].DuplicateContent);
+        }
+
+        [Fact]
+        public async Task CanFilterByFileName()
+        {
+            ConfigureWorkerSettings = x => x.PackageContentFileExtensions = new List<string> { "/DotnetToolSettings.xml" };
+
+            await Target.InitializeAsync();
+            var leaf = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2019.09.23.14.18.51/dotnet-ef.3.0.0.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "dotnet-ef",
+                PackageVersion = "3.0.0",
+            };
+
+            var output = await Target.ProcessLeafAsync(leaf);
+
+            Assert.Equal(DriverResultType.Success, output.Type);
+            var records = output.Value;
+            Assert.Single(records);
+            Assert.All(records, r => Assert.Equal(PackageContentResultType.AllLoaded, r.ResultType));
+            Assert.All(records, r => Assert.Equal("/DotnetToolSettings.xml", r.FileExtension));
+
+            Assert.Equal("tools/netcoreapp3.0/any/DotnetToolSettings.xml", records[0].Path);
+            Assert.Equal("A9+sBYZLKaPt7Sy4+RFGxwer/8dr9mr46ehCHrDUKNU=", records[0].SHA256);
+            Assert.Equal(2, records[0].SequenceNumber);
+            Assert.Equal(194, records[0].Size);
+            Assert.False(records[0].Truncated);
+            Assert.Null(records[0].TruncatedSize);
+            Assert.Equal(191, records[0].Content.Length);
+            Assert.False(records[0].DuplicateContent);
         }
     }
 }
