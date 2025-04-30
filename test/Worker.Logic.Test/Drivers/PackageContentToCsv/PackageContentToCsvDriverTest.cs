@@ -614,5 +614,37 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             Assert.Equal(11613, records[0].Content.Length);
             Assert.False(records[0].DuplicateContent);
         }
+
+        [Fact]
+        public async Task HandlesInvalidZipEntry()
+        {
+            ConfigureWorkerSettings = x => x.PackageContentFileExtensions = new List<string> { "props" };
+
+            await Target.InitializeAsync();
+            var leaf = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2025.04.30.01.28.16/bunnytail.serviceregistration.1.6.0.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "BunnyTail.ServiceRegistration",
+                PackageVersion = "1.6.0",
+            };
+
+            var output = await Target.ProcessLeafAsync(leaf);
+
+            Assert.Equal(DriverResultType.Success, output.Type);
+            var records = output.Value;
+            Assert.Single(records);
+            Assert.All(records, r => Assert.Equal(PackageContentResultType.InvalidZipEntry, r.ResultType));
+            Assert.All(records, r => Assert.Equal("props", r.FileExtension));
+
+            Assert.Equal("build/BunnyTail.ServiceRegistration.props", records[0].Path);
+            Assert.Null(records[0].SHA256);
+            Assert.Equal(4, records[0].SequenceNumber);
+            Assert.Null(records[0].Size);
+            Assert.Null(records[0].Truncated);
+            Assert.Null(records[0].TruncatedSize);
+            Assert.Null(records[0].Content);
+            Assert.Null(records[0].DuplicateContent);
+        }
     }
 }

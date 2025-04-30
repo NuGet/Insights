@@ -42,9 +42,10 @@ configurable by file extension and maximum cumulative file size per package.
 
 A result is considered available if it AllLoaded or PartiallyLoaded.
 
-| Enum value      | Description                                                     |
-| --------------- | --------------------------------------------------------------- |
-| AllLoaded       | All matching content files for the package were loaded          |
-| Deleted         | The package is deleted and therefore has no content files       |
-| NoContent       | The package has no matching content files                       |
-| PartiallyLoaded | At least one of the content files for the package was truncated |
+| Enum value      | Description                                                           |
+| --------------- | --------------------------------------------------------------------- |
+| AllLoaded       | All matching content files for the package were loaded                |
+| Deleted         | The package is deleted and therefore has no content files             |
+| InvalidZipEntry | The content file could not be loaded due to an error in the ZIP entry |
+| NoContent       | The package has no matching content files                             |
+| PartiallyLoaded | At least one of the content files for the package was truncated       |

@@ -9,5 +9,6 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
         NoContent,
         AllLoaded,
         PartiallyLoaded,
+        InvalidZipEntry,
     }
 }
