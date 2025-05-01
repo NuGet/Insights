@@ -636,6 +636,7 @@ namespace NuGet.Insights.Worker
                 "Pragma",
                 "Server",
                 "Strict-Transport-Security",
+                "Transfer-Encoding",
                 "Vary",
                 "X-Azure-Ref",
                 "X-Azure-Ref-OriginShield",

@@ -79,9 +79,6 @@
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
         ],
-        "Transfer-Encoding": [
-          "chunked"
-        ],
         "x-ms-blob-type": [
           "BlockBlob"
         ],
@@ -104,9 +101,6 @@
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
-        ],
-        "Transfer-Encoding": [
-          "chunked"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -131,9 +125,6 @@
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
         ],
-        "Transfer-Encoding": [
-          "chunked"
-        ],
         "x-ms-blob-type": [
           "BlockBlob"
         ],
@@ -156,9 +147,6 @@
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:28 GMT"
-        ],
-        "Transfer-Encoding": [
-          "chunked"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -183,9 +171,6 @@
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
         ],
-        "Transfer-Encoding": [
-          "chunked"
-        ],
         "x-ms-blob-type": [
           "BlockBlob"
         ],
@@ -208,9 +193,6 @@
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
-        ],
-        "Transfer-Encoding": [
-          "chunked"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
@@ -235,9 +217,6 @@
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
         ],
-        "Transfer-Encoding": [
-          "chunked"
-        ],
         "x-ms-blob-type": [
           "BlockBlob"
         ],
@@ -260,9 +239,6 @@
         ],
         "Last-Modified": [
           "Fri, 27 Nov 2020 19:35:29 GMT"
-        ],
-        "Transfer-Encoding": [
-          "chunked"
         ],
         "x-ms-blob-type": [
           "BlockBlob"
