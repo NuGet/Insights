@@ -144,7 +144,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
 
                     var records = new List<PackageContent>();
                     var addedHashes = new HashSet<string>();
-                    var remainingBytes = _options.Value.PackageContentMaxSizePerPackage;
+                    var extensionToRemainingBytes = new Dictionary<string, int>();
                     foreach (var entry in filteredEntries)
                     {
                         var record = new PackageContent(scanId, scanTimestamp, leaf, PackageContentResultType.AllLoaded)
@@ -153,6 +153,12 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
                             FileExtension = entry.ExtensionAndOrder.Extension,
                             SequenceNumber = entry.SequenceNumber,
                         };
+
+                        if (!extensionToRemainingBytes.TryGetValue(entry.ExtensionAndOrder.Extension, out var remainingBytes))
+                        {
+                            remainingBytes = _options.Value.PackageContentMaxSizePerPackage;
+                            extensionToRemainingBytes.Add(entry.ExtensionAndOrder.Extension, remainingBytes);
+                        }
 
                         try
                         {
@@ -194,7 +200,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
                             if (addedHashes.Add(record.SHA256))
                             {
                                 record.Content = content.Length > 0 ? content : null;
-                                remainingBytes = Math.Max(0, remainingBytes - size);
+                                extensionToRemainingBytes[entry.ExtensionAndOrder.Extension] = Math.Max(0, remainingBytes - size);
                                 record.DuplicateContent = false;
                             }
                             else

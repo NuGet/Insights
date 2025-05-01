@@ -678,5 +678,29 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             Assert.Equal(191, records[0].Content.Length);
             Assert.False(records[0].DuplicateContent);
         }
+
+        [Fact]
+        public async Task AppliesLimitPerFileExtension()
+        {
+            ConfigureWorkerSettings = x => x.PackageContentFileExtensions = new List<string> { ".psm1", "DotnetToolSettings.xml" };
+
+            await Target.InitializeAsync();
+            var leaf = new CatalogLeafScan
+            {
+                Url = "https://api.nuget.org/v3/catalog0/data/2020.06.15.17.50.20/powershell.7.0.2.json",
+                LeafType = CatalogLeafType.PackageDetails,
+                PackageId = "PowerShell",
+                PackageVersion = "7.0.2",
+            };
+
+            var output = await Target.ProcessLeafAsync(leaf);
+
+            Assert.Equal(DriverResultType.Success, output.Type);
+            var records = output.Value;
+
+            Assert.Contains(records, x => x.FileExtension == ".psm1" && x.Truncated == true);
+            Assert.Contains(records, x => x.FileExtension == "DotnetToolSettings.xml" && x.Truncated == false);
+            Assert.DoesNotContain(records, x => x.FileExtension == "DotnetToolSettings.xml" && x.Truncated == true);
+        }
     }
 }
