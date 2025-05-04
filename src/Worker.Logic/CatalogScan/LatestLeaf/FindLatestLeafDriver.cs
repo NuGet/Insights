@@ -8,17 +8,20 @@ namespace NuGet.Insights.Worker
         private readonly CatalogClient _catalogClient;
         private readonly ILatestPackageLeafStorageFactory<T> _storageFactory;
         private readonly LatestLeafStorageService<T> _storageService;
+        private readonly PackageFilter _packageFilter;
         private readonly ILogger<FindLatestLeafDriver<T>> _logger;
 
         public FindLatestLeafDriver(
             CatalogClient catalogClient,
             ILatestPackageLeafStorageFactory<T> storageFactory,
             LatestLeafStorageService<T> storageService,
+            PackageFilter packageFilter,
             ILogger<FindLatestLeafDriver<T>> logger)
         {
             _catalogClient = catalogClient;
             _storageFactory = storageFactory;
             _storageService = storageService;
+            _packageFilter = packageFilter;
             _logger = logger;
         }
 
@@ -40,9 +43,10 @@ namespace NuGet.Insights.Worker
         public async Task<CatalogPageScanResult> ProcessPageAsync(CatalogPageScan pageScan)
         {
             var page = await _catalogClient.GetCatalogPageAsync(pageScan.Url);
-            var items = page.GetLeavesInBounds(pageScan.Min, pageScan.Max, excludeRedundantLeaves: true);
+            IReadOnlyList<CatalogLeafItem> items = page.GetLeavesInBounds(pageScan.Min, pageScan.Max, excludeRedundantLeaves: true);
 
-            // Prune leaf items outside of the timestamp bounds to avoid issues with out-of-bound leaves being processed.
+            items = _packageFilter.FilterCatalogLeafItems(pageScan.ScanId, items);
+
             var leafItemToRank = page.GetLeafItemToRank();
             leafItemToRank = items.ToDictionary(x => (ICatalogLeafItem)x, x => leafItemToRank[x]);
 
@@ -58,7 +62,7 @@ namespace NuGet.Insights.Worker
             throw new NotSupportedException();
         }
 
-        private async Task AddAsync(List<CatalogLeafItem> items, ILatestPackageLeafStorage<T> storage)
+        private async Task AddAsync(IReadOnlyList<CatalogLeafItem> items, ILatestPackageLeafStorage<T> storage)
         {
             await _storageService.AddAsync(items, storage);
             _logger.LogInformation("Updated latest leaf entities for {Count} items.", items.Count);

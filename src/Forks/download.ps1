@@ -82,7 +82,7 @@ $readme += [Environment]::NewLine
 foreach ($pair in $files.GetEnumerator()) {
     $repository = $pair.Key
     $revision = $pair.Value.Revision
-    Write-Host "Downloads files from $repository@$revision"
+    Write-Host "Downloading files from $repository@$revision"
 
     # Download files
     foreach ($file in @($pair.Value.License) + $pair.Value.Files) {
@@ -95,9 +95,70 @@ foreach ($pair in $files.GetEnumerator()) {
         }
         
         Write-Host "  Saving $file"
-        $response = Invoke-WebRequest $url -UseBasicParsing
-        $content = $response.Content.Replace("`r`n", "`n").Replace("`n", [Environment]::NewLine).TrimEnd()
-        [IO.File]::WriteAllLines($destPath, $content, $encoding)
+        $retryCount = 0
+        $maxRetries = 5
+        $success = $false
+
+        while (-not $success -and $retryCount -lt $maxRetries) {
+            try {
+                $response = Invoke-WebRequest $url -UseBasicParsing
+
+                if ($response.Headers["x-ratelimit-remaining"]) {
+                    $rateLimitRemaining = $response.Headers["x-ratelimit-remaining"]
+                    Write-Host "  x-ratelimit-remaining: $rateLimitRemaining"
+                }
+
+                $content = $response.Content.Replace("`r`n", "`n").Replace("`n", [Environment]::NewLine).TrimEnd()
+                [IO.File]::WriteAllLines($destPath, $content, $encoding)
+                $success = $true
+            }
+            catch [System.Net.WebException] {
+                if ($_.Exception.Response.Headers["x-ratelimit-remaining"]) {
+                    $rateLimitRemaining = $_.Exception.Response.Headers["x-ratelimit-remaining"]
+                    Write-Host "  x-ratelimit-remaining: $rateLimitRemaining"
+                }
+
+                $retryCount++
+                if ($_.Exception.Response -and ($_.Exception.Response.StatusCode -eq 429 -or $_.Exception.Response.StatusCode -eq 403)) {
+                    $rateLimitReset = $_.Exception.Response.Headers["x-ratelimit-reset"]
+                    $retryAfter = $_.Exception.Response.Headers["Retry-After"]
+
+                    if ($rateLimitReset) {
+                        $currentTime = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+                        $waitTime = [int]$rateLimitReset - $currentTime
+                        if ($waitTime -gt 0) {
+                            Write-Host "  Rate limit reached. Waiting until reset in $waitTime seconds..."
+                            Start-Sleep -Seconds $waitTime
+                        }
+                    } elseif ($retryAfter) {
+                        if ($retryAfter -as [int]) {
+                            Write-Host "  Received Retry-After header as seconds. Retrying after $retryAfter seconds..."
+                            Start-Sleep -Seconds ([int]$retryAfter)
+                        } elseif ($retryAfter -as [string]) {
+                            $retryAfterDate = [DateTimeOffset]::Parse($retryAfter)
+                            $currentTime = [DateTimeOffset]::UtcNow
+                            $waitTime = ($retryAfterDate - $currentTime).TotalSeconds
+                            if ($waitTime -gt 0) {
+                                Write-Host "  Received Retry-After header as date. Retrying after $waitTime seconds..."
+                                Start-Sleep -Seconds ([int]$waitTime)
+                            }
+                        } else {
+                            Write-Host "  Invalid Retry-After header format. Retrying after a default delay of 30 seconds..."
+                            Start-Sleep -Seconds 30
+                        }
+                    } else {
+                        Write-Host "  Rate limit reached. Retrying after a default delay of 30 seconds..."
+                        Start-Sleep -Seconds 30
+                    }
+                } else {
+                    throw
+                }
+            }
+        }
+
+        if (-not $success) {
+            throw "Failed to download $file after $maxRetries attempts."
+        }
     }
 
     # Apply patches

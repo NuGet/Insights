@@ -5,7 +5,7 @@
 
 namespace NuGet.Insights.Worker
 {
-    public interface IPackageRecord
+    public interface IPackageRecord : IPackageCommitRecord
     {
         Guid? ScanId { get; set; }
 
@@ -14,12 +14,6 @@ namespace NuGet.Insights.Worker
         string LowerId { get; set; }
 
         string Identity { get; set; }
-
-        string Id { get; set; }
-
-        string Version { get; set; }
-
-        DateTimeOffset CatalogCommitTimestamp { get; set; }
 
         DateTimeOffset? Created { get; set; }
     }

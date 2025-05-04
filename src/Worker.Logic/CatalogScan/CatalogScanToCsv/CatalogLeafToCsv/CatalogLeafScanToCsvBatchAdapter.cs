@@ -12,12 +12,14 @@ namespace NuGet.Insights.Worker
             CsvTemporaryStorageFactory intermediateStorageFactory,
             ICsvResultStorage<T> resultStorage,
             ICatalogLeafToCsvBatchDriver<T> driver,
-            ServiceClientFactory serviceClientFactory) : base(
+            ServiceClientFactory serviceClientFactory,
+            IOptions<NuGetInsightsWorkerSettings> options) : base(
                 intermediateStorageFactory,
                 intermediateStorageFactory.Create(resultStorage),
                 driver,
                 serviceClientFactory,
-                [resultStorage.ResultContainerName])
+                [resultStorage.ResultContainerName],
+                options)
         {
             _driver = driver;
         }
@@ -43,12 +45,14 @@ namespace NuGet.Insights.Worker
             ICsvResultStorage<T1> resultStorage1,
             ICsvResultStorage<T2> resultStorage2,
             ICatalogLeafToCsvBatchDriver<T1, T2> driver,
-            ServiceClientFactory serviceClientFactory) : base(
+            ServiceClientFactory serviceClientFactory,
+            IOptions<NuGetInsightsWorkerSettings> options) : base(
                 intermediateStorageFactory,
                 intermediateStorageFactory.Create(resultStorage1, resultStorage2),
                 driver,
                 serviceClientFactory,
-                [resultStorage1.ResultContainerName, resultStorage2.ResultContainerName])
+                [resultStorage1.ResultContainerName, resultStorage2.ResultContainerName],
+                options)
         {
             _driver = driver;
         }
@@ -76,12 +80,14 @@ namespace NuGet.Insights.Worker
             ICsvResultStorage<T2> resultStorage2,
             ICsvResultStorage<T3> resultStorage3,
             ICatalogLeafToCsvBatchDriver<T1, T2, T3> driver,
-            ServiceClientFactory serviceClientFactory) : base(
+            ServiceClientFactory serviceClientFactory,
+            IOptions<NuGetInsightsWorkerSettings> options) : base(
                 intermediateStorageFactory,
                 intermediateStorageFactory.Create(resultStorage1, resultStorage2, resultStorage3),
                 driver,
                 serviceClientFactory,
-                [resultStorage1.ResultContainerName, resultStorage2.ResultContainerName, resultStorage3.ResultContainerName])
+                [resultStorage1.ResultContainerName, resultStorage2.ResultContainerName, resultStorage3.ResultContainerName],
+                options)
         {
             _driver = driver;
         }

@@ -12,6 +12,7 @@ namespace NuGet.Insights.Worker
 
         private readonly ICatalogScanDriverFactory _driverFactory;
         private readonly CatalogScanStorageService _storageService;
+        private readonly PackageFilter _packageFilter;
         private readonly IMessageEnqueuer _messageEnqueuer;
         private readonly ITelemetryClient _telemetryClient;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
@@ -20,6 +21,7 @@ namespace NuGet.Insights.Worker
         public CatalogLeafScanMessageProcessor(
             ICatalogScanDriverFactory driverFactory,
             CatalogScanStorageService storageService,
+            PackageFilter packageFilter,
             IMessageEnqueuer messageEnqueuer,
             ITelemetryClient telemetryClient,
             IOptions<NuGetInsightsWorkerSettings> options,
@@ -27,6 +29,7 @@ namespace NuGet.Insights.Worker
         {
             _driverFactory = driverFactory;
             _storageService = storageService;
+            _packageFilter = packageFilter;
             _messageEnqueuer = messageEnqueuer;
             _telemetryClient = telemetryClient;
             _options = options;
@@ -63,7 +66,7 @@ namespace NuGet.Insights.Worker
 
                     if (batchDriver != null)
                     {
-                        await ProcessBatchAsync(driverType, batchDriver, dequeueCount, failed, tryAgainLater, toProcess, throwOnException);
+                        await ProcessBatchAsync(pageGroup.Key.ScanId, driverType, batchDriver, dequeueCount, failed, tryAgainLater, toProcess, throwOnException);
                     }
                     else
                     {
@@ -251,6 +254,7 @@ namespace NuGet.Insights.Worker
         }
 
         private async Task ProcessBatchAsync(
+            string scanId,
             CatalogScanDriverType driverType,
             ICatalogLeafScanBatchDriver batchDriver,
             long dequeueCount,
@@ -328,11 +332,14 @@ namespace NuGet.Insights.Worker
                 return;
             }
 
+            // filter out ignored catalog leaf scans
+            var filteredScans = _packageFilter.FilterCatalogLeafItems(scanId, scans);
+
             // Execute the batch logic
             BatchMessageProcessorResult<CatalogLeafScan> result;
             try
             {
-                result = await batchDriver.ProcessLeavesAsync(scans);
+                result = await batchDriver.ProcessLeavesAsync(filteredScans);
             }
             catch (Exception ex) when (!throwOnException)
             {
@@ -399,17 +406,27 @@ namespace NuGet.Insights.Worker
                     continue;
                 }
 
+                // check if the catalog leaf scan is ignored
+                var filteredScans = _packageFilter.FilterCatalogLeafItems(scan.ScanId, [scan]);
+
                 // Execute the non-batch logic
                 DriverResult result;
-                try
+                if (filteredScans.Count > 0)
                 {
-                    result = await nonBatchDriver.ProcessLeafAsync(scan);
+                    try
+                    {
+                        result = await nonBatchDriver.ProcessLeafAsync(scan);
+                    }
+                    catch (Exception ex) when (!throwOnException)
+                    {
+                        _logger.LogError(ex, "Processing a catalog leaf scan failed for {Id} {Version}.", scan.PackageId, scan.PackageVersion);
+                        failed.Add(message);
+                        continue;
+                    }
                 }
-                catch (Exception ex) when (!throwOnException)
+                else
                 {
-                    _logger.LogError(ex, "Processing a catalog leaf scan failed for {Id} {Version}.", scan.PackageId, scan.PackageVersion);
-                    failed.Add(message);
-                    continue;
+                    result = DriverResult.Success();
                 }
 
                 // Update storage with respect to the driver result

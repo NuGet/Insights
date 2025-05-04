@@ -43,9 +43,6 @@
         "Content-Type": [
           "binary/octet-stream"
         ],
-        "ETag": [
-          "\u00220x8DC64CD2EAB1AF7\u0022"
-        ],
         "Last-Modified": [
           "Thu, 25 Apr 2024 02:12:39 GMT"
         ],
@@ -101,9 +98,6 @@
         "Content-Type": [
           "binary/octet-stream"
         ],
-        "ETag": [
-          "\u00220x8DC64CD7E68C198\u0022"
-        ],
         "Last-Modified": [
           "Thu, 25 Apr 2024 02:14:53 GMT"
         ],
@@ -158,9 +152,6 @@
       "HttpHeaders": {
         "Content-Type": [
           "binary/octet-stream"
-        ],
-        "ETag": [
-          "\u00220x8DC64CD2F58F4EC\u0022"
         ],
         "Last-Modified": [
           "Thu, 25 Apr 2024 02:12:40 GMT"

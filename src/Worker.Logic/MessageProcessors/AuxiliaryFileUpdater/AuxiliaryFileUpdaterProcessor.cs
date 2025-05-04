@@ -15,27 +15,18 @@ namespace NuGet.Insights.Worker.AuxiliaryFileUpdater
         private const string AsOfTimestampMetadata = "asOfTimestamp";
         private const string VersionSetCommitTimestampMetadata = "versionSetCommitTimestamp";
 
-        private readonly ServiceClientFactory _serviceClientFactory;
         private readonly CsvRecordStorageService _csvRecordStorageService;
         private readonly IVersionSetProvider _versionSetProvider;
         private readonly IAuxiliaryFileUpdater<TInput, TRecord> _updater;
-        private readonly IOptions<NuGetInsightsWorkerSettings> _options;
-        private readonly ILogger<AuxiliaryFileUpdaterProcessor<TInput, TRecord>> _logger;
 
         public AuxiliaryFileUpdaterProcessor(
-            ServiceClientFactory serviceClientFactory,
             CsvRecordStorageService csvRecordStorageService,
             IVersionSetProvider versionSetProvider,
-            IAuxiliaryFileUpdater<TInput, TRecord> updater,
-            IOptions<NuGetInsightsWorkerSettings> options,
-            ILogger<AuxiliaryFileUpdaterProcessor<TInput, TRecord>> logger)
+            IAuxiliaryFileUpdater<TInput, TRecord> updater)
         {
-            _serviceClientFactory = serviceClientFactory;
             _csvRecordStorageService = csvRecordStorageService;
             _versionSetProvider = versionSetProvider;
             _updater = updater;
-            _options = options;
-            _logger = logger;
         }
 
         public async Task<TaskStateProcessResult> ProcessAsync(AuxiliaryFileUpdaterMessage<TRecord> message, TaskState taskState, long dequeueCount)

@@ -7,7 +7,7 @@ using NuGet.Packaging;
 namespace NuGet.Insights.Worker.CatalogDataToCsv
 {
     [CsvRecord]
-    public partial record CatalogLeafItemRecord : IAggregatedCsvRecord<CatalogLeafItemRecord>
+    public partial record CatalogLeafItemRecord : IAggregatedCsvRecord<CatalogLeafItemRecord>, IPackageCommitRecord
     {
         public CatalogLeafItemRecord()
         {
@@ -100,6 +100,12 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
 
         [KustoType("dynamic")]
         public string SignaturePackageEntry { get; set; }
+
+        DateTimeOffset IPackageCommitRecord.CatalogCommitTimestamp
+        {
+            get => CommitTimestamp;
+            set => CommitTimestamp = value;
+        }
 
         public static string CsvCompactMessageSchemaName => "cc.cl";
         public static IEqualityComparer<CatalogLeafItemRecord> KeyComparer { get; } = CatalogLeafItemRecordKeyComparer.Instance;

@@ -524,7 +524,7 @@ namespace NuGet.Insights.Worker
             Assert.Empty(MockMessageEnqueuer.Invocations);
             Assert.Empty(result.Failed);
             Assert.Empty(result.TryAgainLater);
-            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
+            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync(Options.Value);
             Assert.False(await tableServiceClient.TableExistsAsync((await CatalogScanStorageService.GetLeafScanTableAsync(StorageSuffixA)).Name));
             Assert.Equal(0, await CatalogScanStorageService.GetLeafScanCountLowerBoundAsync(StorageSuffixB, ScanId));
         }

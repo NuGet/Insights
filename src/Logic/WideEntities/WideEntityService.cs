@@ -76,6 +76,7 @@ namespace NuGet.Insights.WideEntities
 
         private readonly ServiceClientFactory _serviceClientFactory;
         private readonly ITelemetryClient _telemetryClient;
+        private readonly IOptions<NuGetInsightsSettings> _options;
         private readonly int _maxEntitySize;
 
         public WideEntityService(
@@ -85,6 +86,7 @@ namespace NuGet.Insights.WideEntities
         {
             _serviceClientFactory = serviceClientFactory ?? throw new ArgumentNullException(nameof(serviceClientFactory));
             _telemetryClient = telemetryClient ?? throw new ArgumentNullException(nameof(telemetryClient));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
 
             if (options.Value.UseDevelopmentStorage)
             {
@@ -672,7 +674,7 @@ namespace NuGet.Insights.WideEntities
 
         private async Task<TableClientWithRetryContext> GetTableAsync(string tableName)
         {
-            return (await _serviceClientFactory.GetTableServiceClientAsync())
+            return (await _serviceClientFactory.GetTableServiceClientAsync(_options.Value))
                 .GetTableClient(tableName);
         }
     }

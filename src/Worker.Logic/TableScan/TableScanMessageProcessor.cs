@@ -19,6 +19,7 @@ namespace NuGet.Insights.Worker
         private readonly SchemaSerializer _serializer;
         private readonly TablePrefixScanner _prefixScanner;
         private readonly TableScanDriverFactory<T> _driverFactory;
+        private readonly IOptions<NuGetInsightsSettings> _options;
         private readonly ITelemetryClient _telemetryClient;
         private readonly ILogger<TableScanMessageProcessor<T>> _logger;
         private readonly IMetric _sinceStarted;
@@ -35,6 +36,7 @@ namespace NuGet.Insights.Worker
             SchemaSerializer serializer,
             TablePrefixScanner prefixScanner,
             TableScanDriverFactory<T> driverFactory,
+            IOptions<NuGetInsightsSettings> options,
             ITelemetryClient telemetryClient,
             ILogger<TableScanMessageProcessor<T>> logger)
         {
@@ -44,6 +46,7 @@ namespace NuGet.Insights.Worker
             _serializer = serializer;
             _prefixScanner = prefixScanner;
             _driverFactory = driverFactory;
+            _options = options;
             _telemetryClient = telemetryClient;
             _logger = logger;
 
@@ -315,7 +318,7 @@ namespace NuGet.Insights.Worker
 
         private async Task<TableClientWithRetryContext> GetTableAsync(string name)
         {
-            return (await _serviceClientFactory.GetTableServiceClientAsync()).GetTableClient(name);
+            return (await _serviceClientFactory.GetTableServiceClientAsync(_options.Value)).GetTableClient(name);
         }
     }
 }

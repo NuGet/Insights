@@ -333,7 +333,7 @@ namespace NuGet.Insights
         {
             if (!LogicTestSettings.HasStorageConnectionError)
             {
-                var client = await Host.Services.GetRequiredService<ServiceClientFactory>().GetTableServiceClientAsync();
+                var client = await Host.Services.GetRequiredService<ServiceClientFactory>().GetTableServiceClientAsync(Options.Value);
                 await client.DeleteTableAsync(TableName);
             }
 

@@ -13,9 +13,6 @@
         "Content-Type": [
           "binary/octet-stream"
         ],
-        "ETag": [
-          "\u00220x8DA060F465B7B7F\u0022"
-        ],
         "Last-Modified": [
           "Mon, 14 Mar 2022 23:06:30 GMT"
         ],
@@ -46,9 +43,6 @@
         "Content-Type": [
           "binary/octet-stream"
         ],
-        "ETag": [
-          "\u00220x8DA060F3B5C55CD\u0022"
-        ],
         "Last-Modified": [
           "Mon, 14 Mar 2022 23:06:11 GMT"
         ],
@@ -72,9 +66,6 @@
         "Content-Type": [
           "binary/octet-stream"
         ],
-        "ETag": [
-          "\u00220x8DA060F287F1FCB\u0022"
-        ],
         "Last-Modified": [
           "Mon, 14 Mar 2022 23:05:40 GMT"
         ],
@@ -97,9 +88,6 @@
       "HttpHeaders": {
         "Content-Type": [
           "binary/octet-stream"
-        ],
-        "ETag": [
-          "\u00220x8DA060F354D9092\u0022"
         ],
         "Last-Modified": [
           "Mon, 14 Mar 2022 23:06:01 GMT"

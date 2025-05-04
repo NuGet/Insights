@@ -54,7 +54,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
 
             if (blob.State == KustoBlobIngestionState.Created)
             {
-                var blobUrlWithSas = await _serviceClientFactory.GetBlobReadUrlAsync(blob.ContainerName, blob.BlobName);
+                var blobUrlWithSas = await _serviceClientFactory.GetBlobReadUrlAsync(_options.Value, blob.ContainerName, blob.BlobName);
 
                 var tempTableName = _csvRecordContainers.GetTempKustoTableName(blob.ContainerName);
                 var ingestionProperties = new KustoQueuedIngestionProperties(_options.Value.KustoDatabaseName, tempTableName)
@@ -220,7 +220,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     .Split('/', StringSplitOptions.RemoveEmptyEntries)
                     .Last()
                     .TakeWhile(char.IsAsciiLetterOrDigit).ToArray());
-                var tableClient = await _serviceClientFactory.GetTableServiceClientAsync();
+                var tableClient = await _serviceClientFactory.GetTableServiceClientAsync(_options.Value);
                 statusTable = tableClient.GetTableClient(tableName);
             }
 

@@ -214,7 +214,7 @@ namespace NuGet.Insights
                 if (useBlobClient != false)
                 {
                     lastUrl = await _redirectResolver.FollowRedirectsAsync(request.Url);
-                    blobClient = await _serviceClientFactory.TryGetBlobClientAsync(lastUrl);
+                    blobClient = await _serviceClientFactory.TryGetBlobClientAsync(_options.Value, lastUrl);
                     if (useBlobClient == true && blobClient is null)
                     {
                         throw new InvalidOperationException("Unable to build a blob client for URL: " + lastUrl.Obfuscate());

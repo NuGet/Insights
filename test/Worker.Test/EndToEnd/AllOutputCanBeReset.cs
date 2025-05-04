@@ -52,7 +52,7 @@ namespace NuGet.Insights.Worker
             }
 
             // Add marker data to all existing tables and containers. The destroy step below should remove these.
-            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
+            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync(Options.Value);
             var allTables = await tableServiceClient.QueryAsync().ToListAsync();
             foreach (var table in allTables)
             {
@@ -66,7 +66,7 @@ namespace NuGet.Insights.Worker
                 await tableClient.AddEntityAsync(entity);
             }
 
-            var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
+            var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync(Options.Value);
             var allContainers = await blobServiceClient.GetBlobContainersAsync().ToListAsync();
             foreach (var container in allContainers)
             {
@@ -173,6 +173,7 @@ namespace NuGet.Insights.Worker
                 try
                 {
                     complete = await isCompleteAsync();
+                    lastException = null;
                 }
                 catch (RequestFailedException ex) when (ex.Status == (int)HttpStatusCode.NotFound)
                 {

@@ -125,14 +125,6 @@ namespace NuGet.Insights.Kusto
             return true;
         }
 
-        private TimeSpan GetTimeUntilRefresh(ServiceClients serviceClients)
-        {
-            var sinceCreated = DateTimeOffset.UtcNow - serviceClients.Created;
-            var untilRefresh = _options.Value.ServiceClientRefreshPeriod - sinceCreated;
-
-            return untilRefresh > TimeSpan.Zero ? untilRefresh : TimeSpan.Zero;
-        }
-
         private static async Task<ServiceClients> GetServiceClientsAsync(
             DateTimeOffset created,
             NuGetInsightsWorkerSettings settings,

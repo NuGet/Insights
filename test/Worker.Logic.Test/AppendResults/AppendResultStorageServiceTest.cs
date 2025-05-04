@@ -270,7 +270,7 @@ namespace NuGet.Insights.Worker
 
         private async Task CreateDestContainerAsync()
         {
-            await (await ServiceClientFactory.GetBlobServiceClientAsync()).GetBlobContainerClient(DestContainer).CreateIfNotExistsAsync(retry: true);
+            await (await ServiceClientFactory.GetBlobServiceClientAsync(Options.Value)).GetBlobContainerClient(DestContainer).CreateIfNotExistsAsync(retry: true);
         }
     }
 }

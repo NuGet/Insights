@@ -15,7 +15,7 @@ namespace NuGet.Insights.Worker.LoadBucketedPackage
             ServiceClientFactory serviceClientFactory,
             IOptions<NuGetInsightsWorkerSettings> options)
         {
-            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value.BucketedPackageTableName);
+            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value, options.Value.BucketedPackageTableName);
             _serviceClientFactory = serviceClientFactory;
             _options = options;
         }
@@ -32,7 +32,7 @@ namespace NuGet.Insights.Worker.LoadBucketedPackage
 
         internal async Task<TableClientWithRetryContext> GetTableAsync()
         {
-            var tableServiceClient = await _serviceClientFactory.GetTableServiceClientAsync();
+            var tableServiceClient = await _serviceClientFactory.GetTableServiceClientAsync(_options.Value);
             var table = tableServiceClient.GetTableClient(_options.Value.BucketedPackageTableName);
             return table;
         }

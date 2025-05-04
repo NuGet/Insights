@@ -598,7 +598,7 @@ namespace NuGet.Insights.Worker
 
         public async Task<IKustoIngestionResult> MakeTableReportIngestionResultAsync(StorageSourceOptions options, Status status)
         {
-            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
+            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync(Options.Value);
             var writeTable = tableServiceClient.GetTableClient(StoragePrefix + "1kir1");
             await writeTable.CreateIfNotExistsAsync();
             await writeTable.AddEntityAsync(new IngestionStatus(options.SourceId)
@@ -631,10 +631,12 @@ namespace NuGet.Insights.Worker
                 "Content-Length",
                 "Content-MD5",
                 "Date",
+                "ETag",
                 "Expires",
                 "Pragma",
                 "Server",
                 "Strict-Transport-Security",
+                "Transfer-Encoding",
                 "Vary",
                 "X-Azure-Ref",
                 "X-Azure-Ref-OriginShield",
@@ -1061,7 +1063,7 @@ namespace NuGet.Insights.Worker
         {
             var dir = Path.Combine(testName, stepName);
 
-            var table = (await ServiceClientFactory.GetTableServiceClientAsync()).GetTableClient(tableName);
+            var table = (await ServiceClientFactory.GetTableServiceClientAsync(Options.Value)).GetTableClient(tableName);
             await AssertEntityOutputAsync<TableEntity>(
                 table,
                 dir,

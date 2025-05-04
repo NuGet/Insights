@@ -8,15 +8,18 @@ namespace NuGet.Insights.Worker.BuildVersionSet
         private readonly CatalogClient _catalogClient;
         private readonly VersionSetAggregateStorageService _aggregateStorageService;
         private readonly VersionSetService _versionSetService;
+        private readonly PackageFilter _packageFilter;
 
         public BuildVersionSetDriver(
             CatalogClient catalogClient,
             VersionSetAggregateStorageService aggregateStorageService,
-            VersionSetService versionSetService)
+            VersionSetService versionSetService,
+            PackageFilter packageFilter)
         {
             _catalogClient = catalogClient;
             _aggregateStorageService = aggregateStorageService;
             _versionSetService = versionSetService;
+            _packageFilter = packageFilter;
         }
 
         public async Task InitializeAsync()
@@ -38,7 +41,9 @@ namespace NuGet.Insights.Worker.BuildVersionSet
         {
             var page = await _catalogClient.GetCatalogPageAsync(pageScan.Url);
 
-            var leafItems = page.GetLeavesInBounds(pageScan.Min, pageScan.Max, excludeRedundantLeaves: true);
+            IReadOnlyList<CatalogLeafItem> leafItems = page.GetLeavesInBounds(pageScan.Min, pageScan.Max, excludeRedundantLeaves: true);
+
+            leafItems = _packageFilter.FilterCatalogLeafItems(pageScan.ScanId, leafItems);
 
             if (leafItems.Any())
             {

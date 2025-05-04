@@ -20,7 +20,7 @@ namespace NuGet.Insights.Worker.Workflow
             ITelemetryClient telemetryClient,
             ILogger<WorkflowStorageService> logger)
         {
-            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value.WorkflowRunTableName);
+            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value, options.Value.WorkflowRunTableName);
             _serviceClientFactory = serviceClientFactory;
             _options = options;
             _telemetryClient = telemetryClient;
@@ -106,7 +106,7 @@ namespace NuGet.Insights.Worker.Workflow
 
         private async Task<TableClientWithRetryContext> GetTableAsync()
         {
-            var serviceClient = await _serviceClientFactory.GetTableServiceClientAsync();
+            var serviceClient = await _serviceClientFactory.GetTableServiceClientAsync(_options.Value);
             var table = serviceClient.GetTableClient(_options.Value.WorkflowRunTableName);
             return table;
         }

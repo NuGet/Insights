@@ -91,7 +91,7 @@ namespace NuGet.Insights.Worker
 
         public async Task<IReadOnlyList<CsvRecordBlob>> GetBlobsAsync(string containerName)
         {
-            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync();
+            var serviceClient = await _serviceClientFactory.GetBlobServiceClientAsync(_options.Value);
             var container = serviceClient.GetBlobContainerClient(containerName);
             var storage = _containerNameToInfo[containerName];
 

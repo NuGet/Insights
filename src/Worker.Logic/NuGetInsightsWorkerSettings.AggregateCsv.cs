@@ -3,7 +3,7 @@
 
 namespace NuGet.Insights.Worker
 {
-    public partial class NuGetInsightsWorkerSettings : NuGetInsightsSettings
+    public partial class NuGetInsightsWorkerSettings
     {
         public int AppendResultStorageBucketCount { get; set; } = 1000; // this is the maximum number of blobs fetched in a single request
         public int AppendResultBigModeRecordThreshold { get; set; } = 25_000;

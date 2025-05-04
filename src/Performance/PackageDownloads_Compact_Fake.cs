@@ -39,9 +39,11 @@ public class PackageDownloads_Compact_Fake
             telemetryClientWrapper,
             LoggerFactory);
         var csvReader = new CsvReaderAdapter(LoggerFactory.CreateLogger<CsvReaderAdapter>());
+        var packageFilter = new PackageFilter(telemetryClientWrapper, options);
         var csvRecordStorageService = new CsvRecordStorageService(
             serviceClientFactory,
             csvReader,
+            packageFilter,
             options,
             telemetryClientWrapper,
             LoggerFactory.CreateLogger<CsvRecordStorageService>());
@@ -54,12 +56,9 @@ public class PackageDownloads_Compact_Fake
             options);
 
         Processor = new AuxiliaryFileUpdaterProcessor<AsOfData<PackageDownloads>, PackageDownloadRecord>(
-            serviceClientFactory,
             csvRecordStorageService,
             versionSetProvider,
-            updater,
-            options,
-            LoggerFactory.CreateLogger<AuxiliaryFileUpdaterProcessor<AsOfData<PackageDownloads>, PackageDownloadRecord>>());
+            updater);
         Message = new AuxiliaryFileUpdaterMessage<PackageDownloadRecord>();
         TaskState = new TaskState();
 

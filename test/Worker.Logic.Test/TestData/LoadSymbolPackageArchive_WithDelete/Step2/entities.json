@@ -35,9 +35,6 @@
         "Content-Type": [
           "binary/octet-stream"
         ],
-        "ETag": [
-          "\u00220x8D8A490837254E0\u0022"
-        ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:39:46 GMT"
         ],
@@ -64,9 +61,6 @@
         "Content-Type": [
           "binary/octet-stream"
         ],
-        "ETag": [
-          "\u00220x8D8A4903E458B1F\u0022"
-        ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:37:49 GMT"
         ],
@@ -92,9 +86,6 @@
       "HttpHeaders": {
         "Content-Type": [
           "binary/octet-stream"
-        ],
-        "ETag": [
-          "\u00220x8D8A4903BAC7744\u0022"
         ],
         "Last-Modified": [
           "Sun, 20 Dec 2020 02:37:45 GMT"

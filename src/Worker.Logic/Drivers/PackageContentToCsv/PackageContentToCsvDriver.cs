@@ -144,7 +144,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
 
                     var records = new List<PackageContent>();
                     var addedHashes = new HashSet<string>();
-                    var remainingBytes = _options.Value.PackageContentMaxSizePerPackage;
+                    var extensionToRemainingBytes = new Dictionary<string, int>();
                     foreach (var entry in filteredEntries)
                     {
                         var record = new PackageContent(scanId, scanTimestamp, leaf, PackageContentResultType.AllLoaded)
@@ -154,50 +154,64 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
                             SequenceNumber = entry.SequenceNumber,
                         };
 
-                        using var entryStream = entry.Entry.Open();
-                        using var sha256 = SHA256.Create();
-                        using var cryptoStream = new CryptoStream(entryStream, sha256, CryptoStreamMode.Read);
-                        var limitBytes = Math.Min(_options.Value.PackageContentMaxSizePerFile, remainingBytes);
-                        using var limitStream = new LimitStream(cryptoStream, limitBytes);
-                        using var streamReader = new StreamReader(limitStream);
-                        var content = streamReader.ReadToEnd();
-                        var size = limitStream.ReadBytes;
-
-                        record.Truncated = limitStream.Truncated;
-                        record.TruncatedSize = limitStream.Truncated ? size : null;
-
-                        if (limitStream.Truncated)
+                        if (!extensionToRemainingBytes.TryGetValue(entry.ExtensionAndOrder.Extension, out var remainingBytes))
                         {
-                            // The limit stream reads one additional byte to detect that the data was indeed truncated.
-                            size++;
+                            remainingBytes = _options.Value.PackageContentMaxSizePerPackage;
+                            extensionToRemainingBytes.Add(entry.ExtensionAndOrder.Extension, remainingBytes);
+                        }
 
-                            var buffer = ArrayPool<byte>.Shared.Rent(1024);
-                            try
+                        try
+                        {
+                            using var entryStream = entry.Entry.Open();
+                            using var sha256 = SHA256.Create();
+                            using var cryptoStream = new CryptoStream(entryStream, sha256, CryptoStreamMode.Read);
+                            var limitBytes = Math.Min(_options.Value.PackageContentMaxSizePerFile, remainingBytes);
+                            using var limitStream = new LimitStream(cryptoStream, limitBytes);
+                            using var streamReader = new StreamReader(limitStream);
+                            var content = streamReader.ReadToEnd();
+                            var size = limitStream.ReadBytes;
+
+                            record.Truncated = limitStream.Truncated;
+                            record.TruncatedSize = limitStream.Truncated ? size : null;
+
+                            if (limitStream.Truncated)
                             {
-                                int read;
-                                while ((read = cryptoStream.Read(buffer, 0, buffer.Length)) > 0)
+                                // The limit stream reads one additional byte to detect that the data was indeed truncated.
+                                size++;
+
+                                var buffer = ArrayPool<byte>.Shared.Rent(1024);
+                                try
                                 {
-                                    size += read;
+                                    int read;
+                                    while ((read = cryptoStream.Read(buffer, 0, buffer.Length)) > 0)
+                                    {
+                                        size += read;
+                                    }
+                                }
+                                finally
+                                {
+                                    ArrayPool<byte>.Shared.Return(buffer);
                                 }
                             }
-                            finally
+
+                            record.Size = size;
+                            record.SHA256 = sha256.Hash.ToBase64();
+
+                            if (addedHashes.Add(record.SHA256))
                             {
-                                ArrayPool<byte>.Shared.Return(buffer);
+                                record.Content = content.Length > 0 ? content : null;
+                                extensionToRemainingBytes[entry.ExtensionAndOrder.Extension] = Math.Max(0, remainingBytes - size);
+                                record.DuplicateContent = false;
+                            }
+                            else
+                            {
+                                record.DuplicateContent = true;
                             }
                         }
-
-                        record.Size = size;
-                        record.SHA256 = sha256.Hash.ToBase64();
-
-                        if (addedHashes.Add(record.SHA256))
+                        catch (InvalidDataException ex)
                         {
-                            record.Content = content.Length > 0 ? content : null;
-                            remainingBytes = Math.Max(0, remainingBytes - size);
-                            record.DuplicateContent = false;
-                        }
-                        else
-                        {
-                            record.DuplicateContent = true;
+                            record.ResultType = PackageContentResultType.InvalidZipEntry;
+                            _logger.LogInformation(ex, "ZIP archive for {Id} {Version} has an invalid ZIP entry: {Path}", record.Id, record.Version, record.Path);
                         }
 
                         records.Add(record);

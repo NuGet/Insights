@@ -48,6 +48,8 @@ namespace NuGet.Insights.Worker
 
             serviceCollection.AddSingleton<MetricsTimer>();
 
+            serviceCollection.AddSingleton<PackageFilter>();
+
             serviceCollection.AddSingleton<IGenericMessageProcessor, GenericMessageProcessor>();
             serviceCollection.AddSingleton(x => SchemaCollectionBuilder.Default.Build());
             serviceCollection.AddSingleton<SchemaSerializer>();

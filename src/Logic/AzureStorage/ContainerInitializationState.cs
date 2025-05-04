@@ -87,52 +87,52 @@ namespace NuGet.Insights
             return new ContainerInitializationState(initializeAsync, destroyAsync);
         }
 
-        public static ContainerInitializationState BlobContainer(ServiceClientFactory serviceClientFactory, string containerName)
+        public static ContainerInitializationState BlobContainer(ServiceClientFactory serviceClientFactory, StorageSettings storageSettings, string containerName)
         {
             return new ContainerInitializationState(
                 initializeAsync: async () =>
                 {
-                    var serviceClient = await serviceClientFactory.GetBlobServiceClientAsync();
+                    var serviceClient = await serviceClientFactory.GetBlobServiceClientAsync(storageSettings);
                     var container = serviceClient.GetBlobContainerClient(containerName);
                     await container.CreateIfNotExistsAsync(retry: true);
                 },
                 destroyAsync: async () =>
                 {
-                    var serviceClient = await serviceClientFactory.GetBlobServiceClientAsync();
+                    var serviceClient = await serviceClientFactory.GetBlobServiceClientAsync(storageSettings);
                     var container = serviceClient.GetBlobContainerClient(containerName);
                     await container.DeleteIfExistsAsync();
                 });
         }
 
-        public static ContainerInitializationState Table(ServiceClientFactory serviceClientFactory, string tableName)
+        public static ContainerInitializationState Table(ServiceClientFactory serviceClientFactory, StorageSettings storageSettings, string tableName)
         {
             return new ContainerInitializationState(
                 initializeAsync: async () =>
                 {
-                    var serviceClient = await serviceClientFactory.GetTableServiceClientAsync();
+                    var serviceClient = await serviceClientFactory.GetTableServiceClientAsync(storageSettings);
                     var table = serviceClient.GetTableClient(tableName);
                     await table.CreateIfNotExistsAsync(retry: true);
                 },
                 destroyAsync: async () =>
                 {
-                    var serviceClient = await serviceClientFactory.GetTableServiceClientAsync();
+                    var serviceClient = await serviceClientFactory.GetTableServiceClientAsync(storageSettings);
                     var table = serviceClient.GetTableClient(tableName);
                     await table.DeleteAsync();
                 });
         }
 
-        public static ContainerInitializationState Queue(ServiceClientFactory serviceClientFactory, string queueName)
+        public static ContainerInitializationState Queue(ServiceClientFactory serviceClientFactory, StorageSettings storageSettings, string queueName)
         {
             return new ContainerInitializationState(
                 initializeAsync: async () =>
                 {
-                    var serviceClient = await serviceClientFactory.GetQueueServiceClientAsync();
+                    var serviceClient = await serviceClientFactory.GetQueueServiceClientAsync(storageSettings);
                     var queue = serviceClient.GetQueueClient(queueName);
                     await queue.CreateIfNotExistsAsync(retry: true);
                 },
                 destroyAsync: async () =>
                 {
-                    var serviceClient = await serviceClientFactory.GetQueueServiceClientAsync();
+                    var serviceClient = await serviceClientFactory.GetQueueServiceClientAsync(storageSettings);
                     var queue = serviceClient.GetQueueClient(queueName);
                     await queue.DeleteIfExistsAsync();
                 });

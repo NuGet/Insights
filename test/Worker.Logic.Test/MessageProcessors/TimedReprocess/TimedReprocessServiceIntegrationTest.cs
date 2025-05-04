@@ -18,6 +18,8 @@ namespace NuGet.Insights.Worker.TimedReprocess
         public async Task TimedReprocess_AllReprocessDrivers()
         {
             // Arrange
+            HttpMessageHandlerFactory.Requests.Limit = int.MaxValue;
+            HttpMessageHandlerFactory.RequestAndResponses.Limit = int.MaxValue;
             await CatalogScanService.InitializeAsync();
             var min0 = DateTimeOffset.Parse("2024-04-25T02:12:34.0496440Z", CultureInfo.InvariantCulture);
             var max1 = DateTimeOffset.Parse("2024-04-25T02:13:04.3170295Z", CultureInfo.InvariantCulture);
@@ -80,7 +82,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
             await AssertCsvAsync<SymbolPackageArchiveRecord>(Options.Value.SymbolPackageArchiveContainerName, TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageArchives.csv");
             await AssertCsvAsync<SymbolPackageArchiveEntry>(Options.Value.SymbolPackageArchiveEntryContainerName, TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageArchiveEntries.csv");
 
-            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
+            var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync(Options.Value);
             var tables = await tableServiceClient.QueryAsync(prefix: StoragePrefix).ToListAsync();
             Assert.Equal(
                 new string[]
@@ -98,7 +100,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
                 }.Order().ToArray(),
                 tables.Select(x => x.Name).ToArray());
 
-            var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
+            var blobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync(Options.Value);
             var containers = await blobServiceClient.GetBlobContainersAsync(prefix: StoragePrefix).ToListAsync();
             Assert.Equal(
                 new string[]

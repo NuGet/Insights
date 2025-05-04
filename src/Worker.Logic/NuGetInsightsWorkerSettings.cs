@@ -27,5 +27,10 @@ namespace NuGet.Insights.Worker
         /// work items haven't been processed because the work is on the queue but it hasn't been reached yet in the queue.
         /// </summary>
         public int FanOutRequeueMaxMessageCount { get; set; } = 10;
+
+        /// <summary>
+        /// Patterns for package IDs to exclude from the catalog scan.
+        /// </summary>
+        public List<IgnoredPackagePattern> IgnoredPackages { get; set; } = [];
     }
 }

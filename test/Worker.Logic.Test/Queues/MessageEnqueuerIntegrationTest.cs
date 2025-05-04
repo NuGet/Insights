@@ -21,7 +21,7 @@ namespace NuGet.Insights.Worker
 
             await Target.EnqueueAsync(messages);
 
-            PeekedMessage message = await (await ServiceClientFactory.GetQueueServiceClientAsync())
+            PeekedMessage message = await (await ServiceClientFactory.GetQueueServiceClientAsync(Options.Value))
                 .GetQueueClient(Options.Value.WorkQueueName)
                 .PeekMessageAsync();
             Assert.Equal(@"{""n"":""cls"",""v"":1,""d"":{""r"":""Newtonsoft""}}", message.Body.ToString());
@@ -35,7 +35,7 @@ namespace NuGet.Insights.Worker
 
             await Target.EnqueueAsync(messages);
 
-            PeekedMessage message = await (await ServiceClientFactory.GetQueueServiceClientAsync())
+            PeekedMessage message = await (await ServiceClientFactory.GetQueueServiceClientAsync(Options.Value))
                 .GetQueueClient(Options.Value.WorkQueueName)
                 .PeekMessageAsync();
             Assert.Equal(@"{""n"":""cls"",""v"":1,""d"":{""r"":""N\u00EBwt\u00F6ns\u00F6ft""}}", message.Body.ToString());

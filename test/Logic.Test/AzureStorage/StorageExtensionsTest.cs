@@ -128,9 +128,9 @@ namespace NuGet.Insights
         {
             await base.InitializeAsync();
 
-            BlobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync();
-            QueueServiceClient = await ServiceClientFactory.GetQueueServiceClientAsync();
-            TableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync();
+            BlobServiceClient = await ServiceClientFactory.GetBlobServiceClientAsync(Options.Value);
+            QueueServiceClient = await ServiceClientFactory.GetQueueServiceClientAsync(Options.Value);
+            TableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync(Options.Value);
         }
 
         private BlobContainerClient GetContainer(string nameSuffix)

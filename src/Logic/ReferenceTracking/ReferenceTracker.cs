@@ -45,12 +45,12 @@ namespace NuGet.Insights.ReferenceTracking
 
         private async Task<TableClientWithRetryContext> GetOwnerToSubjectTableAsync(string ownerToSubjectTableName)
         {
-            return (await _clientFactory.GetTableServiceClientAsync()).GetTableClient(ownerToSubjectTableName);
+            return (await _clientFactory.GetTableServiceClientAsync(_options.Value)).GetTableClient(ownerToSubjectTableName);
         }
 
         private async Task<TableClientWithRetryContext> GetSubjectToOwnerTableAsync(string subjectToOwnerTableName)
         {
-            return (await _clientFactory.GetTableServiceClientAsync()).GetTableClient(subjectToOwnerTableName);
+            return (await _clientFactory.GetTableServiceClientAsync(_options.Value)).GetTableClient(subjectToOwnerTableName);
         }
 
         public async Task<IReadOnlyList<OwnerReference>> GetOwnersOfSubjectAsync(
