@@ -32,12 +32,5 @@ namespace NuGet.Insights.Worker
         /// Patterns for package IDs to exclude from the catalog scan.
         /// </summary>
         public List<IgnoredPackagePattern> IgnoredPackages { get; set; } = [];
-
-        public class CopyWorkerStorageSettings : IConfigureOptions<NuGetInsightsWorkerSettings>
-        {
-            public void Configure(NuGetInsightsWorkerSettings options)
-            {
-            }
-        }
     }
 }

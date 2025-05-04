@@ -25,7 +25,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<VersionSetService> logger)
         {
-            _initializationState = ContainerInitializationState.BlobContainer(serviceClientFactory, options.Value, options.Value.VersionSetContainerName);
+            _initializationState = ContainerInitializationState.BlobContainer(serviceClientFactory, options.Value, options.Value.VersionSetContainer);
             _serviceClientFactory = serviceClientFactory;
             _telemetryClient = telemetryClient;
             _options = options;
@@ -227,7 +227,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
         private async Task<BlockBlobClient> GetBlobAsync()
         {
             var blobServiceClient = await _serviceClientFactory.GetBlobServiceClientAsync(_options.Value);
-            var container = blobServiceClient.GetBlobContainerClient(_options.Value.VersionSetContainerName);
+            var container = blobServiceClient.GetBlobContainerClient(_options.Value.VersionSetContainer);
             return container.GetBlockBlobClient("version-set.dat");
         }
 

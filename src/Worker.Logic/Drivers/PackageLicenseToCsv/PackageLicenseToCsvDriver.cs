@@ -23,7 +23,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
             _options = options;
         }
 
-        public string ResultContainerName => _options.Value.PackageLicenseContainerName;
+        public string ResultContainerName => _options.Value.PackageLicenseContainer;
         public bool SingleMessagePerId => false;
 
         public Task InitializeAsync()

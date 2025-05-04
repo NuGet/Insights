@@ -154,7 +154,7 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
             ]);
         }
 
-        protected override string DestinationContainerName => Options.Value.PackageFileContainerName;
+        protected override string DestinationContainerName => Options.Value.PackageFileContainer;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageFileToCsv;
         private List<CatalogScanDriverType> MutableLatestLeavesTypes { get; } = [CatalogScanDriverType.LoadPackageArchive];
         public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => MutableLatestLeavesTypes;

@@ -18,7 +18,7 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
             _options = options;
         }
 
-        public string ResultContainerName => _options.Value.PackageVersionContainerName;
+        public string ResultContainerName => _options.Value.PackageVersionContainer;
         public bool SingleMessagePerId => true;
 
         public async Task InitializeAsync()

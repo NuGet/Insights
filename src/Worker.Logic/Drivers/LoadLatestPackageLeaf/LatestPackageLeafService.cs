@@ -15,7 +15,7 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
             ServiceClientFactory serviceClientFactory,
             IOptions<NuGetInsightsWorkerSettings> options)
         {
-            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value, options.Value.LatestPackageLeafTableName);
+            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value, options.Value.LatestPackageLeafTable);
             _serviceClientFactory = serviceClientFactory;
             _options = options;
         }
@@ -41,7 +41,7 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
         internal async Task<TableClientWithRetryContext> GetTableAsync()
         {
             var tableServiceClient = await _serviceClientFactory.GetTableServiceClientAsync(_options.Value);
-            var tableClient = tableServiceClient.GetTableClient(_options.Value.LatestPackageLeafTableName);
+            var tableClient = tableServiceClient.GetTableClient(_options.Value.LatestPackageLeafTable);
             return tableClient;
         }
     }

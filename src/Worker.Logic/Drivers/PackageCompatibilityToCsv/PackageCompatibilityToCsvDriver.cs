@@ -38,7 +38,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         }
 
         public bool SingleMessagePerId => false;
-        public string ResultContainerName => _options.Value.PackageCompatibilityContainerName;
+        public string ResultContainerName => _options.Value.PackageCompatibilityContainer;
 
         public async Task InitializeAsync()
         {

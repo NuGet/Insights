@@ -90,7 +90,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
         {
         }
 
-        protected override string DestinationContainerName => Options.Value.PackageManifestContainerName;
+        protected override string DestinationContainerName => Options.Value.PackageManifestContainer;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageManifestToCsv;
         public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();

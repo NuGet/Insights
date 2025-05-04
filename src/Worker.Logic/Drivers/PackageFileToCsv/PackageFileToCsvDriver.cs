@@ -32,7 +32,7 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
             _options = options;
         }
 
-        public override string ResultContainerName => _options.Value.PackageFileContainerName;
+        public override string ResultContainerName => _options.Value.PackageFileContainer;
         protected override bool NotFoundIsDeleted => true;
         protected override ArtifactFileType FileType => ArtifactFileType.Nupkg;
 

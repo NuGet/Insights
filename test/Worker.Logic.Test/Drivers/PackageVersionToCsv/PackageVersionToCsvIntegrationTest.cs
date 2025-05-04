@@ -162,7 +162,7 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
         }
 
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageVersionToCsv;
-        protected override string DestinationContainerName => Options.Value.PackageVersionContainerName;
+        protected override string DestinationContainerName => Options.Value.PackageVersionContainer;
         public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => Enumerable.Empty<CatalogScanDriverType>();
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => new[] { DriverType };
 
@@ -178,7 +178,7 @@ namespace NuGet.Insights.Worker.PackageVersionToCsv
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {
-            yield return Options.Value.PackageVersionTableName;
+            yield return Options.Value.PackageVersionTable;
         }
     }
 }

@@ -96,13 +96,13 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {
-            yield return Options.Value.PackageVersionTableName;
+            yield return Options.Value.PackageVersionTable;
         }
 
         private async Task AssertOutputAsync(string dir, string stepName)
         {
             var table = (await ServiceClientFactory.GetTableServiceClientAsync(Options.Value))
-                .GetTableClient(Options.Value.PackageVersionTableName);
+                .GetTableClient(Options.Value.PackageVersionTable);
 
             await AssertEntityOutputAsync<PackageVersionEntity>(table, Path.Combine(dir, stepName));
         }

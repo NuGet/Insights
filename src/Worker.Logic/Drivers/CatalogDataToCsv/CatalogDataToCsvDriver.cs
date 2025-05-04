@@ -23,9 +23,9 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         }
 
         public bool SingleMessagePerId => false;
-        string ICsvResultStorage<PackageDeprecationRecord>.ResultContainerName => _options.Value.PackageDeprecationContainerName;
-        string ICsvResultStorage<PackageVulnerabilityRecord>.ResultContainerName => _options.Value.PackageVulnerabilityContainerName;
-        string ICsvResultStorage<CatalogLeafItemRecord>.ResultContainerName => _options.Value.CatalogLeafItemContainerName;
+        string ICsvResultStorage<PackageDeprecationRecord>.ResultContainerName => _options.Value.PackageDeprecationContainer;
+        string ICsvResultStorage<PackageVulnerabilityRecord>.ResultContainerName => _options.Value.PackageVulnerabilityContainer;
+        string ICsvResultStorage<CatalogLeafItemRecord>.ResultContainerName => _options.Value.CatalogLeafItemContainer;
 
         public Task InitializeAsync()
         {

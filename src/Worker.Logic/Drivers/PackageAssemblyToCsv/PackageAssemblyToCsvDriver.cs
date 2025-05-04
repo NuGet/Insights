@@ -42,7 +42,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             _logger = logger;
         }
 
-        public string ResultContainerName => _options.Value.PackageAssemblyContainerName;
+        public string ResultContainerName => _options.Value.PackageAssemblyContainer;
         public bool SingleMessagePerId => false;
 
         public async Task InitializeAsync()

@@ -26,7 +26,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
             _logger = logger;
         }
 
-        public string ResultContainerName => _options.Value.PackageIconContainerName;
+        public string ResultContainerName => _options.Value.PackageIconContainer;
         public bool SingleMessagePerId => false;
 
         public Task InitializeAsync()

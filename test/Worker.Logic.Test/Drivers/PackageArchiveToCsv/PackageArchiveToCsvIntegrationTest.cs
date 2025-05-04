@@ -115,8 +115,8 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             }
         }
 
-        protected override string DestinationContainerName1 => Options.Value.PackageArchiveContainerName;
-        protected override string DestinationContainerName2 => Options.Value.PackageArchiveEntryContainerName;
+        protected override string DestinationContainerName1 => Options.Value.PackageArchiveContainer;
+        protected override string DestinationContainerName2 => Options.Value.PackageArchiveEntryContainer;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageArchiveToCsv;
         public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => [CatalogScanDriverType.LoadPackageArchive, CatalogScanDriverType.PackageFileToCsv, DriverType];
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
@@ -143,7 +143,7 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
         {
             return base.GetExpectedBlobContainerNames().Concat(
             [
-                Options.Value.PackageFileContainerName,
+                Options.Value.PackageFileContainer,
             ]);
         }
 

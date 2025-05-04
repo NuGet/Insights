@@ -32,7 +32,7 @@ namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
             _options = options;
         }
 
-        public override string ResultContainerName => _options.Value.SymbolPackageFileContainerName;
+        public override string ResultContainerName => _options.Value.SymbolPackageFileContainer;
         protected override bool NotFoundIsDeleted => false;
         protected override ArtifactFileType FileType => ArtifactFileType.Snupkg;
 

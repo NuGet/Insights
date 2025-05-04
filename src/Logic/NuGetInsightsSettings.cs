@@ -41,14 +41,14 @@ namespace NuGet.Insights
         public TimeSpan GitHubUsageV1AgeLimit { get; set; } = TimeSpan.FromDays(7);
         public string LegacyReadmeUrlPattern { get; set; } = null;
 
-        public BlobContainerStorageSettings LeaseContainer { get; set; } = new("leases");
-        public TableStorageSettings PackageArchiveTable { get; set; } = new("packagearchives");
-        public TableStorageSettings SymbolPackageArchiveTable { get; set; } = new("symbolpackagearchives");
-        public TableStorageSettings PackageManifestTable { get; set; } = new("packagemanifests");
-        public TableStorageSettings PackageReadmeTable { get; set; } = new("packagereadmes");
-        public TableStorageSettings PackageHashesTable { get; set; } = new("packagehashes");
-        public TableStorageSettings SymbolPackageHashesTable { get; set; } = new("symbolpackagehashes");
-        public TableStorageSettings TimerTable { get; set; } = new("timers");
+        public BlobContainerStorageSettings LeaseContainer { get; set; } = "leases";
+        public TableStorageSettings PackageArchiveTable { get; set; } = "packagearchives";
+        public TableStorageSettings SymbolPackageArchiveTable { get; set; } = "symbolpackagearchives";
+        public TableStorageSettings PackageManifestTable { get; set; } = "packagemanifests";
+        public TableStorageSettings PackageReadmeTable { get; set; } = "packagereadmes";
+        public TableStorageSettings PackageHashesTable { get; set; } = "packagehashes";
+        public TableStorageSettings SymbolPackageHashesTable { get; set; } = "symbolpackagehashes";
+        public TableStorageSettings TimerTable { get; set; } = "timers";
 
         public int MaxTempMemoryStreamSize { get; set; } = 1024 * 1024 * 196;
 
@@ -73,7 +73,45 @@ namespace NuGet.Insights
         {
             public void Configure(NuGetInsightsSettings options)
             {
-                options.stor
+                if (options.StorageAccountName is not null
+                    && !options.StorageAccountSettings.ContainsKey(options.StorageAccountName))
+                {
+                    options.StorageAccountSettings.Add(options.StorageAccountName, options);
+                }
+
+                foreach (var container in GetPropertiesOfType<BlobContainerStorageSettings>(options))
+                {
+                    if (container.StorageAccountName is null)
+                    {
+                        container.StorageAccountName = options.StorageAccountName;
+                    }
+                }
+
+                foreach (var queue in GetPropertiesOfType<QueueStorageSettings>(options))
+                {
+                    if (queue.StorageAccountName is null)
+                    {
+                        queue.StorageAccountName = options.StorageAccountName;
+                    }
+                }
+
+                foreach (var table in GetPropertiesOfType<TableStorageSettings>(options))
+                {
+                    if (table.StorageAccountName is null)
+                    {
+                        table.StorageAccountName = options.StorageAccountName;
+                    }
+                }
+            }
+
+            private static List<T> GetPropertiesOfType<T>(object instance)
+            {
+                return instance
+                    .GetType()
+                    .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy | BindingFlags.GetProperty)
+                    .Where(p => p.PropertyType == typeof(T))
+                    .Select(p => (T)p.GetValue(instance))
+                    .ToList();
             }
         }
     }

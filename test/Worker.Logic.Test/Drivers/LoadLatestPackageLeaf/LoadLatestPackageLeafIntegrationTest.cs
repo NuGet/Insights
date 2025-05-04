@@ -60,13 +60,13 @@ namespace NuGet.Insights.Worker.LoadLatestPackageLeaf
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {
-            yield return Options.Value.LatestPackageLeafTableName;
+            yield return Options.Value.LatestPackageLeafTable;
         }
 
         private async Task AssertOutputAsync(string dir, string step)
         {
             var table = (await ServiceClientFactory.GetTableServiceClientAsync(Options.Value))
-                .GetTableClient(Options.Value.LatestPackageLeafTableName);
+                .GetTableClient(Options.Value.LatestPackageLeafTable);
             await AssertEntityOutputAsync<LatestPackageLeaf>(table, Path.Combine(dir, step));
         }
     }

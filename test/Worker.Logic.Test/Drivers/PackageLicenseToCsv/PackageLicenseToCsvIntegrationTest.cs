@@ -62,7 +62,7 @@ namespace NuGet.Insights.Worker.PackageLicenseToCsv
         {
         }
 
-        protected override string DestinationContainerName => Options.Value.PackageLicenseContainerName;
+        protected override string DestinationContainerName => Options.Value.PackageLicenseContainer;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageLicenseToCsv;
         public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();

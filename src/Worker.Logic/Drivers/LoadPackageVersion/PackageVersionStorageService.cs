@@ -19,7 +19,7 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
             ITelemetryClient telemetryClient,
             IOptions<NuGetInsightsWorkerSettings> options)
         {
-            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value, options.Value.PackageVersionTableName);
+            _initializationState = ContainerInitializationState.Table(serviceClientFactory, options.Value, options.Value.PackageVersionTable);
             _serviceClientFactory = serviceClientFactory;
             _catalogClient = catalogClient;
             _telemetryClient = telemetryClient;
@@ -51,7 +51,7 @@ namespace NuGet.Insights.Worker.LoadPackageVersion
         internal async Task<TableClientWithRetryContext> GetTableAsync()
         {
             var tableServiceClient = await _serviceClientFactory.GetTableServiceClientAsync(_options.Value);
-            var table = tableServiceClient.GetTableClient(_options.Value.PackageVersionTableName);
+            var table = tableServiceClient.GetTableClient(_options.Value.PackageVersionTable);
             return table;
         }
 

@@ -44,7 +44,7 @@ namespace NuGet.Insights.Worker.TableCopy
             var serviceClientFactory = Host.Services.GetRequiredService<ServiceClientFactory>();
             var destTableName = StoragePrefix + "1d1";
             var tableServiceClient = await serviceClientFactory.GetTableServiceClientAsync(Options.Value);
-            var sourceTable = tableServiceClient.GetTableClient(Options.Value.LatestPackageLeafTableName);
+            var sourceTable = tableServiceClient.GetTableClient(Options.Value.LatestPackageLeafTable);
             var destinationTable = tableServiceClient.GetTableClient(destTableName);
 
             var tableScanService = Host.Services.GetRequiredService<TableScanService>();
@@ -56,7 +56,7 @@ namespace NuGet.Insights.Worker.TableCopy
             // Act
             await tableScanService.StartTableCopyAsync<LatestPackageLeaf>(
                 taskStateKey,
-                Options.Value.LatestPackageLeafTableName,
+                Options.Value.LatestPackageLeafTable,
                 destTableName,
                 partitionKeyPrefix: string.Empty,
                 partitionKeyLowerBound: lowerBound,

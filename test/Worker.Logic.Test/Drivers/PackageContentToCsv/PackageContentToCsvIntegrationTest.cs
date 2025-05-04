@@ -64,7 +64,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
         {
         }
 
-        protected override string DestinationContainerName => Options.Value.PackageContentContainerName;
+        protected override string DestinationContainerName => Options.Value.PackageContentContainer;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageContentToCsv;
         public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();

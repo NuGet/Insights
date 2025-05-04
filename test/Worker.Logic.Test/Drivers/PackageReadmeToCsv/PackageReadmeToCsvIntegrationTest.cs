@@ -83,7 +83,7 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
         {
         }
 
-        protected override string DestinationContainerName => Options.Value.PackageReadmeContainerName;
+        protected override string DestinationContainerName => Options.Value.PackageReadmeContainer;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageReadmeToCsv;
         public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();

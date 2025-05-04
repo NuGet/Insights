@@ -146,7 +146,7 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             return base.GetExpectedLeaseNames().Concat(AdditionalLeaseNames);
         }
 
-        protected override string DestinationContainerName => Options.Value.PackageAssemblyContainerName;
+        protected override string DestinationContainerName => Options.Value.PackageAssemblyContainer;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageAssemblyToCsv;
         private List<CatalogScanDriverType> MutableLatestLeavesTypes { get; } = new();
         public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => MutableLatestLeavesTypes;

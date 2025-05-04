@@ -45,9 +45,9 @@ namespace NuGet.Insights.Worker
                 Assert.Equal(max1, cursorAfter.Value);
                 Assert.Equal(cursorBefore.ETag, cursorAfter.ETag);
 
-                var csvContent = await AssertCsvAsync<PackageSignature>(Options.Value.PackageSignatureContainerName, CatalogScanService_UpdateWithBucketRangesDir, Step1, 0);
+                var csvContent = await AssertCsvAsync<PackageSignature>(Options.Value.PackageSignatureContainer, CatalogScanService_UpdateWithBucketRangesDir, Step1, 0);
 
-                var bucketedPackages = (await GetEntitiesAsync<BucketedPackage>(Options.Value.BucketedPackageTableName))
+                var bucketedPackages = (await GetEntitiesAsync<BucketedPackage>(Options.Value.BucketedPackageTable))
                     .Where(x => buckets.Contains(x.GetBucket()))
                     .OrderBy(x => x.PackageId, StringComparer.OrdinalIgnoreCase)
                     .ThenBy(x => x.PackageVersion, StringComparer.OrdinalIgnoreCase)

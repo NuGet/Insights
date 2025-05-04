@@ -33,7 +33,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             _logger = logger;
         }
 
-        public string ResultContainerName => _options.Value.PackageAssetContainerName;
+        public string ResultContainerName => _options.Value.PackageAssetContainer;
         public bool SingleMessagePerId => false;
 
         public async Task InitializeAsync()

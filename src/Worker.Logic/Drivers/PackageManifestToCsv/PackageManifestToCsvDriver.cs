@@ -23,7 +23,7 @@ namespace NuGet.Insights.Worker.PackageManifestToCsv
             _options = options;
         }
 
-        public string ResultContainerName => _options.Value.PackageManifestContainerName;
+        public string ResultContainerName => _options.Value.PackageManifestContainer;
         public bool SingleMessagePerId => false;
 
         public async Task InitializeAsync()

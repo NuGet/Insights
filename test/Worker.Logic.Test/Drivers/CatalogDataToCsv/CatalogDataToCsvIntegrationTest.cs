@@ -200,9 +200,9 @@ namespace NuGet.Insights.Worker.CatalogDataToCsv
         {
         }
 
-        protected override string DestinationContainerName1 => Options.Value.PackageDeprecationContainerName;
-        protected override string DestinationContainerName2 => Options.Value.PackageVulnerabilityContainerName;
-        protected override string DestinationContainerName3 => Options.Value.CatalogLeafItemContainerName;
+        protected override string DestinationContainerName1 => Options.Value.PackageDeprecationContainer;
+        protected override string DestinationContainerName2 => Options.Value.PackageVulnerabilityContainer;
+        protected override string DestinationContainerName3 => Options.Value.CatalogLeafItemContainer;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.CatalogDataToCsv;
         public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => Enumerable.Empty<CatalogScanDriverType>();
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();

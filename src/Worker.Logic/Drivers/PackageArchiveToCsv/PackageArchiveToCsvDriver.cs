@@ -23,8 +23,8 @@ namespace NuGet.Insights.Worker.PackageArchiveToCsv
             _options = options;
         }
 
-        string ICsvResultStorage<PackageArchiveRecord>.ResultContainerName => _options.Value.PackageArchiveContainerName;
-        string ICsvResultStorage<PackageArchiveEntry>.ResultContainerName => _options.Value.PackageArchiveEntryContainerName;
+        string ICsvResultStorage<PackageArchiveRecord>.ResultContainerName => _options.Value.PackageArchiveContainer;
+        string ICsvResultStorage<PackageArchiveEntry>.ResultContainerName => _options.Value.PackageArchiveEntryContainer;
 
         protected override bool NotFoundIsDeleted => true;
         protected override ArtifactFileType FileType => ArtifactFileType.Nupkg;

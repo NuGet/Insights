@@ -70,8 +70,8 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
         {
         }
 
-        protected override string DestinationContainerName1 => Options.Value.SymbolPackageArchiveContainerName;
-        protected override string DestinationContainerName2 => Options.Value.SymbolPackageArchiveEntryContainerName;
+        protected override string DestinationContainerName1 => Options.Value.SymbolPackageArchiveContainer;
+        protected override string DestinationContainerName2 => Options.Value.SymbolPackageArchiveEntryContainer;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.SymbolPackageArchiveToCsv;
         public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType, CatalogScanDriverType.SymbolPackageFileToCsv };
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();
@@ -97,7 +97,7 @@ namespace NuGet.Insights.Worker.SymbolPackageArchiveToCsv
         {
             return base.GetExpectedBlobContainerNames().Concat(new[]
             {
-                Options.Value.SymbolPackageFileContainerName,
+                Options.Value.SymbolPackageFileContainer,
             });
         }
 

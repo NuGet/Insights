@@ -22,7 +22,7 @@ namespace NuGet.Insights.Worker.PackageReadmeToCsv
             _options = options;
         }
 
-        public string ResultContainerName => _options.Value.PackageReadmeContainerName;
+        public string ResultContainerName => _options.Value.PackageReadmeContainer;
         public bool SingleMessagePerId => false;
 
         public async Task InitializeAsync()

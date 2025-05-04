@@ -49,7 +49,7 @@ namespace NuGet.Insights.Worker.PackageContentToCsv
             _logger = logger;
         }
 
-        public string ResultContainerName => _options.Value.PackageContentContainerName;
+        public string ResultContainerName => _options.Value.PackageContentContainer;
         public bool SingleMessagePerId => false;
 
         public async Task InitializeAsync()

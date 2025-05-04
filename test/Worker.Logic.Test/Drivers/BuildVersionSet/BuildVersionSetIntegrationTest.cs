@@ -204,7 +204,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
 
         protected override IEnumerable<string> GetExpectedBlobContainerNames()
         {
-            return base.GetExpectedBlobContainerNames().Concat(new[] { Options.Value.VersionSetContainerName });
+            return base.GetExpectedBlobContainerNames().Concat(new[] { Options.Value.VersionSetContainer });
         }
 
         protected async Task AssertOutputAsync(string testName, string stepName)
@@ -212,7 +212,7 @@ namespace NuGet.Insights.Worker.BuildVersionSet
             const string blobName = "version-set.dat";
             const string fileName = "data.json";
 
-            var blob = await GetBlobAsync(Options.Value.VersionSetContainerName, blobName);
+            var blob = await GetBlobAsync(Options.Value.VersionSetContainer, blobName);
 
             using var memoryStream = new MemoryStream();
             await blob.DownloadToAsync(memoryStream);

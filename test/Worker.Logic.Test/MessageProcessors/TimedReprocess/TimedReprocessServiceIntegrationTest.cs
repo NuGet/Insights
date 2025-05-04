@@ -77,10 +77,10 @@ namespace NuGet.Insights.Worker.TimedReprocess
             await AssertSymbolPackageHashesTableAsync(TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageHashes.json");
             await AssertSymbolPackageArchiveTableAsync(TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageArchives.json");
 
-            await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_AllReprocessDriversDir, Step1, "PackageReadmes.csv");
-            await AssertCsvAsync<SymbolPackageFileRecord>(Options.Value.SymbolPackageFileContainerName, TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageFiles.csv");
-            await AssertCsvAsync<SymbolPackageArchiveRecord>(Options.Value.SymbolPackageArchiveContainerName, TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageArchives.csv");
-            await AssertCsvAsync<SymbolPackageArchiveEntry>(Options.Value.SymbolPackageArchiveEntryContainerName, TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageArchiveEntries.csv");
+            await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainer, TimedReprocess_AllReprocessDriversDir, Step1, "PackageReadmes.csv");
+            await AssertCsvAsync<SymbolPackageFileRecord>(Options.Value.SymbolPackageFileContainer, TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageFiles.csv");
+            await AssertCsvAsync<SymbolPackageArchiveRecord>(Options.Value.SymbolPackageArchiveContainer, TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageArchives.csv");
+            await AssertCsvAsync<SymbolPackageArchiveEntry>(Options.Value.SymbolPackageArchiveEntryContainer, TimedReprocess_AllReprocessDriversDir, Step1, "SymbolPackageArchiveEntries.csv");
 
             var tableServiceClient = await ServiceClientFactory.GetTableServiceClientAsync(Options.Value);
             var tables = await tableServiceClient.QueryAsync(prefix: StoragePrefix).ToListAsync();
@@ -88,7 +88,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
                 new string[]
                 {
                     // infrastructure
-                    Options.Value.BucketedPackageTableName,
+                    Options.Value.BucketedPackageTable,
                     Options.Value.CatalogIndexScanTableName,
                     Options.Value.CursorTableName,
                     Options.Value.TimedReprocessTableName,
@@ -109,10 +109,10 @@ namespace NuGet.Insights.Worker.TimedReprocess
                     Options.Value.LeaseContainer,
 
                     // intermediate data
-                    Options.Value.PackageReadmeContainerName,
-                    Options.Value.SymbolPackageArchiveEntryContainerName,
-                    Options.Value.SymbolPackageArchiveContainerName,
-                    Options.Value.SymbolPackageFileContainerName,
+                    Options.Value.PackageReadmeContainer,
+                    Options.Value.SymbolPackageArchiveEntryContainer,
+                    Options.Value.SymbolPackageArchiveContainer,
+                    Options.Value.SymbolPackageFileContainer,
                 }.Order().ToArray(),
                 containers.Select(x => x.Name).ToArray());
         }
@@ -198,7 +198,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
 
             // Assert
             await AssertPackageReadmeTableAsync(TimedReprocess_SameBucketRangesDir, Step1, "PackageReadmes.json");
-            await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_SameBucketRangesDir, Step1, "PackageReadmes.csv");
+            await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainer, TimedReprocess_SameBucketRangesDir, Step1, "PackageReadmes.csv");
             Assert.Equal("177-178,402,541,756", runA.BucketRanges);
 
             var metric = TelemetryClient.Metrics[new("CsvRecordStorageService.CompactAsync.BlobChange", "DestContainer", "RecordType", "Bucket")];
@@ -212,7 +212,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
 
             // Assert
             await AssertPackageReadmeTableAsync(TimedReprocess_SameBucketRangesDir, Step1, "PackageReadmes.json"); // data is unchanged
-            await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_SameBucketRangesDir, Step1, "PackageReadmes.csv"); // data is unchanged
+            await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainer, TimedReprocess_SameBucketRangesDir, Step1, "PackageReadmes.csv"); // data is unchanged
             Assert.Equal("177-178,402,541,756", runA.BucketRanges);
 
             value = Assert.Single(metric.MetricValues);
@@ -246,7 +246,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
 
             // Assert
             await AssertPackageReadmeTableAsync(TimedReprocess_SubsequentBucketRangesDir, Step1, "PackageReadmes.json");
-            await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_SubsequentBucketRangesDir, Step1, "PackageReadmes.csv");
+            await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainer, TimedReprocess_SubsequentBucketRangesDir, Step1, "PackageReadmes.csv");
             Assert.Equal("177-178,402", runA.BucketRanges);
 
             // Act
@@ -255,7 +255,7 @@ namespace NuGet.Insights.Worker.TimedReprocess
 
             // Assert
             await AssertPackageReadmeTableAsync(TimedReprocess_SubsequentBucketRangesDir, Step2, "PackageReadmes.json");
-            await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainerName, TimedReprocess_SubsequentBucketRangesDir, Step2, "PackageReadmes.csv");
+            await AssertCsvAsync<PackageReadme>(Options.Value.PackageReadmeContainer, TimedReprocess_SubsequentBucketRangesDir, Step2, "PackageReadmes.csv");
             Assert.Equal("541,756", runB.BucketRanges);
         }
 

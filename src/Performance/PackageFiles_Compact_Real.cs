@@ -31,7 +31,7 @@ public class PackageFiles_Compact_Real
     public async Task SetupAsync()
     {
         Settings = new NuGetInsightsWorkerSettings { UseMemoryStorage = true };
-        ContainerName = Settings.PackageFileContainerName;
+        ContainerName = Settings.PackageFileContainer;
         Bucket = 3;
         var options = Options.Create(Settings);
 

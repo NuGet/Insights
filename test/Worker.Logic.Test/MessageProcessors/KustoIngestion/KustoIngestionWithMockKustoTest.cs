@@ -56,11 +56,11 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 MockCslAdminProvider.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
 
             MockKustoQueueIngestClient.Verify(x => x.IngestFromStorageAsync(
-                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_0.csv.gz?", StringComparison.Ordinal)),
+                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainer}/compact_0.csv.gz?", StringComparison.Ordinal)),
                 It.IsAny<KustoIngestionProperties>(),
                 It.IsAny<StorageSourceOptions>()), Times.Once);
             MockKustoQueueIngestClient.Verify(x => x.IngestFromStorageAsync(
-                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_1.csv.gz?", StringComparison.Ordinal)),
+                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainer}/compact_1.csv.gz?", StringComparison.Ordinal)),
                 It.IsAny<KustoIngestionProperties>(),
                 It.IsAny<StorageSourceOptions>()), Times.Once);
             Assert.Equal(2, MockKustoQueueIngestClient.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
@@ -147,11 +147,11 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 MockCslAdminProvider.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
 
             MockKustoQueueIngestClient.Verify(x => x.IngestFromStorageAsync(
-                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_0.csv.gz?", StringComparison.Ordinal)),
+                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainer}/compact_0.csv.gz?", StringComparison.Ordinal)),
                 It.IsAny<KustoIngestionProperties>(),
                 It.IsAny<StorageSourceOptions>()), Times.Once);
             MockKustoQueueIngestClient.Verify(x => x.IngestFromStorageAsync(
-                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_1.csv.gz?", StringComparison.Ordinal)),
+                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainer}/compact_1.csv.gz?", StringComparison.Ordinal)),
                 It.IsAny<KustoIngestionProperties>(),
                 It.IsAny<StorageSourceOptions>()), Times.Once);
             Assert.Equal(2, MockKustoQueueIngestClient.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
@@ -179,7 +179,7 @@ namespace NuGet.Insights.Worker.KustoIngestion
                     It.IsAny<StorageSourceOptions>()))
                 .Returns<string, KustoIngestionProperties, StorageSourceOptions>(async (u, p, o) =>
                 {
-                    if (u.Contains($"/{Options.Value.PackageManifestContainerName}/compact_0.csv.gz", StringComparison.Ordinal) && attempt <= 2)
+                    if (u.Contains($"/{Options.Value.PackageManifestContainer}/compact_0.csv.gz", StringComparison.Ordinal) && attempt <= 2)
                     {
                         attempt++;
                         return await MakeTableReportIngestionResultAsync(o, Status.Failed);
@@ -218,11 +218,11 @@ namespace NuGet.Insights.Worker.KustoIngestion
                 MockCslAdminProvider.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));
 
             MockKustoQueueIngestClient.Verify(x => x.IngestFromStorageAsync(
-                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_0.csv.gz?", StringComparison.Ordinal)),
+                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainer}/compact_0.csv.gz?", StringComparison.Ordinal)),
                 It.IsAny<KustoIngestionProperties>(),
                 It.IsAny<StorageSourceOptions>()), Times.Exactly(3));
             MockKustoQueueIngestClient.Verify(x => x.IngestFromStorageAsync(
-                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainerName}/compact_1.csv.gz?", StringComparison.Ordinal)),
+                It.Is<string>(y => y.Contains($"/{Options.Value.PackageManifestContainer}/compact_1.csv.gz?", StringComparison.Ordinal)),
                 It.IsAny<KustoIngestionProperties>(),
                 It.IsAny<StorageSourceOptions>()), Times.Exactly(3));
             Assert.Equal(6, MockKustoQueueIngestClient.Invocations.Count(x => x.Method.Name != nameof(IDisposable.Dispose)));

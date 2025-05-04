@@ -22,7 +22,7 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
             _options = options;
         }
 
-        public string ResultContainerName => _options.Value.PackageSignatureContainerName;
+        public string ResultContainerName => _options.Value.PackageSignatureContainer;
         public bool SingleMessagePerId => false;
 
         public async Task InitializeAsync()

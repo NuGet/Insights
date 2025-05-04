@@ -68,7 +68,7 @@ namespace NuGet.Insights.Worker.SymbolPackageFileToCsv
         {
         }
 
-        protected override string DestinationContainerName => Options.Value.SymbolPackageFileContainerName;
+        protected override string DestinationContainerName => Options.Value.SymbolPackageFileContainer;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.SymbolPackageFileToCsv;
         public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => [DriverType];
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();

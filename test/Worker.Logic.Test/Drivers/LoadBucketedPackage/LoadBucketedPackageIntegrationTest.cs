@@ -60,13 +60,13 @@ namespace NuGet.Insights.Worker.LoadBucketedPackage
 
         protected override IEnumerable<string> GetExpectedTableNames()
         {
-            yield return Options.Value.BucketedPackageTableName;
+            yield return Options.Value.BucketedPackageTable;
         }
 
         private async Task AssertOutputAsync(string dir, string step)
         {
             var table = (await ServiceClientFactory.GetTableServiceClientAsync(Options.Value))
-                .GetTableClient(Options.Value.BucketedPackageTableName);
+                .GetTableClient(Options.Value.BucketedPackageTable);
             await AssertEntityOutputAsync<BucketedPackage>(table, Path.Combine(dir, step));
         }
     }

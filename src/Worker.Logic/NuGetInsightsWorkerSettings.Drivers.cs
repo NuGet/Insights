@@ -6,25 +6,25 @@ namespace NuGet.Insights.Worker
     public partial class NuGetInsightsWorkerSettings
     {
         public string VersionSetAggregateTableNamePrefix { get; set; } = "versionset";
-        public string VersionSetContainerName { get; set; } = "versionset";
+        public BlobContainerStorageSettings VersionSetContainer { get; set; } = "versionset";
 
-        public string BucketedPackageTableName { get; set; } = "bucketedpackages";
+        public TableStorageSettings BucketedPackageTable { get; set; } = "bucketedpackages";
 
-        public string LatestPackageLeafTableName { get; set; } = "latestpackageleaves";
+        public TableStorageSettings LatestPackageLeafTable { get; set; } = "latestpackageleaves";
 
-        public string PackageAssetContainerName { get; set; } = "packageassets";
+        public BlobContainerStorageSettings PackageAssetContainer { get; set; } = "packageassets";
 
-        public string PackageAssemblyContainerName { get; set; } = "packageassemblies";
+        public BlobContainerStorageSettings PackageAssemblyContainer { get; set; } = "packageassemblies";
 
-        public string PackageManifestContainerName { get; set; } = "packagemanifests";
+        public BlobContainerStorageSettings PackageManifestContainer { get; set; } = "packagemanifests";
 
-        public string PackageReadmeContainerName { get; set; } = "packagereadmes";
+        public BlobContainerStorageSettings PackageReadmeContainer { get; set; } = "packagereadmes";
 
-        public string PackageLicenseContainerName { get; set; } = "packagelicenses";
+        public BlobContainerStorageSettings PackageLicenseContainer { get; set; } = "packagelicenses";
 
         public bool RecordCertificateStatus { get; set; } = true;
 
-        public string PackageSignatureContainerName { get; set; } = "packagesignatures";
+        public BlobContainerStorageSettings PackageSignatureContainer { get; set; } = "packagesignatures";
 
         /// <summary>
         /// Don't set the Content-MD5 header in output CSVs (e.g. for <see cref="PackageArchiveToCsv"/>). The header
@@ -32,27 +32,27 @@ namespace NuGet.Insights.Worker
         /// </summary>
         public bool SkipContentMD5HeaderInCsv { get; set; } = false;
 
-        public string PackageArchiveContainerName { get; set; } = "packagearchives";
-        public string PackageArchiveEntryContainerName { get; set; } = "packagearchiveentries";
+        public BlobContainerStorageSettings PackageArchiveContainer { get; set; } = "packagearchives";
+        public BlobContainerStorageSettings PackageArchiveEntryContainer { get; set; } = "packagearchiveentries";
 
-        public string SymbolPackageArchiveContainerName { get; set; } = "symbolpackagearchives";
-        public string SymbolPackageArchiveEntryContainerName { get; set; } = "symbolpackagearchiveentries";
+        public BlobContainerStorageSettings SymbolPackageArchiveContainer { get; set; } = "symbolpackagearchives";
+        public BlobContainerStorageSettings SymbolPackageArchiveEntryContainer { get; set; } = "symbolpackagearchiveentries";
 
-        public string PackageFileContainerName { get; set; } = "packagefiles";
+        public BlobContainerStorageSettings PackageFileContainer { get; set; } = "packagefiles";
 
-        public string SymbolPackageFileContainerName { get; set; } = "symbolpackagefiles";
+        public BlobContainerStorageSettings SymbolPackageFileContainer { get; set; } = "symbolpackagefiles";
 
-        public string PackageVersionTableName { get; set; } = "packageversions";
+        public TableStorageSettings PackageVersionTable { get; set; } = "packageversions";
 
-        public string PackageVersionContainerName { get; set; } = "packageversions";
+        public BlobContainerStorageSettings PackageVersionContainer { get; set; } = "packageversions";
 
-        public string CatalogLeafItemContainerName { get; set; } = "catalogleafitems";
-        public string PackageDeprecationContainerName { get; set; } = "packagedeprecations";
-        public string PackageVulnerabilityContainerName { get; set; } = "packagevulnerabilities";
+        public BlobContainerStorageSettings CatalogLeafItemContainer { get; set; } = "catalogleafitems";
+        public BlobContainerStorageSettings PackageDeprecationContainer { get; set; } = "packagedeprecations";
+        public BlobContainerStorageSettings PackageVulnerabilityContainer { get; set; } = "packagevulnerabilities";
 
-        public string PackageIconContainerName { get; set; } = "packageicons";
+        public BlobContainerStorageSettings PackageIconContainer { get; set; } = "packageicons";
 
-        public string PackageCompatibilityContainerName { get; set; } = "packagecompatibilities";
+        public BlobContainerStorageSettings PackageCompatibilityContainer { get; set; } = "packagecompatibilities";
 
         /// <summary>
         /// The types of package content to index in <see cref="PackageContentToCsv.PackageContentToCsvDriver"/>. The
@@ -62,6 +62,6 @@ namespace NuGet.Insights.Worker
         public List<string> PackageContentFileExtensions { get; set; } = new List<string>();
         public int PackageContentMaxSizePerPackage { get; set; } = 1024 * 16;
         public int PackageContentMaxSizePerFile { get; set; } = 1024 * 16;
-        public string PackageContentContainerName { get; set; } = "packagecontents";
+        public BlobContainerStorageSettings PackageContentContainer { get; set; } = "packagecontents";
     }
 }

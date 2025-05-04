@@ -62,7 +62,7 @@ namespace NuGet.Insights.Worker.PackageIconToCsv
         {
         }
 
-        protected override string DestinationContainerName => Options.Value.PackageIconContainerName;
+        protected override string DestinationContainerName => Options.Value.PackageIconContainer;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageIconToCsv;
         public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();

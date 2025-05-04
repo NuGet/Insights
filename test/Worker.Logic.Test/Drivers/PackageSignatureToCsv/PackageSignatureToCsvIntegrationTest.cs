@@ -148,7 +148,7 @@ namespace NuGet.Insights.Worker.PackageSignatureToCsv
         {
         }
 
-        protected override string DestinationContainerName => Options.Value.PackageSignatureContainerName;
+        protected override string DestinationContainerName => Options.Value.PackageSignatureContainer;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageSignatureToCsv;
         public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();

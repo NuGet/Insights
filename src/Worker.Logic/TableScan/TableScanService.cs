@@ -66,7 +66,7 @@ namespace NuGet.Insights.Worker
             await StartTableScanAsync<BucketedPackage>(
                 taskStateKey,
                 TableScanDriverType.CopyBucketRange,
-                _options.Value.BucketedPackageTableName,
+                _options.Value.BucketedPackageTable,
                 TableScanStrategy.PrefixScan,
                 expandPartitionKeys: true,
                 partitionKeyPrefix: string.Empty,

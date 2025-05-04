@@ -61,9 +61,9 @@ namespace NuGet.Insights.Worker.KustoIngestion
             // Assert
             var expectedContainers = new[]
             {
-                Options.Value.CatalogLeafItemContainerName,
-                Options.Value.PackageDeprecationContainerName,
-                Options.Value.PackageVulnerabilityContainerName,
+                Options.Value.CatalogLeafItemContainer,
+                Options.Value.PackageDeprecationContainer,
+                Options.Value.PackageVulnerabilityContainer,
             };
 
             var tables = await GetKustoTablesAsync();

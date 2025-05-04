@@ -105,7 +105,7 @@ namespace NuGet.Insights.Worker.PackageCompatibilityToCsv
         {
         }
 
-        protected override string DestinationContainerName => Options.Value.PackageCompatibilityContainerName;
+        protected override string DestinationContainerName => Options.Value.PackageCompatibilityContainer;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageCompatibilityToCsv;
         public override IEnumerable<CatalogScanDriverType> LatestLeavesTypes => new[] { DriverType };
         public override IEnumerable<CatalogScanDriverType> LatestLeavesPerIdTypes => Enumerable.Empty<CatalogScanDriverType>();

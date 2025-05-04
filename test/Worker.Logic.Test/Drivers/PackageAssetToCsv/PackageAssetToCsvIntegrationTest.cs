@@ -146,7 +146,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             Assert.True(TelemetryClient.Metrics.TryGetValue(new("CsvRecordStorageService.CompactAsync.FinalRecordCount", "DestContainer", "RecordType", "Bucket"), out var compactMetric));
             var compactValue = Assert.Single(compactMetric.MetricValues);
             Assert.Equal(10, compactValue.MetricValue);
-            Assert.Equal(Options.Value.PackageAssetContainerName, compactValue.DimensionValues[0]);
+            Assert.Equal(Options.Value.PackageAssetContainer, compactValue.DimensionValues[0]);
             Assert.Equal(nameof(PackageAsset), compactValue.DimensionValues[1]);
         }
 
@@ -194,7 +194,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             await AssertOutputAsync(PackageAssetToCsvDir, Step1, 0);
             TelemetryClient.Metrics.TryGetValue(new("CsvRecordStorageService.CompactAsync.BigMode.Switch", "DestContainer", "RecordType", "Bucket", "Reason"), out var metric);
             Assert.NotNull(metric);
-            Assert.All(metric.MetricValues, x => Assert.Equal(Options.Value.PackageAssetContainerName, x.DimensionValues[0]));
+            Assert.All(metric.MetricValues, x => Assert.Equal(Options.Value.PackageAssetContainer, x.DimensionValues[0]));
             Assert.All(metric.MetricValues, x => Assert.Equal("PackageAsset", x.DimensionValues[1]));
             Assert.All(metric.MetricValues, x => Assert.Equal("0", x.DimensionValues[2]));
             Assert.All(metric.MetricValues, x => Assert.Equal("EstimatedRecordCount", x.DimensionValues[3]));
@@ -207,7 +207,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             await AssertOutputAsync(PackageAssetToCsvDir, Step2, 0);
             TelemetryClient.Metrics.TryGetValue(new("CsvRecordStorageService.CompactAsync.BigMode.Switch", "DestContainer", "RecordType", "Bucket", "Reason"), out metric);
             Assert.NotNull(metric);
-            Assert.All(metric.MetricValues, x => Assert.Equal(Options.Value.PackageAssetContainerName, x.DimensionValues[0]));
+            Assert.All(metric.MetricValues, x => Assert.Equal(Options.Value.PackageAssetContainer, x.DimensionValues[0]));
             Assert.All(metric.MetricValues, x => Assert.Equal("PackageAsset", x.DimensionValues[1]));
             Assert.All(metric.MetricValues, x => Assert.Equal("0", x.DimensionValues[2]));
             Assert.All(metric.MetricValues, x => Assert.Equal("ExistingRecordCount", x.DimensionValues[3]));
@@ -316,7 +316,7 @@ namespace NuGet.Insights.Worker.PackageAssetToCsv
             MutableLatestLeavesTypes.Add(DriverType);
         }
 
-        protected override string DestinationContainerName => Options.Value.PackageAssetContainerName;
+        protected override string DestinationContainerName => Options.Value.PackageAssetContainer;
         protected override CatalogScanDriverType DriverType => CatalogScanDriverType.PackageAssetToCsv;
 
         private List<CatalogScanDriverType> MutableLatestLeavesTypes { get; } = new();
