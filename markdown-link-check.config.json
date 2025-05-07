@@ -20,6 +20,9 @@
     },
     {
       "pattern": "^https://azure\\.microsoft\\.com/"
+    },
+    {
+      "pattern": "^https://github\\.com/[^/]+/[^/]+/blob/[a-f0-9]+/"
     }
   ]
 }
