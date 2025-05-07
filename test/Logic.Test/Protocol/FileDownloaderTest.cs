@@ -41,6 +41,7 @@ namespace NuGet.Insights
                     getHasher: IncrementalHash.CreateNone,
                     token: CancellationToken.None);
             });
+            Assert.Equal(2, HttpMessageHandlerFactory.Requests.Count);
         }
 
         private void SetNoContentLength()
@@ -49,6 +50,8 @@ namespace NuGet.Insights
             {
                 var response = new HttpResponseMessage(HttpStatusCode.OK);
                 response.Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes("Hello, world!")));
+                response.Headers.Add("Server", "test");
+                response.Content.Headers.Add("Content-Type", "text/plain");
                 response.Content.Headers.ContentLength = null;
                 return Task.FromResult(response);
             };

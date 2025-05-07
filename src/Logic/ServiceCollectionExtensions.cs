@@ -22,6 +22,7 @@ namespace NuGet.Insights
         }
 
         public const string DefaultHttpClient = "NuGet.Insights.HttpClient.Decompressing";
+        public const string NoDecompressionHttpClient = "NuGet.Insights.HttpClient.NoDecompression";
         public const string ServiceClientHttpClient = "NuGet.Insights.HttpClient.ServiceClient";
 
         public static IServiceCollection AddNuGetInsights(
@@ -91,6 +92,15 @@ namespace NuGet.Insights
                 allowFileSystemHttpCache: true);
 
             serviceCollection.AddHttpClient(
+                NoDecompressionHttpClient,
+                allowAutoRedirect: true,
+                decompressionMethods: DecompressionMethods.None,
+                addRetryPolicy: true,
+                enableLogging: x => x.GetRequiredService<ILogger<LoggingHttpHandler>>().IsEnabled(LogLevel.Information),
+                addTimeoutPolicy: true,
+                allowFileSystemHttpCache: true);
+
+            serviceCollection.AddHttpClient(
                 ServiceClientHttpClient,
                 allowAutoRedirect: false,
                 decompressionMethods: DecompressionMethods.None,
@@ -103,6 +113,12 @@ namespace NuGet.Insights
             {
                 var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
                 return () => httpClientFactory.CreateClient(DefaultHttpClient);
+            });
+
+            serviceCollection.AddKeyedSingleton<Func<HttpClient>>(NoDecompressionHttpClient, (provider, _) =>
+            {
+                var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
+                return () => httpClientFactory.CreateClient(NoDecompressionHttpClient);
             });
 
             serviceCollection.AddSingleton<RedirectResolver>();
@@ -135,7 +151,7 @@ namespace NuGet.Insights
             serviceCollection.AddSingleton(x => TimeProvider.System);
 
             serviceCollection.AddSingleton<Func<HttpZipProvider>>(
-                x => () => new HttpZipProvider(x.GetRequiredService<Func<HttpClient>>()(), x.GetRequiredService<IThrottle>())
+                x => () => new HttpZipProvider(x.GetRequiredKeyedService<Func<HttpClient>>(NoDecompressionHttpClient)(), x.GetRequiredService<IThrottle>())
                 {
                     RequireAcceptRanges = false,
                     BufferSizeProvider = new ZipBufferSizeProvider(
@@ -144,7 +160,13 @@ namespace NuGet.Insights
                         exponent: 2)
                 });
             serviceCollection.AddSingleton<MZipFormat>();
-            serviceCollection.AddSingleton<FileDownloader>();
+            serviceCollection.AddSingleton(p => new FileDownloader(
+                p.GetRequiredService<Func<HttpClient>>(),
+                p.GetRequiredKeyedService<Func<HttpClient>>(NoDecompressionHttpClient),
+                p.GetRequiredService<TempStreamService>(),
+                p.GetRequiredService<Func<HttpZipProvider>>(),
+                p.GetRequiredService<ITelemetryClient>(),
+                p.GetRequiredService<ILogger<FileDownloader>>()));
 
             serviceCollection.AddSingleton<StorageLeaseService>();
             serviceCollection.AddSingleton<AutoRenewingStorageLeaseService>();
