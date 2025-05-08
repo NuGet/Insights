@@ -68,6 +68,28 @@ namespace NuGet.Insights
         {
             var writer = _tempStreamService.GetWriter();
 
+            return await DownloadUrlToFileAsync(
+                url,
+                allowNotFound,
+                requireContentLength,
+                async (networkStream, contentLength) =>
+                {
+                    return await writer.CopyToTempStreamAsync(
+                        networkStream,
+                        getTempFileName,
+                        contentLength,
+                        getHasher());
+                },
+                token);
+        }
+
+        public async Task<(ILookup<string, string> Headers, TempStreamResult Body)?> DownloadUrlToFileAsync(
+            string url,
+            bool allowNotFound,
+            bool requireContentLength,
+            Func<Stream, long, Task<TempStreamResult>> getTempStream,
+            CancellationToken token)
+        {
             ILookup<string, string>? headers = null;
             TempStreamResult? result = null;
             bool useAcceptEncoding = true;
@@ -122,11 +144,7 @@ namespace NuGet.Insights
                             }
 
                             using var networkStream = await response.Content.ReadAsStreamAsync();
-                            return await writer.CopyToTempStreamAsync(
-                                networkStream,
-                                getTempFileName,
-                                contentLength,
-                                getHasher());
+                            return await getTempStream(networkStream, contentLength);
                         },
                         _logger,
                         token);

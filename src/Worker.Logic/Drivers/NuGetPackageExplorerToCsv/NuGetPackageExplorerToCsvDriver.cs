@@ -17,6 +17,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
         private readonly CatalogClient _catalogClient;
         private readonly FlatContainerClient _flatContainerClient;
         private readonly Func<HttpClient> _httpClientFactory;
+        private readonly FileDownloader _fileDownloader;
         private readonly TemporaryFileProvider _temporaryFileProvider;
         private readonly IOptions<NuGetInsightsWorkerSettings> _options;
         private readonly ILogger<NuGetPackageExplorerToCsvDriver> _logger;
@@ -25,6 +26,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             CatalogClient catalogClient,
             FlatContainerClient flatContainerClient,
             Func<HttpClient> httpClientFactory,
+            FileDownloader fileDownloader,
             TemporaryFileProvider temporaryFileProvider,
             IOptions<NuGetInsightsWorkerSettings> options,
             ILogger<NuGetPackageExplorerToCsvDriver> logger)
@@ -32,6 +34,7 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
             _catalogClient = catalogClient;
             _flatContainerClient = flatContainerClient;
             _httpClientFactory = httpClientFactory;
+            _fileDownloader = fileDownloader;
             _temporaryFileProvider = temporaryFileProvider;
             _options = options;
             _logger = logger;
@@ -257,43 +260,42 @@ namespace NuGet.Insights.Worker.NuGetPackageExplorerToCsv
                 leaf.PackageVersion,
                 attemptCount);
 
-            var httpClient = _httpClientFactory();
-            return await httpClient.ProcessResponseWithRetriesAsync(
-                () => new HttpRequestMessage(HttpMethod.Get, contentUrl),
-                async response =>
+            var result = await _fileDownloader.DownloadUrlToFileAsync(
+                contentUrl,
+                allowNotFound: true,
+                requireContentLength: true,
+                async (networkStream, contentLength) =>
                 {
-                    if (response.StatusCode == HttpStatusCode.NotFound)
-                    {
-                        return false;
-                    }
-
-                    response.EnsureSuccessStatusCode();
-
-                    var length = response.Content.Headers.ContentLength.Value;
-
-                    using (var source = await response.Content.ReadAsStreamAsync())
-                    using (var hasher = IncrementalHash.CreateNone())
-                    using (var destination = new FileStream(
+                    using var hasher = IncrementalHash.CreateNone();
+                    using var destination = new FileStream(
                         path,
                         FileMode.Create,
                         FileAccess.ReadWrite,
                         FileShare.Read,
                         bufferSize: 4096,
-                        FileOptions.Asynchronous))
-                    {
-                        await destination.SetLengthAndWriteAsync(length);
-                        await source.CopyToSlowAsync(
-                            destination,
-                            length,
-                            bufferSize: FileBufferSize,
-                            hasher: hasher,
-                            logger: _logger);
-                    }
+                        FileOptions.Asynchronous);
 
-                    return true;
+                    await destination.SetLengthAndWriteAsync(contentLength);
+                    await networkStream.CopyToSlowAsync(
+                        destination,
+                        contentLength,
+                        bufferSize: FileBufferSize,
+                        hasher: hasher,
+                        logger: _logger);
+
+                    return TempStreamResult.Success(destination, hasher.Output, NullAsyncDisposable.Instance);
                 },
-                _logger,
                 CancellationToken.None);
+
+            if (!result.HasValue)
+            {
+                return false;
+            }
+
+            await using (result.Value.Body)
+            {
+                return true;
+            }
         }
 
         private static (NuGetPackageExplorerRecord, NuGetPackageExplorerFile[]) MakeSingleItem(
