@@ -186,7 +186,9 @@ namespace NuGet.Insights.Worker.PackageAssemblyToCsv
             await AssertOutputAsync(PackageAssemblyToCsv_WithDuplicatesDir, Step1, 0);
 
             var duplicatePackageRequests = HttpMessageHandlerFactory
-                .SuccessRequests
+                .Responses
+                .Where(x => x.IsSuccessStatusCode && x.Content.Headers.ContentLength.HasValue)
+                .Select(x => x.RequestMessage)
                 .Where(x => x.RequestUri.GetLeftPart(UriPartial.Path).EndsWith("/gosms.ge-sms-api.1.0.1.nupkg", StringComparison.Ordinal))
                 .ToList();
             Assert.Equal(LatestLeavesTypes.Contains(DriverType) ? 1 : 2, duplicatePackageRequests.Count());
