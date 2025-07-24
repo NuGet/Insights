@@ -171,30 +171,9 @@ namespace NuGet.Insights.Kusto
 
             var builder = new KustoConnectionStringBuilder(settings.KustoConnectionString);
 
-            var tokenCredential = CachingTokenCredential.MaybeWrap(
-                new DefaultAzureCredential(),
-                loggerFactory,
-                settings,
-                builder.Authority);
-
             if (settings.KustoClientCertificatePath != null)
             {
                 var certificate = new X509Certificate2(settings.KustoClientCertificatePath);
-                builder = builder.WithAadApplicationCertificateAuthentication(
-                    builder.ApplicationClientId,
-                    certificate,
-                    builder.Authority,
-                    builder.ApplicationCertificateSendX5c);
-            }
-            else if (settings.KustoClientCertificateKeyVault != null)
-            {
-                var secretReader = new SecretClient(
-                    new Uri(settings.KustoClientCertificateKeyVault),
-                    tokenCredential);
-                KeyVaultSecret certificateContent = await secretReader.GetSecretAsync(
-                    settings.KustoClientCertificateKeyVaultCertificateName);
-                var certificateBytes = Convert.FromBase64String(certificateContent.Value);
-                var certificate = new X509Certificate2(certificateBytes);
                 builder = builder.WithAadApplicationCertificateAuthentication(
                     builder.ApplicationClientId,
                     certificate,
@@ -207,7 +186,16 @@ namespace NuGet.Insights.Kusto
             }
             else
             {
+#if DEBUG
+                var tokenCredential = CachingTokenCredential.MaybeWrap(
+                    new DefaultAzureCredential(),
+                    loggerFactory,
+                    settings,
+                    builder.Authority);
                 builder = builder.WithAadAzureTokenCredentialsAuthentication(tokenCredential);
+#else
+                throw new NotSupportedException("DefaultAzureCredential is not supported in production. Use a different credential type.");
+#endif
             }
 
             const string prefix = "https://";
