@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Security.Cryptography.X509Certificates;
+using Azure.Core;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Kusto.Cloud.Platform.Utils;
@@ -180,22 +181,38 @@ namespace NuGet.Insights.Kusto
                     builder.Authority,
                     builder.ApplicationCertificateSendX5c);
             }
+            else if (settings.KustoClientCertificateKeyVault != null)
+            {
+                var tokenCredential = CachingTokenCredential.MaybeWrap(
+                    CredentialUtility.GetDefaultAzureCredential(),
+                    loggerFactory,
+                    settings,
+                    builder.Authority);
+                var secretReader = new SecretClient(
+                    new Uri(settings.KustoClientCertificateKeyVault),
+                    tokenCredential);
+                KeyVaultSecret certificateContent = await secretReader.GetSecretAsync(
+                    settings.KustoClientCertificateKeyVaultCertificateName);
+                var certificateBytes = Convert.FromBase64String(certificateContent.Value);
+                var certificate = new X509Certificate2(certificateBytes);
+                builder = builder.WithAadApplicationCertificateAuthentication(
+                    builder.ApplicationClientId,
+                    certificate,
+                    builder.Authority,
+                    builder.ApplicationCertificateSendX5c);
+            }
             else if (settings.UserManagedIdentityClientId != null && settings.KustoUseUserManagedIdentity)
             {
                 builder = builder.WithAadUserManagedIdentity(settings.UserManagedIdentityClientId);
             }
             else
             {
-#if DEBUG
                 var tokenCredential = CachingTokenCredential.MaybeWrap(
-                    new DefaultAzureCredential(),
+                    CredentialUtility.GetDefaultAzureCredential(),
                     loggerFactory,
                     settings,
                     builder.Authority);
                 builder = builder.WithAadAzureTokenCredentialsAuthentication(tokenCredential);
-#else
-                throw new NotSupportedException("DefaultAzureCredential is not supported in production. Use a different credential type.");
-#endif
             }
 
             const string prefix = "https://";

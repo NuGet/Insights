@@ -230,12 +230,23 @@ namespace NuGet.Insights
             switch (storageCredentialType)
             {
                 case StorageCredentialType.DefaultAzureCredential:
-#if DEBUG
-                    tokenCredential = new DefaultAzureCredential();
+                    tokenCredential = CredentialUtility.GetDefaultAzureCredential();
                     break;
-#else
-                    throw new NotSupportedException("DefaultAzureCredential is not supported in production. Use a different credential type.");
-#endif
+
+                case StorageCredentialType.ClientCertificateCredentialFromKeyVault:
+                    var secretReader = new SecretClient(
+                        new Uri(settings.StorageClientCertificateKeyVault),
+                        CredentialUtility.GetDefaultAzureCredential());
+                    KeyVaultSecret certificateContent = await secretReader.GetSecretAsync(
+                        settings.StorageClientCertificateKeyVaultCertificateName);
+                    var certificateBytes = Convert.FromBase64String(certificateContent.Value);
+                    var certificate = new X509Certificate2(certificateBytes);
+                    tokenCredential = new ClientCertificateCredential(
+                        settings.StorageClientTenantId,
+                        settings.StorageClientApplicationId,
+                        certificate,
+                        new ClientCertificateCredentialOptions { SendCertificateChain = true });
+                    break;
 
                 case StorageCredentialType.UserAssignedManagedIdentityCredential:
                     tokenCredential = new ManagedIdentityCredential(
