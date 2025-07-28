@@ -230,18 +230,13 @@ namespace NuGet.Insights
             switch (storageCredentialType)
             {
                 case StorageCredentialType.DefaultAzureCredential:
-                    tokenCredential = new DefaultAzureCredential();
-                    break;
-
-                case StorageCredentialType.UserAssignedManagedIdentityCredential:
-                    tokenCredential = new ManagedIdentityCredential(
-                        settings.UserManagedIdentityClientId);
+                    tokenCredential = CredentialUtility.GetDefaultAzureCredential();
                     break;
 
                 case StorageCredentialType.ClientCertificateCredentialFromKeyVault:
                     var secretReader = new SecretClient(
                         new Uri(settings.StorageClientCertificateKeyVault),
-                        new DefaultAzureCredential());
+                        CredentialUtility.GetDefaultAzureCredential());
                     KeyVaultSecret certificateContent = await secretReader.GetSecretAsync(
                         settings.StorageClientCertificateKeyVaultCertificateName);
                     var certificateBytes = Convert.FromBase64String(certificateContent.Value);
@@ -251,6 +246,11 @@ namespace NuGet.Insights
                         settings.StorageClientApplicationId,
                         certificate,
                         new ClientCertificateCredentialOptions { SendCertificateChain = true });
+                    break;
+
+                case StorageCredentialType.UserAssignedManagedIdentityCredential:
+                    tokenCredential = new ManagedIdentityCredential(
+                        settings.UserManagedIdentityClientId);
                     break;
 
                 case StorageCredentialType.ClientCertificateCredentialFromPath:

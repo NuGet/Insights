@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Security.Cryptography.X509Certificates;
+using Azure.Core;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Kusto.Cloud.Platform.Utils;
@@ -171,12 +172,6 @@ namespace NuGet.Insights.Kusto
 
             var builder = new KustoConnectionStringBuilder(settings.KustoConnectionString);
 
-            var tokenCredential = CachingTokenCredential.MaybeWrap(
-                new DefaultAzureCredential(),
-                loggerFactory,
-                settings,
-                builder.Authority);
-
             if (settings.KustoClientCertificatePath != null)
             {
                 var certificate = new X509Certificate2(settings.KustoClientCertificatePath);
@@ -188,6 +183,11 @@ namespace NuGet.Insights.Kusto
             }
             else if (settings.KustoClientCertificateKeyVault != null)
             {
+                var tokenCredential = CachingTokenCredential.MaybeWrap(
+                    CredentialUtility.GetDefaultAzureCredential(),
+                    loggerFactory,
+                    settings,
+                    builder.Authority);
                 var secretReader = new SecretClient(
                     new Uri(settings.KustoClientCertificateKeyVault),
                     tokenCredential);
@@ -207,6 +207,11 @@ namespace NuGet.Insights.Kusto
             }
             else
             {
+                var tokenCredential = CachingTokenCredential.MaybeWrap(
+                    CredentialUtility.GetDefaultAzureCredential(),
+                    loggerFactory,
+                    settings,
+                    builder.Authority);
                 builder = builder.WithAadAzureTokenCredentialsAuthentication(tokenCredential);
             }
 
