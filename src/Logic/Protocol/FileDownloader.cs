@@ -17,6 +17,7 @@ namespace NuGet.Insights
     public class FileDownloader
     {
         private readonly Func<HttpClient> _httpClientFactory;
+        private readonly Func<HttpClient> _noDecompressionHttpClientFactory;
         private readonly TempStreamService _tempStreamService;
         private readonly Func<HttpZipProvider> _httpZipProviderFactory;
         private readonly ITelemetryClient _telemetryClient;
@@ -24,12 +25,14 @@ namespace NuGet.Insights
 
         public FileDownloader(
             Func<HttpClient> httpClientFactory,
+            Func<HttpClient> noDecompressionHttpClientFactory,
             TempStreamService tempStreamService,
             Func<HttpZipProvider> httpZipProviderFactory,
             ITelemetryClient telemetryClient,
             ILogger<FileDownloader> logger)
         {
             _httpClientFactory = httpClientFactory;
+            _noDecompressionHttpClientFactory = noDecompressionHttpClientFactory;
             _tempStreamService = tempStreamService;
             _httpZipProviderFactory = httpZipProviderFactory;
             _telemetryClient = telemetryClient;
@@ -65,13 +68,36 @@ namespace NuGet.Insights
         {
             var writer = _tempStreamService.GetWriter();
 
+            return await DownloadUrlToFileAsync(
+                url,
+                allowNotFound,
+                requireContentLength,
+                async (networkStream, contentLength) =>
+                {
+                    return await writer.CopyToTempStreamAsync(
+                        networkStream,
+                        getTempFileName,
+                        contentLength,
+                        getHasher());
+                },
+                token);
+        }
+
+        public async Task<(ILookup<string, string> Headers, TempStreamResult Body)?> DownloadUrlToFileAsync(
+            string url,
+            bool allowNotFound,
+            bool requireContentLength,
+            Func<Stream, long, Task<TempStreamResult>> getTempStream,
+            CancellationToken token)
+        {
             ILookup<string, string>? headers = null;
             TempStreamResult? result = null;
+            bool useAcceptEncoding = true;
             try
             {
                 do
                 {
-                    var httpClient = _httpClientFactory();
+                    var httpClient = useAcceptEncoding ? _httpClientFactory() : _noDecompressionHttpClientFactory();
                     result = await httpClient.ProcessResponseWithRetriesAsync(
                         () => new HttpRequestMessage(HttpMethod.Get, url),
                         async response =>
@@ -85,18 +111,40 @@ namespace NuGet.Insights
 
                             headers = response.GetHeaderLookup();
 
-                            var contentLength = response.Content.Headers.ContentLength is null
-                                ? requireContentLength
-                                    ? throw new InvalidOperationException($"No Content-Length header was returned for package URL: {url}")
-                                    : -1
-                                : response.Content.Headers.ContentLength.Value;
+                            long contentLength;
+                            if (response.Content.Headers.ContentLength is null)
+                            {
+                                _logger.LogTransientWarning(
+                                    "No Content-Length header was returned for URL: {Url}. Use Accept-Encoding: {UseAcceptEncoding}. Request headers: {RequestHeaders}Response headers: {ResponseHeaders}",
+                                    url,
+                                    useAcceptEncoding,
+                                    response.RequestMessage?.DebugHeaders(prefixNewLine: true) ?? $"(no request message){Environment.NewLine}",
+                                    response.DebugHeaders(prefixNewLine: true));
+
+                                if (requireContentLength)
+                                {
+                                    if (useAcceptEncoding)
+                                    {
+                                        useAcceptEncoding = false;
+                                        return TempStreamResult.NeedNewStream();
+                                    }
+                                    else
+                                    {
+                                        throw new InvalidOperationException($"No Content-Length header was returned for URL: {url}");
+                                    }
+                                }
+                                else
+                                {
+                                    contentLength = -1;
+                                }
+                            }
+                            else
+                            {
+                                contentLength = response.Content.Headers.ContentLength.Value;
+                            }
 
                             using var networkStream = await response.Content.ReadAsStreamAsync();
-                            return await writer.CopyToTempStreamAsync(
-                                networkStream,
-                                getTempFileName,
-                                contentLength,
-                                getHasher());
+                            return await getTempStream(networkStream, contentLength);
                         },
                         _logger,
                         token);

@@ -15,5 +15,52 @@ namespace NuGet.Insights
                 .SelectMany(x => x.Value.Select(y => new { x.Key, Value = y }))
                 .ToLookup(x => x.Key, x => x.Value, StringComparer.OrdinalIgnoreCase);
         }
+
+        public static string DebugHeaders(this HttpRequestMessage request, bool prefixNewLine)
+        {
+            var sb = new StringBuilder();
+
+            if (prefixNewLine)
+            {
+                sb.AppendLine();
+            }
+
+            foreach (var header in request.Headers.NonValidated)
+            {
+                sb.AppendLine(CultureInfo.InvariantCulture, $"{header.Key}: {string.Join(", ", header.Value)}");
+            }
+
+            if (request.Content is not null)
+            {
+                foreach (var header in request.Content.Headers.NonValidated)
+                {
+                    sb.AppendLine(CultureInfo.InvariantCulture, $"{header.Key}: {string.Join(", ", header.Value)}");
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        public static string DebugHeaders(this HttpResponseMessage response, bool prefixNewLine)
+        {
+            var sb = new StringBuilder();
+
+            if (prefixNewLine)
+            {
+                sb.AppendLine();
+            }
+
+            foreach (var header in response.Headers.NonValidated)
+            {
+                sb.AppendLine(CultureInfo.InvariantCulture, $"{header.Key}: {string.Join(", ", header.Value)}");
+            }
+
+            foreach (var header in response.Content.Headers.NonValidated)
+            {
+                sb.AppendLine(CultureInfo.InvariantCulture, $"{header.Key}: {string.Join(", ", header.Value)}");
+            }
+
+            return sb.ToString();
+        }
     }
 }

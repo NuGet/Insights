@@ -179,7 +179,9 @@ namespace NuGet.Insights.Worker.PackageFileToCsv
             await AssertPackageHashesTableAsync(PackageFileToCsv_WithDuplicatesDir, Step1);
 
             var duplicatePackageRequests = HttpMessageHandlerFactory
-                .SuccessRequests
+                .Responses
+                .Where(x => x.IsSuccessStatusCode && x.Content.Headers.ContentLength.HasValue)
+                .Select(x => x.RequestMessage)
                 .Where(x => x.RequestUri.GetLeftPart(UriPartial.Path).EndsWith("/gosms.ge-sms-api.1.0.1.nupkg", StringComparison.Ordinal))
                 .ToList();
             Assert.Single(duplicatePackageRequests, r => r.Method == HttpMethod.Head);
