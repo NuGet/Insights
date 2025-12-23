@@ -62,7 +62,7 @@ PowerShell is used for the following steps. I have tested Windows PowerShell
    Connect-AzAccount
    ```
 1. Ensure you have Bicep installed. [Install it if
-   needed](https://docs.microsoft.com/azure/azure-resource-manager/bicep/install).
+   needed](https://docs.microsoft.com/azure/azure-resource-manager/bicep/install). `az bicep install`
    ```
    bicep --version
    ```
@@ -70,6 +70,7 @@ PowerShell is used for the following steps. I have tested Windows PowerShell
    ```powershell
    Set-AzContext -Subscription $mySubscriptionId
    ```
+   If needed use `Install-Module -Name Az -Repository PSGallery -Force -AllowClobber -Scope CurrentUser`
 1. From the root of the repo, deploy with the desired [config](deploy/config)
    and stamp name.
    ```powershell

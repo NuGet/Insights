@@ -14,8 +14,13 @@ $existingApps = @(Get-AzADApplication -DisplayName $AadAppName)
 
 if ($existingApps.Count -eq 0) {
     Write-Status "Creating a new AAD app..."
-    $app = New-AzADApplication `
-        -DisplayName $AadAppName
+    $newAppParams = @{
+        DisplayName = $AadAppName
+    }
+    if ($ServiceManagementReference) {
+        $newAppParams.ServiceManagementReference = $ServiceManagementReference
+    }
+    $app = New-AzADApplication @newAppParams
     Write-Status "Created new app with object ID '$($app.id)'."
 }
 elseif ($existingApps.Count -eq 1) {
