@@ -1,4 +1,6 @@
+#if DEBUG
 using Azure.Identity;
+#endif
 using Azure.Core;
 
 namespace NuGet.Insights
