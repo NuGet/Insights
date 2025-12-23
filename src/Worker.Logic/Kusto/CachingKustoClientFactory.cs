@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Security.Cryptography.X509Certificates;
-using Azure.Core;
-using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Kusto.Cloud.Platform.Utils;
 using Kusto.Data;
